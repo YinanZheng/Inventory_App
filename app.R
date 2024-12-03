@@ -3,8 +3,8 @@ library(readr)
 library(DT)
 library(googlesheets4)
 library(googledrive)
-library(dplyr)  # Load dplyr to use filter function
-library(base64enc)  # Load base64enc to use base64 encoding
+library(dplyr)
+library(base64enc)
 
 options(gargle_oauth_cache = ".secrets")
 
@@ -13,8 +13,8 @@ gs4_auth(cache = ".secrets", email = "goldenbeanllc.bhs@gmail.com")
 drive_auth(cache = ".secrets", email = "goldenbeanllc.bhs@gmail.com")
 
 # Google Sheets and Google Drive setup
-inventory_sheet_id <- "1RXcv-nPBEC-TJ9n2_Zp4fzjr-J1b_BDp75i8vxku4HM"  # Replace with your actual Google Sheets ID
-images_folder_id <- "1cjZEgGRl7BAMPUmL03gdWAe17d2sEEPb"  # Replace with your actual Google Drive folder ID
+inventory_sheet_id <- "1RXcv-nPBEC-TJ9n2_Zp4fzjr-J1b_BDp75i8vxku4HM"
+images_folder_id <- "1cjZEgGRl7BAMPUmL03gdWAe17d2sEEPb"
 
 # Load inventory data from Google Sheets
 load_inventory <- function(sheet_id) {
@@ -24,10 +24,7 @@ load_inventory <- function(sheet_id) {
 # Save image to Google Drive
 save_image_to_drive <- function(file_path, folder_id, image_name) {
   drive_file <- drive_upload(file_path, path = as_id(folder_id), name = image_name)
-  
-  # Set file to be shared (accessible to anyone with the link)
   drive_share(as_id(drive_file$id), role = "reader", type = "anyone")
-  
   return(drive_file)
 }
 
@@ -38,6 +35,11 @@ convert_image_url_to_base64 <- function(file_id) {
   base64enc::dataURI(file = temp_file, mime = "image/png")
 }
 
+# Add notification for user feedback
+add_notification <- function(message) {
+  showNotification(message, type = "message")
+}
+
 # Define UI
 ui <- fluidPage(
   titlePanel("Inventory Management App"),
@@ -46,7 +48,6 @@ ui <- fluidPage(
     sidebarPanel(
       textInput("barcode_search", "Search by Barcode:"),
       hr(),
-      
       h3("Add New Item"),
       textInput("new_Barcode", "Barcode:"),
       textInput("new_name", "Name:"),
@@ -57,7 +58,7 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      DTOutput("inventory_table"),
+      uiOutput("item_details"),
       uiOutput("item_image")
     )
   )
@@ -68,30 +69,57 @@ server <- function(input, output, session) {
   # Load inventory data
   inventory <- reactiveVal(load_inventory(inventory_sheet_id))
   
-  # Handle search button click
+  # Function to render item details
+  render_item_details <- function(item) {
+    tagList(
+      h4("Item Details:"),
+      p(strong("Barcode: "), item$Barcode),
+      p(strong("Name: "), item$ItemName),
+      p(strong("Quantity: "), item$Quantity),
+      p(strong("Price: "), paste0("$", item$Price))
+    )
+  }
+  
+  # Function to render item image
+  render_item_image <- function(image_id) {
+    if (!is.na(image_id)) {
+      tryCatch({
+        image_base64 <- convert_image_url_to_base64(image_id)
+        tags$img(src = image_base64, width = "200px")
+      }, error = function(e) {
+        NULL
+      })
+    } else {
+      NULL
+    }
+  }
+  
+  # Handle search input
   observeEvent(input$barcode_search, {
     req(input$barcode_search)
     
-    # Query Google Sheets directly without downloading
-    search_result <- load_inventory(inventory_sheet_id) %>%
-      filter(Barcode == input$barcode_search)
-    
-    output$inventory_table <- renderDT({
-      datatable(search_result)
-    })
-    
-    if (nrow(search_result) == 1 && !is.na(search_result$Image)) {
-      tryCatch({
-        image_base64 <- convert_image_url_to_base64(search_result$Image[1])
-        output$item_image <- renderUI({
-          tags$img(src = image_base64, width = "200px")
-        })
-      }, error = function(e) {
-        output$item_image <- renderUI(NULL)
+    tryCatch({
+      search_result <- load_inventory(inventory_sheet_id) %>%
+        filter(Barcode == input$barcode_search)
+      
+      output$item_details <- renderUI({
+        if (nrow(search_result) > 0) {
+          render_item_details(search_result[1, ])
+        } else {
+          h4("No matching item found")
+        }
       })
-    } else {
-      output$item_image <- renderUI(NULL)
-    }
+      
+      output$item_image <- renderUI({
+        if (nrow(search_result) == 1 && !is.na(search_result$Image[1])) {
+          render_item_image(search_result$Image[1])
+        } else {
+          NULL
+        }
+      })
+    }, error = function(e) {
+      add_notification(paste("Error during search:", e$message))
+    })
   })
   
   # Handle add item button click
@@ -102,11 +130,15 @@ server <- function(input, output, session) {
     image_id <- NA
     if (!is.null(input$new_image)) {
       image_name <- paste0(input$new_Barcode, "_", input$new_image$name)
-      drive_file <- save_image_to_drive(input$new_image$datapath, images_folder_id, image_name)
-      image_id <- drive_file$id
+      tryCatch({
+        drive_file <- save_image_to_drive(input$new_image$datapath, images_folder_id, image_name)
+        image_id <- drive_file$id
+      }, error = function(e) {
+        add_notification(paste("Error uploading image:", e$message))
+      })
     }
     
-    # Add the new item directly to Google Sheets
+    # Add the new item to Google Sheets
     new_item <- data.frame(
       Barcode = input$new_Barcode,
       ItemName = input$new_name,
@@ -115,17 +147,23 @@ server <- function(input, output, session) {
       Image = image_id,
       stringsAsFactors = FALSE
     )
-    sheet_append(ss = inventory_sheet_id, data = new_item, sheet = "Sheet1")
     
-    # Reload inventory data
-    inventory(load_inventory(inventory_sheet_id))
-    
-    # Show updated inventory
-    output$inventory_table <- renderDT({
-      datatable(inventory())
+    tryCatch({
+      sheet_append(ss = inventory_sheet_id, data = new_item, sheet = "Sheet1")
+      add_notification("Item added successfully.")
+      inventory(load_inventory(inventory_sheet_id))
+      
+      # Show added item details
+      output$item_details <- renderUI({
+        render_item_details(new_item)
+      })
+      
+      output$item_image <- renderUI({
+        render_item_image(new_item$Image)
+      })
+    }, error = function(e) {
+      add_notification(paste("Error adding item:", e$message))
     })
-    
-    output$item_image <- renderUI(NULL)
   })
 }
 
