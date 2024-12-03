@@ -5,6 +5,6 @@ account: betsyhandmadestudio
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 13510052
-bundleId: 9455217
+bundleId: 9455581
 url: https://betsyhandmadestudio.shinyapps.io/inventory_app/
 version: 1
