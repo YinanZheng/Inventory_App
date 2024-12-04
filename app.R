@@ -34,7 +34,8 @@ ui <- fluidPage(
       textInput("new_Barcode", "SKU:", value = ""),
       fileInput("new_image", "商品图片:"),
       actionButton("add_btn", "添加商品"),
-      actionButton("export_btn", "生成并下载条形码")
+      actionButton("export_btn", "生成条形码"),
+      downloadButton("barcode_pdf", "下载条形码PDF")
     ),
     
     mainPanel(
@@ -138,14 +139,6 @@ server <- function(input, output, session) {
           NULL
         }
       })
-      
-      output$barcode_image <- renderUI({
-        if (nrow(search_result) == 1) {
-          tags$img(src = generate_barcode(search_result$SKU[1]), width = "200px")
-        } else {
-          NULL
-        }
-      })
     }, error = function(e) {
       show_custom_notification(paste("Error during search:", e$message), type = "error")
     })
@@ -198,27 +191,29 @@ server <- function(input, output, session) {
       output$item_image <- renderUI({
         render_item_image(new_item$Image)
       })
-      
-      output$barcode_image <- renderUI({
-        tags$img(src = generate_barcode(new_item$SKU), width = "200px")
-      })
     }, error = function(e) {
       show_custom_notification(paste("添加商品时出错:", e$message), type = "error")
     })
   })
   
-  # Handle export barcode button click
+  # Generate Barcode based on SKU
+  pdf_file_path <- reactiveVal(NULL)
   observeEvent(input$export_btn, {
     req(input$new_Barcode, input$new_quantity)
     pdf_file <- export_barcode_pdf(input$new_Barcode, input$new_quantity)
-    show_custom_notification("条形码已导出为PDF，正在为您准备下载。")
-    temp_file <- tempfile(fileext = ".pdf")
-    file.copy(pdf_file, temp_file, overwrite = TRUE)
-    session$sendCustomMessage(type = "download_pdf", list(
-      file_path = temp_file,
-      file_name = paste0("barcode_", input$new_Barcode, ".pdf")
-    ))
+    pdf_file_path(pdf_file)
+    show_custom_notification("条形码已导出为PDF。")
   })
+  
+  # Download PDF button
+  output$barcode_pdf <- downloadHandler(
+    filename = function() {
+      paste0("barcode_", input$new_Barcode, ".pdf")
+    },
+    content = function(file) {
+      file.copy(pdf_file_path(), file, overwrite = TRUE)
+    }
+  )
   
   # Automatically generate SKU when relevant inputs change
   observeEvent({input$new_cost; input$new_major_type; input$new_minor_type; input$new_name}, {

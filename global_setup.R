@@ -12,6 +12,6 @@ setup_google_auth <- function(email) {
 
 # Font setup
 setup_fonts <- function() {
-  font_add("Code 128", "./Code128.ttf")
+  font_add("BarcodeFont", "./fonts/BarcodeFont.ttf")
   showtext_auto()
 }
