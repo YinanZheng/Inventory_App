@@ -3,6 +3,7 @@ library(shiny)
 library(dplyr)
 
 # Source all modular functions
+source("config.R")
 source("global_setup.R")
 source("data_loading.R")
 source("drive_functions.R")
