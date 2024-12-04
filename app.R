@@ -15,8 +15,7 @@ drive_auth(cache = ".secrets", email = "goldenbeanllc.bhs@gmail.com")
 # Google Sheets and Google Drive setup
 inventory_sheet_id <- "1RXcv-nPBEC-TJ9n2_Zp4fzjr-J1b_BDp75i8vxku4HM"
 maker_sheet_id <- "1XNa2SEfR7c_trpWdFx8XOILzqSvkt-laSbRdnozzfRc"
-major_type_sheet_id <- "1-lVcQjIgHA0tm94lFMWvinAjj2CYKs81hhVUuQRLh98"
-minor_type_sheet_id <- "19FpdzrL_pSJSEolROHDFDy2OAYCEvSUIhVvFBqw0O94"
+item_type_sheet_id <- "1-lVcQjIgHA0tm94lFMWvinAjj2CYKs81hhVUuQRLh98"
 images_folder_id <- "1cjZEgGRl7BAMPUmL03gdWAe17d2sEEPb"
 
 # Generic function to load data from Google Sheets
@@ -45,22 +44,22 @@ add_notification <- function(message, type = "message") {
 
 # Define UI
 ui <- fluidPage(
-  titlePanel("Inventory Management App"),
+  titlePanel("库存管理系统"),
   
   sidebarLayout(
     sidebarPanel(
-      textInput("barcode_search", "Search by Barcode:"),
-      selectInput("new_maker", "Maker:", choices = NULL),
-      selectInput("new_major_type", "Major Type:", choices = NULL),
-      selectInput("new_minor_type", "Minor Type:", choices = NULL),
+      textInput("barcode_search", "按SKU搜索:"),
+      selectInput("new_maker", "织女:", choices = NULL),
+      selectInput("new_major_type", "大类:", choices = NULL),
+      selectInput("new_minor_type", "小类:", choices = NULL),
       hr(),
       h3("Add New Item"),
-      textInput("new_Barcode", "Barcode:"),
-      textInput("new_name", "Name:"),
-      numericInput("new_quantity", "Quantity:", 1, min = 1),
-      numericInput("new_cost", "Cost:", value = 0, min = 0, step = 0.01),
-      fileInput("new_image", "Upload Image:"),
-      actionButton("add_btn", "Add Item")
+      textInput("new_Barcode", "SKU:"),
+      textInput("new_name", "商品名:"),
+      numericInput("new_quantity", "数量:", 1, min = 1),
+      numericInput("new_cost", "成本:", value = 0, min = 0, step = 0.01),
+      fileInput("new_image", "商品图片:"),
+      actionButton("add_btn", "添加商品")
     ),
     
     mainPanel(
@@ -72,16 +71,23 @@ ui <- fluidPage(
 
 # Define server logic
 server <- function(input, output, session) {
-  # Load maker, major type, and minor type data
+  # Load maker, item type data
   maker_list <- reactiveVal(load_sheet_data(maker_sheet_id)$Maker)
-  major_type_list <- reactiveVal(load_sheet_data(major_type_sheet_id)$Type)
-  minor_type_list <- reactiveVal(load_sheet_data(minor_type_sheet_id)$Type)
+  item_type_data <- reactiveVal(load_sheet_data(item_type_sheet_id))
   
   # Update maker, major type, and minor type select input choices
   observe({
     updateSelectInput(session, "new_maker", choices = maker_list())
-    updateSelectInput(session, "new_major_type", choices = major_type_list())
-    updateSelectInput(session, "new_minor_type", choices = minor_type_list())
+    updateSelectInput(session, "new_major_type", choices = unique(item_type_data()$MajorType))
+  })
+  
+  # Update minor type choices based on selected major type
+  observeEvent(input$new_major_type, {
+    req(input$new_major_type)
+    minor_types <- item_type_data() %>%
+      filter(MajorType == input$new_major_type) %>%
+      pull(MinorType)
+    updateSelectInput(session, "new_minor_type", choices = minor_types)
   })
   
   # Load inventory data and refresh every 5 minutes
@@ -98,13 +104,13 @@ server <- function(input, output, session) {
   render_item_details <- function(item) {
     tagList(
       h4("Item Details:"),
-      p(strong("Maker: "), item$Maker),
-      p(strong("Major Type: "), item$MajorType),
-      p(strong("Minor Type: "), item$MinorType),
-      p(strong("Barcode: "), item$Barcode),
-      p(strong("Name: "), item$ItemName),
-      p(strong("Quantity: "), item$Quantity),
-      p(strong("Cost: "), paste0("$", item$Cost))
+      p(strong("织女: "), item$Maker),
+      p(strong("大类: "), item$MajorType),
+      p(strong("小类: "), item$MinorType),
+      p(strong("SKU: "), item$Barcode),
+      p(strong("商品名: "), item$ItemName),
+      p(strong("库存: "), item$Quantity),
+      p(strong("成本: "), paste0("$", item$Cost))
     )
   }
   
