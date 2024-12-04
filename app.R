@@ -1,6 +1,7 @@
 # app.R
 library(shiny)
 library(shinyjs)
+library(shinyWidgets)
 library(dplyr)
 library(DT)
 
@@ -28,11 +29,12 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       fluidRow(
-        column(12, selectInput("new_maker", "织女:", choices = NULL))
+        column(12, selectizeInput("new_maker", "供应商:", choices = NULL, 
+                                  options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500)))
       ),
       fluidRow(
-        column(6, selectInput("new_major_type", "大类:", choices = NULL)),
-        column(6, selectInput("new_minor_type", "小类:", choices = NULL)),
+        column(6, uiOutput("major_type_ui")), ## 大类
+        column(6, uiOutput("minor_type_ui")), ## 小类
       ),
       fluidRow(
         column(12, textInput("new_name", "商品名:"))
@@ -61,16 +63,30 @@ ui <- fluidPage(
     mainPanel(
       # 使用 fluidRow 分成上下两个部分
       fluidRow(
-        column(12, h4("符合条件的库存记录")),
+        column(12,  div(
+          h4("符合条件的库存记录"), 
+          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
+             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
+        )),
         column(12, DTOutput("filtered_inventory_table"))
       ),
+      
+      tags$hr(), # 分隔线
       fluidRow(
-        column(12, h4("已添加商品")),
+        column(12, div(
+          h4("已添加商品"), 
+          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
+             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
+        )),
         column(12, DTOutput("added_items_table")),
         column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"))),
       ),
-      h4("本次入库总金额:"),
-      textOutput("total_cost") # 用于显示总金额
+      
+      tags$hr(), # 分隔线
+      div(
+        textOutput("total_cost"),
+        style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+      )
     )
   )
 )
@@ -78,23 +94,35 @@ ui <- fluidPage(
 ### Define server logic
 server <- function(input, output, session) {
   # Load data
-  maker_list <- reactive(load_sheet_data(maker_sheet_id)$Maker)
+  maker_list <- reactive(load_sheet_data(maker_sheet_id))
   item_type_data <- reactive(load_sheet_data(item_type_sheet_id))
   inventory <- reactiveVal(load_sheet_data(inventory_sheet_id))
   
-  # Update maker, major type, and minor type select input choices
+  # Update maker select input choices
   observe({
-    updateSelectInput(session, "new_maker", choices = maker_list())
-    updateSelectInput(session, "new_major_type", choices = unique(item_type_data()$MajorType))
+    choices <- setNames(maker_list()$Maker, paste0(maker_list()$Maker, "(", maker_list()$Pinyin, ")"))
+    updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
   })
   
-  # Update minor type choices based on selected major type
-  observeEvent(input$new_major_type, {
-    req(input$new_major_type)
-    minor_types <- item_type_data() %>%
-      filter(MajorType == input$new_major_type) %>%
-      pull(MinorType)
-    updateSelectInput(session, "new_minor_type", choices = minor_types)
+  # Render Major Type Dropdown
+  output$major_type_ui <- renderUI({
+    type_data <- item_type_data()
+    unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
+    choices <- setNames(unique_majors$MajorType, paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）"))
+    selectInput("new_major_type", "大类:", choices = choices)
+  })
+  
+  # Render Minor Type Dropdown dynamically
+  output$minor_type_ui <- renderUI({
+    type_data <- item_type_data()
+    
+    if (!is.null(input$new_major_type)) {
+      selected_major <- gsub("（.*）", "", input$new_major_type)
+      # Filter rows for the selected major_type
+      filtered_data <- type_data[type_data$MajorType == selected_major, ]
+      choices <- setNames(filtered_data$MinorType, paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）"))
+      selectInput("new_minor_type", "小类:", choices = choices)
+    }
   })
   
   # Filter inventory based on major and minor type
@@ -211,7 +239,7 @@ server <- function(input, output, session) {
     # 列映射
     column_mapping <- list(
       SKU = "条形码",
-      Maker = "制作者",
+      Maker = "供应商",
       MajorType = "大类",
       MinorType = "小类",
       ItemName = "商品名",
@@ -239,7 +267,7 @@ server <- function(input, output, session) {
       escape = FALSE,  # 禁用 HTML 转义
       selection = "single",  # 单选模式
       options = list(
-        autoWidth = TRUE,
+        autoWidth = TRUE, responsive = TRUE,
         columnDefs = list(
           list(targets = which(names(items) == "ItemImage"), className = "dt-center")
         )
@@ -262,7 +290,7 @@ server <- function(input, output, session) {
   
   output$total_cost <- renderText({
     total <- sum(added_items()$Quantity * added_items()$Cost)
-    paste0("¥", format(total, big.mark = ",", scientific = FALSE))
+    paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE))
   })
   
   
@@ -403,7 +431,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$reset_btn, {
-    updateSelectInput(session, "new_maker", selected = NULL)
+    updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
     updateSelectInput(session, "new_major_type", selected = NULL)
     updateSelectInput(session, "new_minor_type", selected = NULL)
     updateTextInput(session, "new_name", value = "")
