@@ -20,7 +20,8 @@ setup_google_auth("goldenbeanllc.bhs@gmail.com")
 
 # Font setup
 font_family = "BarcodeFont"
-setup_fonts(font_family, "./fonts/IDAutomationHC39M Free Version.ttf")
+font_path = "./fonts/BarcodeFont.ttf"
+setup_fonts(font_family, font_path)
 
 # Define UI
 ui <- fluidPage(
@@ -99,6 +100,9 @@ server <- function(input, output, session) {
   maker_list <- reactive(load_sheet_data(maker_sheet_id))
   item_type_data <- reactive(load_sheet_data(item_type_sheet_id))
   inventory <- reactiveVal(load_sheet_data(inventory_sheet_id))
+  
+  # Flag to determine if SKU should be auto-generated
+  auto_generate_sku <- reactiveVal(TRUE)
   
   # Update maker select input choices
   observe({
@@ -193,7 +197,25 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
-    req(input$new_sku, input$new_name, input$new_quantity, input$new_cost)
+    if (is.null(input$new_name) || input$new_name == "") {
+      show_custom_notification("请填写正确商品名称！", type = "error")
+      return()
+    }
+    
+    if (is.null(input$new_quantity) || input$new_quantity == "" || input$new_quantity == 0) {
+      show_custom_notification("请填写正确商品数量！", type = "error")
+      return()
+    }
+    
+    if (is.null(input$new_cost) || input$new_cost == "" || input$new_cost > 999 || input$new_cost < 0) {
+      show_custom_notification("请填写正确商品成本！", type = "error")
+      return()
+    }
+    
+    if (is.null(input$new_sku) || input$new_sku == "") {
+      show_custom_notification("请确保SKU正常生成！", type = "error")
+      return()
+    }
     
     image_data <- if (!is.null(input$new_item_image)) {
       base64enc::dataURI(file = input$new_item_image$datapath, mime = input$new_item_image$type)
@@ -284,9 +306,9 @@ server <- function(input, output, session) {
       current_items <- added_items()
       updated_items <- current_items[-selected_row, ]  # Remove selected row
       added_items(updated_items)  # Update reactive value
-      showNotification("记录已成功删除", type = "message")
+      show_custom_notification("记录已成功删除", type = "message")
     } else {
-      showNotification("请选择要删除的记录", type = "error")
+      show_custom_notification("请选择要删除的记录", type = "error")
     }
   })
   
@@ -294,10 +316,6 @@ server <- function(input, output, session) {
     total <- sum(added_items()$Quantity * added_items()$Cost)
     paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE))
   })
-  
-  
-  # Flag to determine if SKU should be auto-generated
-  auto_generate_sku <- reactiveVal(TRUE)
   
   # Handle row selection in filtered inventory table
   observeEvent(input$filtered_inventory_table_rows_selected, {
@@ -310,7 +328,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
-      updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
+      updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_cost", value = selected_data$Cost)
       updateTextInput(session, "new_sku", value = selected_data$SKU)
     }
@@ -445,6 +463,7 @@ server <- function(input, output, session) {
     updateNumericInput(session, "new_cost", value = 0)
     updateTextInput(session, "new_sku", value = "")
     shinyjs::reset("new_item_image")
+    auto_generate_sku(TRUE)
     
     added_items(data.frame(
       SKU = character(),
