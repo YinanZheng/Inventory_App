@@ -211,6 +211,10 @@ server <- function(input, output, session) {
       paste0("barcode_", input$new_Barcode, ".pdf")
     },
     content = function(file) {
+      if (is.null(pdf_file_path())) {
+        show_custom_notification("请先点击“导出PDF”按钮以生成条形码PDF。")
+        return(NULL)
+      }
       file.copy(pdf_file_path(), file, overwrite = TRUE)
     }
   )
