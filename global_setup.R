@@ -11,7 +11,10 @@ setup_google_auth <- function(email) {
 }
 
 # Font setup
-setup_fonts <- function() {
-  font_add("BarcodeFont", "./fonts/BarcodeFont.ttf")
+setup_fonts <- function(font_name, font_path) {
+  if (!file.exists(font_path)) {
+    stop(paste("字体文件不存在:", font_path))
+  }
+  font_add(font_name, font_path)
   showtext_auto()
 }
