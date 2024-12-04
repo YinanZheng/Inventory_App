@@ -43,16 +43,7 @@ ui <- fluidPage(
       uiOutput("item_image"),
       uiOutput("barcode_image")
     )
-  ),
-  
-  tags$script(HTML("
-    Shiny.addCustomMessageHandler('download_pdf', function(data) {
-      var link = document.createElement('a');
-      link.href = data.file_path;
-      link.download = data.file_name;
-      link.click();
-    });
-  "))
+  )
 )
 
 # Define server logic
