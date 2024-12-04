@@ -1,6 +1,8 @@
 # app.R
 library(shiny)
+library(shinyjs)
 library(dplyr)
+library(DT)
 
 # Source all modular functions
 source("config.R")
@@ -18,12 +20,12 @@ setup_fonts()
 
 # Define UI
 ui <- fluidPage(
+  useShinyjs(),
+  
   titlePanel("库存管理系统"),
   
   sidebarLayout(
     sidebarPanel(
-      textInput("sku_search", "按SKU搜索:"),
-      hr(),
       h3("入库"),
       selectInput("new_maker", "织女:", choices = NULL),
       selectInput("new_major_type", "大类:", choices = NULL),
@@ -33,20 +35,33 @@ ui <- fluidPage(
       numericInput("new_cost", "成本:", value = 0, min = 0, max = 999, step = 1),
       textInput("new_Barcode", "SKU:", value = ""),
       fileInput("new_image", "商品图片:"),
-      actionButton("add_btn", "添加商品"),
-      actionButton("export_btn", "生成条形码"),
-      downloadButton("barcode_pdf", "下载条形码PDF")
+      
+      fluidRow(
+        column(6, actionButton("add_btn", "添加商品")),
+        column(6, actionButton("confirm_btn", "确认入库"))
+      ),
+      
+      fluidRow(
+        column(6, actionButton("export_btn", "生成条形码")),
+        column(6, downloadButton("barcode_pdf", "下载条形码"))
+      )
     ),
     
     mainPanel(
-      uiOutput("item_details"),
-      uiOutput("item_image"),
-      uiOutput("barcode_image")
+      # 使用 fluidRow 分成上下两个部分
+      fluidRow(
+        column(12, h4("符合条件的库存记录")),
+        column(12, DTOutput("filtered_inventory_table"))
+      ),
+      fluidRow(
+        column(12, h4("已添加商品")),
+        column(12, tableOutput("added_items_table"))
+      )
     )
   )
 )
 
-# Define server logic
+### Define server logic
 server <- function(input, output, session) {
   # Load data
   maker_list <- reactive(load_sheet_data(maker_sheet_id)$Maker)
@@ -68,6 +83,21 @@ server <- function(input, output, session) {
     updateSelectInput(session, "new_minor_type", choices = minor_types)
   })
   
+  # Filter inventory based on major and minor type
+  filtered_inventory <- reactive({
+    req(input$new_major_type, input$new_minor_type)
+    if (input$new_major_type == "" || input$new_minor_type == "") {
+      return(inventory())  # 如果没有选择大类或小类，则返回整个库存
+    }
+    inventory() %>%
+      filter(MajorType == input$new_major_type, MinorType == input$new_minor_type)
+  })
+  
+  # Display filtered inventory using DT (DataTable)
+  output$filtered_inventory_table <- renderDT({
+    datatable(filtered_inventory(), selection = 'single', rownames = FALSE)
+  })
+  
   # Refresh inventory data every 5 minutes
   observe({
     invalidateLater(5 * 60 * 1000)
@@ -77,20 +107,6 @@ server <- function(input, output, session) {
   # Cache for storing image base64 data
   image_cache <- reactiveValues()
   
-  # Function to render item details
-  render_item_details <- function(item) {
-    tagList(
-      h4("Item Details:"),
-      p(strong("织女: "), item$Maker),
-      p(strong("大类: "), item$MajorType),
-      p(strong("小类: "), item$MinorType),
-      p(strong("库存单位: "), item$SKU),
-      p(strong("商品名: "), item$ItemName),
-      p(strong("库存: "), item$Quantity),
-      p(strong("成本: "), paste0("$", item$Cost))
-    )
-  }
-  
   # Function to render item image
   render_item_image <- function(image_id) {
     if (is.na(image_id)) return(NULL)
@@ -98,102 +114,177 @@ server <- function(input, output, session) {
       return(tags$img(src = image_cache[[image_id]], width = "200px"))
     }
     tryCatch({
-      temp_file <- tempfile(fileext = ".png")
-      drive_download(as_id(image_id), path = temp_file, overwrite = TRUE)
-      image_base64 <- base64enc::dataURI(file = temp_file, mime = "image/png")
-      image_cache[[image_id]] <- image_base64
+      image_cache[[image_id]] <- convert_image_url_to_base64(image_id)
       tags$img(src = image_base64, width = "200px")
     }, error = function(e) {
       NULL
     })
   }
   
-  # Handle search input
-  observeEvent(input$sku_search, {
-    req(input$sku_search)
-    
-    tryCatch({
-      search_result <- inventory() %>% filter(SKU == input$sku_search)
-      
-      output$item_details <- renderUI({
-        if (nrow(search_result) > 0) {
-          render_item_details(search_result[1, ])
-        } else {
-          h4("No matching item found")
-        }
-      })
-      
-      output$item_image <- renderUI({
-        if (nrow(search_result) == 1 && !is.na(search_result$Image[1])) {
-          render_item_image(search_result$Image[1])
-        } else {
-          NULL
-        }
-      })
-    }, error = function(e) {
-      show_custom_notification(paste("Error during search:", e$message), type = "error")
-    })
-  })
+  # Reactive value to store added items
+  added_items <- reactiveVal(data.frame(
+    SKU = character(),
+    Maker = character(),
+    MajorType = character(),
+    MinorType = character(),
+    ItemName = character(),
+    Quantity = numeric(),
+    Cost = numeric(),
+    ItemImage = character(),
+    ItemImagePath = character(),
+    stringsAsFactors = FALSE
+  ))
   
   # Handle add item button click
   observeEvent(input$add_btn, {
     req(input$new_Barcode, input$new_name, input$new_quantity, input$new_cost)
-    new_cost_rounded <- round(input$new_cost)
     
-    if (input$new_quantity <= 0 || input$new_cost < 0 || input$new_cost > 999) {
-      show_custom_notification("数量必须为正数，且成本必须在0到999之间。", type = "error")
-      return()
+    image_data <- if (!is.null(input$new_image)) {
+      base64enc::dataURI(file = input$new_image$datapath, mime = input$new_image$type)
+    } else {
+      NA
     }
     
-    # Save the uploaded image to Google Drive
-    image_id <- NA
-    if (!is.null(input$new_image)) {
-      image_name <- paste0(input$new_Barcode, "_", input$new_image$name)
-      tryCatch({
-        drive_file <- save_image_to_drive(input$new_image$datapath, images_folder_id, image_name)
-        image_id <- drive_file$id
-      }, error = function(e) {
-        show_custom_notification(paste("上传图片时出错:", e$message), type = "error")
-      })
-    }
-    
-    # Add the new item to Google Sheets
     new_item <- data.frame(
       SKU = input$new_Barcode,
+      Maker = input$new_maker,
       MajorType = input$new_major_type,
       MinorType = input$new_minor_type,
       ItemName = input$new_name,
       Quantity = input$new_quantity,
-      Cost = new_cost_rounded,
-      Image = image_id,
+      Cost = round(input$new_cost),
+      ItemImage = image_data,
+      ItemImagePath = if (!is.null(input$new_image)) input$new_image$datapath else NA,
       stringsAsFactors = FALSE
     )
     
-    tryCatch({
-      sheet_append(ss = inventory_sheet_id, data = new_item, sheet = "Sheet1")
-      show_custom_notification("商品添加成功。")
-      inventory(load_sheet_data(inventory_sheet_id))
+    # Update the added items reactive value
+    added_items(bind_rows(added_items(), new_item))
+  })
+  
+  # Render the table of added items, including images
+  output$added_items_table <- renderTable({
+    items <- added_items()
+    items$ItemImage <- sapply(items$ItemImage, function(img) {
+      if (!is.na(img)) paste0('<img src="', img, '" width="100"/>') else ""
+    })
+    
+    items %>% select(-ItemImagePath)
+  }, sanitize.text.function = function(x) x)
+  
+  # Flag to determine if SKU should be auto-generated
+  auto_generate_sku <- reactiveVal(TRUE)
+  
+  # Handle row selection in filtered inventory table
+  observeEvent(input$filtered_inventory_table_rows_selected, {
+    selected_row <- input$filtered_inventory_table_rows_selected
+    if (length(selected_row) > 0) {
+      selected_data <- filtered_inventory()[selected_row, ]
       
-      # Show added item details
-      output$item_details <- renderUI({
-        render_item_details(new_item)
-      })
+      # Update the input fields in the sidebar
+      auto_generate_sku(FALSE)  # Disable auto generation of SKU when selecting a record
+      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
+      updateNumericInput(session, "new_cost", value = selected_data$Cost)
+      updateTextInput(session, "new_Barcode", value = selected_data$SKU)
+    }
+  })
+  
+  # Handle confirm button click to update the database
+  observeEvent(input$confirm_btn, {
+    # If no items are added, show an error notification
+    if (nrow(added_items()) == 0) {
+      show_custom_notification("请先添加至少一个商品再确认!", type = "error")
+      return()
+    }
+    
+    # Upload images to Google Drive
+    added_items_df <- added_items()
+    for (i in 1:nrow(added_items_df)) {
+      if (!is.na(added_items_df$ItemImagePath[i])) {
+        tryCatch({
+          drive_file <- save_image_to_drive(added_items_df$ItemImagePath[i], images_folder_id, added_items_df$SKU[i])
+          #Update image path to google drive path
+          added_items_df$ItemImagePath[i] <- drive_file$id
+          show_custom_notification(paste("图片上传成功! SKU:", added_items_df$SKU[i], ", 商品名:", added_items_df$ItemName[i]), type = "message")
+        }, error = function(e) {
+          show_custom_notification(paste("图片上传失败! SKU:", added_items_df$SKU[i], ", 商品名:", added_items_df$ItemName[i]), type = "error")
+        })
+      }
+    }
+    
+    # Update the Google Sheet with the added items (excluding Maker and ItemImage)
+    # tryCatch({
+      # Loop through added items to either update or add
+      for (i in 1:nrow(added_items_df)) {
+        sku <- added_items_df$SKU[i]
+        
+        if (sku %in% inventory()$SKU) {
+          # Update existing item quantity in Google Sheets
+          sheet_range <- which(inventory()$SKU == sku)
+          if (length(sheet_range) == 1) {
+            inventory_quantity <- ifelse(is.na(inventory()$Quantity[sheet_range]), 0, as.numeric(inventory()$Quantity[sheet_range]))
+            added_quantity <- ifelse(is.na(added_items_df$Quantity[i]), 0, as.numeric(added_items_df$Quantity[i]))
+            updated_quantity <- inventory_quantity + added_quantity
+            range_write(
+              ss = inventory_sheet_id, 
+              data = data.frame(updated_quantity), 
+              sheet = "Sheet1", 
+              range = paste0("E", sheet_range + 1), 
+              col_names = FALSE  # 不写入列名，只写入数值
+            )
+            show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", updated_quantity), type = "message")
+          } else {
+            show_custom_notification(paste("找到多条记录SKU:", sku), type = "error")
+          }
+        } else {
+          # Add new item
+          sheet_append(ss = inventory_sheet_id, data = added_items_df[i, ] %>% select(-Maker, -ItemImage), sheet = "Sheet1")
+          show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
+        }
+      }
       
-      output$item_image <- renderUI({
-        render_item_image(new_item$Image)
-      })
-    }, error = function(e) {
-      show_custom_notification(paste("添加商品时出错:", e$message), type = "error")
+      inventory(load_sheet_data(inventory_sheet_id)) # Refresh the inventory to reflect any updates
+      
+    # }, error = function(e) {
+      # show_custom_notification("更新数据库时出错!", type = "error")
+    # })
+    
+    # Clear the added items after confirming
+    added_items(data.frame(
+      SKU = character(),
+      Maker = character(),
+      MajorType = character(),
+      MinorType = character(),
+      ItemName = character(),
+      Quantity = numeric(),
+      Cost = numeric(),
+      ItemImage = character(),
+      ItemImagePath = character(),
+      stringsAsFactors = FALSE
+    ))
+    
+    # Update the filtered DT table
+    output$filtered_inventory_table <- renderDT({
+      datatable(filtered_inventory(), selection = 'single', rownames = FALSE)
     })
   })
   
   # Generate Barcode based on SKU
+  session$onFlushed(function() {
+    shinyjs::disable("barcode_pdf")
+  })
+  
   pdf_file_path <- reactiveVal(NULL)
+
   observeEvent(input$export_btn, {
     req(input$new_Barcode, input$new_quantity)
     pdf_file <- export_barcode_pdf(input$new_Barcode, input$new_quantity)
     pdf_file_path(pdf_file)
-    show_custom_notification("条形码已导出为PDF。")
+    show_custom_notification("条形码已导出为PDF!")
+    shinyjs::enable("barcode_pdf")
   })
   
   # Download PDF button
@@ -202,10 +293,6 @@ server <- function(input, output, session) {
       paste0("barcode_", input$new_Barcode, ".pdf")
     },
     content = function(file) {
-      if (is.null(pdf_file_path())) {
-        show_custom_notification("请先点击“导出PDF”按钮以生成条形码PDF。")
-        return(NULL)
-      }
       file.copy(pdf_file_path(), file, overwrite = TRUE)
     }
   )
@@ -214,31 +301,11 @@ server <- function(input, output, session) {
   observeEvent({input$new_cost; input$new_major_type; input$new_minor_type; input$new_name}, {
     req(input$new_major_type, input$new_minor_type, input$new_name, input$new_cost)
     
-    # Format cost as three-digit value
-    formatted_cost <- sprintf("%03.0f", round(input$new_cost))
-    
-    # Generate two random letters based on the item name
-    random_letters <- if (!is.null(input$new_name) && input$new_name != "") {
-      set.seed(as.integer(Sys.time()))
-      paste0(sample(LETTERS, 2, replace = TRUE), collapse = "")
-    } else {
-      ""
+    # Only generate SKU if auto_generate_sku is TRUE
+    if (auto_generate_sku()) {
+      sku <- generate_sku(item_type_data(), input$new_major_type, input$new_minor_type, input$new_name, input$new_cost)
+      updateTextInput(session, "new_Barcode", value = sku)
     }
-    
-    # Get major and minor type SKU values
-    major_type_sku <- item_type_data() %>%
-      filter(MajorType == input$new_major_type) %>%
-      pull(MajorTypeSKU) %>%
-      unique()
-    minor_type_sku <- item_type_data() %>%
-      filter(MinorType == input$new_minor_type) %>%
-      pull(MinorTypeSKU) %>%
-      unique()
-    
-    # Create the SKU
-    generated_sku <- paste0(major_type_sku, minor_type_sku, formatted_cost, random_letters)
-    
-    updateTextInput(session, "new_Barcode", value = as.character(generated_sku))
   })
 }
 
