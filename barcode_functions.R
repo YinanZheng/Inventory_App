@@ -1,6 +1,5 @@
 # barcode_functions.R
 library(ggplot2)
-library(gridExtra)
 
 # Export barcode to PDF
 export_barcode_pdf <- function(sku, quantity) {
