@@ -5,8 +5,13 @@ library(googlesheets4)
 library(googledrive)
 library(dplyr)
 library(base64enc)
+library(ggplot2)
+library(showtext)
 
 options(gargle_oauth_cache = ".secrets")
+
+font_add("Code 128", "./Code128.ttf") 
+showtext_auto()
 
 # Authenticate Google Sheets and Google Drive with pre-authorized account
 gs4_auth(cache = ".secrets", email = "goldenbeanllc.bhs@gmail.com")
@@ -37,9 +42,42 @@ convert_image_url_to_base64 <- function(file_id) {
   base64enc::dataURI(file = temp_file, mime = "image/png")
 }
 
-# Add notification for user feedback
-add_notification <- function(message, type = "message") {
-  showNotification(message, type = type)
+# Unified function for showing notifications
+show_custom_notification <- function(message, type = "message") {
+  showNotification(
+    paste0(if (type == "error") "错误: " else "提示: ", message),
+    type = type,
+    duration = 10,
+    closeButton = TRUE
+  )
+}
+
+# Function to generate barcode
+generate_barcode <- function(sku) {
+  temp_file <- tempfile(fileext = ".png")
+  barcode_data <- data.frame(label = sku)
+  barcode_plot <- ggplot(barcode_data, aes(x = 1, y = 1, label = label)) +
+    geom_text(family = "Code 128", size = 15) +
+    theme_void() +
+    theme(panel.grid = element_blank())
+  ggsave(temp_file, plot = barcode_plot, width = 4, height = 2, dpi = 300)
+  base64enc::dataURI(file = temp_file, mime = "image/png")
+}
+
+# Function to export barcode to PDF
+export_barcode_pdf <- function(sku, quantity) {
+  pdf_file <- tempfile(fileext = ".pdf")
+  pdf(pdf_file, width = 4, height = 2)
+  for (i in 1:quantity) {
+    barcode_data <- data.frame(label = sku)
+    barcode_plot <- ggplot(barcode_data, aes(x = 1, y = 1, label = label)) +
+      geom_text(family = "Code 128", size = 15) +
+      theme_void() +
+      theme(panel.grid = element_blank())
+    print(barcode_plot)
+  }
+  dev.off()
+  pdf_file
 }
 
 # Define UI
@@ -48,32 +86,35 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      textInput("barcode_search", "按SKU搜索:"),
+      textInput("sku_search", "按SKU搜索:"),
+      hr(),
+      h3("入库"),
       selectInput("new_maker", "织女:", choices = NULL),
       selectInput("new_major_type", "大类:", choices = NULL),
       selectInput("new_minor_type", "小类:", choices = NULL),
-      hr(),
-      h3("Add New Item"),
-      textInput("new_Barcode", "SKU:"),
       textInput("new_name", "商品名:"),
       numericInput("new_quantity", "数量:", 1, min = 1),
-      numericInput("new_cost", "成本:", value = 0, min = 0, step = 0.01),
+      numericInput("new_cost", "成本:", value = 0, min = 0, max = 999, step = 1),
+      textInput("new_Barcode", "SKU:", value = ""),
       fileInput("new_image", "商品图片:"),
-      actionButton("add_btn", "添加商品")
+      actionButton("add_btn", "添加商品"),
+      actionButton("export_btn", "导出条形码")
     ),
     
     mainPanel(
       uiOutput("item_details"),
-      uiOutput("item_image")
+      uiOutput("item_image"),
+      uiOutput("barcode_image")
     )
   )
 )
 
 # Define server logic
 server <- function(input, output, session) {
-  # Load maker, item type data
-  maker_list <- reactiveVal(load_sheet_data(maker_sheet_id)$Maker)
-  item_type_data <- reactiveVal(load_sheet_data(item_type_sheet_id))
+  # Load data
+  maker_list <- reactive(load_sheet_data(maker_sheet_id)$Maker)
+  item_type_data <- reactive(load_sheet_data(item_type_sheet_id))
+  inventory <- reactiveVal(load_sheet_data(inventory_sheet_id))
   
   # Update maker, major type, and minor type select input choices
   observe({
@@ -90,10 +131,9 @@ server <- function(input, output, session) {
     updateSelectInput(session, "new_minor_type", choices = minor_types)
   })
   
-  # Load inventory data and refresh every 5 minutes
-  inventory <- reactiveVal(load_sheet_data(inventory_sheet_id))
+  # Refresh inventory data every 5 minutes
   observe({
-    invalidateLater(5 * 60 * 1000) # 每5分钟重新加载一次
+    invalidateLater(5 * 60 * 1000)
     inventory(load_sheet_data(inventory_sheet_id))
   })
   
@@ -107,7 +147,7 @@ server <- function(input, output, session) {
       p(strong("织女: "), item$Maker),
       p(strong("大类: "), item$MajorType),
       p(strong("小类: "), item$MinorType),
-      p(strong("SKU: "), item$Barcode),
+      p(strong("库存单位: "), item$SKU),
       p(strong("商品名: "), item$ItemName),
       p(strong("库存: "), item$Quantity),
       p(strong("成本: "), paste0("$", item$Cost))
@@ -116,32 +156,27 @@ server <- function(input, output, session) {
   
   # Function to render item image
   render_item_image <- function(image_id) {
-    if (!is.na(image_id)) {
-      if (!is.null(image_cache[[image_id]])) {
-        tags$img(src = image_cache[[image_id]], width = "200px")
-      } else {
-        tryCatch({
-          temp_file <- tempfile(fileext = ".png")
-          drive_download(as_id(image_id), path = temp_file, overwrite = TRUE)
-          image_base64 <- base64enc::dataURI(file = temp_file, mime = "image/png")
-          image_cache[[image_id]] <- image_base64
-          tags$img(src = image_base64, width = "200px")
-        }, error = function(e) {
-          NULL
-        })
-      }
-    } else {
-      NULL
+    if (is.na(image_id)) return(NULL)
+    if (!is.null(image_cache[[image_id]])) {
+      return(tags$img(src = image_cache[[image_id]], width = "200px"))
     }
+    tryCatch({
+      temp_file <- tempfile(fileext = ".png")
+      drive_download(as_id(image_id), path = temp_file, overwrite = TRUE)
+      image_base64 <- base64enc::dataURI(file = temp_file, mime = "image/png")
+      image_cache[[image_id]] <- image_base64
+      tags$img(src = image_base64, width = "200px")
+    }, error = function(e) {
+      NULL
+    })
   }
   
   # Handle search input
-  observeEvent(input$barcode_search, {
-    req(input$barcode_search)
+  observeEvent(input$sku_search, {
+    req(input$sku_search)
     
     tryCatch({
-      search_result <- inventory() %>%
-        filter(Barcode == input$barcode_search)
+      search_result <- inventory() %>% filter(SKU == input$sku_search)
       
       output$item_details <- renderUI({
         if (nrow(search_result) > 0) {
@@ -158,17 +193,26 @@ server <- function(input, output, session) {
           NULL
         }
       })
+      
+      output$barcode_image <- renderUI({
+        if (nrow(search_result) == 1) {
+          tags$img(src = generate_barcode(search_result$SKU[1]), width = "200px")
+        } else {
+          NULL
+        }
+      })
     }, error = function(e) {
-      add_notification(paste("Error during search:", e$message), type = "error")
+      show_custom_notification(paste("Error during search:", e$message), type = "error")
     })
   })
   
   # Handle add item button click
   observeEvent(input$add_btn, {
     req(input$new_Barcode, input$new_name, input$new_quantity, input$new_cost)
+    new_cost_rounded <- round(input$new_cost)
     
-    if (input$new_quantity <= 0 || input$new_cost < 0) {
-      add_notification("Quantity and cost must be positive numbers.", type = "error")
+    if (input$new_quantity <= 0 || input$new_cost < 0 || input$new_cost > 999) {
+      show_custom_notification("数量必须为正数，且成本必须在0到999之间。", type = "error")
       return()
     }
     
@@ -180,25 +224,25 @@ server <- function(input, output, session) {
         drive_file <- save_image_to_drive(input$new_image$datapath, images_folder_id, image_name)
         image_id <- drive_file$id
       }, error = function(e) {
-        add_notification(paste("Error uploading image:", e$message), type = "error")
+        show_custom_notification(paste("上传图片时出错:", e$message), type = "error")
       })
     }
     
     # Add the new item to Google Sheets
     new_item <- data.frame(
-      Barcode = input$new_Barcode,
+      SKU = input$new_Barcode,
       MajorType = input$new_major_type,
       MinorType = input$new_minor_type,
       ItemName = input$new_name,
       Quantity = input$new_quantity,
-      Cost = input$new_cost,
+      Cost = new_cost_rounded,
       Image = image_id,
       stringsAsFactors = FALSE
     )
     
     tryCatch({
       sheet_append(ss = inventory_sheet_id, data = new_item, sheet = "Sheet1")
-      add_notification("Item added successfully.")
+      show_custom_notification("商品添加成功。")
       inventory(load_sheet_data(inventory_sheet_id))
       
       # Show added item details
@@ -209,9 +253,59 @@ server <- function(input, output, session) {
       output$item_image <- renderUI({
         render_item_image(new_item$Image)
       })
+      
+      output$barcode_image <- renderUI({
+        tags$img(src = generate_barcode(new_item$SKU), width = "200px")
+      })
     }, error = function(e) {
-      add_notification(paste("Error adding item:", e$message), type = "error")
+      show_custom_notification(paste("添加商品时出错:", e$message), type = "error")
     })
+  })
+  
+  # Handle export barcode button click
+  observeEvent(input$export_btn, {
+    req(input$new_Barcode, input$new_quantity)
+    pdf_file <- export_barcode_pdf(input$new_Barcode, input$new_quantity)
+    show_custom_notification("条形码已导出为PDF。")
+    output$barcode_pdf <- downloadHandler(
+      filename = function() {
+        paste0("barcode_", input$new_Barcode, ".pdf")
+      },
+      content = function(file) {
+        file.copy(pdf_file, file)
+      }
+    )
+  })
+  
+  # Automatically generate SKU when relevant inputs change
+  observeEvent({input$new_cost; input$new_major_type; input$new_minor_type; input$new_name}, {
+    req(input$new_major_type, input$new_minor_type, input$new_name, input$new_cost)
+    
+    # Format cost as three-digit value
+    formatted_cost <- sprintf("%03.0f", round(input$new_cost))
+    
+    # Generate two random letters based on the item name
+    random_letters <- if (!is.null(input$new_name) && input$new_name != "") {
+      set.seed(as.integer(Sys.time()))
+      paste0(sample(LETTERS, 2, replace = TRUE), collapse = "")
+    } else {
+      ""
+    }
+    
+    # Get major and minor type SKU values
+    major_type_sku <- item_type_data() %>%
+      filter(MajorType == input$new_major_type) %>%
+      pull(MajorTypeSKU) %>%
+      unique()
+    minor_type_sku <- item_type_data() %>%
+      filter(MinorType == input$new_minor_type) %>%
+      pull(MinorTypeSKU) %>%
+      unique()
+    
+    # Create the SKU
+    generated_sku <- paste0(major_type_sku, minor_type_sku, formatted_cost, random_letters)
+    
+    updateTextInput(session, "new_Barcode", value = as.character(generated_sku))
   })
 }
 
