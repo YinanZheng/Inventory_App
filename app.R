@@ -1,84 +1,18 @@
+# app.R
 library(shiny)
-library(readr)
-library(DT)
-library(googlesheets4)
-library(googledrive)
 library(dplyr)
-library(base64enc)
-library(ggplot2)
-library(showtext)
 
-options(gargle_oauth_cache = ".secrets")
+# Source all modular functions
+source("global_setup.R")
+source("data_loading.R")
+source("drive_functions.R")
+source("barcode_functions.R")
 
-font_add("Code 128", "./Code128.ttf") 
-showtext_auto()
+# Google Auth setup
+setup_google_auth("goldenbeanllc.bhs@gmail.com")
 
-# Authenticate Google Sheets and Google Drive with pre-authorized account
-gs4_auth(cache = ".secrets", email = "goldenbeanllc.bhs@gmail.com")
-drive_auth(cache = ".secrets", email = "goldenbeanllc.bhs@gmail.com")
-
-# Google Sheets and Google Drive setup
-inventory_sheet_id <- "1RXcv-nPBEC-TJ9n2_Zp4fzjr-J1b_BDp75i8vxku4HM"
-maker_sheet_id <- "1XNa2SEfR7c_trpWdFx8XOILzqSvkt-laSbRdnozzfRc"
-item_type_sheet_id <- "1-lVcQjIgHA0tm94lFMWvinAjj2CYKs81hhVUuQRLh98"
-images_folder_id <- "1cjZEgGRl7BAMPUmL03gdWAe17d2sEEPb"
-
-# Generic function to load data from Google Sheets
-load_sheet_data <- function(sheet_id) {
-  read_sheet(sheet_id)
-}
-
-# Save image to Google Drive
-save_image_to_drive <- function(file_path, folder_id, image_name) {
-  drive_file <- drive_upload(file_path, path = as_id(folder_id), name = image_name)
-  drive_share(as_id(drive_file$id), role = "reader", type = "anyone")
-  return(drive_file)
-}
-
-# Convert image URL to base64
-convert_image_url_to_base64 <- function(file_id) {
-  temp_file <- tempfile(fileext = ".png")
-  drive_download(as_id(file_id), path = temp_file, overwrite = TRUE)
-  base64enc::dataURI(file = temp_file, mime = "image/png")
-}
-
-# Unified function for showing notifications
-show_custom_notification <- function(message, type = "message") {
-  showNotification(
-    paste0(if (type == "error") "错误: " else "提示: ", message),
-    type = type,
-    duration = 10,
-    closeButton = TRUE
-  )
-}
-
-# Function to generate barcode
-generate_barcode <- function(sku) {
-  temp_file <- tempfile(fileext = ".png")
-  barcode_data <- data.frame(label = sku)
-  barcode_plot <- ggplot(barcode_data, aes(x = 1, y = 1, label = label)) +
-    geom_text(family = "Code 128", size = 15) +
-    theme_void() +
-    theme(panel.grid = element_blank())
-  ggsave(temp_file, plot = barcode_plot, width = 4, height = 2, dpi = 300)
-  base64enc::dataURI(file = temp_file, mime = "image/png")
-}
-
-# Function to export barcode to PDF
-export_barcode_pdf <- function(sku, quantity) {
-  pdf_file <- tempfile(fileext = ".pdf")
-  pdf(pdf_file, width = 4, height = 2)
-  for (i in 1:quantity) {
-    barcode_data <- data.frame(label = sku)
-    barcode_plot <- ggplot(barcode_data, aes(x = 1, y = 1, label = label)) +
-      geom_text(family = "Code 128", size = 15) +
-      theme_void() +
-      theme(panel.grid = element_blank())
-    print(barcode_plot)
-  }
-  dev.off()
-  pdf_file
-}
+# Font setup
+setup_fonts()
 
 # Define UI
 ui <- fluidPage(
