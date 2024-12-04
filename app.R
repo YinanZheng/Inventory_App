@@ -59,7 +59,9 @@ ui <- fluidPage(
         column(12, h4("已添加商品")),
         column(12, DTOutput("added_items_table")),
         column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"))),
-      )
+      ),
+      h4("本次入库总金额:"),
+      textOutput("total_cost") # 用于显示总金额
     )
   )
 )
@@ -236,7 +238,6 @@ server <- function(input, output, session) {
     )
   })
   
-  
   # Delete selected item
   observeEvent(input$delete_btn, {
     selected_row <- input$added_items_table_rows_selected
@@ -250,33 +251,11 @@ server <- function(input, output, session) {
     }
   })
   
-  # # Render added items with column name mapping
-  # output$added_items_table <- renderTable({
-  #   column_mapping <- list(
-  #     SKU = "条形码",
-  #     Maker = "制作者",
-  #     MajorType = "大类",
-  #     MinorType = "小类",
-  #     ItemName = "商品名",
-  #     Quantity = "入库数量",
-  #     Cost = "采购成本",
-  #     ItemImage = "商品图片"
-  #   )
-  #   
-  #   items <- added_items() %>% select(-ItemImagePath)
-  #   
-  #   items$Quantity <- as.integer(items$Quantity)
-  #   items$Cost <- as.integer(items$Cost)
-  #   items$ItemImage <- sapply(items$ItemImage, function(img) {
-  #     if (!is.na(img) && nzchar(img)) {
-  #       paste0('<img src="', img, '" width="100" height="100"/>')
-  #     } else {
-  #       ""
-  #     }
-  #   })
-  #   
-  #   map_column_names(items, column_mapping)
-  # }, sanitize.text.function = function(x) x)
+  output$total_cost <- renderText({
+    total <- sum(added_items()$Quantity * added_items()$Cost)
+    paste0("¥", format(total, big.mark = ",", scientific = FALSE))
+  })
+  
   
   # Flag to determine if SKU should be auto-generated
   auto_generate_sku <- reactiveVal(TRUE)
