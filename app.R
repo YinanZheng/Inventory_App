@@ -10,6 +10,7 @@ source("config.R")
 source("global_setup.R")
 source("data_loading.R")
 source("drive_functions.R")
+source("sku_functions.R")
 source("barcode_functions.R")
 source("notifications.R")
 source("utils.R")
@@ -18,7 +19,8 @@ source("utils.R")
 setup_google_auth("goldenbeanllc.bhs@gmail.com")
 
 # Font setup
-setup_fonts("BarcodeFont", "./fonts/BarcodeFont.ttf")
+font_family = "BarcodeFont"
+setup_fonts(font_family, "./fonts/IDAutomationHC39M Free Version.ttf")
 
 # Define UI
 ui <- fluidPage(
@@ -265,7 +267,7 @@ server <- function(input, output, session) {
     datatable(
       items,
       escape = FALSE,  # 禁用 HTML 转义
-      selection = "single",  # 单选模式
+      selection = "multiple", 
       options = list(
         autoWidth = TRUE, responsive = TRUE,
         columnDefs = list(
@@ -403,7 +405,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$export_btn, {
     req(input$new_sku, input$new_quantity)
-    pdf_file <- export_barcode_pdf(input$new_sku, input$new_quantity)
+    pdf_file <- export_barcode_pdf(input$new_sku, input$new_quantity, font_family)
     pdf_file_path(pdf_file)
     show_custom_notification("条形码已导出为PDF!")
     shinyjs::enable("barcode_pdf")
@@ -425,7 +427,11 @@ server <- function(input, output, session) {
     
     # Only generate SKU if auto_generate_sku is TRUE
     if (auto_generate_sku()) {
-      sku <- generate_sku(item_type_data(), input$new_major_type, input$new_minor_type, input$new_name, input$new_cost)
+      sku <- generate_sku(item_type_data(), 
+                          input$new_major_type, 
+                          input$new_minor_type, 
+                          input$new_name, 
+                          input$new_cost)
       updateTextInput(session, "new_sku", value = sku)
     }
   })
