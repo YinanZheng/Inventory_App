@@ -27,26 +27,35 @@ ui <- fluidPage(
   
   sidebarLayout(
     sidebarPanel(
-      h3("入库"),
-      selectInput("new_maker", "织女:", choices = NULL),
-      selectInput("new_major_type", "大类:", choices = NULL),
-      selectInput("new_minor_type", "小类:", choices = NULL),
-      textInput("new_name", "商品名:"),
-      numericInput("new_quantity", "数量:", value = 1, min = 1, step = 1),
-      numericInput("new_cost", "成本:", value = 0, min = 0, max = 999, step = 1),
-      textInput("new_sku", "SKU:", value = ""),
+      fluidRow(
+        column(12, selectInput("new_maker", "织女:", choices = NULL))
+      ),
+      fluidRow(
+        column(6, selectInput("new_major_type", "大类:", choices = NULL)),
+        column(6, selectInput("new_minor_type", "小类:", choices = NULL)),
+      ),
+      fluidRow(
+        column(12, textInput("new_name", "商品名:"))
+      ),
+      fluidRow(
+        column(6, numericInput("new_quantity", "数量:", value = 1, min = 1, step = 1)),
+        column(6, numericInput("new_cost", "成本:", value = 0, min = 0, max = 999, step = 1))
+      ),
+      textInput("new_sku", "SKU(自动生成):", value = ""),
       fileInput("new_item_image", "商品图片:"),
       
-      fluidRow(
-        column(6, actionButton("add_btn", "添加商品")),
-        column(6, actionButton("confirm_btn", "确认入库"))
-      ),
+      tags$hr(), # 分隔线
+      h4("入库操作"),
+      actionButton("add_btn", "添加商品"),
+      actionButton("confirm_btn", "确认入库", class = "btn-primary"),
       
-      fluidRow(
-        column(6, actionButton("export_btn", "生成条形码")),
-        column(6, downloadButton("barcode_pdf", "下载条形码"))
-      ),
-      actionButton("reset_btn", "重置", icon = icon("undo")),
+      tags$hr(), # 分隔线
+      h4("条形码操作"),
+      actionButton("export_btn", "生成条形码"),
+      downloadButton("barcode_pdf", "下载条形码"),
+      
+      tags$hr(), # 分隔线
+      actionButton("reset_btn", "重置", icon = icon("undo"), class = "btn-danger")
     ),
     
     mainPanel(
@@ -210,7 +219,7 @@ server <- function(input, output, session) {
       Cost = "采购成本",
       ItemImage = "商品图片"
     )
- 
+    
     # 渲染图片列为 HTML
     items$ItemImage <- sapply(items$ItemImage, function(img) {
       if (!is.na(img) && nzchar(img)) {
@@ -302,39 +311,39 @@ server <- function(input, output, session) {
     
     # Update the Google Sheet with the added items (excluding Maker and ItemImage)
     # tryCatch({
-      # Loop through added items to either update or add
-      for (i in 1:nrow(added_items_df)) {
-        sku <- added_items_df$SKU[i]
-        
-        if (sku %in% inventory()$SKU) {
-          # Update existing item quantity in Google Sheets
-          sheet_range <- which(inventory()$SKU == sku)
-          if (length(sheet_range) == 1) {
-            inventory_quantity <- ifelse(is.na(inventory()$Quantity[sheet_range]), 0, as.integer(inventory()$Quantity[sheet_range]))
-            added_quantity <- ifelse(is.na(added_items_df$Quantity[i]), 0, as.integer(added_items_df$Quantity[i]))
-            updated_quantity <- inventory_quantity + added_quantity
-            range_write(
-              ss = inventory_sheet_id, 
-              data = data.frame(updated_quantity), 
-              sheet = "Sheet1", 
-              range = paste0("E", sheet_range + 1), 
-              col_names = FALSE 
-            )
-            show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", updated_quantity), type = "message")
-          } else {
-            show_custom_notification(paste("找到多条记录SKU:", sku), type = "error")
-          }
+    # Loop through added items to either update or add
+    for (i in 1:nrow(added_items_df)) {
+      sku <- added_items_df$SKU[i]
+      
+      if (sku %in% inventory()$SKU) {
+        # Update existing item quantity in Google Sheets
+        sheet_range <- which(inventory()$SKU == sku)
+        if (length(sheet_range) == 1) {
+          inventory_quantity <- ifelse(is.na(inventory()$Quantity[sheet_range]), 0, as.integer(inventory()$Quantity[sheet_range]))
+          added_quantity <- ifelse(is.na(added_items_df$Quantity[i]), 0, as.integer(added_items_df$Quantity[i]))
+          updated_quantity <- inventory_quantity + added_quantity
+          range_write(
+            ss = inventory_sheet_id, 
+            data = data.frame(updated_quantity), 
+            sheet = "Sheet1", 
+            range = paste0("E", sheet_range + 1), 
+            col_names = FALSE 
+          )
+          show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", updated_quantity), type = "message")
         } else {
-          # Add new item
-          sheet_append(ss = inventory_sheet_id, data = added_items_df[i, ] %>% select(-Maker, -ItemImage), sheet = "Sheet1")
-          show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
+          show_custom_notification(paste("找到多条记录SKU:", sku), type = "error")
         }
+      } else {
+        # Add new item
+        sheet_append(ss = inventory_sheet_id, data = added_items_df[i, ] %>% select(-Maker, -ItemImage), sheet = "Sheet1")
+        show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
       }
-      
-      inventory(load_sheet_data(inventory_sheet_id)) # Refresh the inventory to reflect any updates
-      
+    }
+    
+    inventory(load_sheet_data(inventory_sheet_id)) # Refresh the inventory to reflect any updates
+    
     # }, error = function(e) {
-      # show_custom_notification("更新数据库时出错!", type = "error")
+    # show_custom_notification("更新数据库时出错!", type = "error")
     # })
     
     # Clear the added items after confirming
@@ -363,7 +372,7 @@ server <- function(input, output, session) {
   })
   
   pdf_file_path <- reactiveVal(NULL)
-
+  
   observeEvent(input$export_btn, {
     req(input$new_sku, input$new_quantity)
     pdf_file <- export_barcode_pdf(input$new_sku, input$new_quantity)
