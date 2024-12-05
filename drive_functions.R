@@ -1,11 +1,22 @@
-# drive_functions.R
+# Load necessary libraries
 library(googledrive)
 library(base64enc)
+library(magick)
 
-# Save image to Google Drive
-save_image_to_drive <- function(file_path, folder_id, image_name) {
-  drive_file <- drive_upload(file_path, path = as_id(folder_id), name = image_name)
+# Save compressed image to Google Drive
+save_image_to_drive <- function(file_path, folder_id, image_name, quality = 75) {
+  # Load the image
+  img <- image_read(file_path)
+  
+  # Compress the image (adjusting quality and size)
+  compressed_img <- image_scale(img, "800x")  # Resize image to have a width of 800px, adjust as needed
+  compressed_img <- image_convert(compressed_img, format = "jpeg")
+  compressed_img <- image_write(compressed_img, tempfile(fileext = ".jpg"), quality = quality)
+  
+  # Upload the compressed image to Google Drive
+  drive_file <- drive_upload(compressed_img, path = as_id(folder_id), name = image_name)
   drive_share(as_id(drive_file$id), role = "reader", type = "anyone")
+  
   return(drive_file)
 }
 

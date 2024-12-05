@@ -48,6 +48,7 @@ ui <- fluidPage(
       ),
       textInput("new_sku", "SKU(自动生成):", value = ""),
       fileInput("new_item_image", "商品图片:"),
+      actionButton("reset_btn", "清空输入", icon = icon("undo"), class = "btn-danger"),
       
       tags$hr(), # 分隔线
       h4("入库操作"),
@@ -58,9 +59,6 @@ ui <- fluidPage(
       h4("条形码操作"),
       actionButton("export_btn", "生成条形码"),
       downloadButton("barcode_pdf", "下载条形码"),
-      
-      tags$hr(), # 分隔线
-      actionButton("reset_btn", "重置", icon = icon("undo"), class = "btn-danger")
     ),
     
     mainPanel(
@@ -135,28 +133,68 @@ server <- function(input, output, session) {
   filtered_inventory <- reactive({
     req(input$new_major_type, input$new_minor_type)
     if (input$new_major_type == "" || input$new_minor_type == "") {
-      return(inventory() %>% select(-ItemImagePath))
+      return(inventory())
     }
     inventory() %>%
-      filter(MajorType == input$new_major_type, MinorType == input$new_minor_type) %>% select(-ItemImagePath)
+      filter(MajorType == input$new_major_type, MinorType == input$new_minor_type)
   })
   
   # Render filtered inventory with column name mapping
   output$filtered_inventory_table <- renderDT({
+    # 列映射
     column_mapping <- list(
       SKU = "条形码",
       MajorType = "大类",
       MinorType = "小类",
       ItemName = "商品名",
       Quantity = "库存数",
-      Cost = "采购成本"
+      Cost = "采购成本",
+      ItemImage = "商品图片"
     )
+    
+    inventory_data <- filtered_inventory()
+    
+    # 初始化 ItemImage 列为本地图片链接，下载图片到本地并转换为 base64 格式使用 <img> 标签显示图片
+    inventory_data$ItemImage <- sapply(1:nrow(inventory_data), function(i) {
+      img_id <- inventory_data$ItemImagePath[i]
+      if (!is.na(img_id) && nzchar(img_id)) {
+        # 下载图片到本地
+        img_url <- paste0("https://drive.google.com/uc?export=download&id=", img_id)
+        local_img_path <- file.path(tempdir(), paste0("image_", img_id, ".png"))
+        download.file(img_url, local_img_path, mode = "wb")
+        
+        # 读取图片并转换为 base64
+        img_content <- readBin(local_img_path, "raw", file.info(local_img_path)$size)
+        img_base64 <- base64enc::base64encode(img_content)
+        
+        # 使用 base64 格式显示图片
+        paste0('<img src="data:image/png;base64,', img_base64, '" width="100" height="100" style="object-fit:cover;"/>')
+      } else {
+        ""
+      }
+    })
+    
+    # 检查 inventory_data 是否为空
+    if (nrow(inventory_data) == 0) {
+      return(datatable(data.frame(信息 = "没有数据可显示"), options = list(dom = 't')))
+    }
+    
+    # 修改列名以显示中文（使用映射函数）
+    inventory_data <- inventory_data %>% select(-ItemImagePath)
+    inventory_data <- map_column_names(inventory_data, column_mapping)
+    
+    # 渲染数据表格
     datatable(
-      map_column_names(filtered_inventory(), column_mapping),
-      selection = 'single',
-      rownames = FALSE
+      inventory_data,
+      escape = FALSE,  # 禁用 HTML 转义
+      selection = 'single'
     )
   })
+
+  
+  
+  
+  
   
   # Refresh inventory data every 5 minutes
   observe({
@@ -488,5 +526,4 @@ server <- function(input, output, session) {
   })
 }
 
-# Run the Shiny app
-shinyApp(ui, server)
+shinyApp(ui = ui, server = server)
