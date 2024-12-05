@@ -22,3 +22,5 @@ download_images_from_folder <- function(folder_name) {
     }
   }
 }
+
+download_images_from_folder("image")
