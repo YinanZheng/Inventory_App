@@ -19,7 +19,7 @@ download_images_from_folder <- function(folder_name) {
     if (!file.exists(local_img_path)) {
       tryCatch({
         drive_download(img_file, path = local_img_path, overwrite = FALSE)
-        message(paste("下载成功:", new_name))
+        message(paste("下载成功:", img_file$name))
       }, error = function(e) {
         message(paste("下载失败:", img_file$name, "错误:", e))
       })
