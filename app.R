@@ -154,23 +154,18 @@ server <- function(input, output, session) {
     
     inventory_data <- filtered_inventory()
     
-    # 初始化 ItemImage 列为本地图片链接，下载图片到本地并转换为 base64 格式使用 <img> 标签显示图片
+    # 初始化 ItemImage 列为本地图片链接，引用本地文件夹图片
     inventory_data$ItemImage <- sapply(1:nrow(inventory_data), function(i) {
-      img_id <- inventory_data$ItemImagePath[i]
-      if (!is.na(img_id) && nzchar(img_id)) {
-        # 下载图片到本地
-        img_url <- paste0("https://drive.google.com/uc?export=download&id=", img_id)
-        local_img_path <- file.path(tempdir(), paste0("image_", img_id, ".png"))
-        download.file(img_url, local_img_path, mode = "wb")
-        
-        # 读取图片并转换为 base64
-        img_content <- readBin(local_img_path, "raw", file.info(local_img_path)$size)
-        img_base64 <- base64enc::base64encode(img_content)
-        
-        # 使用 base64 格式显示图片
-        paste0('<img src="data:image/png;base64,', img_base64, '" width="100" height="100" style="object-fit:cover;"/>')
+      img_filename <- inventory_data$ItemImagePath[i]
+      local_img_path <- file.path("./image_cache", img_filename)
+      
+      if (file.exists(local_img_path)) {
+        # 使用本地图片路径显示图片
+        paste0('<img src="', local_img_path, 
+               '" width="100" height="100" style="object-fit:cover;"/>')
       } else {
-        ""
+        # 如果图片不存在，返回占位图片或空字符串
+        '<img src="placeholder.png" width="100" height="100" style="object-fit:cover;"/>'
       }
     })
     
