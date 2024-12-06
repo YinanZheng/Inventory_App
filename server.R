@@ -1,9 +1,9 @@
-### Define server logic
+# Define server logic
 server <- function(input, output, session) {
   # Load data
-  maker_list <- reactive(load_sheet_data(maker_sheet_id))
-  item_type_data <- reactive(load_sheet_data(item_type_sheet_id))
-  inventory <- reactiveVal(load_sheet_data(inventory_sheet_id))
+  maker_list <- reactive(read_sheet(maker_sheet_id))
+  item_type_data <- reactive(read_sheet(item_type_sheet_id))
+  inventory <- reactiveVal(read_sheet(inventory_sheet_id))
   
   # Flag to determine if SKU should be auto-generated
   auto_generate_sku <- reactiveVal(TRUE)
@@ -95,7 +95,7 @@ server <- function(input, output, session) {
   # Refresh inventory data every 5 minutes
   observe({
     invalidateLater(5 * 60 * 1000)
-    inventory(load_sheet_data(inventory_sheet_id))
+    inventory(read_sheet(inventory_sheet_id))
   })
   
   # Cache for storing image base64 data
@@ -317,7 +317,7 @@ server <- function(input, output, session) {
       }
     }
     
-    inventory(load_sheet_data(inventory_sheet_id)) # Refresh the inventory to reflect any updates
+    inventory(read_sheet(inventory_sheet_id)) # Refresh the inventory to reflect any updates
     
     # }, error = function(e) {
     # show_custom_notification("更新数据库时出错!", type = "error")
@@ -402,7 +402,7 @@ server <- function(input, output, session) {
       stringsAsFactors = FALSE
     ))
     
-    inventory(load_sheet_data(inventory_sheet_id))
+    inventory(read_sheet(inventory_sheet_id))
     
     output$filtered_inventory_table <- renderDT({
       datatable(filtered_inventory(), selection = 'single', rownames = FALSE)
