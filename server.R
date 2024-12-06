@@ -347,7 +347,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$export_btn, {
     req(input$new_sku, input$new_quantity)
-    pdf_file <- export_barcode_pdf(input$new_sku, input$new_quantity)
+    pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
     pdf_file_path(pdf_file)
     show_custom_notification("条形码已导出为PDF!")
     shinyjs::enable("barcode_pdf")
@@ -356,9 +356,12 @@ server <- function(input, output, session) {
   # Download PDF button
   output$barcode_pdf <- downloadHandler(
     filename = function() {
-      paste0("barcode_", input$new_sku, ".pdf")
+      cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
+      basename(pdf_file_path())  # Use basename to just get the file name
     },
     content = function(file) {
+      # Ensure the file exists before copying
+      cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
       file.copy(pdf_file_path(), file, overwrite = TRUE)
     }
   )

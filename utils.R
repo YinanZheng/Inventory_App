@@ -15,15 +15,28 @@ map_column_names <- function(data, column_mapping) {
 }
 
 # Generate Code 128 barcode PDF
-export_barcode_pdf <- function(sku, page_width, page_height, unit) {
+export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
   # Create a temporary file path for the PDF
-  pdf_file <- tempfile(fileext = ".pdf")
+  temp_dir <- tempdir() 
+  if (unit == "cm") {
+    # 1 cm = 0.393701 in 
+    page_width <- page_width / 2.54  
+    page_height <- page_height / 2.54
+  }
+  
+  pdf_path <- paste0(temp_dir, "/", sku, "_barcode")  # 组合文件夹路径和文件名
   
   custom_create_PDF(Labels = sku, 
-                    name = sku, 
+                    name = pdf_path, 
                     type = "linear", 
-                    page_width = page_width, page_height = page_height, 
-                    numrow = 1, numcol = 1, width_margin = 0, height_margin = 0)
+                    page_width = page_width, 
+                    page_height = page_height,
+                    numrow = 1, 
+                    numcol = 1, 
+                    width_margin = 0, 
+                    height_margin = 0.05)
+  
+  return(paste0(pdf_path, ".pdf"))
 }
 
 # Save compressed image to Google Drive

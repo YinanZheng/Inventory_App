@@ -21,5 +21,10 @@ maker_sheet_id <- "1XNa2SEfR7c_trpWdFx8XOILzqSvkt-laSbRdnozzfRc"
 item_type_sheet_id <- "1-lVcQjIgHA0tm94lFMWvinAjj2CYKs81hhVUuQRLh98"
 images_folder_id <- "1cjZEgGRl7BAMPUmL03gdWAe17d2sEEPb"
 
+# Size of barcode paper (in cm)
+page_width = 4
+page_height = 2
+size_unit = "cm"
+
 # Google Auth setup
 setup_google_auth("goldenbeanllc.bhs@gmail.com")
