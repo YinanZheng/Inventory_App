@@ -13,7 +13,7 @@ download_images_from_folder <- function(folder_name) {
   for (i in seq_len(nrow(image_files))) {
     img_file <- image_files[i, ]
     # 使用文件的ID作为新文件名
-    local_img_path <- file.path("./image_cache", img_file$id)
+    local_img_path <- file.path("./www/image_cache", paste0(img_file$id, ".jpg"))
     
     # 检查本地是否已有该文件，如果没有则下载
     if (!file.exists(local_img_path)) {

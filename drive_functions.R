@@ -16,7 +16,8 @@ save_image_to_drive <- function(file_path, folder_id, image_name, quality = 75) 
   # Upload the compressed image to Google Drive
   drive_file <- drive_upload(compressed_img, path = as_id(folder_id), name = image_name)
   drive_share(as_id(drive_file$id), role = "reader", type = "anyone")
-  
+  local_img_path <- file.path("./www/image_cache", paste0(drive_file$id, ".jpg"))
+  drive_download(drive_file, path = local_img_path, overwrite = FALSE)
   return(drive_file)
 }
 

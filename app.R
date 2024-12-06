@@ -19,9 +19,7 @@ source("utils.R")
 setup_google_auth("goldenbeanllc.bhs@gmail.com")
 
 # Font setup
-font_family = "BarcodeFont"
-font_path = "./fonts/BarcodeFont.ttf"
-setup_fonts(font_family, font_path)
+setup_fonts(c("code128", "consolas"), "./fonts/")
 
 # Define UI
 ui <- fluidPage(
@@ -154,42 +152,37 @@ server <- function(input, output, session) {
     
     inventory_data <- filtered_inventory()
     
-    # 初始化 ItemImage 列为本地图片链接，引用本地文件夹图片
-    inventory_data$ItemImage <- sapply(1:nrow(inventory_data), function(i) {
-      img_filename <- inventory_data$ItemImagePath[i]
-      local_img_path <- file.path("./image_cache", img_filename)
-      
-      if (file.exists(local_img_path)) {
-        # 使用本地图片路径显示图片
-        paste0('<img src="', local_img_path, 
-               '" width="100" height="100" style="object-fit:cover;"/>')
-      } else {
-        # 如果图片不存在，返回占位图片或空字符串
-        '<img src="placeholder.png" width="100" height="100" style="object-fit:cover;"/>'
-      }
-    })
-    
     # 检查 inventory_data 是否为空
     if (nrow(inventory_data) == 0) {
       return(datatable(data.frame(信息 = "没有数据可显示"), options = list(dom = 't')))
+    } else {
+      # 初始化 ItemImage 列为本地图片链接或占位图
+      inventory_data$ItemImage <- sapply(1:nrow(inventory_data), function(i) {
+        img_filename <- inventory_data$ItemImagePath[i]
+        local_img_path <- file.path("image_cache", paste0(img_filename, ".jpg"))  # 修改路径格式
+        
+        if (file.exists(file.path("./www", local_img_path))) {
+          # 使用本地图片路径显示图片
+          paste0('<img src="', local_img_path, 
+                 '" width="50" height="50" style="object-fit:cover;"/>')
+        } else {
+          # 使用在线占位图片
+          '<img src="https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image" width="50" height="50" style="object-fit:cover;"/>'
+        }
+      })
+      
+      # 修改列名以显示中文
+      inventory_data <- inventory_data %>% select(-ItemImagePath)
+      inventory_data <- map_column_names(inventory_data, column_mapping)
+      
+      # 渲染数据表格
+      datatable(
+        inventory_data,
+        escape = FALSE,  # 禁用 HTML 转义
+        selection = 'single'
+      )
     }
-    
-    # 修改列名以显示中文（使用映射函数）
-    inventory_data <- inventory_data %>% select(-ItemImagePath)
-    inventory_data <- map_column_names(inventory_data, column_mapping)
-    
-    # 渲染数据表格
-    datatable(
-      inventory_data,
-      escape = FALSE,  # 禁用 HTML 转义
-      selection = 'single'
-    )
   })
-
-  
-  
-  
-  
   
   # Refresh inventory data every 5 minutes
   observe({
@@ -308,9 +301,10 @@ server <- function(input, output, session) {
     # 渲染图片列为 HTML
     items$ItemImage <- sapply(items$ItemImage, function(img) {
       if (!is.na(img) && nzchar(img)) {
-        paste0('<img src="', img, '" width="100" height="100"/>')
+        paste0('<img src="', img, '" width="50" height="50"/>')
       } else {
-        ""
+        # 使用在线占位图片
+        '<img src="https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image" width="50" height="50" style="object-fit:cover;"/>'
       }
     })
     
@@ -319,16 +313,10 @@ server <- function(input, output, session) {
     if("ItemImagePath" %in% colnames(items)) items <- items %>% select(-ItemImagePath)
     
     # 渲染数据表格
-    datatable(
-      items,
-      escape = FALSE,  # 禁用 HTML 转义
-      selection = "multiple", 
-      options = list(
-        autoWidth = TRUE, responsive = TRUE,
-        columnDefs = list(
-          list(targets = which(names(items) == "ItemImage"), className = "dt-center")
-        )
-      )
+       datatable(
+        items,
+        escape = FALSE,  # 禁用 HTML 转义
+        selection = 'single'
     )
   })
   
@@ -440,11 +428,6 @@ server <- function(input, output, session) {
       ItemImagePath = character(),
       stringsAsFactors = FALSE
     ))
-    
-    # Update the filtered DT table
-    output$filtered_inventory_table <- renderDT({
-      datatable(filtered_inventory(), selection = 'single', rownames = FALSE)
-    })
   })
   
   # Generate Barcode based on SKU
@@ -456,7 +439,7 @@ server <- function(input, output, session) {
   
   observeEvent(input$export_btn, {
     req(input$new_sku, input$new_quantity)
-    pdf_file <- export_barcode_pdf(input$new_sku, input$new_quantity, font_family)
+    pdf_file <- export_barcode_pdf(input$new_sku, input$new_quantity)
     pdf_file_path(pdf_file)
     show_custom_notification("条形码已导出为PDF!")
     shinyjs::enable("barcode_pdf")

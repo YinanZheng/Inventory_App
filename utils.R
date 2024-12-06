@@ -6,8 +6,3 @@ map_column_names <- function(data, column_mapping) {
   })
   setNames(data, mapped_columns)  # 更新列名
 }
-
-generate_datatable <- function(data, column_mapping, selectable = TRUE) {
-  data <- map_column_names(data, column_mapping)
-  datatable(data, selection = if (selectable) 'single' else 'none', rownames = FALSE)
-}

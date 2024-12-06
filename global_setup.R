@@ -11,10 +11,22 @@ setup_google_auth <- function(email) {
 }
 
 # Font setup
-setup_fonts <- function(font_name, font_path) {
-  if (!file.exists(font_path)) {
-    stop(paste("字体文件不存在:", font_path))
+setup_fonts <- function(font_names, font_dir) {
+  if (length(font_names) == 0) {
+    stop("字体名称列表不能为空")
   }
-  font_add(font_name, font_path)
+  
+  if (!dir.exists(font_dir)) {
+    stop(paste("字体目录不存在:", font_dir))
+  }
+  
+  for (font_name in font_names) {
+    font_path <- file.path(font_dir, paste0(font_name, ".ttf"))
+    if (!file.exists(font_path)) {
+      stop(paste("字体文件不存在:", font_path))
+    }
+    font_add(font_name, font_path)
+  }
+  
   showtext_auto()
 }
