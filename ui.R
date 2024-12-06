@@ -18,8 +18,9 @@ ui <- fluidPage(
         column(12, textInput("new_name", "商品名:"))
       ),
       fluidRow(
-        column(6, numericInput("new_quantity", "数量:", value = 1, min = 1, step = 1)),
-        column(6, numericInput("new_cost", "成本:", value = 0, min = 0, max = 999, step = 1))
+        column(4, numericInput("new_quantity", "数量:", value = 1, min = 1, step = 1)),
+        column(4, numericInput("new_cost", "成本:", value = 0, min = 0, max = 999, step = 1)),
+        column(4, numericInput("shipping_cost", "运费", value = 0, min = 0, step = 1))
       ),
       textInput("new_sku", "SKU(自动生成):", value = ""),
       fileInput("new_item_image", "商品图片:"),

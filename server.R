@@ -242,8 +242,9 @@ server <- function(input, output, session) {
   })
   
   output$total_cost <- renderText({
-    total <- sum(added_items()$Quantity * added_items()$Cost)
-    paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE))
+    total <- sum(added_items()$Quantity * added_items()$Cost) + input$shipping_cost
+    paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE), 
+           "（其中包含运费: ¥", input$shipping_cost, ")")
   })
   
   # Handle row selection in filtered inventory table
