@@ -7,8 +7,16 @@ ui <- fluidPage(
   sidebarLayout(
     sidebarPanel(
       fluidRow(
-        column(12, selectizeInput("new_maker", "供应商:", choices = NULL, 
-                                  options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500)))
+        column(10, 
+               selectizeInput("new_maker", "供应商:", choices = NULL, 
+                              options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+        ),
+        column(2, 
+               div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
+                   actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
+                                style = "font-size: 14px; width: 100%; max-width: 70px; height: 34px; padding: 0px; margin-top: 25px;")
+               )
+        )
       ),
       fluidRow(
         column(6, uiOutput("major_type_ui")), ## 大类
