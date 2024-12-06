@@ -224,7 +224,7 @@ server <- function(input, output, session) {
     datatable(
       items,
       escape = FALSE,  # 禁用 HTML 转义
-      selection = 'single'
+      selection = 'multiple'
     )
   })
   
