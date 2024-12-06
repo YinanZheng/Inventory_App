@@ -1,3 +1,5 @@
+# barcode_functions.R
+
 export_barcode_pdf <- function(sku, quantity) {
   # Create a temporary file path for the PDF
   pdf_file <- tempfile(fileext = ".pdf")
@@ -35,5 +37,3 @@ export_barcode_pdf <- function(sku, quantity) {
   # Return the PDF file path
   pdf_file
 }
-
-export_barcode_pdf(sku, 5)
