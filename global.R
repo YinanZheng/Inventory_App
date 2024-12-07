@@ -14,7 +14,7 @@ library(stringi)
 library(baRcodeR)
 
 # Source all modular functions
-source("supplier_module.R")
+source("./modules/supplier_module.R")
 source("utils.R")
 
 # Google IDs

@@ -11,9 +11,6 @@ server <- function(input, output, session) {
   #   inventory(read_sheet(inventory_sheet_id))
   # })
   
-  # Flag to determine if SKU should be auto-generated
-  auto_generate_sku <- reactiveVal(TRUE)
-  
   ## 供应商模块
   supplier_module(input, output, session, maker_sheet_id)
   
@@ -82,7 +79,6 @@ server <- function(input, output, session) {
       selected_data <- filtered_inventory()[selected_row, ]
       
       # Update the input fields in the sidebar
-      auto_generate_sku(FALSE)  # Disable auto generation of SKU when selecting a record
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
@@ -91,9 +87,6 @@ server <- function(input, output, session) {
       updateTextInput(session, "new_sku", value = selected_data$SKU)
     }
   })
-  
-  
-  
   
   # Reactive value to store added items
   added_items <- reactiveVal(create_empty_inventory())
@@ -117,6 +110,13 @@ server <- function(input, output, session) {
     
     if (is.null(input$new_sku) || input$new_sku == "") {
       show_custom_notification("请确保SKU正常生成！", type = "error")
+      return()
+    }
+    
+    # 检查 SKU 是否已存在于 added_items 中
+    existing_skus <- added_items()$SKU
+    if (input$new_sku %in% existing_skus) {
+      show_custom_notification(paste("SKU 已存在:", input$new_sku, "无法重复添加！"), type = "error")
       return()
     }
     
@@ -192,8 +192,9 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Upload images to Google Drive
     added_items_df <- added_items()
+    
+    # Upload images to Google Drive
     for (i in 1:nrow(added_items_df)) {
       if (!is.na(added_items_df$ItemImagePath[i])) {
         tryCatch({
@@ -208,7 +209,6 @@ server <- function(input, output, session) {
     }
     
     # Update the Google Sheet with the added items (excluding Maker and ItemImage)
-    # tryCatch({
     # Loop through added items to either update or add
     for (i in 1:nrow(added_items_df)) {
       sku <- added_items_df$SKU[i]
@@ -227,6 +227,18 @@ server <- function(input, output, session) {
             range = paste0("E", sheet_range + 1), 
             col_names = FALSE 
           )
+          
+          # Update Image if new image uploaded
+          if (!is.na(added_items_df$ItemImagePath[i])) {
+            range_write(
+              ss = inventory_sheet_id,
+              data = data.frame(added_items_df$ItemImagePath[i]),
+              sheet = "Sheet1",
+              range = paste0("G", sheet_range + 1),
+              col_names = FALSE
+            )
+            show_custom_notification(paste("图片更新成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
+          }
           show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", updated_quantity), type = "message")
         } else {
           show_custom_notification(paste("找到多条记录SKU:", sku), type = "error")
@@ -243,9 +255,6 @@ server <- function(input, output, session) {
     # Clear the added items after confirming
     added_items(create_empty_inventory())
   })
-  
-  
-  
   
   
   # Generate Barcode based on SKU
@@ -280,15 +289,14 @@ server <- function(input, output, session) {
   observeEvent({input$new_cost; input$new_major_type; input$new_minor_type; input$new_name}, {
     req(input$new_major_type, input$new_minor_type, input$new_name, input$new_cost)
     
-    # Only generate SKU if auto_generate_sku is TRUE
-    if (auto_generate_sku()) {
-      sku <- generate_sku(item_type_data(), 
-                          input$new_major_type, 
-                          input$new_minor_type, 
-                          input$new_name, 
-                          input$new_cost)
-      updateTextInput(session, "new_sku", value = sku)
-    }
+    
+    sku <- generate_sku(item_type_data(),
+                        input$new_major_type,
+                        input$new_minor_type,
+                        input$new_name,
+                        input$new_cost)
+    updateTextInput(session, "new_sku", value = sku)
+    
   })
   
   
@@ -304,10 +312,8 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = "")
     shinyjs::reset("new_item_image")
     
-    auto_generate_sku(TRUE)  # 恢复 SKU 自动生成状态
-
     added_items(create_empty_inventory()) # 使用统一的空表函数
-  
+    
     inventory(read_sheet(inventory_sheet_id))
     
     output$filtered_inventory_table <- renderDT({
