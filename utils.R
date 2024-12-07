@@ -5,19 +5,19 @@ setup_google_auth <- function(email) {
   drive_auth(cache = ".secrets", email = email)
 }
 
-# Map column names
+# Map column names and filter only mapped columns
 map_column_names <- function(data, column_mapping) {
-  existing_columns <- names(data)
+  # 获取 column_mapping 中的列名
+  mapped_columns <- intersect(names(column_mapping), names(data))
   
-  mapped_columns <- sapply(existing_columns, function(col) {
-    if (!is.null(column_mapping[[col]])) {
-      return(column_mapping[[col]])  # 如果有映射，使用映射的列名
-    } else {
-      return(col)  # 否则，保留原始列名
-    }
-  })
+  # 如果没有匹配的列，返回空表
+  if (length(mapped_columns) == 0) {
+    return(data.frame())
+  }
   
-  setNames(data, mapped_columns)  # 更新列名
+  # 筛选并重命名列
+  data <- data[, mapped_columns, drop = FALSE]  # 只保留映射中提到的列
+  setNames(data, column_mapping[mapped_columns])  # 更新列名
 }
 
 # Generate Code 128 barcode PDF
@@ -162,4 +162,20 @@ remove_tone <- function(text) {
   text <- stri_replace_all_regex(text, "Ū|Ú|Ǔ|Ù|U", "U")
   text <- stri_replace_all_regex(text, "Ǖ|Ǘ|Ǚ|Ǜ|Ü", "U")
   return(text)
+}
+
+# 定义空表模板函数
+create_empty_inventory <- function() {
+  data.frame(
+    SKU = character(),
+    Maker = character(),
+    MajorType = character(),
+    MinorType = character(),
+    ItemName = character(),
+    Quantity = integer(),
+    Cost = integer(),
+    ItemImage = character(),
+    ItemImagePath = character(),
+    stringsAsFactors = FALSE
+  )
 }

@@ -5,6 +5,12 @@ server <- function(input, output, session) {
   item_type_data <- reactive(read_sheet(item_type_sheet_id))
   inventory <- reactiveVal(read_sheet(inventory_sheet_id))
   
+  # # Refresh inventory data every 5 minutes
+  # observe({
+  #   invalidateLater(5 * 60 * 1000)
+  #   inventory(read_sheet(inventory_sheet_id))
+  # })
+  
   # Flag to determine if SKU should be auto-generated
   auto_generate_sku <- reactiveVal(TRUE)
   
@@ -36,11 +42,17 @@ server <- function(input, output, session) {
   # Filter inventory based on major and minor type
   filtered_inventory <- reactive({
     req(input$new_major_type, input$new_minor_type)
-    if (input$new_major_type == "" || input$new_minor_type == "") {
-      return(inventory())
-    }
-    inventory() %>%
+    
+    # 过滤结果
+    result <- inventory() %>%
       filter(MajorType == input$new_major_type, MinorType == input$new_minor_type)
+    
+    # 如果过滤结果为空，返回空表
+    if (nrow(result) == 0) {
+      return(create_empty_inventory())
+    }
+    
+    return(result)
   })
   
   # Render filtered inventory with column name mapping
@@ -58,10 +70,8 @@ server <- function(input, output, session) {
     
     inventory_data <- filtered_inventory()
     
-    # 检查 inventory_data 是否为空
-    if (nrow(inventory_data) == 0) {
-      return(datatable(data.frame(信息 = "没有数据可显示"), options = list(dom = 't')))
-    } else {
+    if(nrow(inventory_data) != 0)
+    {
       # 初始化 ItemImage 列为本地图片链接或占位图
       inventory_data$ItemImage <- sapply(1:nrow(inventory_data), function(i) {
         img_filename <- inventory_data$ItemImagePath[i]
@@ -76,42 +86,17 @@ server <- function(input, output, session) {
           '<img src="https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image" width="50" height="50" style="object-fit:cover;"/>'
         }
       })
-      
-      # 修改列名以显示中文
-      inventory_data <- inventory_data %>% select(-ItemImagePath)
-      inventory_data <- map_column_names(inventory_data, column_mapping)
-      
-      # 渲染数据表格
-      datatable(
-        inventory_data,
-        escape = FALSE,  # 禁用 HTML 转义
-        selection = 'single'
-      )
     }
+      
+    inventory_data <- map_column_names(inventory_data, column_mapping)
+    
+    # 渲染数据表格
+    datatable(
+      inventory_data,
+      escape = FALSE,  # 禁用 HTML 转义
+      selection = 'single'
+    )
   })
-  
-  # Refresh inventory data every 5 minutes
-  observe({
-    invalidateLater(5 * 60 * 1000)
-    inventory(read_sheet(inventory_sheet_id))
-  })
-  
-  # Cache for storing image base64 data
-  image_cache <- reactiveValues()
-  
-  # Function to render item image
-  render_item_image <- function(image_id) {
-    if (is.na(image_id)) return(NULL)
-    if (!is.null(image_cache[[image_id]])) {
-      return(tags$img(src = image_cache[[image_id]], width = "200px"))
-    }
-    tryCatch({
-      image_cache[[image_id]] <- convert_image_url_to_base64(image_id)
-      tags$img(src = image_base64, width = "200px")
-    }, error = function(e) {
-      NULL
-    })
-  }
   
   # Reactive value to store added items
   added_items <- reactiveVal(data.frame(
@@ -333,7 +318,6 @@ server <- function(input, output, session) {
       Cost = integer(),
       ItemImage = character(),
       ItemImagePath = character(),
-      stringsAsFactors = FALSE
     ))
   })
   
