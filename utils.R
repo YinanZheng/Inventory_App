@@ -145,3 +145,21 @@ show_custom_notification <- function(message, type = "message") {
     duration = 10
   )
 }
+
+# Remove tone of letters
+remove_tone <- function(text) {
+  # 替换规则：音调字母 -> 无音调字母
+  text <- stri_replace_all_regex(text, "ā|á|ǎ|à|a", "a")
+  text <- stri_replace_all_regex(text, "ē|é|ě|è|e", "e")
+  text <- stri_replace_all_regex(text, "ī|í|ǐ|ì|i", "i")
+  text <- stri_replace_all_regex(text, "ō|ó|ǒ|ò|o", "o")
+  text <- stri_replace_all_regex(text, "ū|ú|ǔ|ù|u", "u")
+  text <- stri_replace_all_regex(text, "ǖ|ǘ|ǚ|ǜ|ü", "u")
+  text <- stri_replace_all_regex(text, "Ā|Á|Ǎ|À|A", "A")
+  text <- stri_replace_all_regex(text, "Ē|É|Ě|È|E", "E")
+  text <- stri_replace_all_regex(text, "Ī|Í|Ǐ|Ì|I", "I")
+  text <- stri_replace_all_regex(text, "Ō|Ó|Ǒ|Ò|O", "O")
+  text <- stri_replace_all_regex(text, "Ū|Ú|Ǔ|Ù|U", "U")
+  text <- stri_replace_all_regex(text, "Ǖ|Ǘ|Ǚ|Ǜ|Ü", "U")
+  return(text)
+}

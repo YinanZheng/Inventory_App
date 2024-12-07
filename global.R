@@ -10,9 +10,11 @@ library(digest) # For has value
 library(magick) # For compression
 library(googlesheets4)
 library(googledrive)
+library(stringi)
 library(baRcodeR)
 
 # Source all modular functions
+source("supplier_module.R")
 source("utils.R")
 
 # Google IDs

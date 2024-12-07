@@ -1,59 +1,16 @@
 # Define server logic
 server <- function(input, output, session) {
   # Load data
+  maker_list <- reactive(read_sheet(maker_sheet_id))
   item_type_data <- reactive(read_sheet(item_type_sheet_id))
   inventory <- reactiveVal(read_sheet(inventory_sheet_id))
   
   # Flag to determine if SKU should be auto-generated
   auto_generate_sku <- reactiveVal(TRUE)
   
-  # Function to update the maker select input choices
-  update_maker_choices <- function() {
-    maker_list <- reactive(read_sheet(maker_sheet_id))
-    maker_data <- maker_list()  # Use the reactive value
-    sorted_data <- maker_data[order(maker_data$Pinyin), ]
-    choices <- setNames(sorted_data$Maker, paste0(sorted_data$Maker, "(", sorted_data$Pinyin, ")"))
-    updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
-  }
+  ## 供应商模块
+  supplier_module(input, output, session, maker_sheet_id)
   
-  # Update maker select input choices on app start or when maker_list changes
-  observe({
-    update_maker_choices()
-  })
-  
-  # 点击 "添加供应商" 按钮时弹出模态框
-  observeEvent(input$add_supplier_btn, {
-    showModal(modalDialog(
-      title = "添加新供应商",
-      textInput("new_supplier_name", "请输入新供应商名称"),
-      textInput("new_supplier_pinyin", "请输入拼音（可选）"),  # 新增拼音输入框，允许为空
-      footer = tagList(
-        modalButton("取消"),
-        actionButton("submit_supplier", "提交", class = "btn-primary")
-      )
-    ))
-  })
-  
-  # 处理提交供应商的事件
-  observeEvent(input$submit_supplier, {
-    new_supplier <- input$new_supplier_name
-    pinyin_name <- input$new_supplier_pinyin  # 获取用户输入的拼音（可以为空）
-    
-    if (new_supplier != "") {
-      sheet_data <- data.frame(Maker = new_supplier, Pinyin = pinyin_name)
-      sheet_append(maker_sheet_id, sheet_data)
-      show_custom_notification("新供应商添加成功！", type = "message")
-      update_maker_choices() # 重新加载供应商列表并更新下拉菜单
-      removeModal() # 关闭模态框
-    } else {
-      showModal(modalDialog(
-        title = "错误", 
-        "供应商名称不能为空。",
-        easyClose = TRUE, 
-        footer = NULL
-      ))
-    }
-  })
   
   # Render Major Type Dropdown
   output$major_type_ui <- renderUI({
