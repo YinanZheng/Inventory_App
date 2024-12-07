@@ -5,7 +5,7 @@ supplier_module <- function(input, output, session, maker_sheet_id) {
   
   # 更新供应商下拉选项函数
   update_maker_choices <- function(maker_data) {
-    sorted_data <- maker_data[order(maker_data$Maker), ]
+    sorted_data <- maker_data[order(maker_data$Pinyin), ]
     choices <- setNames(sorted_data$Maker, paste0(sorted_data$Maker, "(", sorted_data$Pinyin, ")"))
     updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
   }

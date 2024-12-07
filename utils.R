@@ -179,3 +179,59 @@ create_empty_inventory <- function() {
     stringsAsFactors = FALSE
   )
 }
+
+# 通用函数：渲染图片列（支持本地图片路径和 URL/Base64 图片）
+render_image_column <- function(image_column, 
+                                is_local = FALSE, 
+                                local_image_dir = "image_cache", 
+                                placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
+  sapply(image_column, function(img) {
+    if (is.na(img) || img == "") {
+      # 占位图片逻辑
+      return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
+    }
+    
+    if (is_local) {
+      # 本地图片逻辑
+      local_img_path <- file.path(local_image_dir, paste0(img, ".jpg"))
+      # print(local_img_path)
+      if (file.exists(file.path("./www", local_img_path))) {
+        return(paste0('<img src="', local_img_path, '" width="50" height="50" style="object-fit:cover;"/>'))
+      } else {
+        # 本地图片不存在时返回占位图片
+        return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
+      }
+    } else {
+      # 远程 URL 或 Base64 图片逻辑
+      return(paste0('<img src="', img, '" width="50" height="50" style="object-fit:cover;"/>'))
+    }
+  })
+}
+
+# 通用函数：渲染表格（支持图片列处理和列名映射）
+render_table_with_images <- function(data, 
+                                     column_mapping, 
+                                     image_column = NULL, 
+                                     is_local = FALSE, 
+                                     local_image_dir = "image_cache", 
+                                     placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
+  if (!is.null(image_column) && nrow(data) > 0) {
+    # 渲染图片列
+    data[[image_column]] <- render_image_column(
+      data[[image_column]],
+      is_local = is_local,
+      local_image_dir = local_image_dir,
+      placeholder = placeholder
+    )
+  }
+  
+  # 映射列名
+  data <- map_column_names(data, column_mapping)
+  
+  # 返回渲染后的 datatable 对象
+  datatable(
+    data,
+    escape = FALSE,  # 禁用 HTML 转义
+    selection = 'single'
+  )
+}

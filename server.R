@@ -57,7 +57,6 @@ server <- function(input, output, session) {
   
   # Render filtered inventory with column name mapping
   output$filtered_inventory_table <- renderDT({
-    # 列映射
     column_mapping <- list(
       SKU = "条形码",
       MajorType = "大类",
@@ -65,52 +64,39 @@ server <- function(input, output, session) {
       ItemName = "商品名",
       Quantity = "库存数",
       Cost = "采购成本",
-      ItemImage = "商品图片"
+      ItemImagePath = "商品图片"
     )
     
-    inventory_data <- filtered_inventory()
-    
-    if(nrow(inventory_data) != 0)
-    {
-      # 初始化 ItemImage 列为本地图片链接或占位图
-      inventory_data$ItemImage <- sapply(1:nrow(inventory_data), function(i) {
-        img_filename <- inventory_data$ItemImagePath[i]
-        local_img_path <- file.path("image_cache", paste0(img_filename, ".jpg"))  # 修改路径格式
-        
-        if (file.exists(file.path("./www", local_img_path))) {
-          # 使用本地图片路径显示图片
-          paste0('<img src="', local_img_path, 
-                 '" width="50" height="50" style="object-fit:cover;"/>')
-        } else {
-          # 使用在线占位图片
-          '<img src="https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image" width="50" height="50" style="object-fit:cover;"/>'
-        }
-      })
-    }
-      
-    inventory_data <- map_column_names(inventory_data, column_mapping)
-    
-    # 渲染数据表格
-    datatable(
-      inventory_data,
-      escape = FALSE,  # 禁用 HTML 转义
-      selection = 'single'
+    render_table_with_images(
+      data = filtered_inventory(),
+      column_mapping = column_mapping,
+      image_column = "ItemImagePath",  # 指定图片列
+      is_local = TRUE  # 服务器已有图片处理
     )
   })
   
+  # Handle row selection in filtered inventory table
+  observeEvent(input$filtered_inventory_table_rows_selected, {
+    selected_row <- input$filtered_inventory_table_rows_selected
+    if (length(selected_row) > 0) {
+      selected_data <- filtered_inventory()[selected_row, ]
+      
+      # Update the input fields in the sidebar
+      auto_generate_sku(FALSE)  # Disable auto generation of SKU when selecting a record
+      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateNumericInput(session, "new_quantity", value = 0)
+      updateNumericInput(session, "new_cost", value = selected_data$Cost)
+      updateTextInput(session, "new_sku", value = selected_data$SKU)
+    }
+  })
+  
+  
+  
+  
   # Reactive value to store added items
-  added_items <- reactiveVal(data.frame(
-    SKU = character(),
-    Maker = character(),
-    MajorType = character(),
-    MinorType = character(),
-    ItemName = character(),
-    Quantity = integer(),
-    Cost = integer(),
-    ItemImage = character(),
-    ItemImagePath = character(),
-    stringsAsFactors = FALSE
-  ))
+  added_items <- reactiveVal(create_empty_inventory())
   
   # Handle add item button click
   observeEvent(input$add_btn, {
@@ -134,6 +120,7 @@ server <- function(input, output, session) {
       return()
     }
     
+    # 转换图片为 Base64
     image_data <- if (!is.null(input$new_item_image)) {
       base64enc::dataURI(file = input$new_item_image$datapath, mime = input$new_item_image$type)
     } else {
@@ -148,8 +135,8 @@ server <- function(input, output, session) {
       ItemName = input$new_name,
       Quantity = input$new_quantity,
       Cost = round(input$new_cost),
-      ItemImage = image_data,
-      ItemImagePath = if (!is.null(input$new_item_image)) input$new_item_image$datapath else NA,
+      ItemImage = image_data,  # 存储 Base64 编码的图片数据
+      ItemImagePath = if (!is.null(input$new_item_image)) input$new_item_image$datapath else NA, 
       stringsAsFactors = FALSE
     )
     
@@ -159,25 +146,6 @@ server <- function(input, output, session) {
   
   # Render added items table
   output$added_items_table <- renderDT({
-    
-    items <- added_items()
-    
-    # 如果数据框为空，初始化空数据框
-    if (nrow(items) == 0) {
-      items <- data.frame(
-        SKU = character(),
-        Maker = character(),
-        MajorType = character(),
-        MinorType = character(),
-        ItemName = character(),
-        Quantity = integer(),
-        Cost = numeric(),
-        ItemImage = character(),
-        stringsAsFactors = FALSE
-      )
-    }
-    
-    # 列映射
     column_mapping <- list(
       SKU = "条形码",
       Maker = "供应商",
@@ -189,25 +157,11 @@ server <- function(input, output, session) {
       ItemImage = "商品图片"
     )
     
-    # 渲染图片列为 HTML
-    items$ItemImage <- sapply(items$ItemImage, function(img) {
-      if (!is.na(img) && nzchar(img)) {
-        paste0('<img src="', img, '" width="50" height="50"/>')
-      } else {
-        # 使用在线占位图片
-        '<img src="https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image" width="50" height="50" style="object-fit:cover;"/>'
-      }
-    })
-    
-    items <- map_column_names(items, column_mapping)
-    
-    if("ItemImagePath" %in% colnames(items)) items <- items %>% select(-ItemImagePath)
-    
-    # 渲染数据表格
-    datatable(
-      items,
-      escape = FALSE,  # 禁用 HTML 转义
-      selection = 'multiple'
+    render_table_with_images(
+      data = added_items(),
+      column_mapping = column_mapping,
+      image_column = "ItemImage",  # 指定图片列
+      is_local = FALSE  # URL 或 Base64 图片处理
     )
   })
   
@@ -228,23 +182,6 @@ server <- function(input, output, session) {
     total <- sum(added_items()$Quantity * added_items()$Cost) + input$shipping_cost
     paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE), 
            "（其中包含运费: ¥", input$shipping_cost, ")")
-  })
-  
-  # Handle row selection in filtered inventory table
-  observeEvent(input$filtered_inventory_table_rows_selected, {
-    selected_row <- input$filtered_inventory_table_rows_selected
-    if (length(selected_row) > 0) {
-      selected_data <- filtered_inventory()[selected_row, ]
-      
-      # Update the input fields in the sidebar
-      auto_generate_sku(FALSE)  # Disable auto generation of SKU when selecting a record
-      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
-      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
-      updateNumericInput(session, "new_quantity", value = 0)
-      updateNumericInput(session, "new_cost", value = selected_data$Cost)
-      updateTextInput(session, "new_sku", value = selected_data$SKU)
-    }
   })
   
   # Handle confirm button click to update the database
@@ -303,23 +240,13 @@ server <- function(input, output, session) {
     
     inventory(read_sheet(inventory_sheet_id)) # Refresh the inventory to reflect any updates
     
-    # }, error = function(e) {
-    # show_custom_notification("更新数据库时出错!", type = "error")
-    # })
-    
     # Clear the added items after confirming
-    added_items(data.frame(
-      SKU = character(),
-      Maker = character(),
-      MajorType = character(),
-      MinorType = character(),
-      ItemName = character(),
-      Quantity = integer(),
-      Cost = integer(),
-      ItemImage = character(),
-      ItemImagePath = character(),
-    ))
+    added_items(create_empty_inventory())
   })
+  
+  
+  
+  
   
   # Generate Barcode based on SKU
   session$onFlushed(function() {
@@ -364,6 +291,9 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  
+  
   observeEvent(input$reset_btn, {
     updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
     updateSelectInput(session, "new_major_type", selected = NULL)
@@ -373,25 +303,30 @@ server <- function(input, output, session) {
     updateNumericInput(session, "new_cost", value = 0)
     updateTextInput(session, "new_sku", value = "")
     shinyjs::reset("new_item_image")
-    auto_generate_sku(TRUE)
     
-    added_items(data.frame(
-      SKU = character(),
-      Maker = character(),
-      MajorType = character(),
-      MinorType = character(),
-      ItemName = character(),
-      Quantity = integer(),
-      Cost = integer(),
-      ItemImage = character(),
-      ItemImagePath = character(),
-      stringsAsFactors = FALSE
-    ))
-    
+    auto_generate_sku(TRUE)  # 恢复 SKU 自动生成状态
+
+    added_items(create_empty_inventory()) # 使用统一的空表函数
+  
     inventory(read_sheet(inventory_sheet_id))
     
     output$filtered_inventory_table <- renderDT({
-      datatable(filtered_inventory(), selection = 'single', rownames = FALSE)
+      column_mapping <- list(
+        SKU = "条形码",
+        MajorType = "大类",
+        MinorType = "小类",
+        ItemName = "商品名",
+        Quantity = "库存数",
+        Cost = "采购成本",
+        ItemImagePath = "商品图片"
+      )
+      
+      render_table_with_images(
+        data = filtered_inventory(),
+        column_mapping = column_mapping,
+        image_column = "ItemImagePath",  # 指定图片列
+        is_local = TRUE  # 服务器已有图片处理
+      )
     })
     
     show_custom_notification("已重置所有输入和状态！", type = "message")
