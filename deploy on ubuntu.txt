@@ -1,0 +1,76 @@
+sudo apt update
+sudo apt upgrade -y
+sudo apt install -y libcurl4-openssl-dev libssl-dev libxml2-dev
+
+### Install Shiny Server
+sudo apt install -y gdebi-core
+wget https://download3.rstudio.org/ubuntu-20.04/amd64/shiny-server-1.5.22.1017-amd64.deb
+sudo gdebi shiny-server-1.5.22.1017-amd64.deb
+sudo apt-get install libmagick++-dev
+
+### Install R and packages
+sudo apt-get install r-base
+
+### Git
+sudo apt update
+sudo apt install git
+
+### sql
+sudo apt install mysql-server
+sudo apt install -y libmariadb-dev libmariadb-dev-compat
+
+### Install necessary R packages
+mkdir -p ~/R/x86_64-pc-linux-gnu-library/4.3
+
+### Swap disk space to allow package installation
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
+
+sudo su - -c "R -e \"install.packages(c('shiny', 'shinyjs', 'shinyWidgets', 'dplyr', 'DT', 'digest', 'magick', 'DBI', 'RMySQL', 'baRcodeR'), repos='https://cran.rstudio.com/', lib='~/R/x86_64-pc-linux-gnu-library/4.3')\""
+
+### Inactive is good
+sudo ufw status
+
+
+### Edit user from shiny to ubuntu
+sudo nano /etc/shiny-server/shiny-server.conf
+sudo systemctl restart shiny-server
+
+
+### Make a testing app
+sudo mkdir /srv/shiny-server/test-app
+sudo chown -R ubuntu:ubuntu /srv/shiny-server/test-app
+sudo chmod -R 755 /srv/shiny-server/test-app
+
+
+### My app
+sudo mkdir /srv/shiny-server/inventory
+sudo chown -R ubuntu:ubuntu /srv/shiny-server/inventory
+sudo chmod -R 755 /srv/shiny-server/inventory
+
+
+### Sync code
+cd /srv/shiny-server/inventory
+git clone https://github.com/YinanZheng/Inventory_App.git .
+git pull origin main
+
+
+###
+Rscript image_cache.R
+
+
+
+### Log
+sudo tail -f /var/log/shiny-server/shiny-server.log
+
+sudo rm /var/log/shiny-server/*.log
+
+
+sudo systemctl restart shiny-server
+
+
+## Log in to MySQL:
+sudo mysql -u root -p
+goldenbeanllc

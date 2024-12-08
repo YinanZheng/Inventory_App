@@ -1,20 +1,36 @@
+# Connect to MySQL Database
+con <- dbConnect(
+  RMariaDB::MySQL(),
+  dbname = "inventory_system",
+  host = "localhost",
+  user = "root",
+  password = "goldenbeanllc"
+)
+
 # Define server logic
 server <- function(input, output, session) {
-  # Load data
-  maker_list <- reactive(read_sheet(maker_sheet_id))
-  item_type_data <- reactive(read_sheet(item_type_sheet_id))
-  inventory <- reactiveVal(read_sheet(inventory_sheet_id))
+  # Load data from MySQL
+  maker_list <- reactive({
+    dbGetQuery(con, "SELECT * FROM maker_list")
+  })
   
-  # # Refresh inventory data every 5 minutes
-  # observe({
-  #   invalidateLater(5 * 60 * 1000)
-  #   inventory(read_sheet(inventory_sheet_id))
-  # })
+  item_type_data <- reactive({
+    dbGetQuery(con, "SELECT * FROM item_type_data")
+  })
+  
+  inventory <- reactiveVal({
+    dbGetQuery(con, "SELECT * FROM inventory")
+  })
+  
+  # Reactive value to store added items
+  added_items <- reactiveVal(create_empty_inventory()) 
+  
   
   ## 供应商模块
   supplier_module(input, output, session, maker_sheet_id)
   
   
+  ## 大小类模块
   # Render Major Type Dropdown
   output$major_type_ui <- renderUI({
     type_data <- item_type_data()
@@ -36,6 +52,8 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  ## 库存表渲染模块
   # Filter inventory based on major and minor type
   filtered_inventory <- reactive({
     req(input$new_major_type, input$new_minor_type)
@@ -88,9 +106,8 @@ server <- function(input, output, session) {
     }
   })
   
-  # Reactive value to store added items
-  added_items <- reactiveVal(create_empty_inventory())
   
+  ## 入库表渲染模块
   # Handle add item button click
   observeEvent(input$add_btn, {
     if (is.null(input$new_name) || input$new_name == "") {
@@ -336,5 +353,10 @@ server <- function(input, output, session) {
     })
     
     show_custom_notification("已重置所有输入和状态！", type = "message")
+  })
+  
+  # Disconnect from the database on app stop
+  onStop(function() {
+    dbDisconnect(con)
   })
 }
