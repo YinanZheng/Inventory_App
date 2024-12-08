@@ -1,12 +1,13 @@
 # 定义供应商模块
 supplier_module <- function(input, output, session, maker_sheet_id) {
   # Reactive: 供应商数据
-  maker_list <- reactive(read_sheet(maker_sheet_id))
+  maker_list <- reactive({
+    dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
+  })  
   
   # 更新供应商下拉选项函数
   update_maker_choices <- function(maker_data) {
-    sorted_data <- maker_data[order(maker_data$Pinyin), ]
-    choices <- setNames(sorted_data$Maker, paste0(sorted_data$Maker, "(", sorted_data$Pinyin, ")"))
+    choices <- setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")"))
     updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
   }
   
@@ -54,30 +55,26 @@ supplier_module <- function(input, output, session, maker_sheet_id) {
     new_supplier <- input$new_supplier_name
     existing_suppliers <- maker_list()$Maker
     
-    if (new_supplier %in% existing_suppliers) {
-      showModal(modalDialog(
-        title = "错误",
-        paste0("供应商 '", new_supplier, "' 已经存在，请勿重复添加。"),
-        easyClose = TRUE,
-        footer = NULL
-      ))
-      return()
-    }
-    
-    # 自动生成拼音
-    pinyin_name <- remove_tone(stri_trans_general(new_supplier, "Latin"))
-    
     if (new_supplier != "") {
-      # 添加新供应商到 Google Sheets
-      sheet_data <- data.frame(Maker = new_supplier, Pinyin = pinyin_name)
-      sheet_append(maker_sheet_id, sheet_data)
-      
-      # 更新数据并刷新 UI
-      new_data <- read_sheet(maker_sheet_id)
-      update_maker_choices(new_data)
-      
-      show_custom_notification("新供应商添加成功！", type = "message")
-      removeModal()
+      # 添加新供应商到 MySQL 数据库
+      tryCatch({
+        dbExecute(con, "INSERT INTO maker_list (Name, Pinyin) VALUES (?, ?)", 
+                  params = list(new_supplier, pinyin_name))
+        
+        # 更新数据并刷新 UI
+        new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
+        update_maker_choices(new_data)
+        
+        show_custom_notification("新供应商添加成功！", type = "message")
+        removeModal()
+      }, error = function(e) {
+        showModal(modalDialog(
+          title = "错误",
+          paste0("添加供应商失败：", e$message),
+          easyClose = TRUE,
+          footer = NULL
+        ))
+      })
     } else {
       showModal(modalDialog(
         title = "错误",
