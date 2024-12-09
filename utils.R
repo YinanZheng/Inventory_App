@@ -49,6 +49,8 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
     stop("Output directory does not exist.")
   }
   
+  print(paste("Saving image to:", output_dir))
+  
   tryCatch({
     # Load the image
     img <- magick::image_read(file_path)
@@ -181,6 +183,7 @@ render_image_column <- function(image_column,
     } else {
       # 拼接完整的图片 URL
       img_path <- paste0(host_url, "/images/", basename(img))
+      print(img_path)
       paste0('<img src="', img_path, '" width="50" height="50" style="object-fit:cover;"/>')
     }
   }, USE.NAMES = FALSE)
