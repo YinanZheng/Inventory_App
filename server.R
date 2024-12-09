@@ -11,7 +11,7 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
-
+  
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
   })
@@ -142,17 +142,18 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
+    # 验证输入
     if (is.null(input$new_name) || input$new_name == "") {
       show_custom_notification("请填写正确商品名称！", type = "error")
       return()
     }
     
-    if (is.null(input$new_quantity) || input$new_quantity == "" || input$new_quantity == 0) {
+    if (is.null(input$new_quantity) || input$new_quantity <= 0) {
       show_custom_notification("请填写正确商品数量！", type = "error")
       return()
     }
     
-    if (is.null(input$new_cost) || input$new_cost == "" || input$new_cost > 999 || input$new_cost < 0) {
+    if (is.null(input$new_cost) || input$new_cost < 0 || input$new_cost > 999) {
       show_custom_notification("请填写正确商品成本！", type = "error")
       return()
     }
@@ -162,58 +163,46 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Check if the SKU already exists in added_items
+    # 检查是否存在重复的 SKU
     existing_skus <- added_items()$SKU
     if (input$new_sku %in% existing_skus) {
       show_custom_notification(paste("SKU 已存在:", input$new_sku, "无法重复添加！"), type = "error")
       return()
     }
     
-    # Initialize compressed image path as NA
-    compressed_image_path <- NA
+    # 初始化图片路径
+    new_image_path <- NA
     
-    if (!is.null(input$new_item_image) && !is.null(input$new_sku)) {
-      # Compress and save the image
-      compressed_image_path <- save_compressed_image(
-        file_path = input$new_item_image$datapath,
-        output_dir = "/var/www/images",
-        image_name = paste0(input$new_sku, ".jpg")
-      )
-      
-      if (is.null(compressed_image_path)) {
-        show_custom_notification("图片处理失败，请检查上传的文件格式！", type = "error")
-        return()
-      }
-      show_custom_notification("图片已成功压缩并存储！", type = "message")
-    } else {
-      compressed_image_path <- NA
-      show_custom_notification("未上传图片！", type = "message")
-    }
-    
-    # Handle image compression and save to public directory
+    # 处理图片（如果上传了图片）
     if (!is.null(input$new_item_image)) {
       tryCatch({
-        # Ensure the public directory exists
+        # 为图片生成唯一文件名
+        unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
         output_dir <- "/var/www/images"
+        final_image_path <- file.path(output_dir, unique_image_name)
+        
+        # 确保目录存在
         if (!dir.exists(output_dir)) {
           dir.create(output_dir, recursive = TRUE)
         }
         
-        # Compress and save the image
-        compressed_image_path <- save_compressed_image(
+        # 保存压缩后的图片
+        save_compressed_image(
           file_path = input$new_item_image$datapath,
           output_dir = output_dir,
-          image_name = paste0(input$new_sku, ".jpg")
+          image_name = unique_image_name
         )
         
-        show_custom_notification(paste0("图片已成功压缩并存储至：", compressed_image_path), type = "message")
+        new_image_path <- final_image_path
+        show_custom_notification("图片已成功处理并保存！", type = "message")
       }, error = function(e) {
         show_custom_notification("图片处理失败！", type = "error")
-        compressed_image_path <<- NA
       })
+    } else {
+      show_custom_notification("未上传图片，跳过图片处理。", type = "message")
     }
     
-    # Create a new item and add it to the reactive data frame
+    # 在图片处理完成后更新 `added_items`
     new_item <- data.frame(
       SKU = input$new_sku,
       Maker = input$new_maker,
@@ -222,11 +211,11 @@ server <- function(input, output, session) {
       ItemName = input$new_name,
       Quantity = input$new_quantity,
       Cost = round(input$new_cost, 2),
-      ItemImagePath = compressed_image_path,  # Store the path to the compressed image
+      ItemImagePath = new_image_path,
       stringsAsFactors = FALSE
     )
     
-    # Update the added items reactive value
+    # 更新 `added_items`
     added_items(bind_rows(added_items(), new_item))
   })
   
@@ -281,24 +270,6 @@ server <- function(input, output, session) {
     
     added_items_df <- added_items()
     
-    # Upload images to server
-    for (i in 1:nrow(added_items_df)) {
-      if (!is.na(added_items_df$ItemImagePath[i])) {
-        tryCatch({
-          compressed_image_path <- save_compressed_image(
-            file_path = added_items_df$ItemImagePath[i],
-            output_dir = "/var/www/images",
-            image_name = paste0(added_items_df$SKU[i], ".jpg")
-          )
-          added_items_df$ItemImagePath[i] <- compressed_image_path
-          show_custom_notification(paste("图片压缩成功! SKU:", added_items_df$SKU[i]), type = "message")
-        }, error = function(e) {
-          show_custom_notification(paste("图片压缩失败! SKU:", added_items_df$SKU[i]), type = "error")
-        })
-      }
-    }
-    
-    # Update the database
     for (i in 1:nrow(added_items_df)) {
       sku <- added_items_df$SKU[i]
       maker <- added_items_df$Maker[i]
@@ -309,38 +280,72 @@ server <- function(input, output, session) {
       cost <- added_items_df$Cost[i]
       new_image_path <- added_items_df$ItemImagePath[i]
       
-      # Check if the SKU already exists in the inventory
+      # 检查 SKU 是否已存在
       existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
       
+      # 如果 SKU 已存在，检查图片路径
       if (nrow(existing_item) > 0) {
-        # Update existing item
         new_quantity <- existing_item$Quantity + quantity
         new_ave_cost <- ((existing_item$Cost * existing_item$Quantity) + (cost * quantity)) / new_quantity
         
-        # 如果未上传新图片，保留现有图片路径 
-        if (is.na(image_path) || image_path == "") {
+        # 如果有新图片上传，为图片生成唯一路径
+        if (!is.na(new_image_path) && new_image_path != "") {
+          unique_image_name <- paste0(sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+          final_image_path <- file.path("/var/www/images", unique_image_name)
+          
+          tryCatch({
+            # 保存新图片
+            file.rename(new_image_path, final_image_path)
+            new_image_path <- final_image_path
+          }, error = function(e) {
+            show_custom_notification(paste("图片保存失败! SKU:", sku), type = "error")
+            new_image_path <- existing_item$ItemImagePath  # 回退为原始路径
+          })
+        } else {
+          # 未上传新图片，保留现有图片路径
           new_image_path <- existing_item$ItemImagePath
         }
         
-        dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ?, updated_at = NOW() WHERE SKU = ?",
+        # 更新库存数据
+        dbExecute(con, "UPDATE inventory 
+                      SET Quantity = ?, Cost = ?, ItemImagePath = ?, updated_at = NOW() 
+                      WHERE SKU = ?",
                   params = list(new_quantity, round(new_ave_cost, 2), new_image_path, sku))
         
         show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
       } else {
-        # Insert new item
+        # 如果 SKU 不存在，插入新商品
+        unique_image_name <- if (!is.na(new_image_path) && new_image_path != "") {
+          paste0(sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+        } else {
+          NA
+        }
+        
+        if (!is.na(unique_image_name)) {
+          final_image_path <- file.path("/var/www/images", unique_image_name)
+          
+          tryCatch({
+            # 保存新图片
+            file.rename(new_image_path, final_image_path)
+            new_image_path <- final_image_path
+          }, error = function(e) {
+            show_custom_notification(paste("新商品图片保存失败! SKU:", sku), type = "error")
+          })
+        }
+        
         dbExecute(con, "INSERT INTO inventory 
                       (SKU, Maker, MajorType, MinorType, ItemName, Quantity, Cost, ItemImagePath, created_at, updated_at) 
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
-                  params = list(sku, maker, major_type, minor_type, item_name, quantity, round(cost, 2), image_path))
+                  params = list(sku, maker, major_type, minor_type, item_name, quantity, round(cost, 2), new_image_path))
         
         show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", item_name), type = "message")
       }
     }
     
-    # Clear added items after confirmation
+    # 清空已添加商品
     added_items(create_empty_inventory())
     
-    # 刷新 inventory 数据
+    # 刷新库存数据
     inventory({
       dbGetQuery(con, "SELECT * FROM inventory")
     })
@@ -373,39 +378,39 @@ server <- function(input, output, session) {
     # Update the SKU input field
     updateTextInput(session, "new_sku", value = sku)
   })
-
-    # Generate Barcode based on SKU
-    session$onFlushed(function() {
-      shinyjs::disable("barcode_pdf")
-    })
-
-    pdf_file_path <- reactiveVal(NULL)
-
-    observeEvent(input$export_btn, {
-      req(input$new_sku, input$new_quantity)
-      pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
-      pdf_file_path(pdf_file)
-      show_custom_notification("条形码已导出为PDF!")
-      shinyjs::enable("barcode_pdf")
-    })
-
-    # Download PDF button
-    output$barcode_pdf <- downloadHandler(
-      filename = function() {
-        cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
-        basename(pdf_file_path())  # Use basename to just get the file name
-      },
-      content = function(file) {
-        # Ensure the file exists before copying
-        cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
-        file.copy(pdf_file_path(), file, overwrite = TRUE)
-      }
-    )
-
-
-
-
-
+  
+  # Generate Barcode based on SKU
+  session$onFlushed(function() {
+    shinyjs::disable("barcode_pdf")
+  })
+  
+  pdf_file_path <- reactiveVal(NULL)
+  
+  observeEvent(input$export_btn, {
+    req(input$new_sku, input$new_quantity)
+    pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
+    pdf_file_path(pdf_file)
+    show_custom_notification("条形码已导出为PDF!")
+    shinyjs::enable("barcode_pdf")
+  })
+  
+  # Download PDF button
+  output$barcode_pdf <- downloadHandler(
+    filename = function() {
+      cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
+      basename(pdf_file_path())  # Use basename to just get the file name
+    },
+    content = function(file) {
+      # Ensure the file exists before copying
+      cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
+      file.copy(pdf_file_path(), file, overwrite = TRUE)
+    }
+  )
+  
+  
+  
+  
+  
   observeEvent(input$reset_btn, {
     updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
     updateSelectInput(session, "new_major_type", selected = NULL)
@@ -415,9 +420,9 @@ server <- function(input, output, session) {
     updateNumericInput(session, "new_cost", value = 0)
     updateTextInput(session, "new_sku", value = "")
     shinyjs::reset("new_item_image")
-
+    
     added_items(create_empty_inventory()) # 使用统一的空表函数
-
+    
     # Render filtered inventory with column name mapping
     output$filtered_inventory_table <- renderDT({
       column_mapping <- list(
@@ -437,10 +442,10 @@ server <- function(input, output, session) {
         image_column = "ItemImagePath"  # Specify the image column
       )
     })
-
+    
     show_custom_notification("已重置所有输入和状态！", type = "message")
   })
-
+  
   # Disconnect from the database on app stop
   onStop(function() {
     dbDisconnect(con)
