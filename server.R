@@ -237,9 +237,9 @@ server <- function(input, output, session) {
     render_table_with_images(
       data = added_items(),
       column_mapping = column_mapping,
-      image_column = "ItemImagePath"  # Specify the correct image column
-    ) %>% 
-      datatable(editable = TRUE)  # 启用表格的可编辑功能
+      image_column = "ItemImagePath",
+      editable = TRUE 
+    )
   })
   
 
