@@ -467,6 +467,7 @@ server <- function(input, output, session) {
     dbGetQuery(con, "
     SELECT 
       unique_items.UniqueID AS '唯一物品编码',
+      unique_items.SKU AS '条形码', 
       unique_items.Status AS '当前状态',
       unique_items.DomesticEntryTime AS '国内仓入库时间',
       unique_items.DomesticExitTime AS '国内仓出库时间',
