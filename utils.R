@@ -94,6 +94,7 @@ generate_unique_code <- function(item_name, maker, length = 4) {
   
   # Generate a random alphanumeric code
   random_output <- paste0(sample(c(LETTERS, 0:9), length, replace = TRUE), collapse = "")
+  log_debug(paste("Random Code:", random_output))
   return(random_output)
 }
 
