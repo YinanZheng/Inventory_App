@@ -317,15 +317,15 @@ server <- function(input, output, session) {
         new_quantity <- existing_item$Quantity + quantity
         new_ave_cost <- ((existing_item$Cost * existing_item$Quantity) + (cost * quantity)) / new_quantity
         
-        dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ? WHERE SKU = ?",
-                  params = list(new_quantity, round(new_ave_cost, 2), image_path, sku))
-        
+        # 如果未上传新图片，保留现有图片路径
+        if (is.na(image_path) || image_path == "") {
+          dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ? WHERE SKU = ?",
+                    params = list(new_quantity, round(new_ave_cost, 2), existing_item$ItemImagePath, sku))
+        }
         
         # Update image path if a new image was uploaded
         if (!is.na(image_path)) {
-          dbExecute(con, "UPDATE inventory SET 
-                        ItemImagePath = ? 
-                        WHERE SKU = ?",
+          dbExecute(con, "UPDATE inventory SET ItemImagePath = ? WHERE SKU = ?",
                     params = list(image_path, sku))
         }
         
