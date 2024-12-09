@@ -163,57 +163,93 @@ server <- function(input, output, session) {
     }
     
     # 检查是否存在重复的 SKU
-    existing_skus <- added_items()$SKU
+    existing_items <- added_items()
+    existing_skus <- existing_items$SKU
+    
     if (input$new_sku %in% existing_skus) {
-      show_custom_notification(paste("SKU 已存在:", input$new_sku, "无法重复添加！"), type = "error")
-      return()
-    }
-    
-    # 初始化图片路径
-    new_image_path <- NA
-    
-    # 处理图片（如果上传了图片）
-    if (!is.null(input$new_item_image)) {
-      tryCatch({
-        # 为图片生成唯一文件名
-        unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-        output_dir <- "/var/www/images"
-        final_image_path <- file.path(output_dir, unique_image_name)
-        
-        # 保存压缩后的图片
-        save_compressed_image(
-          file_path = input$new_item_image$datapath,
-          output_dir = output_dir,
-          image_name = unique_image_name
-        )
-        
-        new_image_path <- final_image_path
-        show_custom_notification("图片已成功处理并保存！", type = "message")
-      }, error = function(e) {
-        show_custom_notification("图片处理失败！", type = "error")
-        log_debug(paste("Error in add_btn:", e$message))
-      })
+      # SKU 已存在，执行覆盖更新操作
+      sku_index <- which(existing_skus == input$new_sku)
+      
+      # 初始化图片路径
+      updated_image_path <- existing_items$ItemImagePath[sku_index]
+      
+      # 如果上传了图片，更新图片路径；否则保持原路径
+      if (!is.null(input$new_item_image)) {
+        tryCatch({
+          # 为图片生成唯一文件名
+          unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+          output_dir <- "/var/www/images"
+          final_image_path <- file.path(output_dir, unique_image_name)
+          
+          # 保存压缩后的图片
+          save_compressed_image(
+            file_path = input$new_item_image$datapath,
+            output_dir = output_dir,
+            image_name = unique_image_name
+          )
+          updated_image_path <- final_image_path
+          show_custom_notification("图片已成功更新并保存！", type = "message")
+        }, error = function(e) {
+          show_custom_notification("图片更新失败！", type = "error")
+          log_debug(paste("Error in add_btn:", e$message))
+        })
+      } 
+      
+      # 覆盖更新记录
+      existing_items[sku_index, ] <- data.frame(
+        SKU = input$new_sku,
+        Maker = input$new_maker,
+        MajorType = input$new_major_type,
+        MinorType = input$new_minor_type,
+        ItemName = input$new_name,
+        Quantity = input$new_quantity,
+        Cost = round(input$new_cost, 2),
+        ItemImagePath = updated_image_path,
+        stringsAsFactors = FALSE
+      )
+      
+      added_items(existing_items)
+      
+      show_custom_notification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
-      show_custom_notification("未上传图片，跳过图片处理。", type = "message")
+      # SKU 不存在，添加新记录
+      new_image_path <- NA
+      if (!is.null(input$new_item_image)) {
+        tryCatch({
+          unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+          output_dir <- "/var/www/images"
+          final_image_path <- file.path(output_dir, unique_image_name)
+          
+          save_compressed_image(
+            file_path = input$new_item_image$datapath,
+            output_dir = output_dir,
+            image_name = unique_image_name
+          )
+          new_image_path <- final_image_path
+          show_custom_notification("图片已成功处理并保存！", type = "message")
+        }, error = function(e) {
+          show_custom_notification("图片处理失败！", type = "error")
+        })
+      }
+      
+      new_item <- data.frame(
+        SKU = input$new_sku,
+        Maker = input$new_maker,
+        MajorType = input$new_major_type,
+        MinorType = input$new_minor_type,
+        ItemName = input$new_name,
+        Quantity = input$new_quantity,
+        Cost = round(input$new_cost, 2),
+        ItemImagePath = new_image_path,
+        stringsAsFactors = FALSE
+      )
+      
+      added_items(bind_rows(existing_items, new_item))
+      show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
-    # 在图片处理完成后更新 `added_items`
-    new_item <- data.frame(
-      SKU = input$new_sku,
-      Maker = input$new_maker,
-      MajorType = input$new_major_type,
-      MinorType = input$new_minor_type,
-      ItemName = input$new_name,
-      Quantity = input$new_quantity,
-      Cost = round(input$new_cost, 2),
-      ItemImagePath = new_image_path,
-      stringsAsFactors = FALSE
-    )
     
-    # 更新 `added_items`
-    added_items(bind_rows(added_items(), new_item))
-  })
-  
+    
   ## 入库商品模块
   
   # Render added items table
