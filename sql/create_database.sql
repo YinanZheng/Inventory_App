@@ -24,3 +24,6 @@ CREATE TABLE inventory (
   Quantity INT,
   ItemImagePath VARCHAR(255) -- 存储图片路径或 URL
 );
+
+
+DELETE FROM maker_list;

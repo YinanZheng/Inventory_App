@@ -4,7 +4,8 @@ con <- dbConnect(
   dbname = "inventory_system",
   host = "localhost",
   user = "root",
-  password = "goldenbeanllc"
+  password = "goldenbeanllc",
+  encoding = "utf8mb4"
 )
 
 # Define server logic
@@ -25,10 +26,10 @@ server <- function(input, output, session) {
   # Reactive value to store added items
   added_items <- reactiveVal(create_empty_inventory())
 
-  # 
-  # ## 供应商模块
-  # supplier_module(input, output, session, maker_sheet_id)
-  # 
+
+  ## 供应商模块
+  supplier_module(input, output, session)
+
   
   # ## 大小类模块
   # # Render Major Type Dropdown
