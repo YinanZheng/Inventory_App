@@ -82,12 +82,10 @@ generate_unique_code <- function(item_name, maker, length = 4) {
   combined_input <- paste(item_name, maker, sep = "_")
   
   # Generate a hash value
-  hash_value <- digest::digest(combined_input, algo = "sha256")
+  hash_value <- digest::digest(enc2utf8(combined_input), algo = "sha256")
   
   # Extract numeric seed from the hash
-  hash_numeric <- suppressWarnings(as.numeric(strtoi(substr(hash_value, 1, 8), base = 16)))
-  if (is.na(hash_numeric)) hash_numeric <- 1  # Default seed if conversion fails
-  set.seed(abs(hash_numeric) %% .Machine$integer.max)
+  hash_numeric <- abs(sum(utf8ToInt(hash_value))) %% .Machine$integer.max
   
   # Validate length parameter
   if (!is.numeric(length) || length <= 0) {
