@@ -180,11 +180,6 @@ server <- function(input, output, session) {
         output_dir <- "/var/www/images"
         final_image_path <- file.path(output_dir, unique_image_name)
         
-        # # 确保目录存在
-        # if (!dir.exists(output_dir)) {
-        #   dir.create(output_dir, recursive = TRUE)
-        # }
-        
         # 保存压缩后的图片
         save_compressed_image(
           file_path = input$new_item_image$datapath,
@@ -355,9 +350,25 @@ server <- function(input, output, session) {
     show_custom_notification("库存已成功更新！", type = "message")
   })
   
+  # Handle row selection in item table
+  observeEvent(input$added_items_table_rows_selected, {
+    selected_row <- input$added_items_table_rows_selected
+    if (length(selected_row) > 0) {
+      selected_data <- added_items()[selected_row, ]
+      
+      # Update input fields in the sidebar
+      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateNumericInput(session, "new_quantity", value = 0)
+      updateNumericInput(session, "new_cost", value = selected_data$Cost)
+      updateTextInput(session, "new_sku", value = selected_data$SKU)
+    }
+  })
   
   
-  ### SKU 模块
+  
+  ### SKU Barcode 模块
   
   # Automatically generate SKU when relevant inputs change
   observeEvent({
