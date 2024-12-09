@@ -210,7 +210,7 @@ server <- function(input, output, session) {
           image_name = paste0(input$new_sku, ".jpg")
         )
         
-        show_custom_notification("图片已成功压缩并存储！", type = "message")
+        show_custom_notification(paste0("图片已成功压缩并存储至：", compressed_image_path, type = "message"))
       }, error = function(e) {
         show_custom_notification("图片处理失败！", type = "error")
         compressed_image_path <<- NA
