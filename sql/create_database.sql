@@ -16,8 +16,7 @@ CREATE TABLE item_type_data (
 );
 
 CREATE TABLE inventory (
-  id INT AUTO_INCREMENT PRIMARY KEY, -- Unique identifier for each item
-  SKU VARCHAR(50) NOT NULL UNIQUE, -- SKU must be unique and not null
+  SKU VARCHAR(50) PRIMARY KEY,  -- SKU must be unique
   Maker VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Supplier/Maker name
   MajorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Major category
   MinorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Minor category

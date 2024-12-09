@@ -417,27 +417,19 @@ server <- function(input, output, session) {
     names(batch_data) <- c("UniqueID", "SKU", "Cost", "Status", "DomesticEntryTime")
     
     # Insert all records
+    dbBegin(con)
     tryCatch({
-      # Validate SKUs exist in inventory
-      existing_skus <- dbGetQuery(con, "SELECT SKU FROM inventory")$SKU
-      missing_skus <- setdiff(added_items_df$SKU, existing_skus)
-      if (length(missing_skus) > 0) {
-        stop(paste("以下 SKU 不存在:", toString(missing_skus)))
-      }
-      
-      # Insert records row by row
       for (i in 1:nrow(batch_data)) {
         dbExecute(con, "
-        INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
-        VALUES (?, ?, ?, ?, ?)",
+      INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
+      VALUES (?, ?, ?, ?, ?)",
                   params = as.list(batch_data[i, ])
         )
       }
-      
-      # Notify success
+      dbCommit(con)  # Commit the transaction
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
     }, error = function(e) {
-      log_debug(paste("批量入库失败:", e$message))
+      dbRollback(con)  # Rollback the transaction on error
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
     
