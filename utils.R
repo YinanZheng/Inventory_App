@@ -172,14 +172,15 @@ create_empty_inventory <- function() {
 
 # Function to render the image column (local images with public URL prefix)
 render_image_column <- function(image_column, 
+                                host_url = host_url,  # 替换为您的服务器 IP 地址或域名
                                 placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   sapply(image_column, function(img) {
     if (is.na(img) || img == "") {
-      # Return placeholder image for missing data
+      # 返回占位符图片
       paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>')
     } else {
-      # Assume `img` contains the relative URL or filename
-      img_path <- paste0("/images/", basename(img))  # Prefix with `/images/`
+      # 拼接完整的图片 URL
+      img_path <- paste0(host_url, "/images/", basename(img))
       paste0('<img src="', img_path, '" width="50" height="50" style="object-fit:cover;"/>')
     }
   }, USE.NAMES = FALSE)

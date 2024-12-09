@@ -20,6 +20,8 @@ source("utils.R")
 # Cache setup
 cache_interval <- 5 * 60 * 1000  # Cache refresh interval (5 minutes)
 
+host_url = "http://54.254.120.88/"
+
 # Size of barcode paper (in cm)
 page_width = 4
 page_height = 2
