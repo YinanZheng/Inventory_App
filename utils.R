@@ -197,53 +197,24 @@ render_image_column <- function(image_column_data,
 # Function to render datatable with images
 render_table_with_images <- function(data, 
                                      column_mapping, 
-                                     image_column = NULL, 
-                                     editable = FALSE, 
-                                     major_choices = NULL, 
-                                     minor_choices = NULL) {
-  # 渲染图片列
+                                     image_column = NULL) {
   if (!is.null(image_column) && nrow(data) > 0) {
+    # Render the image column
     data[[image_column]] <- render_image_column(data[[image_column]], host_url)
   }
   
-  # 映射列名为用户友好的显示名
+  # Map column names for user-friendly display
   if (!is.null(column_mapping)) {
     data <- map_column_names(data, column_mapping)
   }
   
-  # 如果 editable 为 TRUE，则启用可编辑功能
-  if (editable) {
-    editable_options <- list(target = "cell")
-    
-    # 如果提供了大类和小类的选项，则设置下拉菜单
-    if (!is.null(major_choices)) {
-      editable_options$input <- list(
-        list(columns = which(names(data) == "MajorType"), type = "select", options = major_choices)
-      )
-    }
-    if (!is.null(minor_choices)) {
-      editable_options$input <- append(
-        editable_options$input,
-        list(list(columns = which(names(data) == "MinorType"), type = "select", options = minor_choices))
-      )
-    }
-    
-    return(datatable(
-      data,
-      escape = FALSE,  # 禁用 HTML 转义以渲染图片
-      selection = "single",  # 单行选择
-      editable = editable_options  # 启用可编辑功能
-    ))
-  } else {
-    # 如果不需要编辑，直接返回普通 datatable
-    return(datatable(
-      data,
-      escape = FALSE,  # 禁用 HTML 转义以渲染图片
-      selection = "single"  # 单行选择
-    ))
-  }
+  # Return the rendered datatable
+  datatable(
+    data,
+    escape = FALSE,  # Disable HTML escaping to allow rendering of images
+    selection = 'single'
+  )
 }
-
 
 # Log debug information
 log_debug <- function(msg) {
