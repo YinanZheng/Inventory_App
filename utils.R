@@ -60,25 +60,39 @@ save_compressed_image <- function(file_path, output_dir, image_name) {
 
 # Generate unique code
 generate_unique_code <- function(item_name, maker, length = 4) {
-  if (!is.null(item_name) && item_name != "" && !is.null(maker) && maker != "") {
-    # Combine item_name and maker to generate a unique hash
-    combined_input <- paste(item_name, maker, sep = "_")
-    hash_value <- digest(combined_input, algo = "sha256")
-    
-    # Convert hash to numeric seed
-    hash_numeric <- as.numeric(strtoi(substr(hash_value, 1, 8), base = 16))
-    set.seed(abs(hash_numeric) %% .Machine$integer.max)
-    
-    # Generate a random alphanumeric code
-    random_output <- paste0(sample(c(LETTERS, 0:9), length, replace = TRUE), collapse = "")
-    return(random_output)
+  # Validate inputs
+  if (is.null(item_name) || item_name == "" || is.null(maker) || maker == "") {
+    return(paste0(rep("X", length), collapse = ""))  # Default output for invalid input
   }
-  return("")
+  
+  # Combine item_name and maker to generate a unique hash
+  combined_input <- paste(item_name, maker, sep = "_")
+  
+  # Generate a hash value
+  hash_value <- digest::digest(combined_input, algo = "sha256")
+  
+  # Extract numeric seed from the hash
+  hash_numeric <- suppressWarnings(as.numeric(strtoi(substr(hash_value, 1, 8), base = 16)))
+  if (is.na(hash_numeric)) hash_numeric <- 1  # Default seed if conversion fails
+  set.seed(abs(hash_numeric) %% .Machine$integer.max)
+  
+  # Validate length parameter
+  if (!is.numeric(length) || length <= 0) {
+    stop("Length must be a positive integer.")
+  }
+  
+  # Generate a random alphanumeric code
+  random_output <- paste0(sample(c(LETTERS, 0:9), length, replace = TRUE), collapse = "")
+  return(random_output)
 }
 
+# Generate SKU
 generate_sku <- function(item_type_data, major_type, minor_type, item_name, maker) {
-  if (is.null(major_type) || is.null(minor_type) || is.null(item_name) || is.null(maker)) {
-    return("")
+  if (is.null(major_type) || major_type == "" || 
+      is.null(minor_type) || minor_type == "" || 
+      is.null(item_name) || item_name == "" || 
+      is.null(maker) || maker == "") {
+    return("")  # Return empty if any input is invalid
   }
   
   # Get MajorTypeSKU and MinorTypeSKU
@@ -93,10 +107,10 @@ generate_sku <- function(item_type_data, major_type, minor_type, item_name, make
     unique()
   
   if (length(major_type_sku) == 0 || length(minor_type_sku) == 0) {
-    return("")  # Return empty if no matching SKUs found
+    return("")  # Return empty if no matching SKUs are found
   }
   
-  # Generate unique code using Maker and ItemName
+  # Generate unique code
   unique_code <- generate_unique_code(item_name, maker, length = 4)
   
   # Create the SKU in the format: MajorTypeSKU-MinorTypeSKU-UniqueCode
