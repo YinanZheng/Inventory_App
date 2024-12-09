@@ -415,23 +415,25 @@ server <- function(input, output, session) {
   
   observeEvent(input$reset_btn, {
     tryCatch({
-      # Reset all inputs to their default values
-      updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, selected = NULL, server = TRUE)
-      updateSelectInput(session, "new_major_type", selected = NULL)
-      updateSelectInput(session, "new_minor_type", selected = NULL)
-      updateTextInput(session, "new_name", value = "")
-      updateNumericInput(session, "new_quantity", value = 1)
-      updateNumericInput(session, "new_cost", value = 0)
-      updateTextInput(session, "new_sku", value = "")
-      shinyjs::reset("new_item_image")
+      # 清空输入控件
+      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
+      updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
+      updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
+      updateTextInput(session, "new_name", value = "")  # 清空商品名
+      updateNumericInput(session, "new_quantity", value = 1)  # 恢复数量默认值
+      updateNumericInput(session, "new_cost", value = 0)  # 恢复成本默认值
+      updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
+      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
+      shinyjs::reset("new_item_image")  # 重置文件上传控件
       
-      # Reset added items and refresh table
+      # 清空已添加的商品
       added_items(create_empty_inventory())
       
-      # Notify user
-      show_custom_notification("已重置所有输入和状态！", type = "message")
+      # 通知用户
+      show_custom_notification("输入已清空！", type = "message")
     }, error = function(e) {
-      show_custom_notification("重置时发生错误，请检查输入和配置！", type = "error")
+      # 捕获错误并通知用户
+      show_custom_notification("清空输入时发生错误，请重试！", type = "error")
       log_debug(paste("Error in reset_btn:", e$message))
     })
   })
