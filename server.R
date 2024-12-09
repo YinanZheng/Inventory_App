@@ -383,9 +383,8 @@ server <- function(input, output, session) {
     })
     
     show_custom_notification("库存已成功更新！", type = "message")
-
-        
-    ### 
+    
+    
     added_items_df <- added_items()
     
     # Prepare data for batch insertion
@@ -393,44 +392,60 @@ server <- function(input, output, session) {
       sku <- added_items_df$SKU[i]
       quantity <- added_items_df$Quantity[i]
       cost <- added_items_df$Cost[i]
-      replicate(quantity, list(
+      
+      # Validate data
+      if (quantity <= 0 || is.na(cost) || cost <= 0) {
+        return(NULL)
+      }
+      
+      replicate(quantity, c(
         UUIDgenerate(),
         sku,
         cost,
         "国内仓入库",
-        format(Sys.time(), "%Y-%m-%d %H:%M:%S")  # Properly formatted datetime
-      ), simplify = FALSE)
-    })) |> do.call(rbind, .)
+        format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+      ), simplify = TRUE) |> t()
+    }))
     
-    # Insert all records in a batch
+    if (is.null(batch_data) || nrow(batch_data) == 0) {
+      show_custom_notification("批量数据无效，请检查输入。", type = "error")
+      return()
+    }
+    
+    # Convert to data frame and name columns
+    batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
+    names(batch_data) <- c("UniqueID", "SKU", "Cost", "Status", "DomesticEntryTime")
+    
+    # Insert all records
     tryCatch({
       # Validate SKUs exist in inventory
-      existing_skus <- dbGetQuery(con, "SELECT SKU FROM inventory")
-      missing_skus <- setdiff(added_items_df$SKU, existing_skus$SKU)
+      existing_skus <- dbGetQuery(con, "SELECT SKU FROM inventory")$SKU
+      missing_skus <- setdiff(added_items_df$SKU, existing_skus)
       if (length(missing_skus) > 0) {
         stop(paste("以下 SKU 不存在:", toString(missing_skus)))
       }
       
-      # Validate Costs
-      if (any(is.na(added_items_df$Cost) | added_items_df$Cost <= 0)) {
-        stop("成本值无效，无法插入记录。")
+      # Insert records row by row
+      for (i in 1:nrow(batch_data)) {
+        dbExecute(con, "
+        INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
+        VALUES (?, ?, ?, ?, ?)",
+                  params = as.list(batch_data[i, ])
+        )
       }
       
-      # Batch Insert
-      dbExecute(con, "
-    INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
-    VALUES (?, ?, ?, ?, ?)",
-                params = as.list(batch_data)
-      )
+      # Notify success
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
     }, error = function(e) {
-      stop(e$message)
+      log_debug(paste("批量入库失败:", e$message))
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
     
-    added_items(create_empty_inventory()) # 清空已添加商品
-    
-    shinyjs::reset("new_item_image")  # 重置文件上传控件
+    # Clear added items and reset input fields
+    added_items(create_empty_inventory())
+    if (!is.null(input$new_item_image)) {
+      shinyjs::reset("new_item_image")
+    }
   })
   
   # Handle row selection in item table
@@ -507,7 +522,7 @@ server <- function(input, output, session) {
   })
   
   
-
+  
   
   
   

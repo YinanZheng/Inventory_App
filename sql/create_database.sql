@@ -38,8 +38,8 @@ CREATE TABLE unique_items (
     DomesticExitTime DATETIME,                    -- Timestamp for '国内仓出库'
     UsEntryTime DATETIME,                         -- Timestamp for '美国仓入库'
     UsExitTime DATETIME,                          -- Timestamp for '美国仓出库'
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP, -- Creation timestamp
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last update timestamp
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Creation timestamp
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last update timestamp
     FOREIGN KEY (SKU) REFERENCES inventory(SKU),  -- Relationship with inventory table
     INDEX idx_status (Status),                    -- Index for Status
     INDEX idx_sku (SKU),                          -- Index for SKU
