@@ -36,7 +36,7 @@ ui <- fluidPage(
       
       tags$hr(), # 分隔线
       h4("入库操作"),
-      actionButton("add_btn", "添加商品"),
+      actionButton("add_btn", "添加/更新商品信息"),
       actionButton("confirm_btn", "确认入库", class = "btn-primary"),
       
       tags$hr(), # 分隔线
