@@ -11,7 +11,7 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
-  
+
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
   })
@@ -378,39 +378,39 @@ server <- function(input, output, session) {
     # Update the SKU input field
     updateTextInput(session, "new_sku", value = sku)
   })
-  
-  # Generate Barcode based on SKU
-  session$onFlushed(function() {
-    shinyjs::disable("barcode_pdf")
-  })
-  
-  pdf_file_path <- reactiveVal(NULL)
-  
-  observeEvent(input$export_btn, {
-    req(input$new_sku, input$new_quantity)
-    pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
-    pdf_file_path(pdf_file)
-    show_custom_notification("条形码已导出为PDF!")
-    shinyjs::enable("barcode_pdf")
-  })
-  
-  # Download PDF button
-  output$barcode_pdf <- downloadHandler(
-    filename = function() {
-      cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
-      basename(pdf_file_path())  # Use basename to just get the file name
-    },
-    content = function(file) {
-      # Ensure the file exists before copying
-      cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
-      file.copy(pdf_file_path(), file, overwrite = TRUE)
-    }
-  )
-  
-  
-  
-  
-  
+
+    # Generate Barcode based on SKU
+    session$onFlushed(function() {
+      shinyjs::disable("barcode_pdf")
+    })
+
+    pdf_file_path <- reactiveVal(NULL)
+
+    observeEvent(input$export_btn, {
+      req(input$new_sku, input$new_quantity)
+      pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
+      pdf_file_path(pdf_file)
+      show_custom_notification("条形码已导出为PDF!")
+      shinyjs::enable("barcode_pdf")
+    })
+
+    # Download PDF button
+    output$barcode_pdf <- downloadHandler(
+      filename = function() {
+        cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
+        basename(pdf_file_path())  # Use basename to just get the file name
+      },
+      content = function(file) {
+        # Ensure the file exists before copying
+        cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
+        file.copy(pdf_file_path(), file, overwrite = TRUE)
+      }
+    )
+
+
+
+
+
   observeEvent(input$reset_btn, {
     updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
     updateSelectInput(session, "new_major_type", selected = NULL)
@@ -420,9 +420,9 @@ server <- function(input, output, session) {
     updateNumericInput(session, "new_cost", value = 0)
     updateTextInput(session, "new_sku", value = "")
     shinyjs::reset("new_item_image")
-    
+
     added_items(create_empty_inventory()) # 使用统一的空表函数
-    
+
     # Render filtered inventory with column name mapping
     output$filtered_inventory_table <- renderDT({
       column_mapping <- list(
@@ -442,10 +442,10 @@ server <- function(input, output, session) {
         image_column = "ItemImagePath"  # Specify the image column
       )
     })
-    
+
     show_custom_notification("已重置所有输入和状态！", type = "message")
   })
-  
+
   # Disconnect from the database on app stop
   onStop(function() {
     dbDisconnect(con)
