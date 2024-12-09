@@ -170,38 +170,29 @@ create_empty_inventory <- function() {
   )
 }
 
-# function to render image column (local images only)
+# Function to render image column (local images only)
 render_image_column <- function(image_column, 
-                                local_image_dir = "/var/www/images", 
                                 placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   sapply(image_column, function(img) {
     if (is.na(img) || img == "") {
       # Return placeholder image for missing data
-      return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
-    }
-    
-    # Handle local images
-    local_img_path <- file.path(local_image_dir, basename(img))
-    if (file.exists(local_img_path)) {
-      return(paste0('<img src="', local_img_path, '" width="50" height="50" style="object-fit:cover;"/>'))
+      paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>')
     } else {
-      # Return placeholder if local file does not exist
-      return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
+      # Return the image path as an HTML image tag
+      paste0('<img src="', img, '" width="50" height="50" style="object-fit:cover;"/>')
     }
   }, USE.NAMES = FALSE)
 }
 
-# function to render datatable with images
+# Function to render datatable with images
 render_table_with_images <- function(data, 
                                      column_mapping, 
                                      image_column = NULL, 
-                                     local_image_dir = "/var/www/images", 
                                      placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(
       data[[image_column]],
-      local_image_dir = local_image_dir,
       placeholder = placeholder
     )
   }

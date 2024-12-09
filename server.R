@@ -121,8 +121,7 @@ server <- function(input, output, session) {
     render_table_with_images(
       data = filtered_inventory(),
       column_mapping = column_mapping,
-      image_column = "ItemImagePath",  # Specify the image column
-      local_image_dir = "/var/www/images"  # Ensure the directory matches the actual image storage location
+      image_column = "ItemImagePath"  # Specify the image column
     )
   })
   
@@ -210,7 +209,7 @@ server <- function(input, output, session) {
           image_name = paste0(input$new_sku, ".jpg")
         )
         
-        show_custom_notification(paste0("图片已成功压缩并存储至：", compressed_image_path, type = "message"))
+        show_custom_notification(paste0("图片已成功压缩并存储至：", compressed_image_path), type = "message")
       }, error = function(e) {
         show_custom_notification("图片处理失败！", type = "error")
         compressed_image_path <<- NA
@@ -252,8 +251,7 @@ server <- function(input, output, session) {
     render_table_with_images(
       data = added_items(),
       column_mapping = column_mapping,
-      image_column = "ItemImagePath",  # Specify the correct image column
-      local_image_dir = "/var/www/images"  # Use server-stored image paths
+      image_column = "ItemImagePath"  # Specify the correct image column
     )
   })
   
