@@ -478,31 +478,33 @@ server <- function(input, output, session) {
   })
   
   # 渲染 unique_items 数据表
+  # output$unique_items_table <- renderDT({
+  #   # Define column mapping for user-friendly display
+  #   column_mapping <- list(
+  #     UniqueID = "唯一物品编码",
+  #     Status = "当前状态",
+  #     DomesticEntryTime = "国内仓入库时间",
+  #     DomesticExitTime = "国内仓出库时间",
+  #     UsEntryTime = "美国仓入库时间",
+  #     UsExitTime = "美国仓出库时间",
+  #     Maker = "供应商",
+  #     MajorType = "大类",
+  #     MinorType = "小类",
+  #     ItemName = "商品名",
+  #     ItemImagePath = "商品图片"
+  #   )
+  #   
+  #   # Render table with images
+  #   render_table_with_images(
+  #     data = unique_items_data(),     # Use the reactive data source
+  #     column_mapping = column_mapping, # Map columns to user-friendly names
+  #     image_column = "ItemImagePath"   # Specify the column for images
+  #   )
+  # })
+  # 
   output$unique_items_table <- renderDT({
-    # Define column mapping for user-friendly display
-    column_mapping <- list(
-      UniqueID = "唯一物品编码",
-      Status = "当前状态",
-      DomesticEntryTime = "国内仓入库时间",
-      DomesticExitTime = "国内仓出库时间",
-      UsEntryTime = "美国仓入库时间",
-      UsExitTime = "美国仓出库时间",
-      Maker = "供应商",
-      MajorType = "大类",
-      MinorType = "小类",
-      ItemName = "商品名",
-      ItemImagePath = "商品图片"
-    )
-    
-    # Render table with images
-    render_table_with_images(
-      data = unique_items_data(),     # Use the reactive data source
-      column_mapping = column_mapping, # Map columns to user-friendly names
-      image_column = "ItemImagePath"   # Specify the column for images
-    )
+    unique_items_data()
   })
-  
-  
   
   
 
