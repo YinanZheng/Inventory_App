@@ -80,7 +80,7 @@ ui <- fluidPage(
           style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
              padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
         )),
-        column(12, DTOutput("unique_items_data"))
+        column(12, DTOutput("unique_items_table"))
       )
     )
   )
