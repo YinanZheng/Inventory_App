@@ -7,8 +7,6 @@ con <- dbConnect(
   password = "goldenbeanllc"
 )
 
-print(dbGetQuery(con, "SHOW TABLES"))
-
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
@@ -24,9 +22,9 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM inventory")
   })
   
-  # # Reactive value to store added items
-  # added_items <- reactiveVal(create_empty_inventory()) 
-  # 
+  # Reactive value to store added items
+  added_items <- reactiveVal(create_empty_inventory())
+
   # 
   # ## 供应商模块
   # supplier_module(input, output, session, maker_sheet_id)
