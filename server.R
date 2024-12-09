@@ -11,13 +11,9 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
-  maker_list <- reactive({
-    dbGetQuery(con, "SELECT * FROM maker_list")
-  })
-  
-  item_type_data <- reactive({
-    dbGetQuery(con, "SELECT * FROM item_type_data")
-  })
+  # maker_list <- reactive({
+  #   dbGetQuery(con, "SELECT * FROM maker_list")
+  # })
   
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
@@ -31,43 +27,79 @@ server <- function(input, output, session) {
   supplier_module(input, output, session, con)
 
   
-  # ## 大小类模块
-  # # Render Major Type Dropdown
-  # output$major_type_ui <- renderUI({
-  #   type_data <- item_type_data()
-  #   unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
-  #   choices <- setNames(unique_majors$MajorType, paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）"))
-  #   selectInput("new_major_type", "大类:", choices = choices)
-  # })
-  # 
-  # # Render Minor Type Dropdown dynamically
-  # output$minor_type_ui <- renderUI({
-  #   type_data <- item_type_data()
-  #   
-  #   if (!is.null(input$new_major_type)) {
-  #     selected_major <- gsub("（.*）", "", input$new_major_type)
-  #     # Filter rows for the selected major_type
-  #     filtered_data <- type_data[type_data$MajorType == selected_major, ]
-  #     choices <- setNames(filtered_data$MinorType, paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）"))
-  #     selectInput("new_minor_type", "小类:", choices = choices)
-  #   }
-  # })
-  # 
-  # 
+  ## 大小类模块
+  # Fetch and prepare item type data from the database
+  item_type_data <- reactive({
+    tryCatch({
+      dbGetQuery(con, "SELECT * FROM item_type_data")
+    }, error = function(e) {
+      print(paste("Error fetching item_type_data:", e$message))
+      NULL
+    })
+  })
+  
+  # Render Major Type Dropdown
+  output$major_type_ui <- renderUI({
+    req(item_type_data())  # Ensure item_type_data is not NULL
+    
+    # Extract unique major types with their SKUs
+    type_data <- item_type_data()
+    unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
+    
+    # Ensure there are available major types
+    if (nrow(unique_majors) == 0) {
+      return(h5("无可用大类"))
+    }
+    
+    # Generate choices for the dropdown
+    choices <- setNames(
+      unique_majors$MajorType, 
+      paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
+    )
+    
+    selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
+  })
+  
+  # Render Minor Type Dropdown dynamically
+  output$minor_type_ui <- renderUI({
+    req(item_type_data(), input$new_major_type)  # Ensure required inputs are available
+    
+    # Extract and filter for the selected major type
+    type_data <- item_type_data()
+    selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
+    
+    # Filter minor types for the selected major type
+    filtered_data <- type_data[type_data$MajorType == selected_major, ]
+    
+    # Ensure there are available minor types
+    if (nrow(filtered_data) == 0) {
+      return(h5("无可用小类"))
+    }
+    
+    # Generate choices for the dropdown
+    choices <- setNames(
+      filtered_data$MinorType, 
+      paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
+    )
+    
+    selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
+  })
+
+
   # ## 库存表渲染模块
   # # Filter inventory based on major and minor type
   # filtered_inventory <- reactive({
   #   req(input$new_major_type, input$new_minor_type)
-  #   
+  # 
   #   # 过滤结果
   #   result <- inventory() %>%
   #     filter(MajorType == input$new_major_type, MinorType == input$new_minor_type)
-  #   
+  # 
   #   # 如果过滤结果为空，返回空表
   #   if (nrow(result) == 0) {
   #     return(create_empty_inventory())
   #   }
-  #   
+  # 
   #   return(result)
   # })
   # 
@@ -82,7 +114,7 @@ server <- function(input, output, session) {
   #     Cost = "采购成本",
   #     ItemImagePath = "商品图片"
   #   )
-  #   
+  # 
   #   render_table_with_images(
   #     data = filtered_inventory(),
   #     column_mapping = column_mapping,
@@ -96,7 +128,7 @@ server <- function(input, output, session) {
   #   selected_row <- input$filtered_inventory_table_rows_selected
   #   if (length(selected_row) > 0) {
   #     selected_data <- filtered_inventory()[selected_row, ]
-  #     
+  # 
   #     # Update the input fields in the sidebar
   #     updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
   #     updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
