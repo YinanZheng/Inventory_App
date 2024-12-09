@@ -234,15 +234,58 @@ server <- function(input, output, session) {
       ItemImagePath = "商品图片"
     )
     
+    # 获取大类和小类的选项
+    major_choices <- unique(item_type_data()$MajorType)
+    minor_choices <- unique(item_type_data()$MinorType)
+    
     render_table_with_images(
       data = added_items(),
       column_mapping = column_mapping,
       image_column = "ItemImagePath",
-      editable = TRUE 
+      editable = TRUE,
+      major_choices = major_choices,
+      minor_choices = minor_choices
     )
   })
   
-
+  observeEvent(input$added_items_table_cell_edit, {
+    info <- input$added_items_table_cell_edit  # 获取编辑事件信息
+    updated_data <- added_items()  # 获取当前数据
+    
+    # 判断是否修改了大类或小类
+    if (names(updated_data)[info$col] == "MajorType") {
+      # 修改大类后自动清空小类
+      updated_data$MinorType[info$row] <- NA
+    }
+    
+    # 更新数据并同步到 reactiveVal
+    updated_data[info$row, info$col] <- DT::coerceValue(info$value, updated_data[info$row, info$col])
+    added_items(updated_data)
+    
+    # 提示用户保存完成
+    show_custom_notification("修改已保存！", type = "message")
+  })
+  
+  observeEvent(input$added_items_table_cell_edit, {
+    info <- input$added_items_table_cell_edit
+    updated_data <- added_items()
+    
+    if (names(updated_data)[info$col] == "MajorType") {
+      selected_major <- updated_data$MajorType[info$row]
+      valid_minors <- item_type_data()[item_type_data()$MajorType == selected_major, "MinorType"]
+      
+      # 更新小类选项
+      updateSelectInput(
+        session,
+        "MinorType",
+        choices = valid_minors
+      )
+    }
+    
+    # 更新表格中的值
+    updated_data[info$row, info$col] <- DT::coerceValue(info$value, updated_data[info$row, info$col])
+    added_items(updated_data)
+  })
   
   # Delete selected item
   observeEvent(input$delete_btn, {
