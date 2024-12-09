@@ -398,12 +398,28 @@ server <- function(input, output, session) {
     
     # Insert all records in a batch
     tryCatch({
-      dbExecute(con, "INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) VALUES (?, ?, ?, ?, ?)",
-                params = as.list(batch_data))
+      # Validate SKUs exist in inventory
+      existing_skus <- dbGetQuery(con, "SELECT SKU FROM inventory")
+      missing_skus <- setdiff(added_items_df$SKU, existing_skus$SKU)
+      if (length(missing_skus) > 0) {
+        stop(paste("以下 SKU 不存在:", toString(missing_skus)))
+      }
+      
+      # Validate Costs
+      if (any(is.na(added_items_df$Cost) | added_items_df$Cost <= 0)) {
+        stop("成本值无效，无法插入记录。")
+      }
+      
+      # Batch Insert
+      dbExecute(con, "
+    INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
+    VALUES (?, ?, ?, ?, ?)",
+                params = as.list(batch_data)
+      )
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
     }, error = function(e) {
       log_debug(paste("批量入库失败:", e$message))
-      show_custom_notification("批量入库失败，请检查日志。", type = "error")
+      show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
     
     added_items(create_empty_inventory()) # 清空已添加商品
