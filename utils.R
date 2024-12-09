@@ -160,17 +160,21 @@ create_empty_inventory <- function() {
 
 # Map column names and filter only mapped columns
 map_column_names <- function(data, column_mapping) {
-  # 获取 column_mapping 中的列名
-  mapped_columns <- intersect(names(column_mapping), names(data))
+  # Get the mapped columns in the order of column_mapping
+  mapped_columns <- names(column_mapping)[names(column_mapping) %in% names(data)]
   
-  # 如果没有匹配的列，返回空表
+  # If no matching columns, return an empty data frame
   if (length(mapped_columns) == 0) {
     return(data.frame())
   }
   
-  # 筛选并重命名列
-  data <- data[, mapped_columns, drop = FALSE]  # 只保留映射中提到的列
-  setNames(data, column_mapping[mapped_columns])  # 更新列名
+  # Select and reorder columns in the order of column_mapping
+  data <- data[, mapped_columns, drop = FALSE]
+  
+  # Rename columns according to column_mapping
+  data <- setNames(data, column_mapping[mapped_columns])
+  
+  return(data)
 }
 
 # Function to render the image column (local images with public URL prefix)
