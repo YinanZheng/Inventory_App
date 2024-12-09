@@ -514,9 +514,14 @@ server <- function(input, output, session) {
   # })
   # 
   output$unique_items_table <- renderDT({
-    unique_items_data()
+    data <- unique_items_data()
+    
+    if (is.null(data) || nrow(data) == 0) {
+      return(datatable(data.frame("消息" = "没有数据可显示"), escape = FALSE))
+    }
+    
+    datatable(data)
   })
-  
   
   
   
