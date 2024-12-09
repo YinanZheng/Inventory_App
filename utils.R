@@ -197,8 +197,7 @@ render_image_column <- function(image_column_data,
 # Function to render datatable with images
 render_table_with_images <- function(data, 
                                      column_mapping, 
-                                     image_column = NULL, 
-                                     placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
+                                     image_column = NULL) {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(data[[image_column]], host_url)

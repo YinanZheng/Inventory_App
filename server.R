@@ -11,10 +11,7 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
-  # maker_list <- reactive({
-  #   dbGetQuery(con, "SELECT * FROM maker_list")
-  # })
-  
+
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
   })
@@ -418,7 +415,7 @@ server <- function(input, output, session) {
     output$filtered_inventory_table <- renderDT({
       column_mapping <- list(
         SKU = "条形码",
-        Maker = "供应商",         
+        Maker = "供应商",
         MajorType = "大类",
         MinorType = "小类",
         ItemName = "商品名",
