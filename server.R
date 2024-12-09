@@ -109,6 +109,7 @@ server <- function(input, output, session) {
   output$filtered_inventory_table <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
+      Maker = "供应商",         # Ensure Maker is displayed
       MajorType = "大类",
       MinorType = "小类",
       ItemName = "商品名",
@@ -141,85 +142,87 @@ server <- function(input, output, session) {
     }
   })
   
+  ---
+    
+    ## 入库表模块
+    
+    # Handle add item button click
+    observeEvent(input$add_btn, {
+      if (is.null(input$new_name) || input$new_name == "") {
+        show_custom_notification("请填写正确商品名称！", type = "error")
+        return()
+      }
+      
+      if (is.null(input$new_quantity) || input$new_quantity == "" || input$new_quantity == 0) {
+        show_custom_notification("请填写正确商品数量！", type = "error")
+        return()
+      }
+      
+      if (is.null(input$new_cost) || input$new_cost == "" || input$new_cost > 999 || input$new_cost < 0) {
+        show_custom_notification("请填写正确商品成本！", type = "error")
+        return()
+      }
+      
+      if (is.null(input$new_sku) || input$new_sku == "") {
+        show_custom_notification("请确保SKU正常生成！", type = "error")
+        return()
+      }
+      
+      # Check if the SKU already exists in added_items
+      existing_skus <- added_items()$SKU
+      if (input$new_sku %in% existing_skus) {
+        show_custom_notification(paste("SKU 已存在:", input$new_sku, "无法重复添加！"), type = "error")
+        return()
+      }
+      
+      # Convert image to Base64
+      image_data <- if (!is.null(input$new_item_image)) {
+        base64enc::dataURI(file = input$new_item_image$datapath, mime = input$new_item_image$type)
+      } else {
+        NA
+      }
+      
+      new_item <- data.frame(
+        SKU = input$new_sku,
+        Maker = input$new_maker,
+        MajorType = input$new_major_type,
+        MinorType = input$new_minor_type,
+        ItemName = input$new_name,
+        Quantity = input$new_quantity,
+        Cost = round(input$new_cost, 2),
+        ItemImage = image_data,  # Store Base64-encoded image data
+        ItemImagePath = if (!is.null(input$new_item_image)) input$new_item_image$datapath else NA,
+        stringsAsFactors = FALSE
+      )
+      
+      # Update the added items reactive value
+      added_items(bind_rows(added_items(), new_item))
+    })
   
-  ## 入库表模块
-  
-  # Handle add item button click
-  observeEvent(input$add_btn, {
-    if (is.null(input$new_name) || input$new_name == "") {
-      show_custom_notification("请填写正确商品名称！", type = "error")
-      return()
-    }
+  ---
     
-    if (is.null(input$new_quantity) || input$new_quantity == "" || input$new_quantity == 0) {
-      show_custom_notification("请填写正确商品数量！", type = "error")
-      return()
-    }
+    ## 入库商品模块
     
-    if (is.null(input$new_cost) || input$new_cost == "" || input$new_cost > 999 || input$new_cost < 0) {
-      show_custom_notification("请填写正确商品成本！", type = "error")
-      return()
-    }
-    
-    if (is.null(input$new_sku) || input$new_sku == "") {
-      show_custom_notification("请确保SKU正常生成！", type = "error")
-      return()
-    }
-    
-    # Check if the SKU already exists in added_items
-    existing_skus <- added_items()$SKU
-    if (input$new_sku %in% existing_skus) {
-      show_custom_notification(paste("SKU 已存在:", input$new_sku, "无法重复添加！"), type = "error")
-      return()
-    }
-    
-    # Convert image to Base64
-    image_data <- if (!is.null(input$new_item_image)) {
-      base64enc::dataURI(file = input$new_item_image$datapath, mime = input$new_item_image$type)
-    } else {
-      NA
-    }
-    
-    new_item <- data.frame(
-      SKU = input$new_sku,
-      Maker = input$new_maker,
-      MajorType = input$new_major_type,
-      MinorType = input$new_minor_type,
-      ItemName = input$new_name,
-      Quantity = input$new_quantity,
-      Cost = round(input$new_cost),
-      ItemImage = image_data,  # Store Base64-encoded image data
-      ItemImagePath = if (!is.null(input$new_item_image)) input$new_item_image$datapath else NA,
-      stringsAsFactors = FALSE
-    )
-    
-    # Update the added items reactive value
-    added_items(bind_rows(added_items(), new_item))
-  })
-  
-  
-  ## 入库商品模块
-  
-  # Render added items table
-  output$filtered_inventory_table <- renderDT({
-    column_mapping <- list(
-      SKU = "条形码",
-      Maker = "供应商",
-      MajorType = "大类",
-      MinorType = "小类",
-      ItemName = "商品名",
-      Quantity = "库存数",
-      Cost = "采购成本",
-      ItemImagePath = "商品图片"
-    )
-    
-    render_table_with_images(
-      data = filtered_inventory(),  # Ensure Maker is part of filtered_inventory
-      column_mapping = column_mapping,
-      image_column = "ItemImagePath",  # Specify the image column
-      is_local = TRUE  # Use server-stored image paths
-    )
-  })
+    # Render added items table
+    output$added_items_table <- renderDT({
+      column_mapping <- list(
+        SKU = "条形码",
+        Maker = "供应商",
+        MajorType = "大类",
+        MinorType = "小类",
+        ItemName = "商品名",
+        Quantity = "入库数量",
+        Cost = "采购成本",
+        ItemImagePath = "商品图片"
+      )
+      
+      render_table_with_images(
+        data = added_items(),
+        column_mapping = column_mapping,
+        image_column = "ItemImagePath",  # Specify the image column
+        is_local = TRUE  # Use server-stored image paths
+      )
+    })
   
   # Delete selected item
   observeEvent(input$delete_btn, {
@@ -279,15 +282,15 @@ server <- function(input, output, session) {
       image_path <- added_items_df$ItemImagePath[i]
       
       # Check if the SKU already exists in the inventory
-      existing_item <- dbGetQuery(con, paste0("SELECT * FROM inventory WHERE SKU = '", sku, "'"))
+      existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
       
       if (nrow(existing_item) > 0) {
         # Update existing item
         new_quantity <- existing_item$Quantity + quantity
-        new_ave_cost <- ((existing_item$AveCost * existing_item$Quantity) + (cost * quantity)) / new_quantity
+        new_ave_cost <- ((existing_item$Cost * existing_item$Quantity) + (cost * quantity)) / new_quantity
         
         dbExecute(con, "UPDATE inventory SET 
-                      Quantity = ?, AveCost = ?, updated_at = NOW() 
+                      Quantity = ?, Cost = ?, updated_at = NOW() 
                       WHERE SKU = ?",
                   params = list(new_quantity, round(new_ave_cost, 2), sku))
         
@@ -303,7 +306,7 @@ server <- function(input, output, session) {
       } else {
         # Insert new item
         dbExecute(con, "INSERT INTO inventory 
-                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, AveCost, ItemImagePath, created_at) 
+                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, Cost, ItemImagePath, created_at) 
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())",
                   params = list(sku, maker, major_type, minor_type, item_name, quantity, round(cost, 2), image_path))
         
@@ -336,8 +339,6 @@ server <- function(input, output, session) {
     # Update the SKU input field
     updateTextInput(session, "new_sku", value = sku)
   })
-  
-  
   # 
   #   # Generate Barcode based on SKU
   #   session$onFlushed(function() {

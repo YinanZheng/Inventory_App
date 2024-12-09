@@ -22,7 +22,7 @@ CREATE TABLE inventory (
   MajorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Major category
   MinorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Minor category
   ItemName VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Name of the item
-  AveCost DECIMAL(10, 2) NOT NULL DEFAULT 0.00, -- Average cost with 2 decimal places
+  Cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00, -- Average cost with 2 decimal places
   Quantity INT NOT NULL DEFAULT 0, -- Quantity in stock, default is 0
   ItemImagePath VARCHAR(255), -- Path or URL to item image
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Automatically track creation time

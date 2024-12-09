@@ -135,19 +135,18 @@ remove_tone <- function(text) {
   return(text)
 }
 
-# 定义空表模板函数
+# Define an empty inventory template
 create_empty_inventory <- function() {
   data.frame(
-    SKU = character(),
-    Maker = character(),
-    MajorType = character(),
-    MinorType = character(),
-    ItemName = character(),
-    Quantity = integer(),
-    Cost = integer(),
-    ItemImage = character(),
-    ItemImagePath = character(),
-    stringsAsFactors = FALSE
+    SKU = character(),            # Product SKU
+    Maker = character(),          # Supplier
+    MajorType = character(),      # Major category
+    MinorType = character(),      # Minor category
+    ItemName = character(),       # Item name
+    Quantity = numeric(),         # Quantity in stock
+    Cost = numeric(),             # Cost
+    ItemImagePath = character(),  # Path to item image
+    stringsAsFactors = FALSE      # Avoid factor columns
   )
 }
 
