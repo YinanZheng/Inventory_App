@@ -291,9 +291,9 @@ server <- function(input, output, session) {
             image_name = paste0(added_items_df$SKU[i], ".jpg")
           )
           added_items_df$ItemImagePath[i] <- compressed_image_path
-          show_custom_notification(paste("图片压缩并上传成功! SKU:", added_items_df$SKU[i]), type = "message")
+          show_custom_notification(paste("图片压缩成功! SKU:", added_items_df$SKU[i]), type = "message")
         }, error = function(e) {
-          show_custom_notification(paste("图片上传失败! SKU:", added_items_df$SKU[i]), type = "error")
+          show_custom_notification(paste("图片压缩失败! SKU:", added_items_df$SKU[i]), type = "error")
         })
       }
     }
@@ -317,24 +317,20 @@ server <- function(input, output, session) {
         new_quantity <- existing_item$Quantity + quantity
         new_ave_cost <- ((existing_item$Cost * existing_item$Quantity) + (cost * quantity)) / new_quantity
         
-        # 如果未上传新图片，保留现有图片路径
+        # 如果未上传新图片，保留现有图片路径 
         if (is.na(image_path) || image_path == "") {
-          dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ? WHERE SKU = ?",
-                    params = list(new_quantity, round(new_ave_cost, 2), existing_item$ItemImagePath, sku))
+          image_path <- existing_item$ItemImagePath
         }
         
-        # Update image path if a new image was uploaded
-        if (!is.na(image_path)) {
-          dbExecute(con, "UPDATE inventory SET ItemImagePath = ? WHERE SKU = ?",
-                    params = list(image_path, sku))
-        }
+        dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ?, updated_at = NOW() WHERE SKU = ?",
+                  params = list(new_quantity, round(new_ave_cost, 2), image_path, sku))
         
         show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
       } else {
         # Insert new item
         dbExecute(con, "INSERT INTO inventory 
-                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, Cost, ItemImagePath, created_at) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())",
+                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, Cost, ItemImagePath, created_at, updated_at) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
                   params = list(sku, maker, major_type, minor_type, item_name, quantity, round(cost, 2), image_path))
         
         show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", item_name), type = "message")
