@@ -377,15 +377,48 @@ server <- function(input, output, session) {
       }
     }
     
-    # 清空已添加商品
-    added_items(create_empty_inventory())
-    
     # 刷新库存数据
     inventory({
       dbGetQuery(con, "SELECT * FROM inventory")
     })
     
     show_custom_notification("库存已成功更新！", type = "message")
+
+        
+    ### 
+    added_items_df <- added_items()
+    
+    # Prepare data for batch insertion
+    batch_data <- lapply(1:nrow(added_items_df), function(i) {
+      sku <- added_items_df$SKU[i]
+      quantity <- added_items_df$Quantity[i]
+      cost <- added_items_df$Cost[i]
+      replicate(quantity, list(
+        UUIDgenerate(),  # Unique ID
+        sku,
+        cost,
+        "国内仓入库",      # Initial status
+        Sys.time()        # Entry time
+      ))
+    }) |> do.call(rbind, .)
+    
+    # Insert all records in a batch
+    tryCatch({
+      dbExecute(con, "
+      INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) VALUES (?, ?, ?, ?, ?)", 
+                params = do.call(cbind, batch_data))
+      
+      # Notify user on success
+      show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
+      refresh_unique_items_table()  # Refresh the table
+    }, error = function(e) {
+      # Log error and notify user
+      log_debug(paste("批量入库失败:", e$message))
+      show_custom_notification("部分或全部物品入库失败，请检查日志。", type = "error")
+    })
+    
+    added_items(create_empty_inventory()) # 清空已添加商品
+    
     shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
   
@@ -404,6 +437,64 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_cost", value = selected_data$Cost)
     }
   })
+  
+  
+  
+  ## 物品追踪表
+  unique_items_data <- reactive({
+    dbGetQuery(con, "
+    SELECT 
+        unique_items.UniqueID AS '唯一物品编码',
+        unique_items.Status AS '当前状态',
+        unique_items.DomesticEntryTime AS '国内仓入库时间',
+        unique_items.DomesticExitTime AS '国内仓出库时间',
+        unique_items.UsEntryTime AS '美国仓入库时间',
+        unique_items.UsExitTime AS '美国仓出库时间',
+        inventory.Maker AS '供应商',
+        inventory.MajorType AS '大类',
+        inventory.MinorType AS '小类',
+        inventory.ItemName AS '商品名',
+        inventory.ItemImagePath AS '商品图片'
+    FROM 
+        unique_items
+    JOIN 
+        inventory 
+    ON 
+        unique_items.SKU = inventory.SKU
+    ORDER BY 
+        unique_items.DomesticEntryTime DESC
+  ")
+  })
+  
+  # 渲染 unique_items 数据表
+  output$unique_items_table <- renderDT({
+    # Define column mapping for user-friendly display
+    column_mapping <- list(
+      UniqueID = "唯一物品编码",
+      Status = "当前状态",
+      DomesticEntryTime = "国内仓入库时间",
+      DomesticExitTime = "国内仓出库时间",
+      UsEntryTime = "美国仓入库时间",
+      UsExitTime = "美国仓出库时间",
+      Maker = "供应商",
+      MajorType = "大类",
+      MinorType = "小类",
+      ItemName = "商品名",
+      ItemImagePath = "商品图片"
+    )
+    
+    # Render table with images
+    render_table_with_images(
+      data = unique_items_data(),     # Use the reactive data source
+      column_mapping = column_mapping, # Map columns to user-friendly names
+      image_column = "ItemImagePath"   # Specify the column for images
+    )
+  })
+  
+  
+  
+  
+
   
   
   

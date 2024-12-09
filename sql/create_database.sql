@@ -28,3 +28,16 @@ CREATE TABLE inventory (
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Automatically track creation time
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Automatically track last update time
 );
+
+CREATE TABLE unique_items (
+    UniqueID VARCHAR(36) PRIMARY KEY,             -- Unique identifier for each item
+    SKU VARCHAR(50) NOT NULL,                     -- Foreign key referencing inventory table
+    Cost DECIMAL(10, 2) NOT NULL DEFAULT 0.00,    -- Average cost with 2 decimal places
+    Status ENUM('国内仓入库', '国内仓出库', '美国仓入库', '美国仓出库') DEFAULT '国内仓入库', -- Current status
+    DomesticEntryTime DATETIME,                   -- Timestamp for '国内仓入库'
+    DomesticExitTime DATETIME,                    -- Timestamp for '国内仓出库'
+    ShippingTime DATETIME,                        -- Timestamp for '海运途中'
+    UsEntryTime DATETIME,                         -- Timestamp for '美国仓入库'
+    UsExitTime DATETIME,                          -- Timestamp for '美国仓出库'
+    FOREIGN KEY (SKU) REFERENCES inventory(SKU)   -- Relationship with inventory table
+);

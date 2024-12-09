@@ -9,6 +9,7 @@ SHOW FULL COLUMNS FROM item_type_data;
 DROP TABLE maker_list;
 DROP TABLE item_type_data;
 DROP TABLE inventory;
+DROP TABLE unique_items;
 
 
 -- Remove all record

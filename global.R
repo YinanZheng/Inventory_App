@@ -12,6 +12,7 @@ library(stringi)
 library(baRcodeR)
 library(DBI)
 library(RMariaDB)
+library(uuid)
 
 # Source all modular functions
 source("./modules/supplier_module.R")

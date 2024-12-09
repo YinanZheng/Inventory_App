@@ -1,18 +1,3 @@
-# Map column names and filter only mapped columns
-map_column_names <- function(data, column_mapping) {
-  # 获取 column_mapping 中的列名
-  mapped_columns <- intersect(names(column_mapping), names(data))
-  
-  # 如果没有匹配的列，返回空表
-  if (length(mapped_columns) == 0) {
-    return(data.frame())
-  }
-  
-  # 筛选并重命名列
-  data <- data[, mapped_columns, drop = FALSE]  # 只保留映射中提到的列
-  setNames(data, column_mapping[mapped_columns])  # 更新列名
-}
-
 # Generate Code 128 barcode PDF
 export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
   # Create a temporary file path for the PDF
@@ -173,6 +158,21 @@ create_empty_inventory <- function() {
   )
 }
 
+# Map column names and filter only mapped columns
+map_column_names <- function(data, column_mapping) {
+  # 获取 column_mapping 中的列名
+  mapped_columns <- intersect(names(column_mapping), names(data))
+  
+  # 如果没有匹配的列，返回空表
+  if (length(mapped_columns) == 0) {
+    return(data.frame())
+  }
+  
+  # 筛选并重命名列
+  data <- data[, mapped_columns, drop = FALSE]  # 只保留映射中提到的列
+  setNames(data, column_mapping[mapped_columns])  # 更新列名
+}
+
 # Function to render the image column (local images with public URL prefix)
 render_image_column <- function(image_column_data, 
                                 host_url,  # 不使用默认值，确保明确传入
@@ -215,6 +215,56 @@ render_table_with_images <- function(data,
     escape = FALSE,  # Disable HTML escaping to allow rendering of images
     selection = 'single'
   )
+}
+
+update_status <- function(unique_id, new_status) {
+  # Define mapping of status to timestamp columns
+  status_columns <- list(
+    "国内仓入库" = "DomesticEntryTime",
+    "国内仓出库" = "DomesticExitTime",
+    "美国仓入库" = "UsEntryTime",
+    "美国仓出库" = "UsExitTime"
+  )
+  
+  # Check if the provided status is valid
+  if (!new_status %in% names(status_columns)) {
+    stop("Invalid status provided")
+  }
+  
+  # Get the corresponding timestamp column for the status
+  timestamp_column <- status_columns[[new_status]]
+  
+  # Update the status and set the timestamp in the database
+  dbExecute(con, 
+            paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
+            params = list(new_status, Sys.time(), unique_id))
+}
+
+
+refresh_unique_items_table <- function() {
+  output$unique_items_table <- renderDT({
+    data <- unique_items_data()
+    
+    render_table_with_images(
+      data = data,
+      column_mapping = list(
+        UniqueID = "唯一物品编码",
+        Status = "当前状态",
+        DomesticEntryTime = "国内仓入库时间",
+        DomesticExitTime = "国内仓出库时间",
+        UsEntryTime = "美国仓入库时间",
+        UsExitTime = "美国仓出库时间",
+        SKU = "条形码",
+        ItemName = "商品名",
+        Maker = "供应商",
+        MajorType = "大类",
+        MinorType = "小类",
+        Cost = "成本",
+        ItemImagePath = "商品图片"
+      ),
+      image_column = "ItemImagePath"  # Specify the column for image rendering
+    )
+  })
 }
 
 # Log debug information

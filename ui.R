@@ -71,6 +71,16 @@ ui <- fluidPage(
       div(
         textOutput("total_cost"),
         style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+      ),
+      
+      tags$hr(), # 分隔线
+      fluidRow(
+        column(12, div(
+          h4("物品状态追踪表"), 
+          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
+             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
+        )),
+        column(12, DTOutput("unique_items_data"))
       )
     )
   )
