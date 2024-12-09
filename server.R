@@ -247,9 +247,9 @@ server <- function(input, output, session) {
       added_items(bind_rows(existing_items, new_item))
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
-    
-    
-    
+  })
+  
+  
   ## 入库商品模块
   
   # Render added items table
