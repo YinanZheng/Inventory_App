@@ -38,96 +38,74 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
   return(paste0(pdf_path, ".pdf"))
 }
 
-# Save compressed image to Google Drive
-save_image_to_drive <- function(file_path, folder_id, image_name, quality = 75) {
+# Upload compressed image to server
+save_compressed_image <- function(file_path, output_dir = "/var/www/images", image_name = NULL, quality = 75) {
+  # Ensure the output directory exists
+  if (!dir.exists(output_dir)) {
+    dir.create(output_dir, recursive = TRUE)
+  }
+  
+  # Generate image name if not provided
+  if (is.null(image_name)) {
+    image_name <- paste0(tools::file_path_sans_ext(basename(file_path)), "_compressed.jpg")
+  }
+  
   # Load the image
-  img <- image_read(file_path)
+  img <- magick::image_read(file_path)
   
-  # Compress the image (adjusting quality and size)
-  compressed_img <- image_scale(img, "800x")  # Resize image to have a width of 800px, adjust as needed
-  compressed_img <- image_convert(compressed_img, format = "jpeg")
-  compressed_img <- image_write(compressed_img, tempfile(fileext = ".jpg"), quality = quality)
+  # Compress the image (resize and adjust quality)
+  compressed_img <- magick::image_scale(img, "800x")  # Resize image to width of 800px
+  compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
+  compressed_img_path <- file.path(output_dir, image_name)
+  magick::image_write(compressed_img, path = compressed_img_path, quality = quality)
   
-  # Upload the compressed image to Google Drive
-  drive_file <- drive_upload(compressed_img, path = as_id(folder_id), name = image_name)
-  drive_share(as_id(drive_file$id), role = "reader", type = "anyone")
-  local_img_path <- file.path("./www/image_cache", paste0(drive_file$id, ".jpg"))
-  drive_download(drive_file, path = local_img_path, overwrite = FALSE)
-  return(drive_file)
+  # Return the path to the compressed image
+  return(compressed_img_path)
 }
 
-# Generate unique random letters or random digits based on the item name
-generate_unique_code <- function(item_name, output_type = "letters", num_characters = 2) {
-  if (!is.null(item_name) && item_name != "") {
-    # Generate a hash value for item_name
-    hash_value <- digest(item_name, algo = "sha256")
+# Generate unique code
+generate_unique_code <- function(item_name, maker, length = 4) {
+  if (!is.null(item_name) && item_name != "" && !is.null(maker) && maker != "") {
+    # Combine item_name and maker to generate a unique hash
+    combined_input <- paste(item_name, maker, sep = "_")
+    hash_value <- digest(combined_input, algo = "sha256")
     
-    # Split the hash value into parts and convert to a long integer seed
-    hash_parts <- strsplit(hash_value, "")[[1]]
+    # Convert hash to numeric seed
+    hash_numeric <- as.numeric(strtoi(substr(hash_value, 1, 8), base = 16))
+    set.seed(abs(hash_numeric) %% .Machine$integer.max)
     
-    # Define the length of segments to process at a time
-    segment_length <- 8
-    total_sum <- 0
-    
-    # Iterate over the hash in segments to create a combined seed value
-    for (i in seq(1, length(hash_parts), by = segment_length)) {
-      segment <- paste0(hash_parts[i:min(i + segment_length - 1, length(hash_parts))], collapse = "")
-      segment_value <- strtoi(segment, base = 16)
-      
-      if (!is.na(segment_value)) {
-        total_sum <- (total_sum + segment_value) %% .Machine$integer.max
-      }
-    }
-    
-    # Ensure the seed is a positive integer
-    hash_seed <- abs(total_sum)
-    if (hash_seed == 0) {
-      hash_seed <- 1  # Ensure the seed is at least 1
-    }
-    
-    # Set seed to ensure uniqueness based on item_name
-    set.seed(hash_seed)
-    
-    # Generate random output based on the specified type
-    if (output_type == "letters") {
-      # Generate random letters
-      random_output <- paste0(sample(LETTERS, num_characters, replace = TRUE), collapse = "")
-    } else if (output_type == "digits") {
-      # Generate random digits
-      random_output <- paste0(sample(0:9, num_characters, replace = TRUE), collapse = "")
-    } else {
-      stop("Invalid output_type. Please use 'letters' or 'digits'.")
-    }
-    
+    # Generate a random alphanumeric code
+    random_output <- paste0(sample(c(LETTERS, 0:9), length, replace = TRUE), collapse = "")
     return(random_output)
-  } else {
-    return("")
   }
+  return("")
 }
 
-# Generate SKU
-generate_sku <- function(item_type_data, major_type, minor_type, item_name, cost) {
-  if (is.null(major_type) || is.null(minor_type) || is.null(item_name) || is.null(cost)) {
+generate_sku <- function(item_type_data, major_type, minor_type, item_name, maker) {
+  if (is.null(major_type) || is.null(minor_type) || is.null(item_name) || is.null(maker)) {
     return("")
   }
   
-  # Format cost as three-digit value
-  formatted_cost <- sprintf("%03.0f", round(cost))
-  
-  # Get major and minor type SKU values
+  # Get MajorTypeSKU and MinorTypeSKU
   major_type_sku <- item_type_data %>%
     filter(MajorType == major_type) %>%
     pull(MajorTypeSKU) %>%
     unique()
+  
   minor_type_sku <- item_type_data %>%
     filter(MinorType == minor_type) %>%
     pull(MinorTypeSKU) %>%
     unique()
   
-  # Create the SKU
-  paste0(major_type_sku, formatted_cost, minor_type_sku, 
-         generate_unique_code(item_name, "digits", 1),
-         generate_unique_code(item_name, "letters", 2))
+  if (length(major_type_sku) == 0 || length(minor_type_sku) == 0) {
+    return("")  # Return empty if no matching SKUs found
+  }
+  
+  # Generate unique code using Maker and ItemName
+  unique_code <- generate_unique_code(item_name, maker, length = 4)
+  
+  # Create the SKU in the format: MajorTypeSKU-MinorTypeSKU-UniqueCode
+  paste0(major_type_sku, "-", minor_type_sku, "-", unique_code)
 }
 
 # Unified function for showing notifications
@@ -176,29 +154,28 @@ create_empty_inventory <- function() {
 # 通用函数：渲染图片列（支持本地图片路径和 URL/Base64 图片）
 render_image_column <- function(image_column, 
                                 is_local = FALSE, 
-                                local_image_dir = "image_cache", 
+                                local_image_dir = "www/images", 
                                 placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   sapply(image_column, function(img) {
     if (is.na(img) || img == "") {
-      # 占位图片逻辑
+      # Return placeholder image for missing data
       return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
     }
     
     if (is_local) {
-      # 本地图片逻辑
-      local_img_path <- file.path(local_image_dir, paste0(img, ".jpg"))
-      # print(local_img_path)
-      if (file.exists(file.path("./www", local_img_path))) {
+      # Handle local images
+      local_img_path <- file.path(local_image_dir, basename(img))
+      if (file.exists(local_img_path)) {
         return(paste0('<img src="', local_img_path, '" width="50" height="50" style="object-fit:cover;"/>'))
       } else {
-        # 本地图片不存在时返回占位图片
+        # Return placeholder if local file does not exist
         return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
       }
     } else {
-      # 远程 URL 或 Base64 图片逻辑
+      # Handle remote URL or Base64 image
       return(paste0('<img src="', img, '" width="50" height="50" style="object-fit:cover;"/>'))
     }
-  })
+  }, USE.NAMES = FALSE)
 }
 
 # 通用函数：渲染表格（支持图片列处理和列名映射）
@@ -206,10 +183,10 @@ render_table_with_images <- function(data,
                                      column_mapping, 
                                      image_column = NULL, 
                                      is_local = FALSE, 
-                                     local_image_dir = "image_cache", 
+                                     local_image_dir = "www/images", 
                                      placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   if (!is.null(image_column) && nrow(data) > 0) {
-    # 渲染图片列
+    # Render the image column
     data[[image_column]] <- render_image_column(
       data[[image_column]],
       is_local = is_local,
@@ -218,13 +195,15 @@ render_table_with_images <- function(data,
     )
   }
   
-  # 映射列名
-  data <- map_column_names(data, column_mapping)
+  # Map column names for user-friendly display
+  if (!is.null(column_mapping)) {
+    data <- map_column_names(data, column_mapping)
+  }
   
-  # 返回渲染后的 datatable 对象
+  # Return the rendered datatable
   datatable(
     data,
-    escape = FALSE,  # 禁用 HTML 转义
+    escape = FALSE,  # Disable HTML escaping to allow rendering of images
     selection = 'single'
   )
 }
