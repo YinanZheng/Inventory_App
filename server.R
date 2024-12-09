@@ -11,7 +11,7 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
-
+  
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
   })
@@ -25,12 +25,11 @@ server <- function(input, output, session) {
   
   
   ## 大小类模块
-  # Fetch and prepare item type data from the database
   item_type_data <- reactive({
     tryCatch({
       dbGetQuery(con, "SELECT * FROM item_type_data")
     }, error = function(e) {
-      print(paste("Error fetching item_type_data:", e$message))
+      log_debug(paste("Error fetching item_type_data:", e$message))
       NULL
     })
   })
@@ -181,10 +180,10 @@ server <- function(input, output, session) {
         output_dir <- "/var/www/images"
         final_image_path <- file.path(output_dir, unique_image_name)
         
-        # 确保目录存在
-        if (!dir.exists(output_dir)) {
-          dir.create(output_dir, recursive = TRUE)
-        }
+        # # 确保目录存在
+        # if (!dir.exists(output_dir)) {
+        #   dir.create(output_dir, recursive = TRUE)
+        # }
         
         # 保存压缩后的图片
         save_compressed_image(
@@ -197,6 +196,7 @@ server <- function(input, output, session) {
         show_custom_notification("图片已成功处理并保存！", type = "message")
       }, error = function(e) {
         show_custom_notification("图片处理失败！", type = "error")
+        log_debug(paste("Error in add_btn:", e$message))
       })
     } else {
       show_custom_notification("未上传图片，跳过图片处理。", type = "message")
@@ -300,6 +300,7 @@ server <- function(input, output, session) {
           }, error = function(e) {
             show_custom_notification(paste("图片保存失败! SKU:", sku), type = "error")
             new_image_path <- existing_item$ItemImagePath  # 回退为原始路径
+            log_debug(paste("Error in confirm_btn(file.rename):", e$message))
           })
         } else {
           # 未上传新图片，保留现有图片路径
@@ -330,6 +331,7 @@ server <- function(input, output, session) {
             new_image_path <- final_image_path
           }, error = function(e) {
             show_custom_notification(paste("新商品图片保存失败! SKU:", sku), type = "error")
+            log_debug(paste("Error in confirm_btn:", e$message))
           })
         }
         
@@ -378,74 +380,62 @@ server <- function(input, output, session) {
     # Update the SKU input field
     updateTextInput(session, "new_sku", value = sku)
   })
-
-    # Generate Barcode based on SKU
-    session$onFlushed(function() {
-      shinyjs::disable("barcode_pdf")
-    })
-
-    pdf_file_path <- reactiveVal(NULL)
-
-    observeEvent(input$export_btn, {
-      req(input$new_sku, input$new_quantity)
-      pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
-      pdf_file_path(pdf_file)
-      show_custom_notification("条形码已导出为PDF!")
-      shinyjs::enable("barcode_pdf")
-    })
-
-    # Download PDF button
-    output$barcode_pdf <- downloadHandler(
-      filename = function() {
-        cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
-        basename(pdf_file_path())  # Use basename to just get the file name
-      },
-      content = function(file) {
-        # Ensure the file exists before copying
-        cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
-        file.copy(pdf_file_path(), file, overwrite = TRUE)
-      }
-    )
-
-
-
-
-
-  observeEvent(input$reset_btn, {
-    updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
-    updateSelectInput(session, "new_major_type", selected = NULL)
-    updateSelectInput(session, "new_minor_type", selected = NULL)
-    updateTextInput(session, "new_name", value = "")
-    updateNumericInput(session, "new_quantity", value = 1)
-    updateNumericInput(session, "new_cost", value = 0)
-    updateTextInput(session, "new_sku", value = "")
-    shinyjs::reset("new_item_image")
-
-    added_items(create_empty_inventory()) # 使用统一的空表函数
-
-    # Render filtered inventory with column name mapping
-    output$filtered_inventory_table <- renderDT({
-      column_mapping <- list(
-        SKU = "条形码",
-        Maker = "供应商",
-        MajorType = "大类",
-        MinorType = "小类",
-        ItemName = "商品名",
-        Quantity = "库存数",
-        Cost = "平均成本",
-        ItemImagePath = "商品图片"
-      )
-      
-      render_table_with_images(
-        data = filtered_inventory(),
-        column_mapping = column_mapping,
-        image_column = "ItemImagePath"  # Specify the image column
-      )
-    })
-
-    show_custom_notification("已重置所有输入和状态！", type = "message")
+  
+  # Generate Barcode based on SKU
+  session$onFlushed(function() {
+    shinyjs::disable("barcode_pdf")
   })
-
+  
+  pdf_file_path <- reactiveVal(NULL)
+  
+  observeEvent(input$export_btn, {
+    req(input$new_sku, input$new_quantity)
+    pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
+    pdf_file_path(pdf_file)
+    show_custom_notification("条形码已导出为PDF!")
+    shinyjs::enable("barcode_pdf")
+  })
+  
+  # Download PDF button
+  output$barcode_pdf <- downloadHandler(
+    filename = function() {
+      cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
+      basename(pdf_file_path())  # Use basename to just get the file name
+    },
+    content = function(file) {
+      # Ensure the file exists before copying
+      cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
+      file.copy(pdf_file_path(), file, overwrite = TRUE)
+    }
+  )
+  
+  
+  
+  
+  
+  observeEvent(input$reset_btn, {
+    tryCatch({
+      # Reset all inputs to their default values
+      updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, selected = NULL, server = TRUE)
+      updateSelectInput(session, "new_major_type", selected = NULL)
+      updateSelectInput(session, "new_minor_type", selected = NULL)
+      updateTextInput(session, "new_name", value = "")
+      updateNumericInput(session, "new_quantity", value = 1)
+      updateNumericInput(session, "new_cost", value = 0)
+      updateTextInput(session, "new_sku", value = "")
+      shinyjs::reset("new_item_image")
+      
+      # Reset added items and refresh table
+      added_items(create_empty_inventory())
+      
+      # Notify user
+      show_custom_notification("已重置所有输入和状态！", type = "message")
+    }, error = function(e) {
+      show_custom_notification("重置时发生错误，请检查输入和配置！", type = "error")
+      log_debug(paste("Error in reset_btn:", e$message))
+    })
+  })
+  
   # Disconnect from the database on app stop
   onStop(function() {
     dbDisconnect(con)

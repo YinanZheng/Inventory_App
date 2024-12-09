@@ -215,3 +215,8 @@ render_table_with_images <- function(data,
     selection = 'single'
   )
 }
+
+# Log debug information
+log_debug <- function(msg) {
+  cat("[DEBUG]:", msg, "\n")
+}
