@@ -307,7 +307,7 @@ server <- function(input, output, session) {
       item_name <- added_items_df$ItemName[i]
       quantity <- added_items_df$Quantity[i]
       cost <- added_items_df$Cost[i]
-      image_path <- added_items_df$ItemImagePath[i]
+      new_image_path <- added_items_df$ItemImagePath[i]
       
       # Check if the SKU already exists in the inventory
       existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
@@ -319,11 +319,11 @@ server <- function(input, output, session) {
         
         # 如果未上传新图片，保留现有图片路径 
         if (is.na(image_path) || image_path == "") {
-          image_path <- existing_item$ItemImagePath
+          new_image_path <- existing_item$ItemImagePath
         }
         
         dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ?, updated_at = NOW() WHERE SKU = ?",
-                  params = list(new_quantity, round(new_ave_cost, 2), image_path, sku))
+                  params = list(new_quantity, round(new_ave_cost, 2), new_image_path, sku))
         
         show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
       } else {
@@ -347,6 +347,10 @@ server <- function(input, output, session) {
     
     show_custom_notification("库存已成功更新！", type = "message")
   })
+  
+  
+  
+  ### SKU 模块
   
   # Automatically generate SKU when relevant inputs change
   observeEvent({
