@@ -150,16 +150,14 @@ create_empty_inventory <- function() {
     ItemName = character(),       # Item name
     Quantity = numeric(),         # Quantity in stock
     Cost = numeric(),             # Cost
-    ItemImage = character(),
     ItemImagePath = character(),  # Path to item image
     stringsAsFactors = FALSE      # Avoid factor columns
   )
 }
 
-# 通用函数：渲染图片列（支持本地图片路径和 URL/Base64 图片）
+# function to render image column (local images only)
 render_image_column <- function(image_column, 
-                                is_local = FALSE, 
-                                local_image_dir = "www/images", 
+                                local_image_dir = "/var/www/images", 
                                 placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   sapply(image_column, function(img) {
     if (is.na(img) || img == "") {
@@ -167,34 +165,27 @@ render_image_column <- function(image_column,
       return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
     }
     
-    if (is_local) {
-      # Handle local images
-      local_img_path <- file.path(local_image_dir, basename(img))
-      if (file.exists(local_img_path)) {
-        return(paste0('<img src="', local_img_path, '" width="50" height="50" style="object-fit:cover;"/>'))
-      } else {
-        # Return placeholder if local file does not exist
-        return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
-      }
+    # Handle local images
+    local_img_path <- file.path(local_image_dir, basename(img))
+    if (file.exists(local_img_path)) {
+      return(paste0('<img src="', local_img_path, '" width="50" height="50" style="object-fit:cover;"/>'))
     } else {
-      # Handle remote URL or Base64 image
-      return(paste0('<img src="', img, '" width="50" height="50" style="object-fit:cover;"/>'))
+      # Return placeholder if local file does not exist
+      return(paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>'))
     }
   }, USE.NAMES = FALSE)
 }
 
-# 通用函数：渲染表格（支持图片列处理和列名映射）
+# function to render datatable with images
 render_table_with_images <- function(data, 
                                      column_mapping, 
                                      image_column = NULL, 
-                                     is_local = FALSE, 
-                                     local_image_dir = "www/images", 
+                                     local_image_dir = "/var/www/images", 
                                      placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(
       data[[image_column]],
-      is_local = is_local,
       local_image_dir = local_image_dir,
       placeholder = placeholder
     )

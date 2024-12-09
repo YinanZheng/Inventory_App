@@ -122,8 +122,7 @@ server <- function(input, output, session) {
       data = filtered_inventory(),
       column_mapping = column_mapping,
       image_column = "ItemImagePath",  # Specify the image column
-      is_local = TRUE,  # Use server-stored image paths
-      local_image_dir = "www/images"
+      local_image_dir = "/var/www/images"  # Ensure the directory matches the actual image storage location
     )
   })
   
@@ -174,13 +173,33 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Convert image to Base64
-    image_data <- if (!is.null(input$new_item_image)) {
-      base64enc::dataURI(file = input$new_item_image$datapath, mime = input$new_item_image$type)
-    } else {
-      NA
+    # Initialize compressed image path as NA
+    compressed_image_path <- NA
+    
+    # Handle image compression and save to public directory
+    if (!is.null(input$new_item_image)) {
+      tryCatch({
+        # Ensure the public directory exists
+        output_dir <- "/var/www/images"
+        if (!dir.exists(output_dir)) {
+          dir.create(output_dir, recursive = TRUE)
+        }
+        
+        # Compress and save the image
+        compressed_image_path <- save_compressed_image(
+          file_path = input$new_item_image$datapath,
+          output_dir = output_dir,
+          image_name = paste0(input$new_sku, ".jpg")
+        )
+        
+        show_custom_notification("图片已成功压缩并存储！", type = "message")
+      }, error = function(e) {
+        show_custom_notification("图片处理失败！", type = "error")
+        compressed_image_path <<- NA
+      })
     }
     
+    # Create a new item and add it to the reactive data frame
     new_item <- data.frame(
       SKU = input$new_sku,
       Maker = input$new_maker,
@@ -189,8 +208,7 @@ server <- function(input, output, session) {
       ItemName = input$new_name,
       Quantity = input$new_quantity,
       Cost = round(input$new_cost, 2),
-      ItemImage = image_data,  # Store Base64-encoded image data
-      ItemImagePath = if (!is.null(input$new_item_image)) input$new_item_image$datapath else NA,
+      ItemImagePath = compressed_image_path,  # Store the path to the compressed image
       stringsAsFactors = FALSE
     )
     
@@ -210,14 +228,14 @@ server <- function(input, output, session) {
       ItemName = "商品名",
       Quantity = "入库数量",
       Cost = "采购成本",
-      ItemImage = "商品图片"
+      ItemImagePath = "商品图片"
     )
     
     render_table_with_images(
       data = added_items(),
       column_mapping = column_mapping,
-      image_column = "ItemImage",  # Specify the image column
-      is_local = FALSE  # Use server-stored image paths
+      image_column = "ItemImagePath",  # Specify the correct image column
+      local_image_dir = "/var/www/images"  # Use server-stored image paths
     )
   })
   
@@ -262,7 +280,7 @@ server <- function(input, output, session) {
           added_items_df$ItemImagePath[i] <- compressed_image_path
           show_custom_notification(paste("图片压缩并上传成功! SKU:", added_items_df$SKU[i]), type = "message")
         }, error = function(e) {
-          show_custom_notification(paste("图片处理失败! SKU:", added_items_df$SKU[i]), type = "error")
+          show_custom_notification(paste("图片上传失败! SKU:", added_items_df$SKU[i]), type = "error")
         })
       }
     }
