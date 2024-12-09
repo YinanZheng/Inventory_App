@@ -24,13 +24,13 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM inventory")
   })
   
-  # Reactive value to store added items
-  added_items <- reactiveVal(create_empty_inventory()) 
-  
-  
-  ## 供应商模块
-  supplier_module(input, output, session, maker_sheet_id)
-  
+  # # Reactive value to store added items
+  # added_items <- reactiveVal(create_empty_inventory()) 
+  # 
+  # 
+  # ## 供应商模块
+  # supplier_module(input, output, session, maker_sheet_id)
+  # 
   
   # ## 大小类模块
   # # Render Major Type Dropdown
