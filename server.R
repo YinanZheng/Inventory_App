@@ -343,6 +343,13 @@ server <- function(input, output, session) {
     
     # Clear added items after confirmation
     added_items(create_empty_inventory())
+    
+    # 刷新 inventory 数据
+    inventory({
+      dbGetQuery(con, "SELECT * FROM inventory")
+    })
+    
+    show_custom_notification("库存已成功更新！", type = "message")
   })
   
   # Automatically generate SKU when relevant inputs change
