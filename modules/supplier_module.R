@@ -1,5 +1,5 @@
 # 定义供应商模块
-supplier_module <- function(input, output, session) {
+supplier_module <- function(input, output, session, con) {
   # Reactive: 供应商数据
   maker_list <- reactive({
     dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
@@ -7,8 +7,12 @@ supplier_module <- function(input, output, session) {
   
   # 更新供应商下拉选项函数
   update_maker_choices <- function(maker_data) {
-    choices <- setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")"))
-    updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
+    if (is.null(maker_data) || nrow(maker_data) == 0) {
+      updateSelectizeInput(session, "new_maker", choices = NULL, server = TRUE)
+    } else {
+      choices <- setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")"))
+      updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
+    }
   }
   
   # 初始化供应商选择器
@@ -31,6 +35,7 @@ supplier_module <- function(input, output, session) {
   
   # 动态匹配供应商名称
   observe({
+    req(maker_list())
     output$matched_suppliers <- renderUI({
       current_name <- input$new_supplier_name
       
@@ -54,6 +59,19 @@ supplier_module <- function(input, output, session) {
   observeEvent(input$submit_supplier, {
     new_supplier <- input$new_supplier_name
     existing_suppliers <- maker_list()$Maker
+    
+    if (new_supplier %in% existing_suppliers) {
+      showModal(modalDialog(
+        title = "错误",
+        paste0("供应商 '", new_supplier, "' 已经存在，请勿重复添加。"),
+        easyClose = TRUE,
+        footer = NULL
+      ))
+      return()
+    }
+    
+    # 自动生成拼音
+    pinyin_name <- remove_tone(stri_trans_general(new_supplier, "Latin"))
     
     if (new_supplier != "") {
       # 添加新供应商到 MySQL 数据库

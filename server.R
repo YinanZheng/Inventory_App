@@ -28,7 +28,7 @@ server <- function(input, output, session) {
 
 
   ## 供应商模块
-  supplier_module(input, output, session)
+  supplier_module(input, output, session, con)
 
   
   # ## 大小类模块
