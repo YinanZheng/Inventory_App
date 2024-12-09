@@ -38,24 +38,20 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
   return(paste0(pdf_path, ".pdf"))
 }
 
-# Upload compressed image to server
-save_compressed_image <- function(file_path, output_dir, image_name) {
-  tryCatch({
-    # Ensure output directory exists
-    if (!dir.exists(output_dir)) {
-      dir.create(output_dir, recursive = TRUE)
-    }
-    
-    # Read, compress, and save the image
-    img <- magick::image_read(file_path)
-    compressed_img <- magick::image_scale(img, "800x")  # Adjust size
-    compressed_path <- file.path(output_dir, image_name)
-    magick::image_write(compressed_img, path = compressed_path, format = "jpeg", quality = 75)
-    compressed_path
-  }, error = function(e) {
-    message(paste("Error compressing image:", e$message))
-    NA  # Return NA if there's an error
-  })
+# Save compressed image to the server
+save_compressed_image <- function(file_path, output_dir, image_name, quality = 75) {
+  # Load the image
+  img <- magick::image_read(file_path)
+  
+  # Compress the image
+  compressed_img <- magick::image_scale(img, "800x")  # Resize
+  compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
+  
+  # Save the compressed image
+  output_path <- file.path(output_dir, image_name)
+  magick::image_write(compressed_img, path = output_path, quality = quality)
+  
+  return(output_path)  # Return the saved image path
 }
 
 # Generate unique code

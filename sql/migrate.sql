@@ -50,10 +50,10 @@ LINES TERMINATED BY '\n'
 IGNORE 1 ROWS
 (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU);
 
-UPDATE maker_list
+UPDATE item_type_data
 SET MajorType = TRIM(REPLACE(MajorType, '\r', '')),
-    MajorTypeSKU = TRIM(REPLACE(MajorTypeSKU, '\r', ''))，
-    MinorType = TRIM(REPLACE(MinorType, '\r', ''))，
+    MajorTypeSKU = TRIM(REPLACE(MajorTypeSKU, '\r', '')),
+    MinorType = TRIM(REPLACE(MinorType, '\r', '')),
     MinorTypeSKU = TRIM(REPLACE(MinorTypeSKU, '\r', ''));
 
 SELECT * FROM item_type_data;
