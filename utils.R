@@ -173,17 +173,22 @@ create_empty_inventory <- function() {
 }
 
 # Function to render the image column (local images with public URL prefix)
-render_image_column <- function(image_column, 
-                                host_url = host_url,  # 替换为您的服务器 IP 地址或域名
+render_image_column <- function(image_column_data, 
+                                host_url,  # 不使用默认值，确保明确传入
                                 placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
-  sapply(image_column, function(img) {
+  # 验证输入参数是否正确
+  if (missing(host_url) || is.null(host_url)) {
+    stop("Error: 'host_url' must be provided and cannot be NULL.")
+  }
+  
+  sapply(image_column_data, function(img) {
     if (is.na(img) || img == "") {
       # 返回占位符图片
       paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>')
     } else {
       # 拼接完整的图片 URL
       img_path <- paste0(host_url, "/images/", basename(img))
-      print(img_path)
+      print(img_path)  # 打印路径进行调试
       paste0('<img src="', img_path, '" width="50" height="50" style="object-fit:cover;"/>')
     }
   }, USE.NAMES = FALSE)
@@ -196,10 +201,7 @@ render_table_with_images <- function(data,
                                      placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
-    data[[image_column]] <- render_image_column(
-      data[[image_column]],
-      placeholder = placeholder
-    )
+    data[[image_column]] <- render_image_column(data[[image_column]], host_url)
   }
   
   # Map column names for user-friendly display
