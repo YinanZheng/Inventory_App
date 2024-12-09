@@ -50,8 +50,11 @@ sudo mkdir /srv/shiny-server/inventory
 sudo chown -R ubuntu:ubuntu /srv/shiny-server/inventory
 sudo chmod -R 755 /srv/shiny-server/inventory
 
+sudo chown ubuntu:ubuntu /var/log/shiny-server
+sudo chmod 755 /var/log/shiny-server
+sudo -u ubuntu touch /var/log/shiny-server/test.log
 
-### Sync code
+### Sync Github code
 cd /srv/shiny-server/inventory
 git clone https://github.com/YinanZheng/Inventory_App.git .
 

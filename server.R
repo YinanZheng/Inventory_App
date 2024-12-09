@@ -1,6 +1,6 @@
 # Connect to MySQL Database
 con <- dbConnect(
-  RMariaDB::MySQL(),
+  RMariaDB::MariaDB(),
   dbname = "inventory_system",
   host = "localhost",
   user = "root",
