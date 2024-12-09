@@ -1,10 +1,3 @@
-# Google authentication
-setup_google_auth <- function(email) {
-  options(gargle_oauth_cache = ".secrets")
-  gs4_auth(cache = ".secrets", email = email)
-  drive_auth(cache = ".secrets", email = email)
-}
-
 # Map column names and filter only mapped columns
 map_column_names <- function(data, column_mapping) {
   # 获取 column_mapping 中的列名

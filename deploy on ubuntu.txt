@@ -54,6 +54,8 @@ sudo chmod -R 755 /srv/shiny-server/inventory
 ### Sync code
 cd /srv/shiny-server/inventory
 git clone https://github.com/YinanZheng/Inventory_App.git .
+
+cd /srv/shiny-server/inventory
 git pull origin main
 
 
@@ -63,11 +65,11 @@ Rscript image_cache.R
 
 
 ### Log
-sudo tail -f /var/log/shiny-server/shiny-server.log
+/var/log/shiny-server
 
 sudo rm /var/log/shiny-server/*.log
 
-
+### Restart shiny server
 sudo systemctl restart shiny-server
 
 
