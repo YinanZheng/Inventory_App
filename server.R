@@ -201,77 +201,77 @@ server <- function(input, output, session) {
            "（其中包含运费: ¥", input$shipping_cost, ")")
   })
   
-  # Handle confirm button click to update the database
-  observeEvent(input$confirm_btn, {
-    # If no items are added, show an error notification
-    if (nrow(added_items()) == 0) {
-      show_custom_notification("请先添加至少一个商品再确认!", type = "error")
-      return()
-    }
-    
-    added_items_df <- added_items()
-    
-    # Upload images to Google Drive
-    for (i in 1:nrow(added_items_df)) {
-      if (!is.na(added_items_df$ItemImagePath[i])) {
-        tryCatch({
-          drive_file <- save_image_to_drive(added_items_df$ItemImagePath[i], images_folder_id, added_items_df$SKU[i])
-          #Update image path to google drive path
-          added_items_df$ItemImagePath[i] <- drive_file$id
-          show_custom_notification(paste("图片上传成功! SKU:", added_items_df$SKU[i], ", 商品名:", added_items_df$ItemName[i]), type = "message")
-        }, error = function(e) {
-          show_custom_notification(paste("图片上传失败! SKU:", added_items_df$SKU[i], ", 商品名:", added_items_df$ItemName[i]), type = "error")
-        })
-      }
-    }
-    
-    # Update the Google Sheet with the added items (excluding Maker and ItemImage)
-    # Loop through added items to either update or add
-    for (i in 1:nrow(added_items_df)) {
-      sku <- added_items_df$SKU[i]
-      
-      if (sku %in% inventory()$SKU) {
-        # Update existing item quantity in Google Sheets
-        sheet_range <- which(inventory()$SKU == sku)
-        if (length(sheet_range) == 1) {
-          inventory_quantity <- ifelse(is.na(inventory()$Quantity[sheet_range]), 0, as.integer(inventory()$Quantity[sheet_range]))
-          added_quantity <- ifelse(is.na(added_items_df$Quantity[i]), 0, as.integer(added_items_df$Quantity[i]))
-          updated_quantity <- inventory_quantity + added_quantity
-          range_write(
-            ss = inventory_sheet_id, 
-            data = data.frame(updated_quantity), 
-            sheet = "Sheet1", 
-            range = paste0("E", sheet_range + 1), 
-            col_names = FALSE 
-          )
-          
-          # Update Image if new image uploaded
-          if (!is.na(added_items_df$ItemImagePath[i])) {
-            range_write(
-              ss = inventory_sheet_id,
-              data = data.frame(added_items_df$ItemImagePath[i]),
-              sheet = "Sheet1",
-              range = paste0("G", sheet_range + 1),
-              col_names = FALSE
-            )
-            show_custom_notification(paste("图片更新成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
-          }
-          show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", updated_quantity), type = "message")
-        } else {
-          show_custom_notification(paste("找到多条记录SKU:", sku), type = "error")
-        }
-      } else {
-        # Add new item
-        sheet_append(ss = inventory_sheet_id, data = added_items_df[i, ] %>% select(-Maker, -ItemImage), sheet = "Sheet1")
-        show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
-      }
-    }
-    
-    inventory(read_sheet(inventory_sheet_id)) # Refresh the inventory to reflect any updates
-    
-    # Clear the added items after confirming
-    added_items(create_empty_inventory())
-  })
+  # # Handle confirm button click to update the database
+  # observeEvent(input$confirm_btn, {
+  #   # If no items are added, show an error notification
+  #   if (nrow(added_items()) == 0) {
+  #     show_custom_notification("请先添加至少一个商品再确认!", type = "error")
+  #     return()
+  #   }
+  #   
+  #   added_items_df <- added_items()
+  #   
+  #   # Upload images to Google Drive
+  #   for (i in 1:nrow(added_items_df)) {
+  #     if (!is.na(added_items_df$ItemImagePath[i])) {
+  #       tryCatch({
+  #         drive_file <- save_image_to_drive(added_items_df$ItemImagePath[i], images_folder_id, added_items_df$SKU[i])
+  #         #Update image path to google drive path
+  #         added_items_df$ItemImagePath[i] <- drive_file$id
+  #         show_custom_notification(paste("图片上传成功! SKU:", added_items_df$SKU[i], ", 商品名:", added_items_df$ItemName[i]), type = "message")
+  #       }, error = function(e) {
+  #         show_custom_notification(paste("图片上传失败! SKU:", added_items_df$SKU[i], ", 商品名:", added_items_df$ItemName[i]), type = "error")
+  #       })
+  #     }
+  #   }
+  #   
+  #   # Update the Google Sheet with the added items (excluding Maker and ItemImage)
+  #   # Loop through added items to either update or add
+  #   for (i in 1:nrow(added_items_df)) {
+  #     sku <- added_items_df$SKU[i]
+  #     
+  #     if (sku %in% inventory()$SKU) {
+  #       # Update existing item quantity in Google Sheets
+  #       sheet_range <- which(inventory()$SKU == sku)
+  #       if (length(sheet_range) == 1) {
+  #         inventory_quantity <- ifelse(is.na(inventory()$Quantity[sheet_range]), 0, as.integer(inventory()$Quantity[sheet_range]))
+  #         added_quantity <- ifelse(is.na(added_items_df$Quantity[i]), 0, as.integer(added_items_df$Quantity[i]))
+  #         updated_quantity <- inventory_quantity + added_quantity
+  #         range_write(
+  #           ss = inventory_sheet_id, 
+  #           data = data.frame(updated_quantity), 
+  #           sheet = "Sheet1", 
+  #           range = paste0("E", sheet_range + 1), 
+  #           col_names = FALSE 
+  #         )
+  #         
+  #         # Update Image if new image uploaded
+  #         if (!is.na(added_items_df$ItemImagePath[i])) {
+  #           range_write(
+  #             ss = inventory_sheet_id,
+  #             data = data.frame(added_items_df$ItemImagePath[i]),
+  #             sheet = "Sheet1",
+  #             range = paste0("G", sheet_range + 1),
+  #             col_names = FALSE
+  #           )
+  #           show_custom_notification(paste("图片更新成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
+  #         }
+  #         show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", updated_quantity), type = "message")
+  #       } else {
+  #         show_custom_notification(paste("找到多条记录SKU:", sku), type = "error")
+  #       }
+  #     } else {
+  #       # Add new item
+  #       sheet_append(ss = inventory_sheet_id, data = added_items_df[i, ] %>% select(-Maker, -ItemImage), sheet = "Sheet1")
+  #       show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", added_items_df$ItemName[i]), type = "message")
+  #     }
+  #   }
+  #   
+  #   inventory(read_sheet(inventory_sheet_id)) # Refresh the inventory to reflect any updates
+  #   
+  #   # Clear the added items after confirming
+  #   added_items(create_empty_inventory())
+  # })
   
   
   # Generate Barcode based on SKU
@@ -330,8 +330,6 @@ server <- function(input, output, session) {
     shinyjs::reset("new_item_image")
     
     added_items(create_empty_inventory()) # 使用统一的空表函数
-    
-    inventory(read_sheet(inventory_sheet_id))
     
     output$filtered_inventory_table <- renderDT({
       column_mapping <- list(
