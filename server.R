@@ -384,15 +384,16 @@ server <- function(input, output, session) {
     
     show_custom_notification("库存已成功更新！", type = "message")
     
-
+    
     # Prepare data for batch insertion
     batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
       sku <- added_items_df$SKU[i]
       quantity <- added_items_df$Quantity[i]
       cost <- added_items_df$Cost[i]
       
+      # Skip invalid rows
       if (quantity <= 0 || is.na(cost) || cost <= 0) {
-        return(NULL)  # Skip invalid rows
+        return(NULL)
       }
       
       # Create rows for each quantity
@@ -405,25 +406,21 @@ server <- function(input, output, session) {
       )))
     }))
     
-    # Validate data
-    if (is.null(batch_data) || nrow(batch_data) == 0) {
-      show_custom_notification("批量数据无效，请检查输入。", type = "error")
-      return()
-    }
-    
     # Convert to data frame
     batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
     colnames(batch_data) <- c("UniqueID", "SKU", "Cost", "Status", "DomesticEntryTime")
     
+    # Print batch_data for debugging
+    print(batch_data)
+    
     # Insert into database
     dbBegin(con)
     tryCatch({
-      # Insert rows one by one
       for (i in 1:nrow(batch_data)) {
         dbExecute(con, "
       INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
       VALUES (?, ?, ?, ?, ?)",
-                  params = as.list(batch_data[i, ])
+                  params = as.list(batch_data[i, ])  # Unnamed parameters
         )
       }
       dbCommit(con)  # Commit transaction
@@ -434,34 +431,27 @@ server <- function(input, output, session) {
     })
     
     
-    # Clear added items and reset input fields
-    added_items(create_empty_inventory())
-    if (!is.null(input$new_item_image)) {
-      shinyjs::reset("new_item_image")
-    }
-  })
-  
-  # Handle row selection in item table
-  observeEvent(input$added_items_table_rows_selected, {
-    selected_row <- input$added_items_table_rows_selected
-    if (length(selected_row) > 0) {
-      selected_data <- added_items()[selected_row, ]
-      
-      # Update input fields in the sidebar
-      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
-      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
-      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
-      updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
-      updateNumericInput(session, "new_cost", value = selected_data$Cost)
-    }
-  })
-  
-  
-  
-  ## 物品追踪表
-  unique_items_data <- reactive({
-    dbGetQuery(con, "
+    # Handle row selection in item table
+    observeEvent(input$added_items_table_rows_selected, {
+      selected_row <- input$added_items_table_rows_selected
+      if (length(selected_row) > 0) {
+        selected_data <- added_items()[selected_row, ]
+        
+        # Update input fields in the sidebar
+        updateSelectInput(session, "new_maker", selected = selected_data$Maker)
+        updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+        updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+        updateTextInput(session, "new_name", value = selected_data$ItemName)
+        updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
+        updateNumericInput(session, "new_cost", value = selected_data$Cost)
+      }
+    })
+    
+    
+    
+    ## 物品追踪表
+    unique_items_data <- reactive({
+      dbGetQuery(con, "
     SELECT 
       unique_items.UniqueID AS '唯一物品编码',
       unique_items.SKU AS '条形码', 
@@ -484,130 +474,130 @@ server <- function(input, output, session) {
     ORDER BY 
       unique_items.DomesticEntryTime DESC
   ")
-  })
-  
-  # 渲染 unique_items 数据表
-  # output$unique_items_table <- renderDT({
-  #   # Define column mapping for user-friendly display
-  #   column_mapping <- list(
-  #     UniqueID = "唯一物品编码",
-  #     Status = "当前状态",
-  #     DomesticEntryTime = "国内仓入库时间",
-  #     DomesticExitTime = "国内仓出库时间",
-  #     UsEntryTime = "美国仓入库时间",
-  #     UsExitTime = "美国仓出库时间",
-  #     Maker = "供应商",
-  #     MajorType = "大类",
-  #     MinorType = "小类",
-  #     ItemName = "商品名",
-  #     ItemImagePath = "商品图片"
-  #   )
-  #   
-  #   # Render table with images
-  #   render_table_with_images(
-  #     data = unique_items_data(),     # Use the reactive data source
-  #     column_mapping = column_mapping, # Map columns to user-friendly names
-  #     image_column = "ItemImagePath"   # Specify the column for images
-  #   )
-  # })
-  # 
-  output$unique_items_table <- renderDT({
-    data <- unique_items_data()
+    })
     
-    if (is.null(data) || nrow(data) == 0) {
-      return(datatable(data.frame("消息" = "没有数据可显示"), escape = FALSE))
-    }
+    # 渲染 unique_items 数据表
+    # output$unique_items_table <- renderDT({
+    #   # Define column mapping for user-friendly display
+    #   column_mapping <- list(
+    #     UniqueID = "唯一物品编码",
+    #     Status = "当前状态",
+    #     DomesticEntryTime = "国内仓入库时间",
+    #     DomesticExitTime = "国内仓出库时间",
+    #     UsEntryTime = "美国仓入库时间",
+    #     UsExitTime = "美国仓出库时间",
+    #     Maker = "供应商",
+    #     MajorType = "大类",
+    #     MinorType = "小类",
+    #     ItemName = "商品名",
+    #     ItemImagePath = "商品图片"
+    #   )
+    #   
+    #   # Render table with images
+    #   render_table_with_images(
+    #     data = unique_items_data(),     # Use the reactive data source
+    #     column_mapping = column_mapping, # Map columns to user-friendly names
+    #     image_column = "ItemImagePath"   # Specify the column for images
+    #   )
+    # })
+    # 
+    output$unique_items_table <- renderDT({
+      data <- unique_items_data()
+      
+      if (is.null(data) || nrow(data) == 0) {
+        return(datatable(data.frame("消息" = "没有数据可显示"), escape = FALSE))
+      }
+      
+      datatable(data)
+    })
     
-    datatable(data)
-  })
-  
-  
-  
-  
-  
-  ### SKU Barcode 模块
-  
-  # Automatically generate SKU when relevant inputs change
-  observeEvent({
-    input$new_major_type
-    input$new_minor_type
-    input$new_name
-    input$new_maker
-  }, {
-    req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
     
-    # Dynamically generate SKU
-    sku <- generate_sku(
-      item_type_data = item_type_data(),
-      major_type = input$new_major_type,
-      minor_type = input$new_minor_type,
-      item_name = input$new_name,
-      maker = input$new_maker
+    
+    
+    
+    ### SKU Barcode 模块
+    
+    # Automatically generate SKU when relevant inputs change
+    observeEvent({
+      input$new_major_type
+      input$new_minor_type
+      input$new_name
+      input$new_maker
+    }, {
+      req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
+      
+      # Dynamically generate SKU
+      sku <- generate_sku(
+        item_type_data = item_type_data(),
+        major_type = input$new_major_type,
+        minor_type = input$new_minor_type,
+        item_name = input$new_name,
+        maker = input$new_maker
+      )
+      
+      # Update the SKU input field
+      updateTextInput(session, "new_sku", value = sku)
+    })
+    
+    # Generate Barcode based on SKU
+    session$onFlushed(function() {
+      shinyjs::disable("barcode_pdf")
+    })
+    
+    pdf_file_path <- reactiveVal(NULL)
+    
+    observeEvent(input$export_btn, {
+      req(input$new_sku, input$new_quantity)
+      pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
+      pdf_file_path(pdf_file)
+      show_custom_notification("条形码已导出为PDF!")
+      shinyjs::enable("barcode_pdf")
+    })
+    
+    # Download PDF button
+    output$barcode_pdf <- downloadHandler(
+      filename = function() {
+        cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
+        basename(pdf_file_path())  # Use basename to just get the file name
+      },
+      content = function(file) {
+        # Ensure the file exists before copying
+        cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
+        file.copy(pdf_file_path(), file, overwrite = TRUE)
+      }
     )
     
-    # Update the SKU input field
-    updateTextInput(session, "new_sku", value = sku)
-  })
-  
-  # Generate Barcode based on SKU
-  session$onFlushed(function() {
-    shinyjs::disable("barcode_pdf")
-  })
-  
-  pdf_file_path <- reactiveVal(NULL)
-  
-  observeEvent(input$export_btn, {
-    req(input$new_sku, input$new_quantity)
-    pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
-    pdf_file_path(pdf_file)
-    show_custom_notification("条形码已导出为PDF!")
-    shinyjs::enable("barcode_pdf")
-  })
-  
-  # Download PDF button
-  output$barcode_pdf <- downloadHandler(
-    filename = function() {
-      cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
-      basename(pdf_file_path())  # Use basename to just get the file name
-    },
-    content = function(file) {
-      # Ensure the file exists before copying
-      cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
-      file.copy(pdf_file_path(), file, overwrite = TRUE)
-    }
-  )
-  
-  
-  
-  
-  
-  observeEvent(input$reset_btn, {
-    tryCatch({
-      # 清空输入控件
-      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
-      updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
-      updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
-      updateTextInput(session, "new_name", value = "")  # 清空商品名
-      updateNumericInput(session, "new_quantity", value = 1)  # 恢复数量默认值
-      updateNumericInput(session, "new_cost", value = 0)  # 恢复成本默认值
-      updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
-      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
-      shinyjs::reset("new_item_image")  # 重置文件上传控件
-      
-      # 清空已添加的商品
-      added_items(create_empty_inventory())
-      
-      # 通知用户
-      show_custom_notification("输入已清空！", type = "message")
-    }, error = function(e) {
-      # 捕获错误并通知用户
-      show_custom_notification("清空输入时发生错误，请重试！", type = "error")
-      log_debug(paste("Error in reset_btn:", e$message))
+    
+    
+    
+    
+    observeEvent(input$reset_btn, {
+      tryCatch({
+        # 清空输入控件
+        updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
+        updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
+        updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
+        updateTextInput(session, "new_name", value = "")  # 清空商品名
+        updateNumericInput(session, "new_quantity", value = 1)  # 恢复数量默认值
+        updateNumericInput(session, "new_cost", value = 0)  # 恢复成本默认值
+        updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
+        updateTextInput(session, "new_sku", value = "")  # 清空 SKU
+        shinyjs::reset("new_item_image")  # 重置文件上传控件
+        
+        # 清空已添加的商品
+        added_items(create_empty_inventory())
+        
+        # 通知用户
+        show_custom_notification("输入已清空！", type = "message")
+      }, error = function(e) {
+        # 捕获错误并通知用户
+        show_custom_notification("清空输入时发生错误，请重试！", type = "error")
+        log_debug(paste("Error in reset_btn:", e$message))
+      })
     })
-  })
-  
-  # Disconnect from the database on app stop
-  onStop(function() {
-    dbDisconnect(con)
-  })
-}
+    
+    # Disconnect from the database on app stop
+    onStop(function() {
+      dbDisconnect(con)
+    })
+  }
