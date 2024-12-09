@@ -396,7 +396,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
-      updateNumericInput(session, "new_quantity", value = 0)
+      updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_cost", value = selected_data$Cost)
       updateTextInput(session, "new_sku", value = selected_data$SKU)
     }
