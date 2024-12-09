@@ -7,6 +7,8 @@ con <- dbConnect(
   password = "goldenbeanllc"
 )
 
+print(dbGetQuery(con, "SHOW TABLES"))
+
 # Define server logic
 server <- function(input, output, session) {
   # Load data from MySQL
