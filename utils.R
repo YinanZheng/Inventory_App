@@ -39,28 +39,23 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
 }
 
 # Upload compressed image to server
-save_compressed_image <- function(file_path, output_dir = "/var/www/images", image_name = NULL, quality = 75) {
-  # Ensure the output directory exists
-  if (!dir.exists(output_dir)) {
-    dir.create(output_dir, recursive = TRUE)
-  }
-  
-  # Generate image name if not provided
-  if (is.null(image_name)) {
-    image_name <- paste0(tools::file_path_sans_ext(basename(file_path)), "_compressed.jpg")
-  }
-  
-  # Load the image
-  img <- magick::image_read(file_path)
-  
-  # Compress the image (resize and adjust quality)
-  compressed_img <- magick::image_scale(img, "800x")  # Resize image to width of 800px
-  compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
-  compressed_img_path <- file.path(output_dir, image_name)
-  magick::image_write(compressed_img, path = compressed_img_path, quality = quality)
-  
-  # Return the path to the compressed image
-  return(compressed_img_path)
+save_compressed_image <- function(file_path, output_dir, image_name) {
+  tryCatch({
+    # Ensure output directory exists
+    if (!dir.exists(output_dir)) {
+      dir.create(output_dir, recursive = TRUE)
+    }
+    
+    # Read, compress, and save the image
+    img <- magick::image_read(file_path)
+    compressed_img <- magick::image_scale(img, "800x")  # Adjust size
+    compressed_path <- file.path(output_dir, image_name)
+    magick::image_write(compressed_img, path = compressed_path, format = "jpeg", quality = 75)
+    compressed_path
+  }, error = function(e) {
+    message(paste("Error compressing image:", e$message))
+    NA  # Return NA if there's an error
+  })
 }
 
 # Generate unique code
@@ -145,6 +140,7 @@ create_empty_inventory <- function() {
     ItemName = character(),       # Item name
     Quantity = numeric(),         # Quantity in stock
     Cost = numeric(),             # Cost
+    ItemImage = character(),
     ItemImagePath = character(),  # Path to item image
     stringsAsFactors = FALSE      # Avoid factor columns
   )

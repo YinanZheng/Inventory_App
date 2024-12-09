@@ -285,10 +285,9 @@ server <- function(input, output, session) {
         new_quantity <- existing_item$Quantity + quantity
         new_ave_cost <- ((existing_item$Cost * existing_item$Quantity) + (cost * quantity)) / new_quantity
         
-        dbExecute(con, "UPDATE inventory SET 
-                      Quantity = ?, Cost = ?, updated_at = NOW() 
-                      WHERE SKU = ?",
-                  params = list(new_quantity, round(new_ave_cost, 2), sku))
+        dbExecute(con, "UPDATE inventory SET Quantity = ?, Cost = ?, ItemImagePath = ? WHERE SKU = ?",
+                  params = list(new_quantity, round(new_ave_cost, 2), image_path, sku))
+        
         
         # Update image path if a new image was uploaded
         if (!is.na(image_path)) {
