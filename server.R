@@ -210,14 +210,14 @@ server <- function(input, output, session) {
       ItemName = "商品名",
       Quantity = "入库数量",
       Cost = "采购成本",
-      ItemImagePath = "商品图片"
+      ItemImage = "商品图片"
     )
     
     render_table_with_images(
       data = added_items(),
       column_mapping = column_mapping,
-      image_column = "ItemImagePath",  # Specify the image column
-      is_local = TRUE  # Use server-stored image paths
+      image_column = "ItemImage",  # Specify the image column
+      is_local = FALSE  # Use server-stored image paths
     )
   })
   
