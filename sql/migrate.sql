@@ -11,6 +11,9 @@ DROP TABLE item_type_data;
 DROP TABLE inventory;
 
 
+-- Remove all record
+DELETE FROM inventory;
+
 -- Populate maker_list using csv files
 -- Use NotePad ++ to convert the encoding to UTF-8
 sudo mv /tmp/maker_list.csv /var/lib/mysql-files/

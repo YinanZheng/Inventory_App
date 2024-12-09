@@ -135,6 +135,7 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_cost", value = selected_data$Cost)
     }
+    shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
   
   ## 入库表模块
@@ -247,6 +248,7 @@ server <- function(input, output, session) {
       added_items(bind_rows(existing_items, new_item))
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
+    shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
   
   
