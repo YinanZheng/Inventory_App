@@ -369,73 +369,74 @@ server <- function(input, output, session) {
     # Update the SKU input field
     updateTextInput(session, "new_sku", value = sku)
   })
-  # 
-  #   # Generate Barcode based on SKU
-  #   session$onFlushed(function() {
-  #     shinyjs::disable("barcode_pdf")
-  #   })
-  # 
-  #   pdf_file_path <- reactiveVal(NULL)
-  # 
-  #   observeEvent(input$export_btn, {
-  #     req(input$new_sku, input$new_quantity)
-  #     pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
-  #     pdf_file_path(pdf_file)
-  #     show_custom_notification("条形码已导出为PDF!")
-  #     shinyjs::enable("barcode_pdf")
-  #   })
-  # 
-  #   # Download PDF button
-  #   output$barcode_pdf <- downloadHandler(
-  #     filename = function() {
-  #       cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
-  #       basename(pdf_file_path())  # Use basename to just get the file name
-  #     },
-  #     content = function(file) {
-  #       # Ensure the file exists before copying
-  #       cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
-  #       file.copy(pdf_file_path(), file, overwrite = TRUE)
-  #     }
-  #   )
-  # 
-  # 
-  # 
-  # 
-  # 
-  # observeEvent(input$reset_btn, {
-  #   updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
-  #   updateSelectInput(session, "new_major_type", selected = NULL)
-  #   updateSelectInput(session, "new_minor_type", selected = NULL)
-  #   updateTextInput(session, "new_name", value = "")
-  #   updateNumericInput(session, "new_quantity", value = 1)
-  #   updateNumericInput(session, "new_cost", value = 0)
-  #   updateTextInput(session, "new_sku", value = "")
-  #   shinyjs::reset("new_item_image")
-  #   
-  #   added_items(create_empty_inventory()) # 使用统一的空表函数
-  #   
-  #   output$filtered_inventory_table <- renderDT({
-  #     column_mapping <- list(
-  #       SKU = "条形码",
-  #       MajorType = "大类",
-  #       MinorType = "小类",
-  #       ItemName = "商品名",
-  #       Quantity = "库存数",
-  #       Cost = "采购成本",
-  #       ItemImagePath = "商品图片"
-  #     )
-  #     
-  #     render_table_with_images(
-  #       data = filtered_inventory(),
-  #       column_mapping = column_mapping,
-  #       image_column = "ItemImagePath",  # 指定图片列
-  #       is_local = TRUE  # 服务器已有图片处理
-  #     )
-  #   })
-  #   
-  #   show_custom_notification("已重置所有输入和状态！", type = "message")
-  # })
-  
+
+    # Generate Barcode based on SKU
+    session$onFlushed(function() {
+      shinyjs::disable("barcode_pdf")
+    })
+
+    pdf_file_path <- reactiveVal(NULL)
+
+    observeEvent(input$export_btn, {
+      req(input$new_sku, input$new_quantity)
+      pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
+      pdf_file_path(pdf_file)
+      show_custom_notification("条形码已导出为PDF!")
+      shinyjs::enable("barcode_pdf")
+    })
+
+    # Download PDF button
+    output$barcode_pdf <- downloadHandler(
+      filename = function() {
+        cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
+        basename(pdf_file_path())  # Use basename to just get the file name
+      },
+      content = function(file) {
+        # Ensure the file exists before copying
+        cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
+        file.copy(pdf_file_path(), file, overwrite = TRUE)
+      }
+    )
+
+
+
+
+
+  observeEvent(input$reset_btn, {
+    updateSelectizeInput(session, "new_maker", choices = maker_list()$Maker, server = TRUE)
+    updateSelectInput(session, "new_major_type", selected = NULL)
+    updateSelectInput(session, "new_minor_type", selected = NULL)
+    updateTextInput(session, "new_name", value = "")
+    updateNumericInput(session, "new_quantity", value = 1)
+    updateNumericInput(session, "new_cost", value = 0)
+    updateTextInput(session, "new_sku", value = "")
+    shinyjs::reset("new_item_image")
+
+    added_items(create_empty_inventory()) # 使用统一的空表函数
+
+    # Render filtered inventory with column name mapping
+    output$filtered_inventory_table <- renderDT({
+      column_mapping <- list(
+        SKU = "条形码",
+        Maker = "供应商",         
+        MajorType = "大类",
+        MinorType = "小类",
+        ItemName = "商品名",
+        Quantity = "库存数",
+        Cost = "平均成本",
+        ItemImagePath = "商品图片"
+      )
+      
+      render_table_with_images(
+        data = filtered_inventory(),
+        column_mapping = column_mapping,
+        image_column = "ItemImagePath"  # Specify the image column
+      )
+    })
+
+    show_custom_notification("已重置所有输入和状态！", type = "message")
+  })
+
   # Disconnect from the database on app stop
   onStop(function() {
     dbDisconnect(con)
