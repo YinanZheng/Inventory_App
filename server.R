@@ -392,9 +392,15 @@ server <- function(input, output, session) {
     batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
       sku <- added_items_df$SKU[i]
       quantity <- added_items_df$Quantity[i]
-      cost <- as.numeric(added_items_df$Cost[i])
-      replicate(quantity, c(UUIDgenerate(), sku, cost, "国内仓入库", Sys.time()))
-    }))
+      cost <- added_items_df$Cost[i]
+      replicate(quantity, list(
+        UUIDgenerate(),
+        sku,
+        cost,
+        "国内仓入库",
+        format(Sys.time(), "%Y-%m-%d %H:%M:%S")  # Properly formatted datetime
+      ), simplify = FALSE)
+    })) |> do.call(rbind, .)
     
     # Insert all records in a batch
     tryCatch({
