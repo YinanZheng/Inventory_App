@@ -128,12 +128,12 @@ server <- function(input, output, session) {
       selected_data <- filtered_inventory()[selected_row, ]
       
       # Update input fields in the sidebar
+      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_cost", value = selected_data$Cost)
-      updateTextInput(session, "new_sku", value = selected_data$SKU)
     }
   })
   
