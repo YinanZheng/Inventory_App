@@ -40,19 +40,34 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
 
 # Save compressed image to the server
 save_compressed_image <- function(file_path, output_dir, image_name, quality = 75) {
-  # Load the image
-  img <- magick::image_read(file_path)
+  # Validate inputs
+  if (is.null(file_path) || !file.exists(file_path)) {
+    stop("Invalid input file path.")
+  }
   
-  # Compress the image
-  compressed_img <- magick::image_scale(img, "800x")  # Resize
-  compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
+  if (!dir.exists(output_dir)) {
+    stop("Output directory does not exist.")
+  }
   
-  # Save the compressed image
-  output_path <- file.path(output_dir, image_name)
-  magick::image_write(compressed_img, path = output_path, quality = quality)
-  
-  return(output_path)  # Return the saved image path
+  tryCatch({
+    # Load the image
+    img <- magick::image_read(file_path)
+    
+    # Compress the image
+    compressed_img <- magick::image_scale(img, "800x")  # Resize
+    compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
+    
+    # Save the compressed image
+    output_path <- file.path(output_dir, image_name)
+    magick::image_write(compressed_img, path = output_path, quality = quality)
+    
+    return(output_path)  # Return the saved image path
+  }, error = function(e) {
+    message("Error in save_compressed_image: ", e$message)
+    return(NULL)
+  })
 }
+
 
 # Generate unique code
 generate_unique_code <- function(item_name, maker, length = 4) {

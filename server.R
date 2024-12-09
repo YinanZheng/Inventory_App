@@ -176,6 +176,24 @@ server <- function(input, output, session) {
     # Initialize compressed image path as NA
     compressed_image_path <- NA
     
+    if (!is.null(input$new_item_image) && !is.null(input$new_sku)) {
+      # Compress and save the image
+      compressed_image_path <- save_compressed_image(
+        file_path = input$new_item_image$datapath,
+        output_dir = "/var/www/images",
+        image_name = paste0(input$new_sku, ".jpg")
+      )
+      
+      if (is.null(compressed_image_path)) {
+        show_custom_notification("图片处理失败，请检查上传的文件格式！", type = "error")
+        return()
+      }
+      show_custom_notification("图片已成功压缩并存储！", type = "message")
+    } else {
+      compressed_image_path <- NA
+      show_custom_notification("未上传图片！", type = "message")
+    }
+    
     # Handle image compression and save to public directory
     if (!is.null(input$new_item_image)) {
       tryCatch({
