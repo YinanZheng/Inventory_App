@@ -88,7 +88,7 @@ server <- function(input, output, session) {
   
   ## 库存表渲染模块
   
-  # Filter inventory based on major and minor type (ensure Maker is included)
+  # Filter inventory based on major and minor type
   filtered_inventory <- reactive({
     req(input$new_major_type, input$new_minor_type)
     
@@ -114,7 +114,7 @@ server <- function(input, output, session) {
       MinorType = "小类",
       ItemName = "商品名",
       Quantity = "库存数",
-      Cost = "采购成本",
+      Cost = "平均成本",
       ItemImagePath = "商品图片"
     )
     
@@ -122,7 +122,8 @@ server <- function(input, output, session) {
       data = filtered_inventory(),
       column_mapping = column_mapping,
       image_column = "ItemImagePath",  # Specify the image column
-      is_local = TRUE  # Use server-stored image paths
+      is_local = TRUE,  # Use server-stored image paths
+      local_image_dir = "www/images"
     )
   })
   

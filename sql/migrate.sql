@@ -58,3 +58,6 @@ SET MajorType = TRIM(REPLACE(MajorType, '\r', '')),
 
 SELECT * FROM item_type_data;
  
+ 
+ 
+SELECT * FROM inventory;
