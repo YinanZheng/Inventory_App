@@ -389,32 +389,24 @@ server <- function(input, output, session) {
     added_items_df <- added_items()
     
     # Prepare data for batch insertion
-    batch_data <- lapply(1:nrow(added_items_df), function(i) {
+    batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
       sku <- added_items_df$SKU[i]
       quantity <- added_items_df$Quantity[i]
       cost <- added_items_df$Cost[i]
-      replicate(quantity, list(
-        UUIDgenerate(),  # Unique ID
-        sku,
-        cost,
-        "国内仓入库",      # Initial status
-        Sys.time()        # Entry time
-      ))
-    }) |> do.call(rbind, .)
+      replicate(quantity, c(UUIDgenerate(), sku, cost, "国内仓入库", Sys.time()))
+    }))
     
     # Insert all records in a batch
     tryCatch({
       dbExecute(con, "
-      INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) VALUES (?, ?, ?, ?, ?)", 
-                params = do.call(cbind, batch_data))
-      
-      # Notify user on success
+    INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
+    VALUES (?, ?, ?, ?, ?)",
+                params = as.list(batch_data)
+      )
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
-      refresh_unique_items_table()  # Refresh the table
     }, error = function(e) {
-      # Log error and notify user
       log_debug(paste("批量入库失败:", e$message))
-      show_custom_notification("部分或全部物品入库失败，请检查日志。", type = "error")
+      show_custom_notification("批量入库失败，请检查日志。", type = "error")
     })
     
     added_items(create_empty_inventory()) # 清空已添加商品
@@ -444,25 +436,25 @@ server <- function(input, output, session) {
   unique_items_data <- reactive({
     dbGetQuery(con, "
     SELECT 
-        unique_items.UniqueID AS '唯一物品编码',
-        unique_items.Status AS '当前状态',
-        unique_items.DomesticEntryTime AS '国内仓入库时间',
-        unique_items.DomesticExitTime AS '国内仓出库时间',
-        unique_items.UsEntryTime AS '美国仓入库时间',
-        unique_items.UsExitTime AS '美国仓出库时间',
-        inventory.Maker AS '供应商',
-        inventory.MajorType AS '大类',
-        inventory.MinorType AS '小类',
-        inventory.ItemName AS '商品名',
-        inventory.ItemImagePath AS '商品图片'
+      unique_items.UniqueID AS '唯一物品编码',
+      unique_items.Status AS '当前状态',
+      unique_items.DomesticEntryTime AS '国内仓入库时间',
+      unique_items.DomesticExitTime AS '国内仓出库时间',
+      unique_items.UsEntryTime AS '美国仓入库时间',
+      unique_items.UsExitTime AS '美国仓出库时间',
+      inventory.Maker AS '供应商',
+      inventory.MajorType AS '大类',
+      inventory.MinorType AS '小类',
+      inventory.ItemName AS '商品名',
+      inventory.ItemImagePath AS '商品图片'
     FROM 
-        unique_items
+      unique_items
     JOIN 
-        inventory 
+      inventory 
     ON 
-        unique_items.SKU = inventory.SKU
+      unique_items.SKU = inventory.SKU
     ORDER BY 
-        unique_items.DomesticEntryTime DESC
+      unique_items.DomesticEntryTime DESC
   ")
   })
   
