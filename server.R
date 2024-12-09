@@ -249,7 +249,6 @@ server <- function(input, output, session) {
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     shinyjs::reset("new_item_image")  # 重置文件上传控件
-    final_image_path <- NA
   })
   
   
@@ -387,6 +386,7 @@ server <- function(input, output, session) {
     })
     
     show_custom_notification("库存已成功更新！", type = "message")
+    shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
   
   # Handle row selection in item table
