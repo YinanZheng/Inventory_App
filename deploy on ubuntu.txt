@@ -8,6 +8,9 @@ wget https://download3.rstudio.org/ubuntu-20.04/amd64/shiny-server-1.5.22.1017-a
 sudo gdebi shiny-server-1.5.22.1017-amd64.deb
 sudo apt-get install libmagick++-dev
 
+### Install Nginx
+sudo apt install nginx
+
 ### Install R and packages
 sudo apt-get install r-base
 
@@ -63,7 +66,7 @@ git pull origin main
 
 
 ###
-Rscript image_cache.R
+Rscript -e "shiny::runApp('/srv/shiny-server/inventory')"
 
 
 
@@ -79,3 +82,14 @@ sudo systemctl restart shiny-server
 ## Log in to MySQL:
 sudo mysql -u root -p
 goldenbeanllc
+
+
+
+## Set up image folder
+
+sudo mkdir -p /var/www/images
+sudo chown ubuntu:ubuntu /var/www/images
+sudo chmod 755 /var/www/images
+
+sudo chmod -R 775 /srv/shiny-server/<your-app>/www/images
+sudo chown -R ubuntu:ubuntu /srv/shiny-server/<your-app>/www/images

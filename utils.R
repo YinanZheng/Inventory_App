@@ -170,7 +170,7 @@ create_empty_inventory <- function() {
   )
 }
 
-# Function to render image column (local images only)
+# Function to render the image column (local images with public URL prefix)
 render_image_column <- function(image_column, 
                                 placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
   sapply(image_column, function(img) {
@@ -178,8 +178,9 @@ render_image_column <- function(image_column,
       # Return placeholder image for missing data
       paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>')
     } else {
-      # Return the image path as an HTML image tag
-      paste0('<img src="', img, '" width="50" height="50" style="object-fit:cover;"/>')
+      # Assume `img` contains the relative URL or filename
+      img_path <- paste0("/images/", basename(img))  # Prefix with `/images/`
+      paste0('<img src="', img_path, '" width="50" height="50" style="object-fit:cover;"/>')
     }
   }, USE.NAMES = FALSE)
 }
