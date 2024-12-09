@@ -65,7 +65,7 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
     
     return(output_path)  # Return the saved image path
   }, error = function(e) {
-    message("Error in save_compressed_image: ", e$message)
+    log_debug(paste("Error in save_compressed_image: ", e$message))
     return(NULL)
   })
 }
@@ -77,20 +77,22 @@ generate_unique_code <- function(item_name, maker, length = 4) {
   if (is.null(item_name) || item_name == "" || is.null(maker) || maker == "") {
     return(paste0(rep("X", length), collapse = ""))  # Default output for invalid input
   }
+    
+  # Validate length parameter
+  if (!is.numeric(length) || length <= 0) {
+    stop("Length must be a positive integer.")
+  }
   
   # Combine item_name and maker to generate a unique hash
   combined_input <- paste(item_name, maker, sep = "_")
   
   # Generate a hash value
-  hash_value <- digest::digest(enc2utf8(combined_input), algo = "sha256")
+  hash_value <- digest::digest(enc2utf8(combined_input), algo = "sha512")
   
   # Extract numeric seed from the hash
   hash_numeric <- abs(sum(utf8ToInt(hash_value))) %% .Machine$integer.max
   
-  # Validate length parameter
-  if (!is.numeric(length) || length <= 0) {
-    stop("Length must be a positive integer.")
-  }
+  set.seed(hash_numeric)
   
   # Generate a random alphanumeric code
   random_output <- paste0(sample(c(LETTERS, 0:9), length, replace = TRUE), collapse = "")
