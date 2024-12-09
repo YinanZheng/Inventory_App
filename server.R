@@ -315,6 +315,29 @@ server <- function(input, output, session) {
     added_items(create_empty_inventory())
   })
   
+  # Automatically generate SKU when relevant inputs change
+  observeEvent({
+    input$new_major_type
+    input$new_minor_type
+    input$new_name
+    input$new_maker
+  }, {
+    req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
+    
+    # Dynamically generate SKU
+    sku <- generate_sku(
+      item_type_data = item_type_data(),
+      major_type = input$new_major_type,
+      minor_type = input$new_minor_type,
+      item_name = input$new_name,
+      maker = input$new_maker
+    )
+    
+    # Update the SKU input field
+    updateTextInput(session, "new_sku", value = sku)
+  })
+  
+  
   # 
   #   # Generate Barcode based on SKU
   #   session$onFlushed(function() {
@@ -344,19 +367,6 @@ server <- function(input, output, session) {
   #     }
   #   )
   # 
-  #   # Automatically generate SKU when relevant inputs change
-  #   observeEvent({input$new_cost; input$new_major_type; input$new_minor_type; input$new_name}, {
-  #     req(input$new_major_type, input$new_minor_type, input$new_name, input$new_cost)
-  # 
-  # 
-  #     sku <- generate_sku(item_type_data(),
-  #                         input$new_major_type,
-  #                         input$new_minor_type,
-  #                         input$new_name,
-  #                         input$new_cost)
-  #     updateTextInput(session, "new_sku", value = sku)
-  # 
-  #   })
   # 
   # 
   # 
