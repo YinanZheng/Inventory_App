@@ -418,7 +418,7 @@ server <- function(input, output, session) {
       )
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
     }, error = function(e) {
-      log_debug(paste("批量入库失败:", e$message))
+      stop(e$message)
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
     
