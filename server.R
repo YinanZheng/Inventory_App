@@ -238,7 +238,33 @@ server <- function(input, output, session) {
       data = added_items(),
       column_mapping = column_mapping,
       image_column = "ItemImagePath"  # Specify the correct image column
-    )
+    ) %>% 
+      datatable(editable = TRUE)  # 启用表格的可编辑功能
+  })
+  
+  observeEvent(input$added_items_table_cell_edit, {
+    info <- input$added_items_table_cell_edit  # 获取编辑事件信息
+    log_debug(paste("Editing row:", info$row, "column:", info$col, "new value:", info$value))
+    
+    # 获取当前数据
+    updated_data <- added_items()
+    
+    # 更新指定单元格的值
+    updated_data[info$row, info$col] <- DT::coerceValue(info$value, updated_data[info$row, info$col])  # 强制转换类型
+    
+    # 更新图片列
+    if (names(updated_data)[info$col] == "ItemImagePath") {
+      updated_data$ItemImagePath <- render_image_column(
+        updated_data$ItemImagePath,
+        host_url = host_url
+      )
+    }
+    
+    # 更新 reactiveVal 数据
+    added_items(updated_data)
+    
+    # 通知用户修改完成
+    show_custom_notification("修改已保存！", type = "message")
   })
   
   # Delete selected item
