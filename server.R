@@ -384,24 +384,21 @@ server <- function(input, output, session) {
     
     show_custom_notification("库存已成功更新！", type = "message")
     
-    
-    added_items_df <- added_items()
-    
+
     # Prepare data for batch insertion
     batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
       sku <- added_items_df$SKU[i]
       quantity <- added_items_df$Quantity[i]
       cost <- added_items_df$Cost[i]
       
-      # Validate data
       if (quantity <= 0 || is.na(cost) || cost <= 0) {
         return(NULL)
       }
       
       replicate(quantity, c(
         UUIDgenerate(),
-        sku,
-        cost,
+        as.character(sku),
+        as.numeric(cost),
         "国内仓入库",
         format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       ), simplify = TRUE) |> t()
@@ -412,26 +409,33 @@ server <- function(input, output, session) {
       return()
     }
     
-    # Convert to data frame and name columns
     batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
     names(batch_data) <- c("UniqueID", "SKU", "Cost", "Status", "DomesticEntryTime")
+    
+    # Ensure all SKUs exist in inventory
+    existing_skus <- dbGetQuery(con, "SELECT SKU FROM inventory")$SKU
+    missing_skus <- setdiff(added_items_df$SKU, existing_skus)
+    
+    if (length(missing_skus) > 0) {
+      show_custom_notification(paste("以下 SKU 不存在:", toString(missing_skus)), type = "error")
+      return()
+    }
     
     # Insert all records
     dbBegin(con)
     tryCatch({
-      for (i in 1:nrow(batch_data)) {
-        dbExecute(con, "
-      INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
-      VALUES (?, ?, ?, ?, ?)",
-                  params = as.list(batch_data[i, ])
-        )
-      }
-      dbCommit(con)  # Commit the transaction
+      dbExecute(con, "
+    INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
+    VALUES (?, ?, ?, ?, ?)",
+                params = unname(as.list(as.matrix(batch_data)))
+      )
+      dbCommit(con)
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
     }, error = function(e) {
-      dbRollback(con)  # Rollback the transaction on error
+      dbRollback(con)
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
+    
     
     # Clear added items and reset input fields
     added_items(create_empty_inventory())
