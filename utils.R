@@ -184,7 +184,7 @@ render_image_column <- function(image_column_data,
   sapply(image_column_data, function(img) {
     if (is.na(img) || img == "") {
       # 返回占位符图片
-      paste0('<img src="', placeholder, '" width="50" height="50" style="object-fit:cover;"/>')
+      paste0('<img src="', placeholder, '" loading="lazy" width="50" height="50" style="object-fit:cover;"/>')
     } else {
       # 拼接完整的图片 URL
       img_path <- paste0(host_url, "/images/", basename(img))
