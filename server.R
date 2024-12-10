@@ -420,10 +420,11 @@ server <- function(input, output, session) {
     tryCatch({
       # Insert rows one by one
       for (i in 1:nrow(batch_data)) {
+        # Ensure the parameters are passed as an unnamed vector
         dbExecute(con, "
       INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
       VALUES (?, ?, ?, ?, ?)",
-                  as.list(batch_data[i, ]) # Ensure this is a plain list
+                  unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
         )
       }
       dbCommit(con)  # Commit transaction
@@ -432,6 +433,7 @@ server <- function(input, output, session) {
       dbRollback(con)  # Rollback on error
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
+    
     
     
     
