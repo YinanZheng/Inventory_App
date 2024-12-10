@@ -10,7 +10,7 @@ con <- dbConnect(
 
 # Define server logic
 server <- function(input, output, session) {
-
+  
   # 声明一个 reactiveVal 用于触发表格刷新
   refresh_trigger <- reactiveVal(FALSE)
   
@@ -392,7 +392,7 @@ server <- function(input, output, session) {
     
     show_custom_notification("库存已成功更新！", type = "message")
     
-
+    
     # Prepare data for batch insertion
     batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
       sku <- added_items_df$SKU[i]
@@ -520,7 +520,7 @@ server <- function(input, output, session) {
       UsEntryTime = "美国仓入库时间",
       UsExitTime = "美国仓出库时间"
     )
-
+    
     # Render table with images
     render_table_with_images(
       data = unique_items_data(),     # Use the reactive data source
@@ -528,7 +528,7 @@ server <- function(input, output, session) {
       image_column = "ItemImagePath"   # Specify the column for images
     )
   })
-
+  
   # output$unique_items_table <- renderDT({
   #   data <- unique_items_data()
   #   
@@ -623,6 +623,98 @@ server <- function(input, output, session) {
       log_debug(paste("Error in reset_btn:", e$message))
     })
   })
+  
+  
+  #### 出库模块
+  
+  # 用于存储撤回记录的队列
+  undo_queue <- reactiveVal(list())  # 每次出库时记录 UniqueID 和状态
+  
+  # 确认出库操作
+  observeEvent(input$confirm_outbound_btn, {
+    sku <- input$outbound_sku
+    
+    # 查询数据库中是否有匹配的 SKU
+    all_sku_items <- dbGetQuery(con, "
+      SELECT UniqueID, Status 
+      FROM unique_items 
+      WHERE SKU = ?", 
+                                params = list(sku)
+    )
+    
+    # 检查是否找到 SKU
+    if (nrow(all_sku_items) == 0) {
+      show_custom_notification("未找到该条形码对应的物品，请检查输入。", type = "error")
+      return()
+    }
+    
+    # 查询符合出库条件的物品
+    matched_items <- all_sku_items[all_sku_items$Status == "国内仓入库", ]
+    
+    # 检查是否有符合条件的物品
+    if (nrow(matched_items) == 0) {
+      show_custom_notification("该条形码的物品没有可以出库的库存。", type = "error")
+      return()
+    }
+    
+    # 获取匹配的 UniqueID
+    unique_id <- matched_items$UniqueID[1]
+    
+    # 更新状态为 "国内仓出库" 并设置出库时间
+    tryCatch({
+      update_status(unique_id, "国内仓出库")
+      
+      # 记录到撤回队列
+      undo_list <- undo_queue()
+      undo_list <- append(undo_list, list(list(unique_id = unique_id, timestamp = Sys.time())))
+      undo_queue(undo_list)  # 更新队列
+      
+      show_custom_notification("物品出库成功！", type = "message")
+      
+      # 刷新物品状态追踪表
+      refresh_trigger(!refresh_trigger())
+    }, error = function(e) {
+      show_custom_notification(paste("出库操作失败:", e$message), type = "error")
+    })
+  })
+  
+  # 撤回最近出库操作
+  observeEvent(input$undo_outbound_btn, {
+    undo_list <- undo_queue()
+    
+    # 检查是否有可撤回的记录
+    if (length(undo_list) == 0) {
+      show_custom_notification("没有可撤回的操作。", type = "error")
+      return()
+    }
+    
+    # 获取最近一条记录
+    last_action <- tail(undo_list, 1)[[1]]
+    unique_id <- last_action$unique_id
+    
+    # 从队列中移除最后一条记录
+    undo_list <- head(undo_list, -1)
+    undo_queue(undo_list)
+    
+    # 撤回数据库操作
+    tryCatch({
+      dbExecute(con, "
+        UPDATE unique_items 
+        SET Status = '国内仓入库', DomesticExitTime = NULL 
+        WHERE UniqueID = ?",
+                params = list(unique_id)
+      )
+      show_custom_notification("撤回成功，物品状态已恢复为国内仓入库。", type = "message")
+      
+      # 刷新物品状态追踪表
+      refresh_trigger(!refresh_trigger())
+    }, error = function(e) {
+      show_custom_notification(paste("撤回操作失败:", e$message), type = "error")
+    })
+  })
+  
+  
+  
   
   # Disconnect from the database on app stop
   onStop(function() {

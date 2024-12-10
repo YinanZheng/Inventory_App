@@ -222,7 +222,7 @@ render_table_with_images <- function(data,
 }
 
 update_status <- function(unique_id, new_status) {
-  # Define mapping of status to timestamp columns
+  # 定义状态到时间戳列的映射
   status_columns <- list(
     "国内仓入库" = "DomesticEntryTime",
     "国内仓出库" = "DomesticExitTime",
@@ -230,15 +230,15 @@ update_status <- function(unique_id, new_status) {
     "美国仓出库" = "UsExitTime"
   )
   
-  # Check if the provided status is valid
+  # 检查状态是否有效
   if (!new_status %in% names(status_columns)) {
     stop("Invalid status provided")
   }
   
-  # Get the corresponding timestamp column for the status
+  # 获取对应的时间戳列
   timestamp_column <- status_columns[[new_status]]
   
-  # Update the status and set the timestamp in the database
+  # 更新数据库中的状态和时间戳
   dbExecute(con, 
             paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
             params = list(new_status, Sys.time(), unique_id))
