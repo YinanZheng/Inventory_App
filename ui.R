@@ -56,8 +56,14 @@ ui <- fluidPage(
 
       tags$hr(), # 分隔线
       h4("条形码操作"),
-      actionButton("export_btn", "生成条形码"),
-      downloadButton("barcode_pdf", "下载条形码"),
+      fluidRow(
+        column(6, actionButton("export_btn", "生成当前SKU条形码")),
+        column(6, downloadButton("barcode_pdf", "下载单张条形码"))
+      ),
+      fluidRow(
+        column(6, actionButton("export_btn", "批量生成已添加商品条形码")),
+        column(6, downloadButton("barcode_pdf", "下载批量条形码"))
+      ),
     ),
     
     mainPanel(
