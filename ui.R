@@ -57,7 +57,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       h4("条形码操作"),
       fluidRow(
-        column(6, actionButton("export_single_btn", "生成当前SKU单张条形码")),
+        column(6, actionButton("export_single_btn", "生成当前的SKU单张条形码")),
         column(6, downloadButton("download_single_pdf", "下载单张条形码"))
       ),
       fluidRow(
