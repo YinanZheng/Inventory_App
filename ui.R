@@ -42,6 +42,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       h4("出库操作"),
       textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码"),
+      actionButton("undo_outbound_btn", "撤回最近出库", class = "btn-warning"),  # 添加撤回操作按钮
       
       tags$hr(), # 分隔线
       h4("条形码操作"),
