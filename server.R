@@ -585,6 +585,20 @@ server <- function(input, output, session) {
       return()
     }
     
+    # 如果勾选了重复条形码，检查数量是否为空或为 0
+    if (input$repeat_barcode) {
+      if (is.null(input$new_quantity) || input$new_quantity <= 0) {
+        show_custom_notification("数量不能为空且必须大于 0!", type = "error")
+        return()
+      }
+    }
+    
+    # 判断是否需要重复打印
+    quantity <- if (input$repeat_barcode) input$new_quantity else 1
+    
+    # 重复 SKU 以匹配数量
+    skus <- rep(input$new_sku, quantity)
+    
     # 调用生成条形码 PDF 的函数
     pdf_file <- export_barcode_pdf(
       sku = input$new_sku, 
@@ -602,6 +616,21 @@ server <- function(input, output, session) {
     if (nrow(added_items()) == 0) {
       show_custom_notification("没有添加商品！", type = "error")
       return()
+    }
+    
+    # 如果勾选了重复条形码，检查是否有数量为空或为 0 的商品
+    if (input$repeat_barcode) {
+      if (any(is.na(items$Quantity) | items$Quantity <= 0)) {
+        show_custom_notification("批量生成失败：存在商品数量为空或为 0 的记录，请检查。", type = "error")
+        return()
+      }
+    }
+    
+    # 判断是否需要重复打印
+    if (input$repeat_barcode) {
+      skus <- unlist(mapply(function(sku, qty) rep(sku, qty), items$SKU, items$Quantity))
+    } else {
+      skus <- items$SKU
     }
     
     # 调用生成条形码 PDF 的函数
