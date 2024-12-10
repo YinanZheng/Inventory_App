@@ -580,7 +580,10 @@ server <- function(input, output, session) {
   
   # 单个 SKU 条形码生成逻辑
   observeEvent(input$export_single_btn, {
-    req(input$new_sku)  # 确保输入 SKU 非空
+    if (is.null(input$new_sku) || input$new_sku == "") {
+      show_custom_notification("没有SKU生成！", type = "error")
+      return()
+    }
     
     # 调用生成条形码 PDF 的函数
     pdf_file <- export_barcode_pdf(
@@ -597,7 +600,7 @@ server <- function(input, output, session) {
   # 批量 SKU 条形码生成逻辑
   observeEvent(input$export_batch_btn, {
     if (nrow(added_items()) == 0) {
-      show_custom_notification("没有可用的商品数据生成条形码。", type = "error")
+      show_custom_notification("没有添加商品！", type = "error")
       return()
     }
     

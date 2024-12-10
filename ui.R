@@ -57,6 +57,9 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       h4("条形码操作"),
       fluidRow(
+        column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = FALSE))
+      ),
+      fluidRow(
         column(6, actionButton("export_single_btn", "生成当前的SKU单张条形码")),
         column(6, downloadButton("download_single_pdf", "下载单张条形码"))
       ),
