@@ -596,37 +596,22 @@ server <- function(input, output, session) {
   
   # 批量 SKU 条形码生成逻辑
   observeEvent(input$export_batch_btn, {
-    if (is.null(added_items())) {
-      show_custom_notification("数据尚未加载，请检查。", type = "error")
-      return()
-    }
-    
     if (nrow(added_items()) == 0) {
       show_custom_notification("没有可用的商品数据生成条形码。", type = "error")
       return()
     }
     
-    tryCatch({
-      # 提取 SKU 列
-      skus <- added_items()$SKU
-      req(length(skus) > 0)  # 确保 SKU 列有数据
-      
-      # 调用生成条形码 PDF 的函数
-      pdf_file <- export_barcode_pdf(
-        sku = skus, 
-        page_width = page_width,  # 全局变量
-        page_height = page_height, 
-        unit = size_unit
-      )
-      batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-      
-      show_custom_notification("批量条形码已生成为 PDF!")
-      shinyjs::enable("download_batch_pdf")
-    }, error = function(e) {
-      # 捕获错误并显示到 UI
-      show_custom_notification(paste("生成条形码失败:", e$message), type = "error")
-      print(paste("错误详情:", e$message))  # 在 R 控制台打印错误信息
-    })
+    # 调用生成条形码 PDF 的函数
+    pdf_file <- export_barcode_pdf(
+      sku = skus, 
+      page_width = page_width,  # 全局变量
+      page_height = page_height, 
+      unit = size_unit
+    )
+    batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+    
+    show_custom_notification("批量条形码已生成为 PDF!")
+    shinyjs::enable("download_batch_pdf")
   })
   
   # 单张条形码下载逻辑
