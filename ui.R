@@ -40,6 +40,10 @@ ui <- fluidPage(
       actionButton("confirm_btn", "确认入库", class = "btn-primary"),
       
       tags$hr(), # 分隔线
+      h4("出库操作"),
+      textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码"),
+      
+      tags$hr(), # 分隔线
       h4("条形码操作"),
       actionButton("export_btn", "生成条形码"),
       downloadButton("barcode_pdf", "下载条形码"),
