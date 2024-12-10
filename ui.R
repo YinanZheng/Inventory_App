@@ -43,8 +43,13 @@ ui <- fluidPage(
       h4("出库操作"),
       fluidRow(
         column(8, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
-        column(4, actionButton("undo_outbound_btn", "撤回最近出库", class = "btn-warning"))
-      ),
+        column(4, actionButton(
+          "undo_outbound_btn", 
+          "撤回最近出库", 
+          class = "btn-warning", 
+          style = "margin-top: 25px; height: 38px; width: 100%;"
+        ))
+      )
 
       tags$hr(), # 分隔线
       h4("条形码操作"),
