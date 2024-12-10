@@ -630,9 +630,14 @@ server <- function(input, output, session) {
   # 用于存储撤回记录的队列
   undo_queue <- reactiveVal(list())  # 每次出库时记录 UniqueID 和状态
   
-  # 确认出库操作
-  observeEvent(input$confirm_outbound_btn, {
+  # 监听条形码输入框
+  observeEvent(input$outbound_sku, {
     sku <- input$outbound_sku
+    
+    # 如果输入为空，直接返回
+    if (is.null(sku) || sku == "") {
+      return()
+    }
     
     # 查询数据库中是否有匹配的 SKU
     all_sku_items <- dbGetQuery(con, "
@@ -673,6 +678,9 @@ server <- function(input, output, session) {
       
       # 刷新物品状态追踪表
       refresh_trigger(!refresh_trigger())
+      
+      # 清空输入框
+      updateTextInput(session, "outbound_sku", value = "")
     }, error = function(e) {
       show_custom_notification(paste("出库操作失败:", e$message), type = "error")
     })
