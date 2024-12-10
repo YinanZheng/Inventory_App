@@ -607,7 +607,7 @@ server <- function(input, output, session) {
     )
     single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
     
-    show_custom_notification("单张条形码已生成为 PDF!")
+    show_custom_notification("条形码已生成为 PDF!")
     shinyjs::enable("download_single_pdf")
   })
   
@@ -642,7 +642,7 @@ server <- function(input, output, session) {
     )
     batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
     
-    show_custom_notification("批量条形码已生成为 PDF!")
+    show_custom_notification("条形码已生成为 PDF!")
     shinyjs::enable("download_batch_pdf")
   })
   
