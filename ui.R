@@ -1,9 +1,7 @@
 # Define UI
 ui <- fluidPage(
   useShinyjs(),
-  
-  titlePanel("库存管理系统"),
-  
+
   sidebarLayout(
     sidebarPanel(
       fluidRow(

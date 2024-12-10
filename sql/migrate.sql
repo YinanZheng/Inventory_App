@@ -12,9 +12,6 @@ DROP TABLE inventory;
 DROP TABLE unique_items;
 
 
--- Remove all record
-DELETE FROM inventory;
-
 -- Populate maker_list using csv files
 -- Use NotePad ++ to convert the encoding to UTF-8
 sudo mv /tmp/maker_list.csv /var/lib/mysql-files/
@@ -62,6 +59,16 @@ SET MajorType = TRIM(REPLACE(MajorType, '\r', '')),
 
 SELECT * FROM item_type_data;
  
- 
- 
+--
+USE inventory_system;
+
 SELECT * FROM inventory;
+SELECT * FROM unique_items;
+
+-- Remove all record
+DELETE FROM unique_items;
+DELETE FROM inventory;
+
+
+
+

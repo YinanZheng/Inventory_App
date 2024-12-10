@@ -10,7 +10,9 @@ con <- dbConnect(
 
 # Define server logic
 server <- function(input, output, session) {
-  # Load data from MySQL
+
+  # 声明一个 reactiveVal 用于触发表格刷新
+  refresh_trigger <- reactiveVal(FALSE)
   
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
@@ -19,10 +21,12 @@ server <- function(input, output, session) {
   # Reactive value to store added items
   added_items <- reactiveVal(create_empty_inventory())
   
+  #########################################################################
   
   ## 供应商模块
   supplier_module(input, output, session, con)
   
+  #########################################################################
   
   ## 大小类模块
   item_type_data <- reactive({
@@ -81,11 +85,15 @@ server <- function(input, output, session) {
     selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
   })
   
+  #########################################################################
   
   ## 库存表渲染模块
   
   # Filter inventory based on major and minor type
   filtered_inventory <- reactive({
+    # 当 refresh_trigger 改变时触发更新
+    refresh_trigger()
+    
     req(input$new_major_type, input$new_minor_type)
     
     # Filter the inventory data and include Maker
@@ -429,6 +437,9 @@ server <- function(input, output, session) {
       }
       dbCommit(con)  # Commit transaction
       show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
+      # 切换触发器值，确保刷新
+      current_value <- refresh_trigger()
+      refresh_trigger(!current_value) 
     }, error = function(e) {
       dbRollback(con)  # Rollback on error
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
@@ -464,6 +475,9 @@ server <- function(input, output, session) {
   
   ## 物品追踪表
   unique_items_data <- reactive({
+    # 当 refresh_trigger 改变时触发更新
+    refresh_trigger()
+    
     dbGetQuery(con, "
     SELECT 
       unique_items.UniqueID AS '唯一物品编码',
