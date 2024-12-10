@@ -611,7 +611,7 @@ server <- function(input, output, session) {
   # 单张条形码下载逻辑
   output$download_single_pdf <- downloadHandler(
     filename = function() {
-      "单张条形码.pdf"
+      basename(single_pdf_file_path())
     },
     content = function(file) {
       file.copy(single_pdf_file_path(), file, overwrite = TRUE)
@@ -621,17 +621,14 @@ server <- function(input, output, session) {
   # 批量条形码下载逻辑
   output$download_batch_pdf <- downloadHandler(
     filename = function() {
-      "批量条形码.pdf"
+      basename(batch_pdf_file_path())
     },
     content = function(file) {
       file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
     }
   )
   
-  
-  
-  
-  
+
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
