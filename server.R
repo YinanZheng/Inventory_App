@@ -423,7 +423,7 @@ server <- function(input, output, session) {
         dbExecute(con, "
       INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
       VALUES (?, ?, ?, ?, ?)",
-                  params = as.list(batch_data[i, ])
+                  as.list(batch_data[i, ]) # Ensure this is a plain list
         )
       }
       dbCommit(con)  # Commit transaction
@@ -432,6 +432,7 @@ server <- function(input, output, session) {
       dbRollback(con)  # Rollback on error
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
+    
     
     
     # Clear added items and reset input fields
