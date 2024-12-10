@@ -569,6 +569,10 @@ server <- function(input, output, session) {
   
   
   ### Barcode PDF 模块
+  session$onFlushed(function() {
+    shinyjs::disable("download_single_pdf")
+    shinyjs::disable("download_batch_pdf")
+  })
   
   # 用于存储 PDF 文件路径
   single_pdf_file_path <- reactiveVal(NULL)
@@ -593,6 +597,7 @@ server <- function(input, output, session) {
   # 批量 SKU 条形码生成逻辑
   observeEvent(input$export_batch_btn, {
     req(added_items())  # 确保 added_items() 数据非空
+    req("SKU" %in% colnames(added_items()))  # 确保 SKU 列存在
     
     # 提取 SKU 列，生成条形码 PDF
     pdf_file <- export_barcode_pdf(

@@ -8,7 +8,13 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
     page_height <- page_height / 2.54
   }
   
-  pdf_path <- paste0(temp_dir, "/", sku, "_barcode")  # 组合文件夹路径和文件名
+  if(length(sku) > 1)
+  {
+    pdf_path <- paste0(temp_dir, "/batch_barcode")  # 组合文件夹路径和文件名
+    
+  } else {
+    pdf_path <- paste0(temp_dir, "/", sku, "_barcode")  # 组合文件夹路径和文件名
+  }
   
   custom_create_PDF(Labels = sku, 
                     name = pdf_path, 
