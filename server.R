@@ -581,9 +581,8 @@ server <- function(input, output, session) {
     # 调用生成条形码 PDF 的函数
     pdf_file <- export_barcode_pdf(
       sku = input$new_sku, 
-      page_width = 8.5, 
-      page_height = 11, 
-      unit = "in"
+      page_width, page_height, 
+      unit = size_unit
     )
     single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
     
@@ -598,9 +597,8 @@ server <- function(input, output, session) {
     # 提取 SKU 列，生成条形码 PDF
     pdf_file <- export_barcode_pdf(
       skus = added_items()$SKU, 
-      page_width = 8.5, 
-      page_height = 11, 
-      unit = "in"
+      page_width, page_height, 
+      unit = size_unit
     )
     batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
     
