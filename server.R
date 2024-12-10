@@ -113,13 +113,13 @@ server <- function(input, output, session) {
   output$filtered_inventory_table <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
-      Maker = "供应商",         # Ensure Maker is displayed
+      ItemName = "商品名",
+      ItemImagePath = "商品图片",
+      Maker = "供应商",
       MajorType = "大类",
       MinorType = "小类",
-      ItemName = "商品名",
-      Quantity = "库存数",
-      Cost = "平均成本",
-      ItemImagePath = "商品图片"
+      Quantity = "入库数量",
+      Cost = "累计平均成本"
     )
     
     render_table_with_images(
@@ -266,13 +266,13 @@ server <- function(input, output, session) {
   output$added_items_table <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
+      ItemName = "商品名",
+      ItemImagePath = "商品图片",
       Maker = "供应商",
       MajorType = "大类",
       MinorType = "小类",
-      ItemName = "商品名",
       Quantity = "入库数量",
-      Cost = "采购成本",
-      ItemImagePath = "商品图片"
+      Cost = "采购成本"
     )
     
     render_table_with_images(
@@ -480,7 +480,7 @@ server <- function(input, output, session) {
     
     dbGetQuery(con, "
     SELECT 
-      unique_items.UniqueID AS '唯一物品编码',
+      unique_items.UniqueID AS '物品编码',
       unique_items.SKU AS '条形码', 
       unique_items.Status AS '当前状态',
       unique_items.DomesticEntryTime AS '国内仓入库时间',
@@ -504,39 +504,40 @@ server <- function(input, output, session) {
   })
   
   # 渲染 unique_items 数据表
-  # output$unique_items_table <- renderDT({
-  #   # Define column mapping for user-friendly display
-  #   column_mapping <- list(
-  #     UniqueID = "唯一物品编码",
-  #     Status = "当前状态",
-  #     DomesticEntryTime = "国内仓入库时间",
-  #     DomesticExitTime = "国内仓出库时间",
-  #     UsEntryTime = "美国仓入库时间",
-  #     UsExitTime = "美国仓出库时间",
-  #     Maker = "供应商",
-  #     MajorType = "大类",
-  #     MinorType = "小类",
-  #     ItemName = "商品名",
-  #     ItemImagePath = "商品图片"
-  #   )
-  #   
-  #   # Render table with images
-  #   render_table_with_images(
-  #     data = unique_items_data(),     # Use the reactive data source
-  #     column_mapping = column_mapping, # Map columns to user-friendly names
-  #     image_column = "ItemImagePath"   # Specify the column for images
-  #   )
-  # })
-  # 
   output$unique_items_table <- renderDT({
-    data <- unique_items_data()
-    
-    if (is.null(data) || nrow(data) == 0) {
-      return(datatable(data.frame("消息" = "没有数据可显示"), escape = FALSE))
-    }
-    
-    datatable(data)
+    # Define column mapping for user-friendly display
+    column_mapping <- list(
+      UniqueID = "物品编码",
+      SKU = "条形码",
+      ItemName = "商品名",
+      ItemImagePath = "商品图片",
+      Maker = "供应商",
+      MajorType = "大类",
+      MinorType = "小类",
+      Status = "当前状态",
+      DomesticEntryTime = "国内仓入库时间",
+      DomesticExitTime = "国内仓出库时间",
+      UsEntryTime = "美国仓入库时间",
+      UsExitTime = "美国仓出库时间"
+    )
+
+    # Render table with images
+    render_table_with_images(
+      data = unique_items_data(),     # Use the reactive data source
+      column_mapping = column_mapping, # Map columns to user-friendly names
+      image_column = "ItemImagePath"   # Specify the column for images
+    )
   })
+
+  # output$unique_items_table <- renderDT({
+  #   data <- unique_items_data()
+  #   
+  #   if (is.null(data) || nrow(data) == 0) {
+  #     return(datatable(data.frame("消息" = "没有数据可显示"), escape = FALSE))
+  #   }
+  #   
+  #   datatable(data)
+  # })
   
   
   
