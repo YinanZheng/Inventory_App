@@ -653,6 +653,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       file.copy(single_pdf_file_path(), file, overwrite = TRUE)
+      single_pdf_file_path(NULL)
     }
   )
   
@@ -663,6 +664,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
+      batch_pdf_file_path(NULL)
     }
   )
   
