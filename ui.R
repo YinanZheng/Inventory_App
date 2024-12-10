@@ -49,7 +49,7 @@ ui <- fluidPage(
           class = "btn-warning", 
           style = "margin-top: 25px; height: 38px; width: 100%;"
         ))
-      )
+      ),
 
       tags$hr(), # 分隔线
       h4("条形码操作"),
