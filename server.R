@@ -596,10 +596,17 @@ server <- function(input, output, session) {
   
   # 批量 SKU 条形码生成逻辑
   observeEvent(input$export_batch_btn, {
+    if (is.null(added_items())) {
+      show_custom_notification("数据尚未加载，请检查。", type = "error")
+      return()
+    }
+    
+    if (nrow(added_items()) == 0) {
+      show_custom_notification("没有可用的商品数据生成条形码。", type = "error")
+      return()
+    }
+    
     tryCatch({
-      # req(added_items())  # 确保 added_items() 数据非空
-      # req("SKU" %in% colnames(added_items()))  # 确保 SKU 列存在
-      
       # 提取 SKU 列
       skus <- added_items()$SKU
       req(length(skus) > 0)  # 确保 SKU 列有数据
