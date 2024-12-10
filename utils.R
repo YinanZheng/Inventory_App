@@ -221,7 +221,7 @@ render_table_with_images <- function(data,
   )
 }
 
-update_status <- function(unique_id, new_status) {
+update_status <- function(con, unique_id, new_status) {
   # 定义状态到时间戳列的映射
   status_columns <- list(
     "国内仓入库" = "DomesticEntryTime",

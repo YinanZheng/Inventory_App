@@ -667,7 +667,7 @@ server <- function(input, output, session) {
     
     # 更新状态为 "国内仓出库" 并设置出库时间
     tryCatch({
-      update_status(unique_id, "国内仓出库")
+      update_status(con, unique_id, "国内仓出库")
       
       # 记录到撤回队列
       undo_list <- undo_queue()
