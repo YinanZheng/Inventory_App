@@ -601,8 +601,8 @@ server <- function(input, output, session) {
     
     # 调用生成条形码 PDF 的函数
     pdf_file <- export_barcode_pdf(
-      sku = input$new_sku, 
-      page_width, page_height, 
+      sku = skus, 
+      page_width, page_height, # 全局变量
       unit = size_unit
     )
     single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
@@ -613,17 +613,11 @@ server <- function(input, output, session) {
   
   # 批量 SKU 条形码生成逻辑
   observeEvent(input$export_batch_btn, {
+    items <- added_items()
+    
     if (nrow(added_items()) == 0) {
       show_custom_notification("没有添加商品！", type = "error")
       return()
-    }
-    
-    # 如果勾选了重复条形码，检查是否有数量为空或为 0 的商品
-    if (input$repeat_barcode) {
-      if (any(is.na(items$Quantity) | items$Quantity <= 0)) {
-        show_custom_notification("批量生成失败：存在商品数量为空或为 0 的记录，请检查。", type = "error")
-        return()
-      }
     }
     
     # 判断是否需要重复打印
