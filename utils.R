@@ -244,33 +244,6 @@ update_status <- function(unique_id, new_status) {
             params = list(new_status, Sys.time(), unique_id))
 }
 
-
-refresh_unique_items_table <- function() {
-  output$unique_items_table <- renderDT({
-    data <- unique_items_data()
-    
-    render_table_with_images(
-      data = data,
-      column_mapping = list(
-        UniqueID = "唯一物品编码",
-        Status = "当前状态",
-        DomesticEntryTime = "国内仓入库时间",
-        DomesticExitTime = "国内仓出库时间",
-        UsEntryTime = "美国仓入库时间",
-        UsExitTime = "美国仓出库时间",
-        SKU = "条形码",
-        ItemName = "商品名",
-        Maker = "供应商",
-        MajorType = "大类",
-        MinorType = "小类",
-        Cost = "成本",
-        ItemImagePath = "商品图片"
-      ),
-      image_column = "ItemImagePath"  # Specify the column for image rendering
-    )
-  })
-}
-
 # Log debug information
 log_debug <- function(msg) {
   cat("[DEBUG]:", msg, "\n")

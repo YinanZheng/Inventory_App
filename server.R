@@ -480,18 +480,18 @@ server <- function(input, output, session) {
     
     dbGetQuery(con, "
     SELECT 
-      unique_items.UniqueID AS '物品编码',
-      unique_items.SKU AS '条形码', 
-      unique_items.Status AS '当前状态',
-      unique_items.DomesticEntryTime AS '国内仓入库时间',
-      unique_items.DomesticExitTime AS '国内仓出库时间',
-      unique_items.UsEntryTime AS '美国仓入库时间',
-      unique_items.UsExitTime AS '美国仓出库时间',
-      inventory.Maker AS '供应商',
-      inventory.MajorType AS '大类',
-      inventory.MinorType AS '小类',
-      inventory.ItemName AS '商品名',
-      inventory.ItemImagePath AS '商品图片'
+      unique_items.UniqueID,
+      unique_items.SKU, 
+      unique_items.Status,
+      unique_items.DomesticEntryTime,
+      unique_items.DomesticExitTime,
+      unique_items.UsEntryTime,
+      unique_items.UsExitTime,
+      inventory.Maker,
+      inventory.MajorType,
+      inventory.MinorType,
+      inventory.ItemName,
+      inventory.ItemImagePath
     FROM 
       unique_items
     JOIN 
