@@ -118,7 +118,7 @@ server <- function(input, output, session) {
       Maker = "供应商",
       MajorType = "大类",
       MinorType = "小类",
-      Quantity = "入库数量",
+      Quantity = "总库存数",
       Cost = "累计平均成本"
     )
     
@@ -543,7 +543,7 @@ server <- function(input, output, session) {
   
   
   
-  ### SKU Barcode 模块
+  ### SKU 模块
   
   # Automatically generate SKU when relevant inputs change
   observeEvent({
@@ -567,31 +567,64 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
-  # Generate Barcode based on SKU
-  session$onFlushed(function() {
-    shinyjs::disable("barcode_pdf")
+  
+  ### Barcode PDF 模块
+  
+  # 用于存储 PDF 文件路径
+  single_pdf_file_path <- reactiveVal(NULL)
+  batch_pdf_file_path <- reactiveVal(NULL)
+  
+  # 单个 SKU 条形码生成逻辑
+  observeEvent(input$export_single_btn, {
+    req(input$new_sku)  # 确保输入 SKU 非空
+    
+    # 调用生成条形码 PDF 的函数
+    pdf_file <- export_barcode_pdf(
+      sku = input$new_sku, 
+      page_width = 8.5, 
+      page_height = 11, 
+      unit = "in"
+    )
+    single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+    
+    show_custom_notification("单张条形码已生成为 PDF!")
+    shinyjs::enable("download_single_pdf")
   })
   
-  pdf_file_path <- reactiveVal(NULL)
-  
-  observeEvent(input$export_btn, {
-    req(input$new_sku, input$new_quantity)
-    pdf_file <- export_barcode_pdf(input$new_sku, page_width, page_height, unit = size_unit)
-    pdf_file_path(pdf_file)
-    show_custom_notification("条形码已导出为PDF!")
-    shinyjs::enable("barcode_pdf")
+  # 批量 SKU 条形码生成逻辑
+  observeEvent(input$export_batch_btn, {
+    req(added_items())  # 确保 added_items() 数据非空
+    
+    # 提取 SKU 列，生成条形码 PDF
+    pdf_file <- export_barcode_pdf(
+      skus = added_items()$SKU, 
+      page_width = 8.5, 
+      page_height = 11, 
+      unit = "in"
+    )
+    batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+    
+    show_custom_notification("批量条形码已生成为 PDF!")
+    shinyjs::enable("download_batch_pdf")
   })
   
-  # Download PDF button
-  output$barcode_pdf <- downloadHandler(
+  # 单张条形码下载逻辑
+  output$download_single_pdf <- downloadHandler(
     filename = function() {
-      cat("Requested file path:", pdf_file_path(), "\n")  # Debugging: Check path
-      basename(pdf_file_path())  # Use basename to just get the file name
+      "单张条形码.pdf"
     },
     content = function(file) {
-      # Ensure the file exists before copying
-      cat("Copying file from:", pdf_file_path(), "to", file, "\n")  # Debugging: Check file paths
-      file.copy(pdf_file_path(), file, overwrite = TRUE)
+      file.copy(single_pdf_file_path(), file, overwrite = TRUE)
+    }
+  )
+  
+  # 批量条形码下载逻辑
+  output$download_batch_pdf <- downloadHandler(
+    filename = function() {
+      "批量条形码.pdf"
+    },
+    content = function(file) {
+      file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
     }
   )
   
