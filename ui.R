@@ -71,10 +71,10 @@ ui <- fluidPage(
     
     mainPanel(
       fluidRow(
-        column(12, div(
-          h4("已添加商品"), 
-          style = "font-size: 20px; font-weight: 700; color: #333; background-color: #c3d8fa; 
-             padding: 3px; text-align: center;"
+        column(12,   div(
+          "已添加商品",
+          style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
+             padding: 10px; text-align: center; border-radius: 4px;"
         )),
         column(12, DTOutput("added_items_table")),
         column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
