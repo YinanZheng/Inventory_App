@@ -57,13 +57,16 @@ server <- function(input, output, session) {
     selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
   })
   
-  # 渲染文件输入框
-  # 初始化一个唯一的文件输入框 ID
-  file_input_id <- reactiveVal("new_item_image")
+
+  # 用于保存用户上传的文件信息
+  uploaded_file <- reactiveVal(NULL)
   
-  # 动态渲染文件输入框
-  output$file_input_ui <- renderUI({
-    fileInput(file_input_id(), "商品图片:", accept = c("image/png", "image/jpeg"))
+  observeEvent(input$new_item_image, {
+    if (!is.null(input$new_item_image)) {
+      # 记录新上传的文件
+      uploaded_file(input$new_item_image)
+      showNotification("文件已上传并记录！", type = "message")
+    }
   })
   
   # 声明一个 reactiveVal 用于触发表格刷新
@@ -154,11 +157,7 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
-    # 动态获取文件框的值
-    current_id <- file_input_id()   # 获取当前动态 ID
-    file_data <- input[[current_id]]  # 通过动态 ID 获取文件信息
-    
-    if(!is.null(file_data)) show_custom_notification(file_data$datapath, type = "error")
+    if(!is.null(uploaded_file())) show_custom_notification(uploaded_file()$datapath, type = "error")
     
     # 验证输入
     if (is.null(input$new_name) || input$new_name == "") {
@@ -193,8 +192,9 @@ server <- function(input, output, session) {
       updated_image_path <- existing_items$ItemImagePath[sku_index]
       
       # 如果上传了图片，更新图片路径；否则保持原路径
-      if (!is.null(file_data)) {
+      if (!is.null(uploaded_file())) {
         tryCatch({
+          file_data <- uploaded_file()
           # 为图片生成唯一文件名
           unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           output_dir <- "/var/www/images"
@@ -232,8 +232,9 @@ server <- function(input, output, session) {
     } else {
       # SKU 不存在，添加新记录
       new_image_path <- NA
-      if (!is.null(file_data)) {
+      if (!is.null(uploaded_file())) {
         tryCatch({
+          file_data <- uploaded_file()
           unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           output_dir <- "/var/www/images"
           final_image_path <- file.path(output_dir, unique_image_name)
@@ -266,7 +267,9 @@ server <- function(input, output, session) {
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
-    file_input_id(paste0("new_item_image_", Sys.time()))
+    # 重置文件输入框
+    shinyjs::reset("new_item_image")
+    uploaded_file(NULL)
   })
   
   
@@ -456,7 +459,9 @@ server <- function(input, output, session) {
     # Clear added items and reset input fields
     added_items(create_empty_inventory())
     
-    file_input_id(paste0("new_item_image_", Sys.time()))
+    # 重置文件输入框
+    shinyjs::reset("new_item_image")
+    uploaded_file(NULL)
   })
   
   # Handle row selection in item table
@@ -682,7 +687,8 @@ server <- function(input, output, session) {
       added_items(create_empty_inventory())
       
       # 重置文件输入框
-      file_input_id(paste0("new_item_image_", Sys.time()))
+      shinyjs::reset("new_item_image")
+      uploaded_file(NULL)
       
       # 通知用户
       show_custom_notification("输入已清空！", type = "message")
