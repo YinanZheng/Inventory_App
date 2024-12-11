@@ -74,5 +74,7 @@ DELETE FROM inventory;
 DROP TABLE unique_items;
 DROP TABLE inventory;
 
+DELETE FROM item_type_data
+WHERE id BETWEEN 17 AND 22;
 
 
