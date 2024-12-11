@@ -574,7 +574,7 @@ server <- function(input, output, session) {
         for (i in 1:nrow(batch_data)) {
           # Ensure the parameters are passed as an unnamed vector
           dbExecute(con, "
-      INSERT INTO unique_items (UniqueID, SKU, ProductCost, Status, DomesticEntryTime) 
+      INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomescitShippingCost, Status, Defect, DomesticEntryTime) 
       VALUES (?, ?, ?, ?, ?)",
                     unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
           )
