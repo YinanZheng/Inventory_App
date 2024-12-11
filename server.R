@@ -15,54 +15,12 @@ server <- function(input, output, session) {
   refresh_trigger <- reactiveVal(FALSE)
   
   
-  # 表格UI隐藏、显示模块
-  inventory_table_visible <- reactiveVal(TRUE)  # 默认库存表格可见
-  item_table_visible <- reactiveVal(TRUE)       # 默认物品状态表格可见
-  
-  # 控制库存表格的显示/隐藏
   observeEvent(input$toggle_inventory_table, {
-    if (inventory_table_visible()) {
-      shinyjs::hide("inventory_table_container")
-      updateActionButton(
-        session, 
-        "toggle_inventory_table", 
-        label = "显示库存表", 
-        style = "background-color: blue; color: white;"
-      )
-      inventory_table_visible(FALSE)  # 更新状态为隐藏
-    } else {
-      shinyjs::show("inventory_table_container")
-      updateActionButton(
-        session, 
-        "toggle_inventory_table", 
-        label = "隐藏库存表", 
-        style = "background-color: orange; color: white;"
-      )
-      inventory_table_visible(TRUE)  # 更新状态为显示
-    }
+    shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
   })
   
-  # 控制物品状态表格的显示/隐藏
-  observeEvent(input$toggle_item_table, {
-    if (item_table_visible()) {
-      shinyjs::hide("item_table_container")
-      updateActionButton(
-        session, 
-        "toggle_item_table", 
-        label = "显示物品状态表", 
-        style = "background-color: blue; color: white;"
-      )
-      item_table_visible(FALSE)  # 更新状态为隐藏
-    } else {
-      shinyjs::show("item_table_container")
-      updateActionButton(
-        session, 
-        "toggle_item_table", 
-        label = "隐藏物品状态表", 
-        style = "background-color: orange; color: white;"
-      )
-      item_table_visible(TRUE)  # 更新状态为显示
-    }
+  observeEvent(input$toggle_inventory_table, {
+    shinyjs::toggle("item_table_container")  # 切换显示/隐藏
   })
   
   inventory <- reactiveVal({
