@@ -266,7 +266,7 @@ server <- function(input, output, session) {
     }
     
     # 重新计算 ShippingCost
-    update_shipping_cost()
+    # update_shipping_cost()
     
     shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
