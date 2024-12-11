@@ -14,6 +14,11 @@ server <- function(input, output, session) {
   # 声明一个 reactiveVal 用于触发表格刷新
   refresh_trigger <- reactiveVal(FALSE)
   
+  # 在 Server 中处理折叠逻辑
+  observeEvent(input$toggle_inventory_table, {
+    shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
+  })
+  
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
   })
