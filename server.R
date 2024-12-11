@@ -324,7 +324,7 @@ server <- function(input, output, session) {
             image_name = unique_image_name
           )
           updated_image_path <- final_image_path
-          showNotification("图片已成功更新并保存！", type = "message")
+          showNotification(paste("图片已成功更新并保存！", updated_image_path), type = "message")
         }, error = function(e) {
           showNotification("图片更新失败！", type = "error")
         })
