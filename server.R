@@ -211,7 +211,7 @@ server <- function(input, output, session) {
   observeEvent(input$toggle_item_table, {
     shinyjs::toggle("item_table_container")  # 切换显示/隐藏
   })
-
+  
   
   # Reactive value to store added items
   added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
@@ -493,14 +493,14 @@ server <- function(input, output, session) {
       ))
     } else {
       # 已生成条形码，直接提交入库逻辑
-      handle_inventory_submission(added_items(), con, input, refresh_trigger())
+      handle_inventory_submission(added_items(), con, input, inventory, refresh_trigger())
     }
   })
   
   # 处理用户点击“继续提交”的逻辑
   observeEvent(input$force_confirm_btn, {
     removeModal()  # 关闭模态框
-    handle_inventory_submission(added_items(), con, input, refresh_trigger()) # 提交入库逻辑
+    handle_inventory_submission(added_items(), con, input, inventory, refresh_trigger())
   })
   
   
