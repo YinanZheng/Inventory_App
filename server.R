@@ -535,19 +535,6 @@ server <- function(input, output, session) {
     )
   })
   
-  # output$unique_items_table <- renderDT({
-  #   data <- unique_items_data()
-  #   
-  #   if (is.null(data) || nrow(data) == 0) {
-  #     return(datatable(data.frame("消息" = "没有数据可显示"), escape = FALSE))
-  #   }
-  #   
-  #   datatable(data)
-  # })
-  
-  
-  
-  
   
   ### SKU 模块
   
@@ -678,7 +665,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
       updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
       updateTextInput(session, "new_name", value = "")  # 清空商品名
-      updateNumericInput(session, "new_quantity", value = 1)  # 恢复数量默认值
+      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_cost", value = 0)  # 恢复成本默认值
       updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU

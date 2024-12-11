@@ -19,8 +19,20 @@ ui <- fluidPage(
         )
       ),
       fluidRow(
-        column(6, uiOutput("major_type_ui")), ## 大类
-        column(6, uiOutput("minor_type_ui")), ## 小类
+        column(5, uiOutput("major_type_ui")), ## 大类
+        column(1, 
+               div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
+                   actionButton("add_major_type_btn", label = NULL, icon = icon("plus"),
+                                style = "font-size: 14px; width: 100%; max-width: 40px; height: 34px; padding: 0px; margin-top: 25px;")
+               )
+        ),
+        column(5, uiOutput("minor_type_ui")), ## 小类
+        column(1, 
+               div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
+                   actionButton("add_minor_type_btn", label = NULL, icon = icon("plus"),
+                                style = "font-size: 14px; width: 100%; max-width: 40px; height: 34px; padding: 0px; margin-top: 25px;")
+               )
+        )
       ),
       fluidRow(
         column(12, textInput("new_name", "商品名:"))
