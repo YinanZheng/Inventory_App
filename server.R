@@ -17,10 +17,32 @@ server <- function(input, output, session) {
   # 在 Server 中处理折叠逻辑
   observeEvent(input$toggle_inventory_table, {
     shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
+    # 根据当前显示状态切换按钮图标
+    current_icon <- input$toggle_inventory_table
+    is_visible <- shinyjs::isVisible("inventory_table_container")  # 判断当前状态
+    new_icon <- if (is_visible) "chevron-down" else "chevron-right"
+    
+    # 更新按钮图标
+    updateActionButton(
+      session, 
+      "toggle_inventory_table", 
+      icon = icon(new_icon)
+    )
   })
   
   observeEvent(input$toggle_item_table, {
     shinyjs::toggle("item_table_container")  # 切换显示/隐藏
+    # 根据当前显示状态切换按钮图标
+    current_icon <- input$toggle_item_table
+    is_visible <- shinyjs::isVisible("item_table_container")  # 判断当前状态
+    new_icon <- if (is_visible) "chevron-down" else "chevron-right"
+    
+    # 更新按钮图标
+    updateActionButton(
+      session, 
+      "toggle_item_table", 
+      icon = icon(new_icon)
+    )
   })
   
   
@@ -43,7 +65,6 @@ server <- function(input, output, session) {
     tryCatch({
       dbGetQuery(con, "SELECT * FROM item_type_data")
     }, error = function(e) {
-      log_debug(paste("Error fetching item_type_data:", e$message))
       NULL
     })
   })
@@ -210,7 +231,6 @@ server <- function(input, output, session) {
           show_custom_notification("图片已成功更新并保存！", type = "message")
         }, error = function(e) {
           show_custom_notification("图片更新失败！", type = "error")
-          log_debug(paste("Error in add_btn:", e$message))
         })
       } 
       
@@ -351,7 +371,6 @@ server <- function(input, output, session) {
           }, error = function(e) {
             show_custom_notification(paste("图片保存失败! SKU:", sku), type = "error")
             new_image_path <- existing_item$ItemImagePath  # 回退为原始路径
-            log_debug(paste("Error in confirm_btn(file.rename):", e$message))
           })
         } else {
           # 未上传新图片，保留现有图片路径
@@ -382,7 +401,6 @@ server <- function(input, output, session) {
             new_image_path <- final_image_path
           }, error = function(e) {
             show_custom_notification(paste("新商品图片保存失败! SKU:", sku), type = "error")
-            log_debug(paste("Error in confirm_btn:", e$message))
           })
         }
         
@@ -425,7 +443,7 @@ server <- function(input, output, session) {
     
     # Validate data
     if (is.null(batch_data) || nrow(batch_data) == 0) {
-      show_custom_notification("批量数据无效，请检查输入。", type = "error")
+      show_custom_notification("批量数据无效，请检查输入！", type = "error")
       return()
     }
     
@@ -693,7 +711,6 @@ server <- function(input, output, session) {
     }, error = function(e) {
       # 捕获错误并通知用户
       show_custom_notification("清空输入时发生错误，请重试！", type = "error")
-      log_debug(paste("Error in reset_btn:", e$message))
     })
   })
   
@@ -722,7 +739,7 @@ server <- function(input, output, session) {
     
     # 检查是否找到 SKU
     if (nrow(all_sku_items) == 0) {
-      show_custom_notification("未找到该条形码对应的物品，请检查输入。", type = "error")
+      show_custom_notification("未找到该条形码对应的物品，请检查输入！", type = "error")
       return()
     }
     
@@ -731,7 +748,7 @@ server <- function(input, output, session) {
     
     # 检查是否有符合条件的物品
     if (nrow(matched_items) == 0) {
-      show_custom_notification("该条形码的物品没有可以出库的库存。", type = "error")
+      show_custom_notification("该条形码的物品没有可以出库的库存！", type = "error")
       return()
     }
     
@@ -765,7 +782,7 @@ server <- function(input, output, session) {
     
     # 检查是否有可撤回的记录
     if (length(undo_list) == 0) {
-      show_custom_notification("没有可撤回的操作。", type = "error")
+      show_custom_notification("没有可撤回的操作！", type = "error")
       return()
     }
     
@@ -785,7 +802,7 @@ server <- function(input, output, session) {
         WHERE UniqueID = ?",
                 params = list(unique_id)
       )
-      show_custom_notification("撤回成功，物品状态已恢复为国内仓入库。", type = "message")
+      show_custom_notification("撤回成功，物品状态已恢复为国内仓入库！", type = "message")
       
       # 刷新物品状态追踪表
       refresh_trigger(!refresh_trigger())
