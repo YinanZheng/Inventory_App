@@ -64,7 +64,6 @@ USE inventory_system;
 
 SELECT * FROM inventory;
 SELECT * FROM unique_items;
-SELECT * FROM item_type_data;
 
 -- Remove all record
 USE inventory_system;
@@ -75,7 +74,5 @@ DELETE FROM inventory;
 DROP TABLE unique_items;
 DROP TABLE inventory;
 
--- Remove certain record
-DELETE FROM item_type_data
-WHERE id BETWEEN 8 AND 15;
+
 
