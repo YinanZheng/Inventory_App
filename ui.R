@@ -32,7 +32,7 @@ ui <- fluidPage(
       ),
       fluidRow(
         column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
-        column(3,actionButton("reset_btn", "清空输入", icon = icon("undo"), class = "btn-danger", 
+        column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
                               style = "margin-top: 25px; height: 34px; width: 100%;"))
       ),
       fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
@@ -40,7 +40,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       h4("入库操作"),
       actionButton("add_btn", "添加/更新商品信息"),
-      actionButton("confirm_btn", "确认入库", class = "btn-primary"),
+      actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary"),
       
       tags$hr(), # 分隔线
       h4("出库操作"),
@@ -49,6 +49,7 @@ ui <- fluidPage(
         column(3, actionButton(
           "undo_outbound_btn", 
           "撤回最近出库", 
+          icon = icon("undo"),
           class = "btn-warning", 
           style = "margin-top: 25px; height: 34px; width: 100%;"
         ))
@@ -60,11 +61,11 @@ ui <- fluidPage(
         column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = FALSE))
       ),
       fluidRow(
-        column(6, actionButton("export_single_btn", "生成当前SKU条形码")),
+        column(6, actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"))),
         column(6, downloadButton("download_single_pdf", "下载条形码"))
       ),
       fluidRow(
-        column(6, actionButton("export_batch_btn", "批量生成已添加商品条形码")),
+        column(6, actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"))),
         column(6, downloadButton("download_batch_pdf", "下载批量条形码"))
       ),
     ),
