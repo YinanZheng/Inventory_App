@@ -549,7 +549,7 @@ server <- function(input, output, session) {
           as.character(sku),
           as.numeric(product_cost),
           as.numeric(unit_shipping_cost),
-          "国内仓入库",
+          "国内入库",
           "无瑕",
           format(Sys.time(), "%Y-%m-%d %H:%M:%S")
         )))
