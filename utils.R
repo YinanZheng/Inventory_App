@@ -155,6 +155,7 @@ create_empty_inventory <- function() {
     ItemName = character(),       # Item name
     Quantity = numeric(),         # Quantity in stock
     ProductCost = numeric(),      # Product Cost
+    ShippingCost = numeric(),     # Shipping Cost
     ItemImagePath = character(),  # Path to item image
     stringsAsFactors = FALSE      # Avoid factor columns
   )
