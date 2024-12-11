@@ -54,7 +54,6 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
     
     return(output_path)  # Return the saved image path
   }, error = function(e) {
-    log_debug(paste("Error in save_compressed_image: ", e$message))
     return(NULL)
   })
 }
@@ -85,7 +84,6 @@ generate_unique_code <- function(item_name, maker, length = 4) {
   
   # Generate a random alphanumeric code
   random_output <- paste0(sample(c(LETTERS, 0:9), length, replace = TRUE), collapse = "")
-  log_debug(paste("Random Code:", random_output))
   return(random_output)
 }
 
