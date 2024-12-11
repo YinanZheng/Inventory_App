@@ -56,8 +56,10 @@ ui <- fluidPage(
       
       tags$hr(), # 分隔线
       
-      actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary", style = "width = 100%;"),
-      
+      fluidRow(
+        column(12, actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary", style = "width = 100%;"))
+      ),
+   
       tags$hr(), # 分隔线
       
       h4("出库操作"),
