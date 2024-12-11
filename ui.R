@@ -39,14 +39,14 @@ ui <- fluidPage(
       
       tags$hr(), # 分隔线
       h4("入库操作"),
-      actionButton("add_btn", "添加/更新商品信息"),
+      actionButton("add_btn", "添加/更新商品信息", icon = icon("pen")),
       actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary"),
       
       tags$hr(), # 分隔线
       h4("出库操作"),
       fluidRow(
-        column(9, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
-        column(3, actionButton(
+        column(8, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
+        column(4, actionButton(
           "undo_outbound_btn", 
           "撤回最近出库", 
           icon = icon("undo"),
