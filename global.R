@@ -16,6 +16,7 @@ library(uuid)
 
 # Source all modular functions
 source("./modules/supplier_module.R")
+source("./modules/handle_inventory_submission.R")
 source("utils.R")
 
 # 定义轮询间隔（以毫秒为单位）
