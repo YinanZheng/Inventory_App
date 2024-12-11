@@ -366,6 +366,20 @@ server <- function(input, output, session) {
         }, error = function(e) {
           showNotification("图片处理失败！", type = "error")
         })
+      } else {
+        # 用户未上传图片，检查 inventory 中是否有对应 SKU
+        tryCatch({
+          inventory_item <- dbGetQuery(con, "SELECT ItemImagePath FROM inventory WHERE SKU = ?", params = list(input$new_sku))
+          
+          if (nrow(inventory_item) > 0) {
+            new_image_path <- inventory_item$ItemImagePath[1]  # 使用 inventory 中的图片路径
+            showNotification("使用库存中 SKU 对应的图片路径！", type = "message")
+          } else {
+            showNotification("未找到库存中对应 SKU 的图片路径。", type = "warning")
+          }
+        }, error = function(e) {
+          showNotification("检查库存时发生错误！", type = "error")
+        })
       }
       
       new_item <- data.frame(
