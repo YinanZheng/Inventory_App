@@ -40,20 +40,6 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       h4("入库操作"),
       actionButton("add_btn", "添加/更新商品信息", icon = icon("pen")),
-      actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary"),
-      
-      tags$hr(), # 分隔线
-      h4("出库操作"),
-      fluidRow(
-        column(8, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
-        column(4, actionButton(
-          "undo_outbound_btn", 
-          "撤回最近出库", 
-          icon = icon("undo"),
-          class = "btn-warning", 
-          style = "margin-top: 25px; height: 34px; width: 100%;"
-        ))
-      ),
       
       tags$hr(), # 分隔线
       h4("条形码操作"),
@@ -68,6 +54,21 @@ ui <- fluidPage(
         column(6, actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"))),
         column(6, downloadButton("download_batch_pdf", "下载批量条形码"))
       ),
+      
+      actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary"),
+      
+      tags$hr(), # 分隔线
+      h4("出库操作"),
+      fluidRow(
+        column(8, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
+        column(4, actionButton(
+          "undo_outbound_btn", 
+          "撤回最近出库", 
+          icon = icon("undo"),
+          class = "btn-warning", 
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      )
     ),
     
     mainPanel(
