@@ -77,30 +77,33 @@ server <- function(input, output, session) {
     ))
   })
   
-  # Confirm Add Major Type
   observeEvent(input$confirm_add_major_type, {
     req(input$new_major_type_name, input$new_major_type_sku)
     
+    # 新增大类数据
     new_major <- data.frame(
       MajorType = input$new_major_type_name,
       MajorTypeSKU = input$new_major_type_sku,
-      MinorType = NA,
-      MinorTypeSKU = NA,
       stringsAsFactors = FALSE
     )
     
     tryCatch({
-      dbWriteTable(con, "item_type_data", new_major, append = TRUE, row.names = FALSE)
-      show_custom_notification("新增大类成功！", type = "message")
+      # 将新大类写入数据库，仅包含 MajorType 和 MajorTypeSKU 列
+      dbExecute(con, 
+                "INSERT INTO item_type_data (MajorType, MajorTypeSKU) VALUES (?, ?)",
+                params = list(new_major$MajorType, new_major$MajorTypeSKU))
+      
+      showNotification("新增大类成功！", type = "message")
       removeModal()
       
-      # Reload the item type data
+      # 重新加载数据
       data <- dbGetQuery(con, "SELECT * FROM item_type_data")
       item_type_data(data)
     }, error = function(e) {
-      show_custom_notification("新增大类失败！", type = "error")
+      showNotification("新增大类失败。", type = "error")
     })
   })
+  
   
   # Add Minor Type Button Logic
   observeEvent(input$add_minor_type_btn, {
