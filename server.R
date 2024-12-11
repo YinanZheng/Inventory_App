@@ -482,7 +482,7 @@ server <- function(input, output, session) {
   # Confirm button: Update database and handle images
   observeEvent(input$confirm_btn, {
     # 检查是否已生成条形码
-    if (is.null(batch_pdf_file_path())) {
+    if (!barcode_generated()) {
       showModal(modalDialog(
         title = "条形码未打印",
         "您还未生成并打印条形码，是否继续提交入库？",
@@ -493,14 +493,14 @@ server <- function(input, output, session) {
       ))
     } else {
       # 已生成条形码，直接提交入库逻辑
-      handle_inventory_submission()
+      handle_inventory_submission(added_items())
     }
   })
   
   # 处理用户点击“继续提交”的逻辑
   observeEvent(input$force_confirm_btn, {
     removeModal()  # 关闭模态框
-    handle_inventory_submission()  # 提交入库逻辑
+    handle_inventory_submission(added_items())  # 提交入库逻辑
   })
   
   
@@ -591,6 +591,9 @@ server <- function(input, output, session) {
   single_pdf_file_path <- reactiveVal(NULL)
   batch_pdf_file_path <- reactiveVal(NULL)
   
+  # 存储条形码是否已生成的状态
+  barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
+  
   # 单个 SKU 条形码生成逻辑
   observeEvent(input$export_single_btn, {
     if (is.null(input$new_sku) || input$new_sku == "") {
@@ -651,6 +654,7 @@ server <- function(input, output, session) {
     
     showNotification("条形码已生成为 PDF!")
     shinyjs::enable("download_batch_pdf")
+    barcode_generated(FALSE) #每新生成条形码PDF，就标记未下载
   })
   
   # 单张条形码下载逻辑
@@ -674,6 +678,7 @@ server <- function(input, output, session) {
       file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
       batch_pdf_file_path(NULL)
       shinyjs::disable("download_batch_pdf")
+      barcode_generated(TRUE) #下载完成标记
     }
   )
   
