@@ -66,9 +66,13 @@ SELECT * FROM inventory;
 SELECT * FROM unique_items;
 
 -- Remove all record
+USE inventory_system;
+
 DELETE FROM unique_items;
 DELETE FROM inventory;
 
+DROP TABLE unique_items;
+DROP TABLE inventory;
 
 
 

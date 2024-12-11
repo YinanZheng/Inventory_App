@@ -244,7 +244,8 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "总库存数",
-      ProductCost = "平均成本"
+      ProductCost = "平均成本",
+      ShippingCost = "平均运费"
     )
     
     render_table_with_images(
@@ -650,11 +651,8 @@ server <- function(input, output, session) {
       Maker = "供应商",
       MajorType = "大类",
       MinorType = "小类",
-      Status = "当前状态",
-      DomesticEntryTime = "国内仓入库时间",
-      DomesticExitTime = "国内仓出库时间",
-      UsEntryTime = "美国仓入库时间",
-      UsExitTime = "美国仓出库时间"
+      Status = "库存状态",
+      Defect = "物品状态"
     )
     
     # Render table with images
