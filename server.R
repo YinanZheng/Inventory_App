@@ -16,13 +16,14 @@ server <- function(input, output, session) {
   # Reactive value to store item type data
   item_type_data <- reactiveVal(NULL)
   
-  item_type_data <- reactive({
+  # Load initial data from the database
+  observe({
     tryCatch({
       data <- dbGetQuery(con, "SELECT * FROM item_type_data")
       item_type_data(data)
     }, error = function(e) {
       item_type_data(NULL)
-      show_custom_notification("Failed to load item type data.", type = "error")
+      showNotification("Failed to load item type data.", type = "error")
     })
   })
   
