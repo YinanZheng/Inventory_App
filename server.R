@@ -104,6 +104,9 @@ server <- function(input, output, session) {
       
       # 重新加载数据
       item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
+      # 动态更新 new_major_type 的选择
+      updateSelectInput(session, "new_major_type", selected = new_major$MajorType)
+      
     }, error = function(e) {
       showNotification("新增大类失败。", type = "error")
     })
@@ -169,6 +172,9 @@ server <- function(input, output, session) {
       
       # 重新加载数据
       item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
+      # 动态更新 new_major_type 的选择
+      updateSelectInput(session, "new_major_type", selected = selected_major)
+      
     }, error = function(e) {
       showNotification("新增小类失败。", type = "error")
     })
