@@ -434,9 +434,7 @@ server <- function(input, output, session) {
   # Confirm button: Update database and handle images
   observeEvent(input$confirm_btn, {
     tryCatch({
-      
-      
-      
+
       if (nrow(added_items()) == 0) {
         show_custom_notification("请先添加至少一个商品再确认!", type = "error")
         return()
@@ -574,7 +572,7 @@ server <- function(input, output, session) {
         for (i in 1:nrow(batch_data)) {
           # Ensure the parameters are passed as an unnamed vector
           dbExecute(con, "
-      INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomescitShippingCost, Status, Defect, DomesticEntryTime) 
+      INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, DomesticEntryTime) 
       VALUES (?, ?, ?, ?, ?)",
                     unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
           )
