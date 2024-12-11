@@ -42,7 +42,6 @@ ui <- fluidPage(
       actionButton("add_btn", "添加/更新商品信息", icon = icon("pen")),
       
       tags$hr(), # 分隔线
-      h4("条形码操作"),
       fluidRow(
         column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
       ),
