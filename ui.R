@@ -19,18 +19,18 @@ ui <- fluidPage(
         )
       ),
       fluidRow(
-        column(5, 
-               div(style = "display: flex; align-items: center; gap: 5px;",
-                   uiOutput("major_type_ui"),
+        column(5, uiOutput("major_type_ui")), ## 大类
+        column(1, 
+               div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                    actionButton("add_major_type_btn", label = NULL, icon = icon("plus"),
-                                style = "font-size: 14px; width: 34px; height: 34px; padding: 0px; margin: 0px;")
+                                style = "font-size: 14px; width: 100%; max-width: 40px; height: 34px; padding: 0px; margin-top: 25px;")
                )
         ),
-        column(5, 
-               div(style = "display: flex; align-items: center; gap: 5px;",
-                   uiOutput("minor_type_ui"),
+        column(5, uiOutput("minor_type_ui")), ## 小类
+        column(1, 
+               div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                    actionButton("add_minor_type_btn", label = NULL, icon = icon("plus"),
-                                style = "font-size: 14px; width: 34px; height: 34px; padding: 0px; margin: 0px;")
+                                style = "font-size: 14px; width: 100%; max-width: 40px; height: 34px; padding: 0px; margin-top: 25px;")
                )
         )
       ),
@@ -71,7 +71,7 @@ ui <- fluidPage(
       fluidRow(
         column(12, actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
       ),
-      
+   
       tags$hr(), # 分隔线
       
       h4("出库操作"),
