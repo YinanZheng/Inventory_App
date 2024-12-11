@@ -73,8 +73,8 @@ ui <- fluidPage(
       fluidRow(
         column(12, div(
           h4("已添加商品"), 
-          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #a1c2f7; 
-             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
+          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #c3d8fa; 
+             padding: 3px; text-align: center;"
         )),
         column(12, DTOutput("added_items_table")),
         column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
@@ -88,7 +88,8 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       fluidRow(
-        column(12, actionButton("toggle_inventory_table", "显示/隐藏库存表", style = "width: 100%; font-size: 20px;")),  # 折叠按钮
+        column(12, actionButton("toggle_inventory_table", "显示/隐藏库存表", 
+                                style = "width: 100%; font-size: 20px; background-color: #c3d8fa")),  # 折叠按钮
         column(12, div(
           id = "inventory_table_container",  # 容器 ID
           style = "height: 300px; overflow-y: scroll;",  # 初始样式
@@ -99,7 +100,8 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       fluidRow(
-        column(12, actionButton("toggle_item_table", "显示/隐藏物品状态表")),  # 折叠按钮
+        column(12, actionButton("toggle_item_table", "显示/隐藏物品状态表",
+                                style = "width: 100%; font-size: 20px; background-color: #c3d8fa")),  # 折叠按钮
         column(12, div(
           id = "item_table_container",  # 容器 ID
           style = "height: 300px; overflow-y: scroll;",  # 初始样式
