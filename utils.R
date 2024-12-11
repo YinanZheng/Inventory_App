@@ -156,7 +156,7 @@ create_empty_inventory <- function() {
     MinorType = character(),      # Minor category
     ItemName = character(),       # Item name
     Quantity = numeric(),         # Quantity in stock
-    Cost = numeric(),             # Product cost
+    Cost = numeric(),             # Cost
     ItemImagePath = character(),  # Path to item image
     stringsAsFactors = FALSE      # Avoid factor columns
   )
@@ -223,20 +223,6 @@ render_table_with_images <- function(data,
     escape = FALSE,  # Disable HTML escaping to allow rendering of images
     selection = 'single'
   )
-}
-
-update_shipping_cost <- function() {
-  items <- added_items()
-  total_quantity <- sum(items$Quantity, na.rm = TRUE)
-  
-  if (total_quantity > 0 && !is.null(input$new_shipping_cost)) {
-    shipping_cost_per_item <- round(input$new_shipping_cost / total_quantity, 2)
-    items$ShippingCost <- items$Quantity * shipping_cost_per_item
-  } else {
-    items$ShippingCost <- 0
-  }
-  
-  added_items(items)  # 更新 added_items 数据框
 }
 
 update_status <- function(con, unique_id, new_status) {
