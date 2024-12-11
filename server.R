@@ -518,7 +518,7 @@ server <- function(input, output, session) {
           
           dbExecute(con, "INSERT INTO inventory 
                       (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath, created_at, updated_at) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
                     params = list(sku, maker, major_type, minor_type, item_name, quantity, 
                                   round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
           
