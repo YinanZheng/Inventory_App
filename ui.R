@@ -72,12 +72,12 @@ ui <- fluidPage(
     mainPanel(
       # 使用 fluidRow 分成上下两个部分
       fluidRow(
-        column(12,  div(
-          h4("符合条件的库存记录"), 
-          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
-             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
-        )),
-        column(12, DTOutput("filtered_inventory_table"))
+        column(12, actionButton("toggle_inventory_table", "显示/隐藏库存表", icon = icon("chevron-down"))),  # 折叠按钮
+        column(12, div(
+          id = "inventory_table_container",  # 容器 ID
+          style = "height: 400px; overflow-y: scroll;",  # 初始样式
+          DTOutput("filtered_inventory_table")
+        ))
       ),
       
       tags$hr(), # 分隔线
