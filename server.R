@@ -618,13 +618,9 @@ server <- function(input, output, session) {
     
     dbGetQuery(con, "
     SELECT 
-      unique_items.UniqueID,
       unique_items.SKU, 
       unique_items.Status,
-      unique_items.DomesticEntryTime,
-      unique_items.DomesticExitTime,
-      unique_items.UsEntryTime,
-      unique_items.UsExitTime,
+      unique_items.Defect,
       inventory.Maker,
       inventory.MajorType,
       inventory.MinorType,
