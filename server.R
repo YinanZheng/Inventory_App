@@ -52,6 +52,34 @@ server <- function(input, output, session) {
     updateSelectInput(session, "new_major_type", choices = choices)
   })
   
+  observeEvent(input$add_major_type_btn, {
+    showModal(modalDialog(
+      title = "新增大类",
+      textInput("new_major_type_name", "大类名称:"),
+      textInput("new_major_type_sku", "大类SKU:"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_add_major_type", "添加")
+      )
+    ))
+  })
+  
+  observeEvent(input$add_minor_type_btn, {
+    req(input$new_major_type)  # 确保大类已选中
+    
+    selected_major <- gsub("（.*）", "", input$new_major_type)  # 去掉 SKU 部分
+    
+    showModal(modalDialog(
+      title = paste0("新增小类（大类: ", selected_major, "）"),
+      textInput("new_minor_type_name", "小类名称:"),
+      textInput("new_minor_type_sku", "小类SKU:"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_add_minor_type", "添加")
+      )
+    ))
+  })
+  
   observeEvent(input$confirm_add_major_type, {
     req(input$new_major_type_name, input$new_major_type_sku)
     
