@@ -563,7 +563,7 @@ server <- function(input, output, session) {
       
       # Convert to data frame
       batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
-      colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", "Status", "Defect", "DomesticEntryTime")
+      # colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", "Status", "Defect", "DomesticEntryTime")
       
       # Insert into database
       dbBegin(con)
@@ -573,7 +573,7 @@ server <- function(input, output, session) {
           # Ensure the parameters are passed as an unnamed vector
           dbExecute(con, "
       INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, DomesticEntryTime) 
-      VALUES (?, ?, ?, ?, ?)",
+      VALUES (?, ?, ?, ?, ?, ?, ?)",
                     unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
           )
         }
