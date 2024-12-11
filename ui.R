@@ -77,7 +77,7 @@ ui <- fluidPage(
              padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
         )),
         column(12, DTOutput("added_items_table")),
-        column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"))),
+        column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
       ),
       tags$hr(), # 分隔线
       div(
