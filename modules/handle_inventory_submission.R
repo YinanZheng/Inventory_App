@@ -1,12 +1,10 @@
 handle_inventory_submission <- function(added_items_df) {
   tryCatch({
     
-    if (nrow(added_items()) == 0) {
+    if (nrow(added_items_df) == 0) {
       showNotification("请先添加至少一个商品再确认!", type = "error")
       return()
     }
-    
-    added_items_df <- added_items()
     
     # Retrieve total package shipping cost from the UI
     total_shipping_cost <- input$new_shipping_cost
