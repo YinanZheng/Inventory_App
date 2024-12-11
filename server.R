@@ -127,8 +127,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "总库存数",
-      Cost = "平均成本",
-      ShippingCost = "平均运费"
+      Cost = "平均成本"
     )
     
     render_table_with_images(
@@ -284,8 +283,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "入库数量",
-      Cost = "采购成本",
-      ShippingCost = "平摊运费"
+      Cost = "采购成本"
     )
     
     render_table_with_images(
