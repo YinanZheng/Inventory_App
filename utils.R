@@ -204,7 +204,8 @@ render_image_column <- function(image_column_data,
 # Function to render datatable with images
 render_table_with_images <- function(data, 
                                      column_mapping, 
-                                     image_column = NULL) {
+                                     image_column = NULL,
+                                     options = list()) {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(data[[image_column]], host_url)
@@ -219,7 +220,9 @@ render_table_with_images <- function(data,
   datatable(
     data,
     escape = FALSE,  # Disable HTML escaping to allow rendering of images
-    selection = 'single'
+    selection = 'single',
+    rownames = FALSE,
+    options = options
   )
 }
 
