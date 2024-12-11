@@ -224,7 +224,7 @@ server <- function(input, output, session) {
     # Filter the inventory data and include Maker
     result <- inventory() %>%
       filter(MajorType == input$new_major_type, MinorType == input$new_minor_type) %>%
-      select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, Cost, ItemImagePath)  # Ensure Maker is included
+      select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ItemImagePath)  # Ensure Maker is included
     
     # Return empty inventory if no results
     if (nrow(result) == 0) {
@@ -244,7 +244,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "总库存数",
-      Cost = "平均成本"
+      ProductCost = "平均成本"
     )
     
     render_table_with_images(
@@ -266,7 +266,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
-      updateNumericInput(session, "new_cost", value = selected_data$Cost)
+      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
   })
   
@@ -285,7 +285,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    if (is.null(input$new_cost) || input$new_cost < 0 || input$new_cost > 999) {
+    if (is.null(input$new_product_cost) || input$new_product_cost < 0 || input$new_product_cost > 999) {
       show_custom_notification("请填写正确商品成本！", type = "error")
       return()
     }
@@ -336,7 +336,7 @@ server <- function(input, output, session) {
         MinorType = input$new_minor_type,
         ItemName = input$new_name,
         Quantity = input$new_quantity,
-        Cost = round(input$new_cost, 2),
+        ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = updated_image_path,
         stringsAsFactors = FALSE
       )
@@ -373,7 +373,7 @@ server <- function(input, output, session) {
         MinorType = input$new_minor_type,
         ItemName = input$new_name,
         Quantity = input$new_quantity,
-        Cost = round(input$new_cost, 2),
+        ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
@@ -400,7 +400,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "入库数量",
-      Cost = "采购成本"
+      ProductCost = "采购成本"
     )
     
     render_table_with_images(
@@ -425,7 +425,7 @@ server <- function(input, output, session) {
   
   # Calculate total cost
   output$total_cost <- renderText({
-    total <- sum(added_items()$Quantity * added_items()$Cost) + input$new_shipping_cost
+    total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
     paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
            "（其中包含运费: ¥", input$new_shipping_cost, ")")
   })
@@ -439,6 +439,14 @@ server <- function(input, output, session) {
     
     added_items_df <- added_items()
     
+    # Retrieve total package shipping cost from the UI
+    total_shipping_cost <- input$new_shipping_cost
+    if (is.null(total_shipping_cost) || total_shipping_cost <= 0) {
+      total_shipping_cost <- 0  # Default to 0 if invalid
+    }
+    
+    unit_shipping_cost <- total_shipping_cost / sum(added_items_df$Quantity)
+
     for (i in 1:nrow(added_items_df)) {
       sku <- added_items_df$SKU[i]
       maker <- added_items_df$Maker[i]
@@ -446,7 +454,7 @@ server <- function(input, output, session) {
       minor_type <- added_items_df$MinorType[i]
       item_name <- added_items_df$ItemName[i]
       quantity <- added_items_df$Quantity[i]
-      cost <- added_items_df$Cost[i]
+      product_cost <- added_items_df$ProductCost[i]
       new_image_path <- added_items_df$ItemImagePath[i]
       
       # 检查 SKU 是否已存在
@@ -455,8 +463,9 @@ server <- function(input, output, session) {
       # 如果 SKU 已存在，检查图片路径
       if (nrow(existing_item) > 0) {
         new_quantity <- existing_item$Quantity + quantity
-        new_ave_cost <- ((existing_item$Cost * existing_item$Quantity) + (cost * quantity)) / new_quantity
-        
+        new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + (product_cost * quantity)) / new_quantity
+        new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + (unit_shipping_cost * quantity)) / new_quantity
+          
         # 如果有新图片上传，为图片生成唯一路径
         if (!is.na(new_image_path) && new_image_path != "") {
           unique_image_name <- paste0(sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
@@ -477,9 +486,9 @@ server <- function(input, output, session) {
         
         # 更新库存数据
         dbExecute(con, "UPDATE inventory 
-                      SET Quantity = ?, Cost = ?, ItemImagePath = ?, updated_at = NOW() 
+                      SET Quantity = ?, ProductCost = ?, ShippingCost = ?, ItemImagePath = ?, updated_at = NOW() 
                       WHERE SKU = ?",
-                  params = list(new_quantity, round(new_ave_cost, 2), new_image_path, sku))
+                  params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), new_image_path, sku))
         
         show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
       } else {
@@ -503,9 +512,10 @@ server <- function(input, output, session) {
         }
         
         dbExecute(con, "INSERT INTO inventory 
-                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, Cost, ItemImagePath, created_at, updated_at) 
+                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath, created_at, updated_at) 
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
-                  params = list(sku, maker, major_type, minor_type, item_name, quantity, round(cost, 2), new_image_path))
+                  params = list(sku, maker, major_type, minor_type, item_name, quantity, 
+                                round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
         
         show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", item_name), type = "message")
       }
@@ -519,13 +529,14 @@ server <- function(input, output, session) {
     show_custom_notification("库存已成功更新！", type = "message")
     
     
+    ### 同时添加信息到 unique_items 表中
     # Prepare data for batch insertion
     batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
       sku <- added_items_df$SKU[i]
       quantity <- added_items_df$Quantity[i]
-      cost <- added_items_df$Cost[i]
-      
-      if (quantity <= 0 || is.na(cost) || cost <= 0) {
+      product_cost <- added_items_df$ProductCost[i]
+
+      if (quantity <= 0 || is.na(product_cost) || product_cost <= 0) {
         return(NULL)  # Skip invalid rows
       }
       
@@ -533,8 +544,10 @@ server <- function(input, output, session) {
       t(replicate(quantity, c(
         UUIDgenerate(),
         as.character(sku),
-        as.numeric(cost),
+        as.numeric(product_cost),
+        as.numeric(unit_shipping_cost),
         "国内仓入库",
+        "无瑕",
         format(Sys.time(), "%Y-%m-%d %H:%M:%S")
       )))
     }))
@@ -547,7 +560,7 @@ server <- function(input, output, session) {
     
     # Convert to data frame
     batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
-    colnames(batch_data) <- c("UniqueID", "SKU", "Cost", "Status", "DomesticEntryTime")
+    colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", "Status", "Defect", "DomesticEntryTime")
     
     # Insert into database
     dbBegin(con)
@@ -556,7 +569,7 @@ server <- function(input, output, session) {
       for (i in 1:nrow(batch_data)) {
         # Ensure the parameters are passed as an unnamed vector
         dbExecute(con, "
-      INSERT INTO unique_items (UniqueID, SKU, Cost, Status, DomesticEntryTime) 
+      INSERT INTO unique_items (UniqueID, SKU, ProductCost, Status, DomesticEntryTime) 
       VALUES (?, ?, ?, ?, ?)",
                   unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
         )
@@ -591,7 +604,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
-      updateNumericInput(session, "new_cost", value = selected_data$Cost)
+      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
   })
   
@@ -783,8 +796,8 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
       updateTextInput(session, "new_name", value = "")  # 清空商品名
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
-      updateNumericInput(session, "new_cost", value = 0)  # 恢复成本默认值
-      updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
+      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
+      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       
       # 清空已添加的商品

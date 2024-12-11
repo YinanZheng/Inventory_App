@@ -154,7 +154,7 @@ create_empty_inventory <- function() {
     MinorType = character(),      # Minor category
     ItemName = character(),       # Item name
     Quantity = numeric(),         # Quantity in stock
-    Cost = numeric(),             # Cost
+    ProductCost = numeric(),      # Product Cost
     ItemImagePath = character(),  # Path to item image
     stringsAsFactors = FALSE      # Avoid factor columns
   )
