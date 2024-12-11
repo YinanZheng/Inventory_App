@@ -122,7 +122,6 @@ ui <- fluidPage(
                                 style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
         column(12, div(
           id = "item_table_container",  # 容器 ID
-          style = "height: 300px; overflow-y: scroll;",  # 初始样式
           DTOutput("unique_items_table")
         ))
       )

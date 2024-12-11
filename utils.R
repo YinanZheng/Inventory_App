@@ -45,7 +45,7 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
     img <- magick::image_read(file_path)
     
     # Compress the image
-    compressed_img <- magick::image_scale(img, "800x")  # Resize
+    compressed_img <- magick::image_scale(img, "500x")  # Resize
     compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
     
     # Save the compressed image
