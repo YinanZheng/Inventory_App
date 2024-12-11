@@ -158,6 +158,10 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
+    if(!is.null(input$new_item_image)) show_custom_notification(input$new_item_image$datapath, type = "error")
+
+    show_custom_notification("请确保SKU正常生成！", type = "error")
+    
     # 验证输入
     if (is.null(input$new_name) || input$new_name == "") {
       show_custom_notification("请填写正确商品名称！", type = "error")
