@@ -12,11 +12,17 @@ con <- dbConnect(
 server <- function(input, output, session) {
   
   ## 大小类模块
+  
+  # Reactive value to store item type data
+  item_type_data <- reactiveVal(NULL)
+  
   item_type_data <- reactive({
     tryCatch({
-      dbGetQuery(con, "SELECT * FROM item_type_data")
+      data <- dbGetQuery(con, "SELECT * FROM item_type_data")
+      item_type_data(data)
     }, error = function(e) {
-      NULL
+      item_type_data(NULL)
+      show_custom_notification("Failed to load item type data.", type = "error")
     })
   })
   
@@ -57,7 +63,93 @@ server <- function(input, output, session) {
     selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
   })
   
-
+  # Add Major Type Button Logic
+  observeEvent(input$add_major_type_btn, {
+    showModal(modalDialog(
+      title = "新增大类",
+      textInput("new_major_type_name", "大类名称:"),
+      textInput("new_major_type_sku", "大类SKU:"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_add_major_type", "添加")
+      )
+    ))
+  })
+  
+  # Confirm Add Major Type
+  observeEvent(input$confirm_add_major_type, {
+    req(input$new_major_type_name, input$new_major_type_sku)
+    
+    new_major <- data.frame(
+      MajorType = input$new_major_type_name,
+      MajorTypeSKU = input$new_major_type_sku,
+      MinorType = NA,
+      MinorTypeSKU = NA,
+      stringsAsFactors = FALSE
+    )
+    
+    tryCatch({
+      dbWriteTable(con, "item_type_data", new_major, append = TRUE, row.names = FALSE)
+      show_custom_notification("新增大类成功！", type = "message")
+      removeModal()
+      
+      # Reload the item type data
+      data <- dbGetQuery(con, "SELECT * FROM item_type_data")
+      item_type_data(data)
+    }, error = function(e) {
+      show_custom_notification("新增大类失败！", type = "error")
+    })
+  })
+  
+  # Add Minor Type Button Logic
+  observeEvent(input$add_minor_type_btn, {
+    req(input$new_major_type)
+    
+    selected_major <- gsub("（.*）", "", input$new_major_type)
+    
+    showModal(modalDialog(
+      title = paste0("新增小类（大类: ", selected_major, "）"),
+      textInput("new_minor_type_name", "小类名称:"),
+      textInput("new_minor_type_sku", "小类SKU:"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_add_minor_type", "添加")
+      )
+    ))
+  })
+  
+  # Confirm Add Minor Type
+  observeEvent(input$confirm_add_minor_type, {
+    req(input$new_minor_type_name, input$new_minor_type_sku, input$new_major_type)
+    
+    selected_major <- gsub("（.*）", "", input$new_major_type)
+    
+    new_minor <- data.frame(
+      MajorType = selected_major,
+      MajorTypeSKU = NA,
+      MinorType = input$new_minor_type_name,
+      MinorTypeSKU = input$new_minor_type_sku,
+      stringsAsFactors = FALSE
+    )
+    
+    tryCatch({
+      dbWriteTable(con, "item_type_data", new_minor, append = TRUE, row.names = FALSE)
+      show_custom_notification("新增小类成功！", type = "message")
+      removeModal()
+      
+      # Reload the item type data
+      data <- dbGetQuery(con, "SELECT * FROM item_type_data")
+      item_type_data(data)
+    }, error = function(e) {
+      show_custom_notification("新增小类失败！", type = "error")
+    })
+  })
+  
+  
+  
+  #########################################################################
+  
+  
   # 用于保存用户上传的文件信息
   uploaded_file <- reactiveVal(NULL)
   
@@ -65,7 +157,7 @@ server <- function(input, output, session) {
     if (!is.null(input$new_item_image)) {
       # 记录新上传的文件
       uploaded_file(input$new_item_image)
-      showNotification("文件已上传并记录！", type = "message")
+      show_custom_notification("文件已上传并记录！", type = "message")
     }
   })
   
