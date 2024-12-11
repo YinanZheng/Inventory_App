@@ -1,8 +1,6 @@
 handle_inventory_submission <- function(added_items_df, con, input, inventory, refresh_trigger) {
   tryCatch({
     
-    dbBegin(con)
-    
     if (nrow(added_items_df) == 0) {
       showNotification("请先添加至少一个商品再确认!", type = "error")
       return()
@@ -129,7 +127,8 @@ handle_inventory_submission <- function(added_items_df, con, input, inventory, r
     batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
     # colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", "Status", "Defect", "DomesticEntryTime")
     
-
+    # Insert into database
+    # dbBegin(con)
     tryCatch({
       # Insert rows one by one
       for (i in 1:nrow(batch_data)) {
@@ -140,13 +139,13 @@ handle_inventory_submission <- function(added_items_df, con, input, inventory, r
                   unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
         )
       }
-      dbCommit(con)  # Commit transaction
+      # dbCommit(con)  # Commit transaction
       showNotification("所有物品已成功入库到国内仓！", type = "message")
       # 切换触发器值，确保刷新
       current_value <- refresh_trigger()
       refresh_trigger(!current_value) 
     }, error = function(e) {
-      dbRollback(con)  # Rollback on error
+      # dbRollback(con)  # Rollback on error
       showNotification(paste("批量入库失败:", e$message), type = "error")
     })
     
