@@ -154,6 +154,11 @@ server <- function(input, output, session) {
                 "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
                 params = list(new_minor$MajorType, new_minor$MajorTypeSKU, new_minor$MinorType, new_minor$MinorTypeSKU))
       
+      # 删除与大类关联的小类为空的行
+      dbExecute(con, 
+                "DELETE FROM item_type_data WHERE MajorType = ? AND (MinorType IS NULL OR MinorType = '')",
+                params = list(selected_major))
+      
       showNotification("新增小类成功！", type = "message")
       removeModal()
       
