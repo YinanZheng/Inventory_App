@@ -157,8 +157,6 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
-    if(!is.null(uploaded_file())) show_custom_notification(uploaded_file()$datapath, type = "error")
-    
     # 验证输入
     if (is.null(input$new_name) || input$new_name == "") {
       show_custom_notification("请填写正确商品名称！", type = "error")
