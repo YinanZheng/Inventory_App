@@ -493,7 +493,7 @@ server <- function(input, output, session) {
       ))
     } else {
       # 已生成条形码，直接提交入库逻辑
-      handle_inventory_submission(added_items(), con, refresh_trigger())
+      handle_inventory_submission(added_items(), con, input, refresh_trigger())
     }
   })
   
