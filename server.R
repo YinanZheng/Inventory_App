@@ -221,10 +221,10 @@ server <- function(input, output, session) {
     
     req(input$new_major_type, input$new_minor_type)
     
-    # Filter the inventory data and include Maker
+    # Filter the inventory data
     result <- inventory() %>%
       filter(MajorType == input$new_major_type, MinorType == input$new_minor_type) %>%
-      select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ItemImagePath)  # Ensure Maker is included
+      select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath)  # Ensure Maker is included
     
     # Return empty inventory if no results
     if (nrow(result) == 0) {
