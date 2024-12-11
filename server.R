@@ -11,10 +11,11 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   
+  # 声明一个 reactiveVal 用于触发表格刷新
+  refresh_trigger <- reactiveVal(FALSE)
+  
   
   # 表格UI隐藏、显示模块
-  
-  # 声明一个 reactiveVal 用于触发表格刷新
   inventory_table_visible <- reactiveVal(TRUE)  # 默认库存表格可见
   item_table_visible <- reactiveVal(TRUE)       # 默认物品状态表格可见
   
@@ -63,7 +64,6 @@ server <- function(input, output, session) {
       item_table_visible(TRUE)  # 更新状态为显示
     }
   })
-  
   
   inventory <- reactiveVal({
     dbGetQuery(con, "SELECT * FROM inventory")
