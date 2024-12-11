@@ -500,7 +500,7 @@ server <- function(input, output, session) {
   # 处理用户点击“继续提交”的逻辑
   observeEvent(input$force_confirm_btn, {
     removeModal()  # 关闭模态框
-    handle_inventory_submission(added_items())  # 提交入库逻辑
+    handle_inventory_submission(added_items(), con, input, refresh_trigger()) # 提交入库逻辑
   })
   
   
