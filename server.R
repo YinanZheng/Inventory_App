@@ -655,6 +655,7 @@ server <- function(input, output, session) {
       file.copy(single_pdf_file_path(), file, overwrite = TRUE)
       single_pdf_file_path(NULL)
     }
+    shinyjs::disable("download_single_pdf")
   )
   
   # 批量条形码下载逻辑
@@ -666,6 +667,7 @@ server <- function(input, output, session) {
       file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
       batch_pdf_file_path(NULL)
     }
+    shinyjs::disable("download_batch_pdf")
   )
   
   
