@@ -517,7 +517,6 @@ server <- function(input, output, session) {
   output$unique_items_table <- renderDT({
     # Define column mapping for user-friendly display
     column_mapping <- list(
-      UniqueID = "物品编码",
       SKU = "条形码",
       ItemName = "商品名",
       ItemImagePath = "商品图片",
