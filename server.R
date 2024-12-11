@@ -151,7 +151,6 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_cost", value = selected_data$Cost)
     }
-    shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
   
   ## 入库表模块
@@ -267,7 +266,7 @@ server <- function(input, output, session) {
       added_items(bind_rows(existing_items, new_item))
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
-    shinyjs::reset("new_item_image")  # 重置文件上传控件
+    if (!is.null(input$new_item_image)) shinyjs::runjs('document.getElementById("new_item_image").value = "";')
   })
   
   
@@ -454,14 +453,9 @@ server <- function(input, output, session) {
       show_custom_notification(paste("批量入库失败:", e$message), type = "error")
     })
     
-    
-    
-    
     # Clear added items and reset input fields
     added_items(create_empty_inventory())
-    if (!is.null(input$new_item_image)) {
-      shinyjs::reset("new_item_image")
-    }
+    if (!is.null(input$new_item_image)) shinyjs::runjs('document.getElementById("new_item_image").value = "";')
   })
   
   # Handle row selection in item table
@@ -683,6 +677,7 @@ server <- function(input, output, session) {
       updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       shinyjs::reset("new_item_image")  # 重置文件上传控件
+      shinyjs::runjs('document.getElementById("new_item_image").value = "";')
       
       # 清空已添加的商品
       added_items(create_empty_inventory())
