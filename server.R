@@ -263,10 +263,6 @@ server <- function(input, output, session) {
       added_items(bind_rows(existing_items, new_item))
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
-    
-    # 重新计算 ShippingCost
-    # update_shipping_cost()
-    
     shinyjs::reset("new_item_image")  # 重置文件上传控件
   })
   
