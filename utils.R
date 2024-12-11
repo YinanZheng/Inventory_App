@@ -156,7 +156,7 @@ create_empty_inventory <- function() {
     MinorType = character(),      # Minor category
     ItemName = character(),       # Item name
     Quantity = numeric(),         # Quantity in stock
-    Cost = numeric(),             # Cost
+    Cost = numeric(),             # Product cost
     ItemImagePath = character(),  # Path to item image
     stringsAsFactors = FALSE      # Avoid factor columns
   )
@@ -225,6 +225,20 @@ render_table_with_images <- function(data,
   )
 }
 
+update_shipping_cost <- function() {
+  items <- added_items()
+  total_quantity <- sum(items$Quantity, na.rm = TRUE)
+  
+  if (total_quantity > 0 && !is.null(input$new_shipping_cost)) {
+    shipping_cost_per_item <- round(input$new_shipping_cost / total_quantity, 2)
+    items$ShippingCost <- items$Quantity * shipping_cost_per_item
+  } else {
+    items$ShippingCost <- 0
+  }
+  
+  added_items(items)  # 更新 added_items 数据框
+}
+
 update_status <- function(con, unique_id, new_status) {
   # 定义状态到时间戳列的映射
   status_columns <- list(
@@ -246,9 +260,4 @@ update_status <- function(con, unique_id, new_status) {
   dbExecute(con, 
             paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
             params = list(new_status, Sys.time(), unique_id))
-}
-
-# Log debug information
-log_debug <- function(msg) {
-  cat("[DEBUG]:", msg, "\n")
 }
