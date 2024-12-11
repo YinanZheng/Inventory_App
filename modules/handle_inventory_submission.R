@@ -1,6 +1,8 @@
 handle_inventory_submission <- function(added_items_df, con, input, inventory, refresh_trigger) {
   tryCatch({
     
+    dbBegin(con)
+    
     if (nrow(added_items_df) == 0) {
       showNotification("请先添加至少一个商品再确认!", type = "error")
       return()
@@ -127,8 +129,7 @@ handle_inventory_submission <- function(added_items_df, con, input, inventory, r
     batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
     # colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", "Status", "Defect", "DomesticEntryTime")
     
-    # Insert into database
-    dbBegin(con)
+
     tryCatch({
       # Insert rows one by one
       for (i in 1:nrow(batch_data)) {
