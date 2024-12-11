@@ -130,15 +130,6 @@ generate_sku <- function(item_type_data, major_type, minor_type, item_name, make
   paste0(major_type_sku, "-", minor_type_sku, "-", unique_code)
 }
 
-# Unified function for showing notifications
-show_custom_notification <- function(message, type = "message") {
-  showNotification(
-    paste0(if (type == "error") "错误: " else "提示: ", message),
-    type = type,
-    duration = 10
-  )
-}
-
 # Remove tone of letters
 remove_tone <- function(text) {
   # 替换规则：音调字母 -> 无音调字母

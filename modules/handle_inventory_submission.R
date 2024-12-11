@@ -1,4 +1,4 @@
-handle_inventory_submission <- function(added_items_df) {
+handle_inventory_submission <- function(added_items_df, con, refresh_trigger) {
   tryCatch({
     
     if (nrow(added_items_df) == 0) {
