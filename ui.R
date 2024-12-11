@@ -88,7 +88,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       fluidRow(
-        column(12, actionButton("toggle_inventory_table", "显示/隐藏库存表")),  # 折叠按钮
+        column(12, actionButton("toggle_inventory_table", "显示/隐藏库存表", style = "width: 100%")),  # 折叠按钮
         column(12, div(
           id = "inventory_table_container",  # 容器 ID
           style = "height: 300px; overflow-y: scroll;",  # 初始样式
