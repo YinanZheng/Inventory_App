@@ -33,60 +33,28 @@ server <- function(input, output, session) {
     })
   })
   
-  # Render Major Type Dropdown
-  output$major_type_ui <- renderUI({
-    req(item_type_data())  # Ensure item_type_data is not NULL
-    
-    # Extract unique major types with their SKUs
+  
+  
+  ####################################################################
+  
+  observe({
+    req(item_type_data())  # 确保数据存在
     type_data <- item_type_data()
     unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
     
-    # Generate choices for the dropdown
+    # 构建大类的下拉选项
     choices <- setNames(
       unique_majors$MajorType, 
       paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
     )
     
-    selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
-  })
-  
-  # Render Minor Type Dropdown dynamically
-  output$minor_type_ui <- renderUI({
-    req(item_type_data(), input$new_major_type)  # Ensure required inputs are available
-    
-    # Extract and filter for the selected major type
-    type_data <- item_type_data()
-    selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
-    
-    # Filter minor types for the selected major type
-    filtered_data <- type_data[type_data$MajorType == selected_major, ]
-    
-    # Generate choices for the dropdown
-    choices <- setNames(
-      filtered_data$MinorType, 
-      paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
-    )
-    
-    selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
-  })
-  
-  # Add Major Type Button Logic
-  observeEvent(input$add_major_type_btn, {
-    showModal(modalDialog(
-      title = "新增大类",
-      textInput("new_major_type_name", "大类名称:"),
-      textInput("new_major_type_sku", "大类SKU:"),
-      footer = tagList(
-        modalButton("取消"),
-        actionButton("confirm_add_major_type", "添加")
-      )
-    ))
+    # 更新大类选择框
+    updateSelectInput(session, "new_major_type", choices = choices)
   })
   
   observeEvent(input$confirm_add_major_type, {
     req(input$new_major_type_name, input$new_major_type_sku)
     
-    # 新增大类数据
     new_major <- data.frame(
       MajorType = input$new_major_type_name,
       MajorTypeSKU = input$new_major_type_sku,
@@ -94,49 +62,48 @@ server <- function(input, output, session) {
     )
     
     tryCatch({
-      # 将新大类写入数据库，仅包含 MajorType 和 MajorTypeSKU 列
       dbExecute(con, 
                 "INSERT INTO item_type_data (MajorType, MajorTypeSKU) VALUES (?, ?)",
                 params = list(new_major$MajorType, new_major$MajorTypeSKU))
-      
       showNotification("新增大类成功！", type = "message")
       removeModal()
       
       # 重新加载数据
-      item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
-      # 动态更新 new_major_type 的选择
-      updateSelectInput(session, "new_major_type", selected = new_major$MajorType)
+      updated_data <- dbGetQuery(con, "SELECT * FROM item_type_data")
+      item_type_data(updated_data)
+      
+      # 动态设置新增的大类为默认选项
+      updateSelectInput(session, "new_major_type", selected = input$new_major_type_name)
       
     }, error = function(e) {
       showNotification("新增大类失败。", type = "error")
     })
   })
   
-  
-  # Add Minor Type Button Logic
-  observeEvent(input$add_minor_type_btn, {
-    req(input$new_major_type)
+  observe({
+    req(item_type_data(), input$new_major_type)
     
-    selected_major <- gsub("（.*）", "", input$new_major_type)
+    type_data <- item_type_data()
+    selected_major <- gsub("（.*）", "", input$new_major_type)  # 去掉 SKU 部分
+    filtered_data <- type_data[type_data$MajorType == selected_major, ]
     
-    showModal(modalDialog(
-      title = paste0("新增小类（大类: ", selected_major, "）"),
-      textInput("new_minor_type_name", "小类名称:"),
-      textInput("new_minor_type_sku", "小类SKU:"),
-      footer = tagList(
-        modalButton("取消"),
-        actionButton("confirm_add_minor_type", "添加")
-      )
-    ))
+    # 构建小类的下拉选项
+    choices <- setNames(
+      filtered_data$MinorType, 
+      paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
+    )
+    
+    # 更新小类选择框
+    updateSelectInput(session, "new_minor_type", choices = choices)
   })
   
   observeEvent(input$confirm_add_minor_type, {
     req(input$new_minor_type_name, input$new_minor_type_sku, input$new_major_type)
     
-    # 从输入中获取选择的大类名称（去除SKU部分）
+    # 当前选中的大类
     selected_major <- gsub("（.*）", "", input$new_major_type)
     
-    # 查询大类SKU
+    # 查询大类 SKU
     major_sku <- tryCatch({
       data <- item_type_data()
       type_row <- data[data$MajorType == selected_major, ]
@@ -145,9 +112,8 @@ server <- function(input, output, session) {
       NA
     })
     
-    req(!is.na(major_sku)) # 确保大类SKU存在
+    req(!is.na(major_sku)) # 确保大类 SKU 存在
     
-    # 新增小类数据
     new_minor <- data.frame(
       MajorType = selected_major,
       MajorTypeSKU = major_sku,
@@ -157,22 +123,16 @@ server <- function(input, output, session) {
     )
     
     tryCatch({
-      # 插入新小类到数据库
       dbExecute(con, 
                 "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
                 params = list(new_minor$MajorType, new_minor$MajorTypeSKU, new_minor$MinorType, new_minor$MinorTypeSKU))
-      
-      # 删除与大类关联的小类为空的行
-      dbExecute(con, 
-                "DELETE FROM item_type_data WHERE MajorType = ? AND (MinorType IS NULL OR MinorType = '')",
-                params = list(selected_major))
-      
       showNotification("新增小类成功！", type = "message")
       removeModal()
       
-      # 重新加载数据
-      item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
-      # 动态更新 new_major_type 的选择
+      # 重新加载数据并保持当前大类选中
+      updated_data <- dbGetQuery(con, "SELECT * FROM item_type_data")
+      item_type_data(updated_data)
+      
       updateSelectInput(session, "new_major_type", selected = selected_major)
       
     }, error = function(e) {
@@ -180,6 +140,154 @@ server <- function(input, output, session) {
     })
   })
   
+  # 
+  # # Render Major Type Dropdown
+  # output$major_type_ui <- renderUI({
+  #   req(item_type_data())  # Ensure item_type_data is not NULL
+  #   
+  #   # Extract unique major types with their SKUs
+  #   type_data <- item_type_data()
+  #   unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
+  #   
+  #   # Generate choices for the dropdown
+  #   choices <- setNames(
+  #     unique_majors$MajorType, 
+  #     paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
+  #   )
+  #   
+  #   selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
+  # })
+  # 
+  # # Render Minor Type Dropdown dynamically
+  # output$minor_type_ui <- renderUI({
+  #   req(item_type_data(), input$new_major_type)  # Ensure required inputs are available
+  #   
+  #   # Extract and filter for the selected major type
+  #   type_data <- item_type_data()
+  #   selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
+  #   
+  #   # Filter minor types for the selected major type
+  #   filtered_data <- type_data[type_data$MajorType == selected_major, ]
+  #   
+  #   # Generate choices for the dropdown
+  #   choices <- setNames(
+  #     filtered_data$MinorType, 
+  #     paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
+  #   )
+  #   
+  #   selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
+  # })
+  # 
+  # # Add Major Type Button Logic
+  # observeEvent(input$add_major_type_btn, {
+  #   showModal(modalDialog(
+  #     title = "新增大类",
+  #     textInput("new_major_type_name", "大类名称:"),
+  #     textInput("new_major_type_sku", "大类SKU:"),
+  #     footer = tagList(
+  #       modalButton("取消"),
+  #       actionButton("confirm_add_major_type", "添加")
+  #     )
+  #   ))
+  # })
+  # 
+  # observeEvent(input$confirm_add_major_type, {
+  #   req(input$new_major_type_name, input$new_major_type_sku)
+  #   
+  #   # 新增大类数据
+  #   new_major <- data.frame(
+  #     MajorType = input$new_major_type_name,
+  #     MajorTypeSKU = input$new_major_type_sku,
+  #     stringsAsFactors = FALSE
+  #   )
+  #   
+  #   tryCatch({
+  #     # 将新大类写入数据库，仅包含 MajorType 和 MajorTypeSKU 列
+  #     dbExecute(con, 
+  #               "INSERT INTO item_type_data (MajorType, MajorTypeSKU) VALUES (?, ?)",
+  #               params = list(new_major$MajorType, new_major$MajorTypeSKU))
+  #     
+  #     showNotification("新增大类成功！", type = "message")
+  #     removeModal()
+  #     
+  #     # 重新加载数据
+  #     item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
+  #     # 动态更新 new_major_type 的选择
+  #     updateSelectInput(session, "new_major_type", selected = new_major$MajorType)
+  #     
+  #   }, error = function(e) {
+  #     showNotification("新增大类失败。", type = "error")
+  #   })
+  # })
+  # 
+  # 
+  # # Add Minor Type Button Logic
+  # observeEvent(input$add_minor_type_btn, {
+  #   req(input$new_major_type)
+  #   
+  #   selected_major <- gsub("（.*）", "", input$new_major_type)
+  #   
+  #   showModal(modalDialog(
+  #     title = paste0("新增小类（大类: ", selected_major, "）"),
+  #     textInput("new_minor_type_name", "小类名称:"),
+  #     textInput("new_minor_type_sku", "小类SKU:"),
+  #     footer = tagList(
+  #       modalButton("取消"),
+  #       actionButton("confirm_add_minor_type", "添加")
+  #     )
+  #   ))
+  # })
+  # 
+  # observeEvent(input$confirm_add_minor_type, {
+  #   req(input$new_minor_type_name, input$new_minor_type_sku, input$new_major_type)
+  #   
+  #   # 从输入中获取选择的大类名称（去除SKU部分）
+  #   selected_major <- gsub("（.*）", "", input$new_major_type)
+  #   
+  #   # 查询大类SKU
+  #   major_sku <- tryCatch({
+  #     data <- item_type_data()
+  #     type_row <- data[data$MajorType == selected_major, ]
+  #     if (nrow(type_row) > 0) type_row$MajorTypeSKU[1] else NA
+  #   }, error = function(e) {
+  #     NA
+  #   })
+  #   
+  #   req(!is.na(major_sku)) # 确保大类SKU存在
+  #   
+  #   # 新增小类数据
+  #   new_minor <- data.frame(
+  #     MajorType = selected_major,
+  #     MajorTypeSKU = major_sku,
+  #     MinorType = input$new_minor_type_name,
+  #     MinorTypeSKU = input$new_minor_type_sku,
+  #     stringsAsFactors = FALSE
+  #   )
+  #   
+  #   tryCatch({
+  #     # 插入新小类到数据库
+  #     dbExecute(con, 
+  #               "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
+  #               params = list(new_minor$MajorType, new_minor$MajorTypeSKU, new_minor$MinorType, new_minor$MinorTypeSKU))
+  #     
+  #     # 删除与大类关联的小类为空的行
+  #     dbExecute(con, 
+  #               "DELETE FROM item_type_data WHERE MajorType = ? AND (MinorType IS NULL OR MinorType = '')",
+  #               params = list(selected_major))
+  #     
+  #     showNotification("新增小类成功！", type = "message")
+  #     removeModal()
+  #     
+  #     # 重新加载数据
+  #     item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
+  #     # 动态更新 new_major_type 的选择
+  #     updateSelectInput(session, "new_major_type", selected = selected_major)
+  #     
+  #   }, error = function(e) {
+  #     showNotification("新增小类失败。", type = "error")
+  #   })
+  # })
+  # 
   
   
   #########################################################################

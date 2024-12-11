@@ -19,14 +19,18 @@ ui <- fluidPage(
         )
       ),
       fluidRow(
-        column(5, uiOutput("major_type_ui")), ## 大类
+        column(5, 
+               selectInput("new_major_type", "大类:", choices = NULL, selected = NULL)  # 静态生成大类下拉菜单
+        ), 
         column(1, 
                div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                    actionButton("add_major_type_btn", label = NULL, icon = icon("plus"),
                                 style = "font-size: 14px; width: 100%; max-width: 40px; height: 34px; padding: 0px; margin-top: 25px;")
                )
         ),
-        column(5, uiOutput("minor_type_ui")), ## 小类
+        column(5, 
+               selectInput("new_minor_type", "小类:", choices = NULL, selected = NULL)  # 静态生成小类下拉菜单
+        ), 
         column(1, 
                div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                    actionButton("add_minor_type_btn", label = NULL, icon = icon("plus"),
