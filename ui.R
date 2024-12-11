@@ -89,7 +89,7 @@ ui <- fluidPage(
       
       fluidRow(
         column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
-                                style = "width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
+                                style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
         column(12, div(
           id = "inventory_table_container",  # 容器 ID
           style = "height: 300px; overflow-y: scroll;",  # 初始样式
@@ -101,7 +101,7 @@ ui <- fluidPage(
       
       fluidRow(
         column(12, actionButton("toggle_item_table", "物品状态表（点击显示/隐藏）",
-                                style = "width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
+                                style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
         column(12, div(
           id = "item_table_container",  # 容器 ID
           style = "height: 300px; overflow-y: scroll;",  # 初始样式
