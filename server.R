@@ -11,6 +11,57 @@ con <- dbConnect(
 # Define server logic
 server <- function(input, output, session) {
   
+  ## 大小类模块
+  item_type_data <- reactive({
+    tryCatch({
+      dbGetQuery(con, "SELECT * FROM item_type_data")
+    }, error = function(e) {
+      NULL
+    })
+  })
+  
+  # Render Major Type Dropdown
+  output$major_type_ui <- renderUI({
+    req(item_type_data())  # Ensure item_type_data is not NULL
+    
+    # Extract unique major types with their SKUs
+    type_data <- item_type_data()
+    unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
+    
+    # Generate choices for the dropdown
+    choices <- setNames(
+      unique_majors$MajorType, 
+      paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
+    )
+    
+    selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
+  })
+  
+  # Render Minor Type Dropdown dynamically
+  output$minor_type_ui <- renderUI({
+    req(item_type_data(), input$new_major_type)  # Ensure required inputs are available
+    
+    # Extract and filter for the selected major type
+    type_data <- item_type_data()
+    selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
+    
+    # Filter minor types for the selected major type
+    filtered_data <- type_data[type_data$MajorType == selected_major, ]
+    
+    # Generate choices for the dropdown
+    choices <- setNames(
+      filtered_data$MinorType, 
+      paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
+    )
+    
+    selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
+  })
+  
+  # 渲染文件输入框
+  output$file_input_ui <- renderUI({
+    fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg"))
+  })
+  
   # 声明一个 reactiveVal 用于触发表格刷新
   refresh_trigger <- reactiveVal(FALSE)
   
@@ -34,64 +85,6 @@ server <- function(input, output, session) {
   
   ## 供应商模块
   supplier_module(input, output, session, con)
-  
-  #########################################################################
-  
-  ## 大小类模块
-  item_type_data <- reactive({
-    tryCatch({
-      dbGetQuery(con, "SELECT * FROM item_type_data")
-    }, error = function(e) {
-      NULL
-    })
-  })
-  
-  # Render Major Type Dropdown
-  output$major_type_ui <- renderUI({
-    req(item_type_data())  # Ensure item_type_data is not NULL
-    
-    # Extract unique major types with their SKUs
-    type_data <- item_type_data()
-    unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
-    
-    # Ensure there are available major types
-    if (nrow(unique_majors) == 0) {
-      return(h5("无可用大类"))
-    }
-    
-    # Generate choices for the dropdown
-    choices <- setNames(
-      unique_majors$MajorType, 
-      paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
-    )
-    
-    selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
-  })
-  
-  # Render Minor Type Dropdown dynamically
-  output$minor_type_ui <- renderUI({
-    req(item_type_data(), input$new_major_type)  # Ensure required inputs are available
-    
-    # Extract and filter for the selected major type
-    type_data <- item_type_data()
-    selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
-    
-    # Filter minor types for the selected major type
-    filtered_data <- type_data[type_data$MajorType == selected_major, ]
-    
-    # Ensure there are available minor types
-    if (nrow(filtered_data) == 0) {
-      return(h5("无可用小类"))
-    }
-    
-    # Generate choices for the dropdown
-    choices <- setNames(
-      filtered_data$MinorType, 
-      paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
-    )
-    
-    selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
-  })
   
   #########################################################################
   
@@ -158,8 +151,6 @@ server <- function(input, output, session) {
   # Handle add item button click
   observeEvent(input$add_btn, {
     if(!is.null(input$new_item_image)) show_custom_notification(input$new_item_image$datapath, type = "error")
-
-    show_custom_notification("请确保SKU正常生成！", type = "error")
     
     # 验证输入
     if (is.null(input$new_name) || input$new_name == "") {
@@ -266,7 +257,10 @@ server <- function(input, output, session) {
       added_items(bind_rows(existing_items, new_item))
       show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
-    if (!is.null(input$new_item_image)) shinyjs::runjs('document.getElementById("new_item_image").value = "";')
+   # 重置文件输入框
+    output$file_input_ui <- renderUI({
+      fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg"))
+    })
   })
   
   
@@ -455,7 +449,11 @@ server <- function(input, output, session) {
     
     # Clear added items and reset input fields
     added_items(create_empty_inventory())
-    if (!is.null(input$new_item_image)) shinyjs::runjs('document.getElementById("new_item_image").value = "";')
+    
+    # 重置文件输入框
+    output$file_input_ui <- renderUI({
+      fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg"))
+    })
   })
   
   # Handle row selection in item table
@@ -664,7 +662,7 @@ server <- function(input, output, session) {
     }
   )
   
-
+  
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
@@ -676,11 +674,14 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_cost", value = 0)  # 恢复成本默认值
       updateNumericInput(session, "shipping_cost", value = 0)  # 恢复运费默认值
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
-      shinyjs::reset("new_item_image")  # 重置文件上传控件
-      shinyjs::runjs('document.getElementById("new_item_image").value = "";')
       
       # 清空已添加的商品
       added_items(create_empty_inventory())
+      
+      # 重置文件输入框
+      output$file_input_ui <- renderUI({
+        fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg"))
+      })
       
       # 通知用户
       show_custom_notification("输入已清空！", type = "message")

@@ -35,7 +35,7 @@ ui <- fluidPage(
         column(3,actionButton("reset_btn", "清空输入", icon = icon("undo"), class = "btn-danger", 
                               style = "margin-top: 25px; height: 34px; width: 100%;"))
       ),
-      fileInput("new_item_image", "商品图片:"),
+      uiOutput("file_input_ui"),
       
       tags$hr(), # 分隔线
       h4("入库操作"),
