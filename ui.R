@@ -44,7 +44,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       h4("条形码操作"),
       fluidRow(
-        column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = FALSE))
+        column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
       ),
       fluidRow(
         column(6, actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"))),
@@ -55,9 +55,12 @@ ui <- fluidPage(
         column(6, downloadButton("download_batch_pdf", "下载批量条形码"))
       ),
       
+      tags$hr(), # 分隔线
+      
       actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary"),
       
       tags$hr(), # 分隔线
+      
       h4("出库操作"),
       fluidRow(
         column(8, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
