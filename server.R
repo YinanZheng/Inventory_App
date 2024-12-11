@@ -119,30 +119,46 @@ server <- function(input, output, session) {
     ))
   })
   
-  # Confirm Add Minor Type
   observeEvent(input$confirm_add_minor_type, {
     req(input$new_minor_type_name, input$new_minor_type_sku, input$new_major_type)
     
+    # 从输入中获取选择的大类名称（去除SKU部分）
     selected_major <- gsub("（.*）", "", input$new_major_type)
     
+    # 查询大类SKU
+    major_sku <- tryCatch({
+      data <- item_type_data()
+      type_row <- data[data$MajorType == selected_major, ]
+      if (nrow(type_row) > 0) type_row$MajorTypeSKU[1] else NA
+    }, error = function(e) {
+      NA
+    })
+    
+    req(!is.na(major_sku)) # 确保大类SKU存在
+    
+    # 新增小类数据
     new_minor <- data.frame(
       MajorType = selected_major,
-      MajorTypeSKU = NA,
+      MajorTypeSKU = major_sku,
       MinorType = input$new_minor_type_name,
       MinorTypeSKU = input$new_minor_type_sku,
       stringsAsFactors = FALSE
     )
     
     tryCatch({
-      dbWriteTable(con, "item_type_data", new_minor, append = TRUE, row.names = FALSE)
-      show_custom_notification("新增小类成功！", type = "message")
+      # 插入新小类到数据库
+      dbExecute(con, 
+                "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
+                params = list(new_minor$MajorType, new_minor$MajorTypeSKU, new_minor$MinorType, new_minor$MinorTypeSKU))
+      
+      showNotification("新增小类成功！", type = "message")
       removeModal()
       
-      # Reload the item type data
+      # 重新加载数据
       data <- dbGetQuery(con, "SELECT * FROM item_type_data")
       item_type_data(data)
     }, error = function(e) {
-      show_custom_notification("新增小类失败！", type = "error")
+      showNotification("新增小类失败。", type = "error")
     })
   })
   
