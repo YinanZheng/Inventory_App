@@ -1,29 +1,35 @@
-# Connect to MySQL Database
-con <- dbConnect(
-  RMariaDB::MariaDB(),
-  dbname = "inventory_system",
-  host = "localhost",
-  user = "root",
-  password = "goldenbeanllc",
-  encoding = "utf8mb4"
-)
-
 # Define server logic
 server <- function(input, output, session) {
+  ## Database
+  con <- db_connection()
   
   ## 大小类模块
   
-  # Reactive value to store item type data
-  item_type_data <- reactiveVal(NULL)
+  # ReactiveVal 存储 item_type_data 数据
+  item_type_data <- reactiveVal()
   
-  # Load initial data from the database
+  # ReactiveVal 用于存储 inventory 数据
+  inventory <- reactiveVal()
+  
+  # 应用启动时加载数据
   observe({
     tryCatch({
       data <- dbGetQuery(con, "SELECT * FROM item_type_data")
       item_type_data(data)
     }, error = function(e) {
-      item_type_data(NULL)
+      item_type_data(NULL)  # 如果出错，设为空值
       showNotification("Failed to load item type data.", type = "error")
+    })
+  })
+  
+  # 应用启动时加载数据
+  observe({
+    tryCatch({
+      data <- dbGetQuery(con, "SELECT * FROM inventory")
+      inventory(data)  # 存储到 reactiveVal
+    }, error = function(e) {
+      inventory(NULL)  # 如果失败，设为空
+      showNotification("Failed to load inventory data.", type = "error")
     })
   })
   
@@ -97,8 +103,7 @@ server <- function(input, output, session) {
       removeModal()
       
       # 重新加载数据
-      data <- dbGetQuery(con, "SELECT * FROM item_type_data")
-      item_type_data(data)
+      item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
     }, error = function(e) {
       showNotification("新增大类失败。", type = "error")
     })
@@ -163,8 +168,7 @@ server <- function(input, output, session) {
       removeModal()
       
       # 重新加载数据
-      data <- dbGetQuery(con, "SELECT * FROM item_type_data")
-      item_type_data(data)
+      item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
     }, error = function(e) {
       showNotification("新增小类失败。", type = "error")
     })
@@ -182,7 +186,7 @@ server <- function(input, output, session) {
     if (!is.null(input$new_item_image)) {
       # 记录新上传的文件
       uploaded_file(input$new_item_image)
-      show_custom_notification("文件已上传并记录！", type = "message")
+      showNotification("文件已上传并记录！", type = "message")
     }
   })
   
@@ -197,10 +201,7 @@ server <- function(input, output, session) {
   observeEvent(input$toggle_item_table, {
     shinyjs::toggle("item_table_container")  # 切换显示/隐藏
   })
-  
-  inventory <- reactiveVal({
-    dbGetQuery(con, "SELECT * FROM inventory")
-  })
+
   
   # Reactive value to store added items
   added_items <- reactiveVal(create_empty_inventory())
@@ -277,22 +278,22 @@ server <- function(input, output, session) {
   observeEvent(input$add_btn, {
     # 验证输入
     if (is.null(input$new_name) || input$new_name == "") {
-      show_custom_notification("请填写正确商品名称！", type = "error")
+      showNotification("请填写正确商品名称！", type = "error")
       return()
     }
     
     if (is.null(input$new_quantity) || input$new_quantity <= 0) {
-      show_custom_notification("请填写正确商品数量！", type = "error")
+      showNotification("请填写正确商品数量！", type = "error")
       return()
     }
     
     if (is.null(input$new_product_cost) || input$new_product_cost < 0 || input$new_product_cost > 999) {
-      show_custom_notification("请填写正确商品成本！", type = "error")
+      showNotification("请填写正确商品成本！", type = "error")
       return()
     }
     
     if (is.null(input$new_sku) || input$new_sku == "") {
-      show_custom_notification("请确保SKU正常生成！", type = "error")
+      showNotification("请确保SKU正常生成！", type = "error")
       return()
     }
     
@@ -323,9 +324,9 @@ server <- function(input, output, session) {
             image_name = unique_image_name
           )
           updated_image_path <- final_image_path
-          show_custom_notification("图片已成功更新并保存！", type = "message")
+          showNotification("图片已成功更新并保存！", type = "message")
         }, error = function(e) {
-          show_custom_notification("图片更新失败！", type = "error")
+          showNotification("图片更新失败！", type = "error")
         })
       } 
       
@@ -344,7 +345,7 @@ server <- function(input, output, session) {
       
       added_items(existing_items)
       
-      show_custom_notification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
+      showNotification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
       # SKU 不存在，添加新记录
       new_image_path <- NA
@@ -361,9 +362,9 @@ server <- function(input, output, session) {
             image_name = unique_image_name
           )
           new_image_path <- final_image_path
-          show_custom_notification("图片已成功处理并保存！", type = "message")
+          showNotification("图片已成功处理并保存！", type = "message")
         }, error = function(e) {
-          show_custom_notification("图片处理失败！", type = "error")
+          showNotification("图片处理失败！", type = "error")
         })
       }
       
@@ -380,7 +381,7 @@ server <- function(input, output, session) {
       )
       
       added_items(bind_rows(existing_items, new_item))
-      show_custom_notification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
+      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
     # 重置文件输入框
@@ -418,9 +419,9 @@ server <- function(input, output, session) {
       current_items <- added_items()
       updated_items <- current_items[-selected_row, ]  # Remove selected row
       added_items(updated_items)  # Update reactive value
-      show_custom_notification("记录已成功删除", type = "message")
+      showNotification("记录已成功删除", type = "message")
     } else {
-      show_custom_notification("请选择要删除的记录", type = "error")
+      showNotification("请选择要删除的记录", type = "error")
     }
   })
   
@@ -436,7 +437,7 @@ server <- function(input, output, session) {
     tryCatch({
 
       if (nrow(added_items()) == 0) {
-        show_custom_notification("请先添加至少一个商品再确认!", type = "error")
+        showNotification("请先添加至少一个商品再确认!", type = "error")
         return()
       }
       
@@ -479,7 +480,7 @@ server <- function(input, output, session) {
               file.rename(new_image_path, final_image_path)
               new_image_path <- final_image_path
             }, error = function(e) {
-              show_custom_notification(paste("图片保存失败! SKU:", sku), type = "error")
+              showNotification(paste("图片保存失败! SKU:", sku), type = "error")
               new_image_path <- existing_item$ItemImagePath  # 回退为原始路径
             })
           } else {
@@ -493,7 +494,7 @@ server <- function(input, output, session) {
                       WHERE SKU = ?",
                     params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), new_image_path, sku))
           
-          show_custom_notification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
+          showNotification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
         } else {
           # 如果 SKU 不存在，插入新商品
           unique_image_name <- if (!is.na(new_image_path) && new_image_path != "") {
@@ -510,7 +511,7 @@ server <- function(input, output, session) {
               file.rename(new_image_path, final_image_path)
               new_image_path <- final_image_path
             }, error = function(e) {
-              show_custom_notification(paste("新商品图片保存失败! SKU:", sku), type = "error")
+              showNotification(paste("新商品图片保存失败! SKU:", sku), type = "error")
             })
           }
           
@@ -520,16 +521,14 @@ server <- function(input, output, session) {
                     params = list(sku, maker, major_type, minor_type, item_name, quantity, 
                                   round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
           
-          show_custom_notification(paste("新商品添加成功! SKU:", sku, ", 商品名:", item_name), type = "message")
+          showNotification(paste("新商品添加成功! SKU:", sku, ", 商品名:", item_name), type = "message")
         }
       }
       
       # 刷新库存数据
-      inventory({
-        dbGetQuery(con, "SELECT * FROM inventory")
-      })
+      inventory({dbGetQuery(con, "SELECT * FROM inventory")})
       
-      show_custom_notification("库存已成功更新！", type = "message")
+      showNotification("库存已成功更新！", type = "message")
       
       
       ### 同时添加信息到 unique_items 表中
@@ -557,7 +556,7 @@ server <- function(input, output, session) {
       
       # Validate data
       if (is.null(batch_data) || nrow(batch_data) == 0) {
-        show_custom_notification("批量数据无效，请检查输入！", type = "error")
+        showNotification("批量数据无效，请检查输入！", type = "error")
         return()
       }
       
@@ -578,13 +577,13 @@ server <- function(input, output, session) {
           )
         }
         dbCommit(con)  # Commit transaction
-        show_custom_notification("所有物品已成功入库到国内仓！", type = "message")
+        showNotification("所有物品已成功入库到国内仓！", type = "message")
         # 切换触发器值，确保刷新
         current_value <- refresh_trigger()
         refresh_trigger(!current_value) 
       }, error = function(e) {
         dbRollback(con)  # Rollback on error
-        show_custom_notification(paste("批量入库失败:", e$message), type = "error")
+        showNotification(paste("批量入库失败:", e$message), type = "error")
       })
       
       # Clear added items and reset input fields
@@ -595,7 +594,7 @@ server <- function(input, output, session) {
       uploaded_file(NULL)
     }, error = function(e) {
       # Catch and display errors
-      show_custom_notification(paste("发生错误:", e$message), type = "error")
+      showNotification(paste("发生错误:", e$message), type = "error")
     })
   })
   
@@ -704,14 +703,14 @@ server <- function(input, output, session) {
   # 单个 SKU 条形码生成逻辑
   observeEvent(input$export_single_btn, {
     if (is.null(input$new_sku) || input$new_sku == "") {
-      show_custom_notification("没有SKU生成！", type = "error")
+      showNotification("没有SKU生成！", type = "error")
       return()
     }
     
     # 如果勾选了重复条形码，检查数量是否为空或为 0
     if (input$repeat_barcode) {
       if (is.null(input$new_quantity) || input$new_quantity <= 0) {
-        show_custom_notification("数量不能为空且必须大于 0!", type = "error")
+        showNotification("数量不能为空且必须大于 0!", type = "error")
         return()
       }
     }
@@ -730,7 +729,7 @@ server <- function(input, output, session) {
     )
     single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
     
-    show_custom_notification("条形码已生成为 PDF!")
+    showNotification("条形码已生成为 PDF!")
     shinyjs::enable("download_single_pdf")
   })
   
@@ -739,7 +738,7 @@ server <- function(input, output, session) {
     items <- added_items()
     
     if (nrow(added_items()) == 0) {
-      show_custom_notification("没有添加商品！", type = "error")
+      showNotification("没有添加商品！", type = "error")
       return()
     }
     
@@ -759,7 +758,7 @@ server <- function(input, output, session) {
     )
     batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
     
-    show_custom_notification("条形码已生成为 PDF!")
+    showNotification("条形码已生成为 PDF!")
     shinyjs::enable("download_batch_pdf")
   })
   
@@ -808,10 +807,10 @@ server <- function(input, output, session) {
       uploaded_file(NULL)
       
       # 通知用户
-      show_custom_notification("输入已清空！", type = "message")
+      showNotification("输入已清空！", type = "message")
     }, error = function(e) {
       # 捕获错误并通知用户
-      show_custom_notification("清空输入时发生错误，请重试！", type = "error")
+      showNotification("清空输入时发生错误，请重试！", type = "error")
     })
   })
   
@@ -840,32 +839,35 @@ server <- function(input, output, session) {
     
     # 检查是否找到 SKU
     if (nrow(all_sku_items) == 0) {
-      show_custom_notification("未找到该条形码对应的物品，请检查输入！", type = "error")
+      showNotification("未找到该条形码对应的物品，请检查输入！", type = "error")
       return()
     }
     
     # 查询符合出库条件的物品
-    matched_items <- all_sku_items[all_sku_items$Status == "国内仓入库", ]
+    matched_items <- all_sku_items[all_sku_items$Status == "国内入库", ]
     
     # 检查是否有符合条件的物品
     if (nrow(matched_items) == 0) {
-      show_custom_notification("该条形码的物品没有可以出库的库存！", type = "error")
+      showNotification("该条形码的物品没有可以出库的库存！", type = "error")
       return()
     }
     
     # 获取匹配的 UniqueID
     unique_id <- matched_items$UniqueID[1]
     
-    # 更新状态为 "国内仓出库" 并设置出库时间
+    # 更新状态为 "国内出库" 并设置出库时间
     tryCatch({
-      update_status(con, unique_id, "国内仓出库")
+      update_status(con, unique_id, "国内出库")
       
       # 记录到撤回队列
       undo_list <- undo_queue()
       undo_list <- append(undo_list, list(list(unique_id = unique_id, timestamp = Sys.time())))
       undo_queue(undo_list)  # 更新队列
       
-      show_custom_notification("物品出库成功！", type = "message")
+      # 刷新 inventory 数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      
+      showNotification("物品出库成功！", type = "message")
       
       # 刷新物品状态追踪表
       refresh_trigger(!refresh_trigger())
@@ -873,7 +875,7 @@ server <- function(input, output, session) {
       # 清空输入框
       updateTextInput(session, "outbound_sku", value = "")
     }, error = function(e) {
-      show_custom_notification(paste("出库操作失败:", e$message), type = "error")
+      showNotification(paste("出库操作失败:", e$message), type = "error")
     })
   })
   
@@ -883,7 +885,7 @@ server <- function(input, output, session) {
     
     # 检查是否有可撤回的记录
     if (length(undo_list) == 0) {
-      show_custom_notification("没有可撤回的操作！", type = "error")
+      showNotification("没有可撤回的操作！", type = "error")
       return()
     }
     
@@ -899,16 +901,16 @@ server <- function(input, output, session) {
     tryCatch({
       dbExecute(con, "
         UPDATE unique_items 
-        SET Status = '国内仓入库', DomesticExitTime = NULL 
+        SET Status = '国内入库', DomesticExitTime = NULL 
         WHERE UniqueID = ?",
                 params = list(unique_id)
       )
-      show_custom_notification("撤回成功，物品状态已恢复为国内仓入库！", type = "message")
+      showNotification("撤回成功，物品状态已恢复为“国内入库”！", type = "message")
       
       # 刷新物品状态追踪表
       refresh_trigger(!refresh_trigger())
     }, error = function(e) {
-      show_custom_notification(paste("撤回操作失败:", e$message), type = "error")
+      showNotification(paste("撤回操作失败:", e$message), type = "error")
     })
   })
   

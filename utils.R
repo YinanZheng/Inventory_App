@@ -1,3 +1,15 @@
+# Connect to backend database
+db_connection <- function() {
+  dbConnect(
+    RMariaDB::MariaDB(),
+    dbname = "inventory_system",
+    host = "localhost",
+    user = "root",
+    password = "goldenbeanllc",
+    encoding = "utf8mb4"
+  )
+}
+
 # Generate Code 128 barcode PDF
 export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
   # Create a temporary file path for the PDF
@@ -230,10 +242,11 @@ render_table_with_images <- function(data,
 update_status <- function(con, unique_id, new_status) {
   # 定义状态到时间戳列的映射
   status_columns <- list(
-    "国内仓入库" = "DomesticEntryTime",
-    "国内仓出库" = "DomesticExitTime",
-    "美国仓入库" = "UsEntryTime",
-    "美国仓出库" = "UsExitTime"
+    "国内入库" = "DomesticEntryTime",
+    "国内出库" = "DomesticExitTime",
+    "国内售出" = "DomesticSoldTime",
+    "美国入库" = "UsEntryTime",
+    "美国售出" = "UsSoldTime"
   )
   
   # 检查状态是否有效

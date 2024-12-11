@@ -18,8 +18,8 @@ library(uuid)
 source("./modules/supplier_module.R")
 source("utils.R")
 
-# Cache setup
-cache_interval <- 5 * 60 * 1000  # Cache refresh interval (5 minutes)
+# 定义轮询间隔（以毫秒为单位）
+poll_interval <- 10000  # 每 10 秒检查一次
 
 host_url = "http://54.254.120.88/"
 
