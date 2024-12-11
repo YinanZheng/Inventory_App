@@ -33,7 +33,7 @@ ui <- fluidPage(
       fluidRow(
         column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
         column(3,actionButton("reset_btn", "清空输入", icon = icon("undo"), class = "btn-danger", 
-        style = "margin-top: 25px; height: 34px; width: 100%;"))
+                              style = "margin-top: 25px; height: 34px; width: 100%;"))
       ),
       fileInput("new_item_image", "商品图片:"),
       
@@ -53,7 +53,7 @@ ui <- fluidPage(
           style = "margin-top: 25px; height: 34px; width: 100%;"
         ))
       ),
-
+      
       tags$hr(), # 分隔线
       h4("条形码操作"),
       fluidRow(
@@ -70,7 +70,23 @@ ui <- fluidPage(
     ),
     
     mainPanel(
-      # 使用 fluidRow 分成上下两个部分
+      fluidRow(
+        column(12, div(
+          h4("已添加商品"), 
+          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
+             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
+        )),
+        column(12, DTOutput("added_items_table")),
+        column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"))),
+      ),
+      tags$hr(), # 分隔线
+      div(
+        textOutput("total_cost"),
+        style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+      ),
+      
+      tags$hr(), # 分隔线
+      
       fluidRow(
         column(12, actionButton("toggle_inventory_table", "显示/隐藏库存表", icon = icon("chevron-down"))),  # 折叠按钮
         column(12, div(
@@ -81,31 +97,14 @@ ui <- fluidPage(
       ),
       
       tags$hr(), # 分隔线
-      fluidRow(
-        column(12, div(
-          h4("已添加商品"), 
-          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
-             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
-        )),
-        column(12, DTOutput("added_items_table")),
-        column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"))),
-      ),
       
-      tags$hr(), # 分隔线
-      div(
-        textOutput("total_cost"),
-        style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-      ),
-      
-      tags$hr(), # 分隔线
       fluidRow(
+        column(12, actionButton("toggle_item_table", "显示/物品状态表", icon = icon("chevron-down"))),  # 折叠按钮
         column(12, div(
-          h4("物品状态追踪表"), 
-          style = "font-size: 20px; font-weight: bold; color: #333; background-color: #f9f9f9; 
-             padding: 3px; border: 2px solid #ddd; border-radius: 3px; text-align: center;"
-        )),
-        column(12, DTOutput("unique_items_table"))
+          id = "item_table_container",  # 容器 ID
+          style = "height: 400px; overflow-y: scroll;",  # 初始样式
+          DTOutput("unique_items_table")
+        ))
       )
     )
   )
-)
