@@ -628,7 +628,7 @@ server <- function(input, output, session) {
     
     # 判断是否需要重复打印
     if (input$repeat_barcode) {
-      skus <- unlist(mapply(function(sku, qty) rep(sku, qty), items$SKU, items$Quantity))
+      skus <- unlist(mapply(function(sku, qty) rep(sku, qty), items$SKU, items$Quantity, SIMPLIFY = FALSE))
     } else {
       skus <- items$SKU
     }
