@@ -14,35 +14,30 @@ server <- function(input, output, session) {
   # 声明一个 reactiveVal 用于触发表格刷新
   refresh_trigger <- reactiveVal(FALSE)
   
-  # 在 Server 中处理折叠逻辑
+  # 表格UI隐藏、显示模块
+  table_visible <- reactiveVal(TRUE)  # 默认表格可见
   observeEvent(input$toggle_inventory_table, {
-    shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
-    # 根据当前显示状态切换按钮图标
-    current_icon <- input$toggle_inventory_table
-    is_visible <- shinyjs::isVisible("inventory_table_container")  # 判断当前状态
-    new_icon <- if (is_visible) "chevron-down" else "chevron-right"
-    
-    # 更新按钮图标
-    updateActionButton(
-      session, 
-      "toggle_inventory_table", 
-      icon = icon(new_icon)
-    )
+    if (table_visible()) {
+      shinyjs::hide("inventory_table_container")
+      updateActionButton(session, "toggle_inventory_table", label = "显示库存表", style = "background-color: blue; color: white;")  # 更新按钮文字
+      table_visible(FALSE)  # 更新状态为隐藏
+    } else {
+      shinyjs::show("inventory_table_container")
+      updateActionButton(session, "toggle_inventory_table", label = "隐藏库存表", style = "background-color: orange; color: white;")  # 更新按钮文字
+      table_visible(TRUE)  # 更新状态为显示
+    }
   })
   
   observeEvent(input$toggle_item_table, {
-    shinyjs::toggle("item_table_container")  # 切换显示/隐藏
-    # 根据当前显示状态切换按钮图标
-    current_icon <- input$toggle_item_table
-    is_visible <- shinyjs::isVisible("item_table_container")  # 判断当前状态
-    new_icon <- if (is_visible) "chevron-down" else "chevron-right"
-    
-    # 更新按钮图标
-    updateActionButton(
-      session, 
-      "toggle_item_table", 
-      icon = icon(new_icon)
-    )
+    if (table_visible()) {
+      shinyjs::hide("item_table_container")
+      updateActionButton(session, "toggle_item_table", label = "显示物品状态表", style = "background-color: blue; color: white;")  # 更新按钮文字
+      table_visible(FALSE)  # 更新状态为隐藏
+    } else {
+      shinyjs::show("item_table_container")
+      updateActionButton(session, "toggle_item_table", label = "隐藏物品状态表", style = "background-color: orange; color: white;")  # 更新按钮文字
+      table_visible(TRUE)  # 更新状态为显示
+    }
   })
   
   
