@@ -741,69 +741,73 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 出库逻辑
+  # 国内出库逻辑
   handleSKU(
     input = input,
     session = session,
     sku_input_id = "outbound_sku",
     target_status = "国内出库",
-    undo_queue = undo_outbound_queue,
+    valid_current_status = c("国内入库"),  # 仅限国内入库状态
+    undo_queue = undo_queue,
     con = con,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
     notification_success = "物品出库成功！",
-    notification_error = "出库操作失败："
+    notification_error = "出库操作失败：",
+    record_undo = TRUE
   )
   
   undoLastAction(
     con = con,
-    undo_btn = input$undo_sold_btn,
-    undo_queue = undo_outbound_queue,
+    undo_btn = input$undo_outbound_btn,
+    undo_queue = undo_queue,
     refresh_trigger = refresh_trigger,
-    status_to_restore = "国内入库",
-    notification_success = "撤回成功，物品状态已恢复为“国内入库”！",
-    notification_error = "撤回出库操作失败："
+    inventory = inventory,
+    notification_success = "撤回成功，物品状态已恢复！",
+    notification_error = "撤回操作失败："
   )
   
-  # 售出逻辑
+  # 国内售出逻辑
   handleSKU(
     input = input,
     session = session,
     sku_input_id = "sold_sku",
     target_status = "国内售出",
-    undo_queue = undo_sold_queue,
+    valid_current_status = c("国内入库"),  # 仅限国内入库状态
+    undo_queue = undo_queue,
     con = con,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
     notification_success = "物品售出成功！",
-    notification_error = "售出操作失败："
+    notification_error = "售出操作失败：",
+    record_undo = TRUE
   )
   
   undoLastAction(
     con = con,
     undo_btn = input$undo_sold_btn,
-    undo_queue = undo_sold_queue,
+    undo_queue = undo_queue,
     refresh_trigger = refresh_trigger,
-    status_to_restore = "国内入库",
-    notification_success = "撤回成功，物品状态已恢复为“国内入库”！",
-    notification_error = "撤回售出操作失败："
+    inventory = inventory,
+    notification_success = "撤回成功，物品状态已恢复！",
+    notification_error = "撤回操作失败："
   )
   
-  # 返库逻辑
+  # 返库逻辑（不需要撤回）
   handleSKU(
     input = input,
     session = session,
     sku_input_id = "restock_sku",
     target_status = "国内入库",
-    undo_queue = undo_restock_queue,
+    valid_current_status = c("国内售出", "国内出库"),  # 允许从售出或出库状态返库
+    undo_queue = NULL,  # 不记录撤回队列
     con = con,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
     notification_success = "物品返库成功！",
-    notification_error = "返库操作失败："
+    notification_error = "返库操作失败：",
+    record_undo = FALSE
   )
-  
-  
   
   # Disconnect from the database on app stop
   onStop(function() {

@@ -254,7 +254,7 @@ update_status <- function(con, unique_id, new_status) {
             params = list(new_status, Sys.time(), unique_id))
 }
 
-handleSKU <- function(input, session, sku_input_id, target_status, undo_queue, con, refresh_trigger, inventory, notification_success, notification_error) {
+handleSKU <- function(input, session, sku_input_id, target_status, valid_current_status, undo_queue, con, refresh_trigger, inventory, notification_success, notification_error, record_undo = TRUE) {
   observeEvent(input[[sku_input_id]], {
     sku <- stri_replace_all_regex(input[[sku_input_id]], "\\s", "")
     
@@ -276,10 +276,10 @@ handleSKU <- function(input, session, sku_input_id, target_status, undo_queue, c
       return()
     }
     
-    # 查询符合条件的物品
-    matched_items <- all_sku_items[all_sku_items$Status != target_status, ]
+    # 检查当前状态是否符合要求
+    matched_items <- all_sku_items[all_sku_items$Status %in% valid_current_status, ]
     if (nrow(matched_items) == 0) {
-      showNotification(paste("没有符合条件的物品（目标状态：", target_status, "）"), type = "error")
+      showNotification(paste("该条形码的物品不符合操作条件（需要状态为：", paste(valid_current_status, collapse = ", "), "）"), type = "error")
       return()
     }
     
@@ -290,10 +290,12 @@ handleSKU <- function(input, session, sku_input_id, target_status, undo_queue, c
     tryCatch({
       update_status(con, unique_id, target_status)
       
-      # 记录撤回队列
-      undo_list <- undo_queue()
-      undo_list <- append(undo_list, list(list(unique_id = unique_id, timestamp = Sys.time())))
-      undo_queue(undo_list)
+      # 如果需要记录撤回操作，加入 undo_queue
+      if (record_undo) {
+        undo_list <- undo_queue()
+        undo_list <- append(undo_list, list(list(unique_id = unique_id, previous_status = matched_items$Status[1], timestamp = Sys.time())))
+        undo_queue(undo_list)
+      }
       
       # 刷新数据
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
@@ -309,7 +311,7 @@ handleSKU <- function(input, session, sku_input_id, target_status, undo_queue, c
   })
 }
 
-undoLastAction <- function(con, undo_btn, undo_queue, refresh_trigger, status_to_restore, notification_success, notification_error) {
+undoLastAction <- function(con, undo_btn, undo_queue, refresh_trigger, inventory, notification_success, notification_error) {
   observeEvent(undo_btn, {
     undo_list <- undo_queue()
     
@@ -318,14 +320,18 @@ undoLastAction <- function(con, undo_btn, undo_queue, refresh_trigger, status_to
       return()
     }
     
+    # 获取最近一条记录
     last_action <- tail(undo_list, 1)[[1]]
     unique_id <- last_action$unique_id
+    previous_status <- last_action$previous_status
     
+    # 从队列中移除最后一条记录
     undo_list <- head(undo_list, -1)
     undo_queue(undo_list)  # 更新队列
     
     tryCatch({
-      update_status(con, unique_id, status_to_restore)
+      update_status(con, unique_id, previous_status)
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
       refresh_trigger(!refresh_trigger())
       showNotification(notification_success, type = "message")
     }, error = function(e) {
@@ -333,3 +339,4 @@ undoLastAction <- function(con, undo_btn, undo_queue, refresh_trigger, status_to
     })
   })
 }
+
