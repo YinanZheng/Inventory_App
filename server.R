@@ -950,7 +950,6 @@ server <- function(input, output, session) {
     if (is.null(sku) || sku == "") {
       # 清空图表和通知
       output$inventory_overview_plot <- renderPlotly(NULL)
-      showNotification("请输入有效的 SKU！", type = "error")
       return()
     }
     
