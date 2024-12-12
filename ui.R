@@ -96,11 +96,22 @@ ui <- fluidPage(
       tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
-        column(12, actionButton(
-          "restock_selected", 
-          "返库选中物品", 
+        column(6, selectInput(
+          "target_status", 
+          "移库目标:", 
+          choices = c(
+            "国内入库", 
+            "国内出库", 
+            "国内售出", 
+            "美国入库", 
+            "美国售出"
+          )
+        )),
+        column(6, actionButton(
+          "move_selected", 
+          "移库选中物品", 
           class = "btn-primary", 
-          style = "margin-top: 10px;"
+          style = "margin-top: 10px; width: 100%;"
         ))
       ),
       

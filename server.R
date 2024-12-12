@@ -793,21 +793,46 @@ server <- function(input, output, session) {
     notification_error = "撤回操作失败："
   )
   
-  # 返库逻辑（不需要撤回）
-  handleSKU(
-    input = input,
-    session = session,
-    sku_input_id = "restock_sku",
-    target_status = "国内入库",
-    valid_current_status = c("国内售出", "国内出库"),  # 允许从售出或出库状态返库
-    undo_queue = NULL,  # 不记录撤回队列
-    con = con,
-    refresh_trigger = refresh_trigger,
-    inventory = inventory,
-    notification_success = "物品返库成功！",
-    notification_error = "返库操作失败：",
-    record_undo = FALSE
-  )
+  # 监听移库按钮点击
+  observeEvent(input$move_selected, {
+    # 获取选中的行索引
+    selected_row <- input$unique_items_table_rows_selected
+    
+    # 检查是否有选中行
+    if (is.null(selected_row) || length(selected_row) == 0) {
+      showNotification("请先选择一行物品再执行移库操作！", type = "error")
+      return()
+    }
+    
+    # 检查是否选择了移库目标
+    target_status <- input$target_status
+    if (is.null(target_status) || target_status == "") {
+      showNotification("请选择一个移库目标！", type = "error")
+      return()
+    }
+    
+    # 获取选中行的数据
+    selected_data <- unique_items_data()[selected_row, ]
+    unique_id <- selected_data$UniqueID
+    current_status <- selected_data$Status
+    
+    # 如果当前状态已经是目标状态
+    if (current_status == target_status) {
+      showNotification("物品已经在目标状态，无需移库！", type = "message")
+      return()
+    }
+    
+    # 执行移库操作
+    tryCatch({
+      update_status(con, unique_id, target_status)  # 使用之前定义的 update_status 函数
+      showNotification(paste("物品成功移至状态：", target_status), type = "message")
+      
+      # 刷新表格数据
+      refresh_trigger(!refresh_trigger())
+    }, error = function(e) {
+      showNotification(paste("移库操作失败：", e$message), type = "error")
+    })
+  })
   
   # Disconnect from the database on app stop
   onStop(function() {
