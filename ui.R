@@ -146,7 +146,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       textInput("sku_inventory", "查询库存总览:", placeholder = "请输入SKU"),
-      actionButton("refresh_inventory_btn", "刷新库存"),
+      actionButton("refresh_inventory_btn", "查看", icon = icon("magnifying-glass")),
       br(), br(),
       uiOutput("inventory_overview_ui")  # 动态 UI
     ),
