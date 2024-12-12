@@ -15,7 +15,10 @@ library(RMariaDB)
 library(uuid)
 
 # Source all modular functions
-source("./modules/supplier_module.R")
+source("./modules/supplierModuleServer.R")
+source("./modules/typeModuleServer.R")
+source("./modules/typeModuleUI.R")
+
 source("utils.R")
 
 # 定义轮询间隔（以毫秒为单位）

@@ -1,5 +1,5 @@
 # 定义供应商模块
-supplier_module <- function(input, output, session, con) {
+supplierModuleServer <- function(input, output, session, con) {
   # Reactive: 供应商数据
   maker_list <- reactive({
     dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
