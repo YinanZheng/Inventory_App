@@ -934,56 +934,66 @@ server <- function(input, output, session) {
   observeEvent(input$refresh_inventory_btn, {
     sku <- stri_replace_all_regex(input$sku_inventory, "\\s", "")  # 清除空格
     
-    # 校验 SKU
     if (is.null(sku) || sku == "") {
       showNotification("请输入有效的 SKU！", type = "error")
+      output$inventory_overview_ui <- renderUI(NULL)
+      output$inventory_overview_chart <- renderPlotly(NULL)
       return()
     }
     
-    # 获取库存总览数据
-    inventory_data <- get_inventory_overview(con, sku)
+    # 调用函数获取库存详情
+    inventory_details <<- get_inventory_details(con, sku)  # 使用全局变量存储
     
-    # 检查是否有数据
-    if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
+    if (is.null(inventory_details$item_name)) {
       showNotification("未找到该 SKU 的库存数据！", type = "error")
+      output$inventory_overview_ui <- renderUI(NULL)
+      output$inventory_overview_chart <- renderPlotly(NULL)
       return()
     }
     
-    # 更新图表
+    # 更新 UI 和图表
+    output$inventory_overview_ui <- renderUI({
+      tagList(
+        h4("物品总览"),
+        img(src = inventory_details$item_image, alt = "物品图片", height = "150px", style = "display: block; margin-bottom: 10px;"),
+        h5(strong("物品名称: "), inventory_details$item_name),
+        div(style = "margin-top: 20px;",
+            p(strong("国内库存: "), sum(inventory_details$data$Count[inventory_details$data$Status == "国内入库"], na.rm = TRUE)),
+            p(strong("在途运输: "), sum(inventory_details$data$Count[inventory_details$data$Status %in% c("国内出库", "国内售出")], na.rm = TRUE)),
+            p(strong("美国库存: "), sum(inventory_details$data$Count[inventory_details$data$Status == "美国入库"], na.rm = TRUE))
+        )
+      )
+    })
+    
     output$inventory_overview_chart <- renderPlotly({
       data <- inventory_details$data
       
-      # 检查数据是否为空
       if (nrow(data) == 0) {
-        return(NULL)  # 返回空图表
+        return(NULL)
       }
       
-      # 动态分配颜色
-      color_mapping <- c(
-        "国内入库" = "green",
-        "国内出库" = "orange",
-        "国内售出" = "red",
-        "美国入库" = "blue",
-        "美国售出" = "purple"
-      )
-      
-      # 生成饼图
       plot_ly(
         data = data,
         labels = ~Status,
         values = ~Count,
         type = "pie",
-        text = ~paste(Status, ":", Count),  # 切片标签显示状态和实际库存数
-        textinfo = "text+percent",         # 同时显示百分比
-        hoverinfo = "label+value+percent", # 鼠标悬停显示详细信息
-        marker = list(colors = color_mapping[data$Status]),  # 使用动态颜色
-        showlegend = TRUE                  # 显示图例
+        text = ~paste(Status, ":", Count),
+        textinfo = "text+percent",
+        hoverinfo = "label+value+percent",
+        marker = list(colors = c(
+          "国内入库" = "green",
+          "国内出库" = "orange",
+          "国内售出" = "red",
+          "美国入库" = "blue",
+          "美国售出" = "purple"
+        )[data$Status]),
+        showlegend = TRUE
       ) %>%
         layout(
           title = paste("SKU:", sku, "库存分布"),
-          legend = list(orientation = "h", xanchor = "center", x = 0.5),  # 图例居中
-          margin = list(t = 50, b = 50),  # 调整边距
-          font = list(size = 14)          # 设置字体大小
+          legend = list(orientation = "h", xanchor = "center", x = 0.5),
+          margin = list(t = 50, b = 50),
+          font = list(size = 14)
         )
     })
   })
