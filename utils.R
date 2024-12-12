@@ -352,3 +352,28 @@ undoLastAction <- function(con, input, undo_btn, undo_queue, refresh_trigger, in
   })
 }
 
+get_inventory_overview <- function(con, sku) {
+  query <- "
+    SELECT 
+      Status, COUNT(*) as Count
+    FROM 
+      unique_items
+    WHERE 
+      SKU = ?
+    GROUP BY 
+      Status"
+  
+  # 查询数据库
+  inventory_data <- dbGetQuery(con, query, params = list(sku))
+  
+  # 计算各状态的库存数
+  domestic_instock <- sum(inventory_data$Count[inventory_data$Status == "国内入库"])
+  in_transit <- sum(inventory_data$Count[inventory_data$Status %in% c("国内出库", "国内售出")])
+  us_instock <- sum(inventory_data$Count[inventory_data$Status == "美国入库"])
+  
+  return(list(
+    domestic_instock = domestic_instock,
+    in_transit = in_transit,
+    us_instock = us_instock
+  ))
+}

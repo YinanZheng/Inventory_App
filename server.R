@@ -925,7 +925,46 @@ server <- function(input, output, session) {
   
   
   
+  ################################################################
+  ##                                                            ##
+  ## 报表模块                                                   ##
+  ##                                                            ##
+  ################################################################
   
+  observeEvent(input$refresh_inventory_btn, {
+    sku <- stri_replace_all_regex(input$sku_inventory, "\\s", "")  # 清除空格
+    
+    # 校验 SKU
+    if (is.null(sku) || sku == "") {
+      showNotification("请输入有效的 SKU！", type = "error")
+      return()
+    }
+    
+    # 获取库存总览数据
+    inventory_data <- get_inventory_overview(con, sku)
+    
+    # 检查是否有数据
+    if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
+      showNotification("未找到该 SKU 的库存数据！", type = "error")
+      return()
+    }
+    
+    # 更新图表
+    output$inventory_overview_plot <- renderPlotly({
+      plot_ly(
+        labels = c("国内库存", "在途运输", "美国库存"),
+        values = c(
+          inventory_data$domestic_instock, 
+          inventory_data$in_transit, 
+          inventory_data$us_instock
+        ),
+        type = "pie",
+        textinfo = "label+percent",
+        marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
+      ) %>%
+        layout(title = paste("SKU:", sku, "库存总览"))
+    })
+  })
   
   
   # Disconnect from the database on app stop

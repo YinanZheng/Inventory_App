@@ -13,6 +13,7 @@ library(baRcodeR)
 library(DBI)
 library(RMariaDB)
 library(uuid)
+library(plotly)
 
 # Source all modular functions
 source("./modules/supplierModuleServer.R")
