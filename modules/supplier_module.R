@@ -83,7 +83,7 @@ supplier_module <- function(input, output, session, con) {
         new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
         update_maker_choices(new_data)
         
-        show_custom_notification("新供应商添加成功！", type = "message")
+        showNotification("新供应商添加成功！", type = "message")
         removeModal()
       }, error = function(e) {
         showModal(modalDialog(
