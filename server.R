@@ -748,7 +748,7 @@ server <- function(input, output, session) {
     sku_input_id = "outbound_sku",
     target_status = "国内出库",
     valid_current_status = c("国内入库"),  # 仅限国内入库状态
-    undo_queue = undo_queue,
+    undo_queue = undo_outbound_queue,
     con = con,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
@@ -760,7 +760,7 @@ server <- function(input, output, session) {
   undoLastAction(
     con = con,
     undo_btn = input$undo_outbound_btn,
-    undo_queue = undo_queue,
+    undo_queue = undo_outbound_queue,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
     notification_success = "撤回成功，物品状态已恢复！",
@@ -774,7 +774,7 @@ server <- function(input, output, session) {
     sku_input_id = "sold_sku",
     target_status = "国内售出",
     valid_current_status = c("国内入库"),  # 仅限国内入库状态
-    undo_queue = undo_queue,
+    undo_queue = undo_sold_queue,
     con = con,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
@@ -786,7 +786,7 @@ server <- function(input, output, session) {
   undoLastAction(
     con = con,
     undo_btn = input$undo_sold_btn,
-    undo_queue = undo_queue,
+    undo_queue = undo_sold_queue,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
     notification_success = "撤回成功，物品状态已恢复！",
