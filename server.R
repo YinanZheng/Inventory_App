@@ -962,6 +962,8 @@ server <- function(input, output, session) {
   
   # 监听 unique_item_for_report，更新图表
   observe({
+    refresh_trigger()
+    
     inventory_data <- unique_item_for_report()
     
     if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {

@@ -126,7 +126,7 @@ ui <- fluidPage(
       fluidRow(
         column(6, selectInput(
           "target_status", 
-          "移库目标:", 
+          "（慎用）自定义移库目标:", 
           choices = c(
             "国内入库", 
             "国内出库", 
