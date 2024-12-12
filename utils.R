@@ -246,17 +246,22 @@ update_status <- function(con, unique_id, new_status) {
     stop("Invalid status provided")
   }
   
-  # 根据状态更新
+  # 动态生成 SQL 查询
   if (new_status %in% names(status_columns)) {
-    # 更新状态和时间
     timestamp_column <- status_columns[[new_status]]
-    dbExecute(con, 
-              paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
-              params = list(new_status, Sys.time(), unique_id))
+    query <- paste0(
+      "UPDATE unique_items SET Status = '", new_status, 
+      "', ", timestamp_column, " = NOW() WHERE UniqueID = ?"
+    )
   } else {
-    # 仅更新状态
-    dbExecute(con, "UPDATE unique_items SET Status = ? WHERE UniqueID = ?",
-              params = list(new_status, unique_id))
+    query <- "UPDATE unique_items SET Status = ? WHERE UniqueID = ?"
+  }
+  
+  # 执行 SQL 查询
+  if (new_status %in% names(status_columns)) {
+    dbExecute(con, query, params = list(unique_id))
+  } else {
+    dbExecute(con, query, params = list(new_status, unique_id))
   }
 }
 
