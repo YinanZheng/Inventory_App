@@ -58,9 +58,9 @@ server <- function(input, output, session) {
   ## 供应商模块                                                 ##
   ##                                                            ##
   ################################################################
-
+  
   supplierModuleServer(input, output, session, con)
-
+  
   
   
   ################################################################
@@ -68,7 +68,7 @@ server <- function(input, output, session) {
   ## 物品大小类模块                                             ##
   ##                                                            ##
   ################################################################
-
+  
   typeModuleServer("type_module", con, item_type_data)
   
   
@@ -76,7 +76,7 @@ server <- function(input, output, session) {
   #########################################################################
   
   
-
+  
   observeEvent(input$new_item_image, {
     if (!is.null(input$new_item_image)) {
       # 记录新上传的文件
@@ -94,7 +94,7 @@ server <- function(input, output, session) {
   })
   
   
-
+  
   
   ## 库存表渲染模块
   
@@ -449,7 +449,7 @@ server <- function(input, output, session) {
       
       ### 同时添加信息到 unique_items 表中
       # Prepare data for batch insertion
-      batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
+      batch_data_list <- lapply(1:nrow(added_items_df), function(i) {
         sku <- added_items_df$SKU[i]
         quantity <- added_items_df$Quantity[i]
         product_cost <- added_items_df$ProductCost[i]
@@ -468,7 +468,22 @@ server <- function(input, output, session) {
           "无瑕",
           format(Sys.time(), "%Y-%m-%d %H:%M:%S")
         )))
-      }))
+      })
+      
+      # Remove NULL elements from the list
+      batch_data_list <- Filter(Negate(is.null), batch_data_list)
+      
+      # Combine into a single data frame or matrix
+      if (length(batch_data_list) == 1) {
+        # Directly use the single element if only one valid row exists
+        batch_data <- batch_data_list[[1]]
+      } else if (length(batch_data_list) > 1) {
+        # Combine multiple elements
+        batch_data <- do.call(rbind, batch_data_list)
+      } else {
+        # No valid data
+        batch_data <- NULL
+      }
       
       # Validate data
       if (is.null(batch_data) || nrow(batch_data) == 0) {
@@ -598,7 +613,7 @@ server <- function(input, output, session) {
     shinyjs::disable("download_batch_pdf")
   })
   
-
+  
   # 单个 SKU 条形码生成逻辑
   observeEvent(input$export_single_btn, {
     if (is.null(input$new_sku) || input$new_sku == "") {
@@ -717,7 +732,7 @@ server <- function(input, output, session) {
   
   
   #### 出库模块
-
+  
   # 监听条形码输入框
   observeEvent(input$outbound_sku, {
     sku <- stri_replace_all_regex(input$outbound_sku, "\\s", "")
