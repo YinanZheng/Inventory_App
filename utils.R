@@ -285,7 +285,7 @@ handleSKU <- function(input, session, sku_input_id, target_status, valid_current
     }
     
     # 检查当前状态是否符合要求
-    matched_items <- all_sku_items[all_sku_items$Status %in% valid_current_status & all_sku_items$Status != "瑕疵", ]
+    matched_items <- all_sku_items[all_sku_items$Status %in% valid_current_status & all_sku_items$Defect != "瑕疵", ]
     if (nrow(matched_items) == 0) {
       updateTextInput(session, sku_input_id, value = "")
       showNotification(paste("该条形码的物品不符合操作条件（需要状态为：", paste(valid_current_status, collapse = ", "), ", 且不能为瑕疵品）"), type = "error")
