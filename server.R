@@ -559,7 +559,18 @@ server <- function(input, output, session) {
       data = unique_items_data(),     # Use the reactive data source
       column_mapping = column_mapping, # Map columns to user-friendly names
       image_column = "ItemImagePath"   # Specify the column for images
-    )
+    ) %>%
+      formatStyle(
+        "物品状态",  # 指定要设置样式的列
+        backgroundColor = styleEqual(
+          c("无瑕", "瑕疵", "修复"),  # 状态值
+          c("green", "red", "orange")  # 对应的背景色
+        ),
+        color = styleEqual(
+          c("无瑕", "瑕疵", "修复"),  # 状态值
+          c("white", "white", "white")  # 对应的字体颜色
+        )
+      )
   })
   
   
