@@ -61,9 +61,8 @@ ui <- fluidPage(
    
       tags$hr(), # 分隔线
       
-      h4("出库操作"),
       fluidRow(
-        column(8, textInput("outbound_sku", "扫描条形码出库:", placeholder = "请扫描条形码")),
+        column(8, textInput("outbound_sku", "国内出库:", placeholder = "请扫描条形码")),
         column(4, actionButton(
           "undo_outbound_btn", 
           "撤回最近出库", 
@@ -71,7 +70,35 @@ ui <- fluidPage(
           class = "btn-warning", 
           style = "margin-top: 25px; height: 34px; width: 100%;"
         ))
-      )
+      ),
+      
+      tags$hr(), # 分隔线
+      
+      fluidRow(
+        column(8, textInput("sold_sku", "国内售出:", placeholder = "请扫描条形码")),
+        column(4, actionButton(
+          "undo_sold_btn", 
+          "撤回最近售出", 
+          icon = icon("undo"),
+          class = "btn-warning", 
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      ),
+      
+      tags$hr(), # 分隔线
+      
+      fluidRow(
+        column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描条形码")),
+        column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
+        column(4, actionButton(
+          "defect_register", 
+          "登记", 
+          icon = icon("flag"),
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      ),
+      
+      
     ),
     
     mainPanel(
