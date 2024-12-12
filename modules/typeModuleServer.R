@@ -57,8 +57,8 @@ typeModuleServer <- function(id, con, item_type_data) {
       major_skus <- strsplit(input$new_major_skus, "\n")[[1]]
       
       # 清理空白行并对齐长度
-      major_names <- trimws(major_names)
-      major_skus <- trimws(major_skus)
+      major_names <- unique(trimws(major_names))
+      major_skus <- unique(trimws(major_skus))
       
       # 检查输入是否匹配
       if (length(major_names) == 0 || length(major_skus) == 0) {
