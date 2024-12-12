@@ -18,9 +18,9 @@ ui <- fluidPage(
                )
         )
       ),
-      fluidRow(
-        typeModuleUI("type_module")
-      ),
+      
+      typeModuleUI("type_module"),
+   
       fluidRow(
         column(12, textInput("new_name", "商品名:"))
       ),
