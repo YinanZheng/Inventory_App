@@ -103,11 +103,11 @@ server <- function(input, output, session) {
     # 当 refresh_trigger 改变时触发更新
     refresh_trigger()
     
-    req(input$new_major_type, input$new_minor_type)
+    req(input$type_module-new_major_type, input$type_module-new_minor_type)
     
     # Filter the inventory data
     result <- inventory() %>%
-      filter(MajorType == input$new_major_type, MinorType == input$new_minor_type) %>%
+      filter(MajorType == input$type_module-new_major_type, MinorType == input$type_module-new_minor_type) %>%
       select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath)  # Ensure Maker is included
     
     # Return empty inventory if no results
@@ -217,8 +217,8 @@ server <- function(input, output, session) {
       existing_items[sku_index, ] <- data.frame(
         SKU = input$new_sku,
         Maker = input$new_maker,
-        MajorType = input$new_major_type,
-        MinorType = input$new_minor_type,
+        MajorType = input$type_module-new_major_type,
+        MinorType = input$type_module-new_minor_type,
         ItemName = input$new_name,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
@@ -268,8 +268,8 @@ server <- function(input, output, session) {
       new_item <- data.frame(
         SKU = input$new_sku,
         Maker = input$new_maker,
-        MajorType = input$new_major_type,
-        MinorType = input$new_minor_type,
+        MajorType = input$type_module-new_major_type,
+        MinorType = input$type_module-new_minor_type,
         ItemName = input$new_name,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
@@ -571,24 +571,24 @@ server <- function(input, output, session) {
   
   # Automatically generate SKU when relevant inputs change
   observeEvent({
-    input$new_major_type
-    input$new_minor_type
+    input$type_module-new_major_type
+    input$type_module-new_minor_type
     input$new_name
     input$new_maker
   }, {
-    # req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
+    # req(input$type_module-new_major_type, input$type_module-new_minor_type, input$new_name, input$new_maker)
     
     showNotification(paste0("[Debug]", 
-                           input$new_major_type, 
-                           input$new_minor_type, 
+                           input$type_module-new_major_type, 
+                           input$type_module-new_minor_type, 
                            input$new_name, 
                            input$new_maker), type = "message")
     
     # Dynamically generate SKU
     sku <- generate_sku(
       item_type_data = item_type_data(),
-      major_type = input$new_major_type,
-      minor_type = input$new_minor_type,
+      major_type = input$type_module-new_major_type,
+      minor_type = input$type_module-new_minor_type,
       item_name = input$new_name,
       maker = input$new_maker
     )
