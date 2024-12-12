@@ -257,6 +257,7 @@ update_status <- function(con, unique_id, new_status) {
 update_item_status <- function(con, sku_input, target_status, undo_queue, inventory, refresh_trigger, notification_success, notification_error) {
   observeEvent(sku_input, {
     sku <- stri_replace_all_regex(sku_input(), "\\s", "")
+    showNotification(paste("[Debug]: Received SKU =", sku), type = "message")
     
     if (is.null(sku) || sku == "") {
       return()
