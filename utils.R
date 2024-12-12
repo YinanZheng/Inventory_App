@@ -231,7 +231,10 @@ render_table_with_images <- function(data,
 }
 
 update_status <- function(con, unique_id, new_status) {
-  # 定义状态到时间戳列的映射
+  if (length(unique_id) != 1) {
+    showNotification("Invalid UniqueID: Expected a single value.", type = "error")
+  }
+  
   status_columns <- list(
     "国内入库" = "DomesticEntryTime",
     "国内出库" = "DomesticExitTime",
@@ -240,15 +243,12 @@ update_status <- function(con, unique_id, new_status) {
     "美国售出" = "UsSoldTime"
   )
   
-  # 检查状态是否有效
   if (!new_status %in% names(status_columns)) {
-    stop("Invalid status provided")
+    showNotification("Invalid status provided", type = "error")
   }
   
-  # 获取对应的时间戳列
   timestamp_column <- status_columns[[new_status]]
   
-  # 更新数据库中的状态和时间戳
   dbExecute(con, 
             paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
             params = list(new_status, Sys.time(), unique_id))

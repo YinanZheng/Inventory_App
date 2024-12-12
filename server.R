@@ -824,7 +824,7 @@ server <- function(input, output, session) {
     
     # 执行移库操作
     tryCatch({
-      update_status(con, unique_id, target_status)  # 使用之前定义的 update_status 函数
+      update_status(con, unique_id, target_status)
       showNotification(paste("物品成功移至状态：", target_status), type = "message")
       
       # 刷新表格数据
