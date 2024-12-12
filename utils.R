@@ -240,27 +240,27 @@ update_status <- function(con, unique_id, new_status) {
     "美国售出" = "UsSoldTime"
   )
   
+  # 定义瑕疵和修复的状态
+  defect_statuses <- c("瑕疵", "修复")
+  
   # 检查状态是否有效
-  valid_statuses <- c(names(status_columns), "瑕疵", "修复")
+  valid_statuses <- c(names(status_columns), defect_statuses)
   if (!new_status %in% valid_statuses) {
     stop("Invalid status provided")
   }
   
   # 动态生成 SQL 查询
   if (new_status %in% names(status_columns)) {
+    # 更新状态并记录时间
     timestamp_column <- status_columns[[new_status]]
     query <- paste0(
       "UPDATE unique_items SET Status = '", new_status, 
       "', ", timestamp_column, " = NOW() WHERE UniqueID = ?"
     )
-  } else {
-    query <- "UPDATE unique_items SET Status = ? WHERE UniqueID = ?"
-  }
-  
-  # 执行 SQL 查询
-  if (new_status %in% names(status_columns)) {
     dbExecute(con, query, params = list(unique_id))
-  } else {
+  } else if (new_status %in% defect_statuses) {
+    # 更新瑕疵相关状态
+    query <- "UPDATE unique_items SET Defect = ? WHERE UniqueID = ?"
     dbExecute(con, query, params = list(new_status, unique_id))
   }
 }
