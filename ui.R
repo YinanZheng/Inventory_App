@@ -34,12 +34,13 @@ ui <- fluidPage(
         column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
                               style = "margin-top: 25px; height: 34px; width: 100%;"))
       ),
+      
       fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
       
       actionButton("add_btn", "添加/更新商品信息", icon = icon("pen"),
                    style = "background-color: #006400; color: white;"),
       
-      tags$hr(style = "margin: 10px 0; border: none; border-top: 1px solid #ccc;"),
+      tags$hr(), # 分隔线
       
       fluidRow(
         column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
@@ -60,7 +61,7 @@ ui <- fluidPage(
         )
       ),
       
-      tags$hr(), # 分隔线
+      tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
         column(12, actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
@@ -79,7 +80,7 @@ ui <- fluidPage(
         ))
       ),
       
-      tags$hr(), # 分隔线
+      tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
         column(8, textInput("sold_sku", "售出:", placeholder = "请扫描条形码")),
@@ -119,7 +120,7 @@ ui <- fluidPage(
         ))
       ),
       
-      tags$hr(), # 分隔线
+      tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
         column(4, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描条形码")),
