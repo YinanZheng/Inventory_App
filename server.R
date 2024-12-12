@@ -931,11 +931,25 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  observeEvent(input$refresh_inventory_btn, {
+  observeEvent(input$item_table_rows_selected, {
+    selected_row <- input$item_table_rows_selected
+    
+    if (!is.null(selected_row)) {
+      # 从 unique_items_data 中获取选中的 SKU
+      selected_sku <- unique_items_data()[selected_row, "SKU"]
+      
+      # 更新 SKU 输入框
+      updateTextInput(session, "sku_inventory", value = selected_sku)
+    }
+  })
+  
+  observeEvent(input$sku_inventory, {
     sku <- stri_replace_all_regex(input$sku_inventory, "\\s", "")  # 清除空格
     
     # 校验 SKU
     if (is.null(sku) || sku == "") {
+      # 清空图表和通知
+      output$inventory_overview_plot <- renderPlotly(NULL)
       showNotification("请输入有效的 SKU！", type = "error")
       return()
     }
@@ -945,11 +959,13 @@ server <- function(input, output, session) {
     
     # 检查是否有数据
     if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
+      # 清空图表并通知
+      output$inventory_overview_plot <- renderPlotly(NULL)
       showNotification("未找到该 SKU 的库存数据！", type = "error")
       return()
     }
     
-    # 更新图表
+    # 动态更新图表
     output$inventory_overview_plot <- renderPlotly({
       plot_ly(
         labels = c("国内库存", "在途运输", "美国库存"),
@@ -960,6 +976,7 @@ server <- function(input, output, session) {
         ),
         type = "pie",
         textinfo = "label+percent",
+        hoverinfo = "label+value+percent",
         marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
       ) %>%
         layout(

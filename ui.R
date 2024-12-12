@@ -145,10 +145,12 @@ ui <- fluidPage(
       
       tags$hr(), # 分隔线
       
-      textInput("sku_inventory", "查询库存总览:", placeholder = "请输入SKU"),
-      actionButton("refresh_inventory_btn", "查看", icon = icon("magnifying-glass")),
-      plotlyOutput("inventory_overview_plot", height = "300px")
-      
+      fluidRow(
+        column(12, textInput("sku_inventory", "输入 SKU 查看库存:", placeholder = "请扫描条形码或手动输入"))
+      ),
+      fluidRow(
+        column(12, plotlyOutput("inventory_overview_plot"))
+      )
     ),
     
     mainPanel(
