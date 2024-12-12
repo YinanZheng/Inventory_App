@@ -800,7 +800,7 @@ server <- function(input, output, session) {
     }
     
     # 检查瑕疵数量
-    defect_quantity <- nrow(sku_data[sku_data$Status == "瑕疵", ])
+    defect_quantity <- nrow(sku_data[sku_data$Defect == "瑕疵", ])
     if (quantity > defect_quantity) {
       showNotification("瑕疵品数量不足，无法修复！", type = "error")
       return()
@@ -809,7 +809,7 @@ server <- function(input, output, session) {
     # 更新选定数量为“修复”
     tryCatch({
       for (i in 1:quantity) {
-        unique_id <- sku_data$UniqueID[sku_data$Status == "瑕疵"][i]
+        unique_id <- sku_data$UniqueID[sku_data$Defect == "瑕疵"][i]
         update_status(con, unique_id, "修复")
       }
       showNotification("瑕疵品修复登记成功！", type = "message")
