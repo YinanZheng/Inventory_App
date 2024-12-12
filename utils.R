@@ -74,7 +74,7 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
 # Generate unique code
 generate_unique_code <- function(input, length = 4) {
   # Validate input
-  if (is.null(input) || txt == "") {
+  if (is.null(input) || input == "") {
     return(NULL)  
   }
     
