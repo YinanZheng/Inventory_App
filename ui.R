@@ -69,6 +69,10 @@ ui <- fluidPage(
    
       tags$hr(), # 分隔线
       
+      
+      
+      tags$hr(), # 分隔线
+      
       fluidRow(
         column(8, textInput("outbound_sku", "出库:", placeholder = "请扫描条形码")),
         column(4, actionButton(
@@ -93,30 +97,6 @@ ui <- fluidPage(
         ))
       ),
       
-      tags$hr(style = "margin: 5px 0; border: none;"),
-      
-      fluidRow(
-        column(6, selectInput(
-          "target_status", 
-          "移库目标:", 
-          choices = c(
-            "国内入库", 
-            "国内出库", 
-            "国内售出", 
-            "美国入库", 
-            "美国售出"
-          )
-        )),
-        column(6, actionButton(
-          "move_selected", 
-          "移库选中物品", 
-          class = "btn-primary", 
-          style = "margin-top: 25px; height: 34px; width: 100%;"
-        ))
-      ),
-      
-      tags$hr(), # 分隔线
-      
       fluidRow(
         column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描条形码")),
         column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
@@ -139,6 +119,27 @@ ui <- fluidPage(
           "登记", 
           icon = icon("hammer"),
           class = "btn-warning", 
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      ),
+      tags$hr(style = "margin: 5px 0; border: none;"),
+      
+      fluidRow(
+        column(6, selectInput(
+          "target_status", 
+          "移库目标:", 
+          choices = c(
+            "国内入库", 
+            "国内出库", 
+            "国内售出", 
+            "美国入库", 
+            "美国售出"
+          )
+        )),
+        column(6, actionButton(
+          "move_selected", 
+          "移库选中物品", 
+          class = "btn-primary", 
           style = "margin-top: 25px; height: 34px; width: 100%;"
         ))
       )
