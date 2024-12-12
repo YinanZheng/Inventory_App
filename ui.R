@@ -111,7 +111,7 @@ ui <- fluidPage(
           "move_selected", 
           "移库选中物品", 
           class = "btn-primary", 
-          style = "margin-top: 10px; width: 100%;"
+          style = "margin-top: 25px; height: 34px; width: 100%;"
         ))
       ),
       
