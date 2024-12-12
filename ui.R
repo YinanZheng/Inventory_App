@@ -69,7 +69,31 @@ ui <- fluidPage(
    
       tags$hr(), # 分隔线
       
+      fluidRow(
+        column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描条形码")),
+        column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
+        column(4, actionButton(
+          "defect_register", 
+          "登记", 
+          icon = icon("circle-exclamation"),
+          class = "btn-warning", 
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      ),
       
+      tags$hr(style = "margin: 5px 0; border: none;"),
+      
+      fluidRow(
+        column(4, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描条形码")),
+        column(4, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
+        column(4, actionButton(
+          "repair_register", 
+          "登记", 
+          icon = icon("hammer"),
+          class = "btn-warning", 
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      ),
       
       tags$hr(), # 分隔线
       
@@ -97,31 +121,6 @@ ui <- fluidPage(
         ))
       ),
       
-      fluidRow(
-        column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描条形码")),
-        column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
-        column(4, actionButton(
-          "defect_register", 
-          "登记", 
-          icon = icon("circle-exclamation"),
-          class = "btn-warning", 
-          style = "margin-top: 25px; height: 34px; width: 100%;"
-        ))
-      ),
-      
-      tags$hr(style = "margin: 5px 0; border: none;"),
-      
-      fluidRow(
-        column(4, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描条形码")),
-        column(4, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
-        column(4, actionButton(
-          "repair_register", 
-          "登记", 
-          icon = icon("hammer"),
-          class = "btn-warning", 
-          style = "margin-top: 25px; height: 34px; width: 100%;"
-        ))
-      ),
       tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
