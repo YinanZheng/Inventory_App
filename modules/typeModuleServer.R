@@ -37,34 +37,58 @@ typeModuleServer <- function(id, con, item_type_data) {
     # 新增大类逻辑
     observeEvent(input$add_major_type_btn, {
       showModal(modalDialog(
-        title = "新增大类",
-        textInput(ns("new_major_type_name"), "大类名称:"),
-        textInput(ns("new_major_type_sku"), "大类SKU:"),
+        title = "新增大类（批量）",
+        fluidRow(
+          column(6, textAreaInput(ns("new_major_types"), "大类名称:", placeholder = "每行一个大类名称")),
+          column(6, textAreaInput(ns("new_major_skus"), "大类SKU:", placeholder = "每行一个SKU，与左侧名称一一对应"))
+        ),
         footer = tagList(
           modalButton("取消"),
-          actionButton(ns("confirm_add_major_type"), "添加")
+          actionButton(ns("confirm_add_major_types"), "添加")
         )
       ))
     })
     
-    observeEvent(input$confirm_add_major_type, {
-      req(input$new_major_type_name, input$new_major_type_sku)
+    observeEvent(input$confirm_add_major_types, {
+      req(input$new_major_types, input$new_major_skus)
       
-      new_major <- data.frame(
-        MajorType = input$new_major_type_name,
-        MajorTypeSKU = input$new_major_type_sku,
-        stringsAsFactors = FALSE
-      )
+      # 解析用户输入
+      major_names <- strsplit(input$new_major_types, "\n")[[1]]
+      major_skus <- strsplit(input$new_major_skus, "\n")[[1]]
+      
+      # 清理空白行并对齐长度
+      major_names <- trimws(major_names)
+      major_skus <- trimws(major_skus)
+      
+      # 检查输入是否匹配
+      if (length(major_names) == 0 || length(major_skus) == 0) {
+        showNotification("请输入有效的大类名称和SKU！", type = "error")
+        return()
+      }
+      
+      if (length(major_names) != length(major_skus)) {
+        showNotification("大类名称和SKU数量不匹配，请检查输入！", type = "error")
+        return()
+      }
       
       tryCatch({
-        dbExecute(con, "INSERT INTO item_type_data (MajorType, MajorTypeSKU) VALUES (?, ?)",
-                  params = list(new_major$MajorType, new_major$MajorTypeSKU))
-        showNotification("新增大类成功！", type = "message")
+        # 批量插入到数据库
+        for (i in seq_along(major_names)) {
+          if (major_names[i] != "" && major_skus[i] != "") {
+            dbExecute(con, 
+                      "INSERT INTO item_type_data (MajorType, MajorTypeSKU) VALUES (?, ?)",
+                      params = list(major_names[i], major_skus[i]))
+          }
+        }
+        
+        showNotification("批量新增大类成功！", type = "message")
         removeModal()
+        
+        # 重新加载数据
         item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
-        updateSelectInput(session, "new_major_type", selected = new_major$MajorType)
       }, error = function(e) {
-        showNotification("新增大类失败。", type = "error")
+        showNotification(paste("批量新增大类失败：", e$message), type = "error")
+        print(e)  # 输出错误日志以便调试
       })
     })
     
