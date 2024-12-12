@@ -934,67 +934,35 @@ server <- function(input, output, session) {
   observeEvent(input$refresh_inventory_btn, {
     sku <- stri_replace_all_regex(input$sku_inventory, "\\s", "")  # 清除空格
     
+    # 校验 SKU
     if (is.null(sku) || sku == "") {
       showNotification("请输入有效的 SKU！", type = "error")
-      output$inventory_overview_ui <- renderUI(NULL)
-      output$inventory_overview_chart <- renderPlotly(NULL)
       return()
     }
     
-    # 调用函数获取库存详情
-    inventory_details <<- get_inventory_details(con, sku)  # 使用全局变量存储
+    # 获取库存总览数据
+    inventory_data <- get_inventory_overview(con, sku)
     
-    if (is.null(inventory_details$item_name)) {
+    # 检查是否有数据
+    if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
       showNotification("未找到该 SKU 的库存数据！", type = "error")
-      output$inventory_overview_ui <- renderUI(NULL)
-      output$inventory_overview_chart <- renderPlotly(NULL)
       return()
     }
     
-    # 更新 UI 和图表
-    output$inventory_overview_ui <- renderUI({
-      tagList(
-        h4("物品总览"),
-        img(src = inventory_details$item_image, alt = "物品图片", height = "150px", style = "display: block; margin-bottom: 10px;"),
-        h5(strong("物品名称: "), inventory_details$item_name),
-        div(style = "margin-top: 20px;",
-            p(strong("国内库存: "), sum(inventory_details$data$Count[inventory_details$data$Status == "国内入库"], na.rm = TRUE)),
-            p(strong("在途运输: "), sum(inventory_details$data$Count[inventory_details$data$Status %in% c("国内出库", "国内售出")], na.rm = TRUE)),
-            p(strong("美国库存: "), sum(inventory_details$data$Count[inventory_details$data$Status == "美国入库"], na.rm = TRUE))
-        )
-      )
-    })
-    
-    output$inventory_overview_chart <- renderPlotly({
-      data <- inventory_details$data
-      
-      if (nrow(data) == 0) {
-        return(NULL)
-      }
-      
+    # 更新图表
+    output$inventory_overview_plot <- renderPlotly({
       plot_ly(
-        data = data,
-        labels = ~Status,
-        values = ~Count,
+        labels = c("国内库存", "在途运输", "美国库存"),
+        values = c(
+          inventory_data$domestic_instock, 
+          inventory_data$in_transit, 
+          inventory_data$us_instock
+        ),
         type = "pie",
-        text = ~paste(Status, ":", Count),
-        textinfo = "text+percent",
-        hoverinfo = "label+value+percent",
-        marker = list(colors = c(
-          "国内入库" = "green",
-          "国内出库" = "orange",
-          "国内售出" = "red",
-          "美国入库" = "blue",
-          "美国售出" = "purple"
-        )[data$Status]),
-        showlegend = TRUE
+        textinfo = "label+percent",
+        marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
       ) %>%
-        layout(
-          title = paste("SKU:", sku, "库存分布"),
-          legend = list(orientation = "h", xanchor = "center", x = 0.5),
-          margin = list(t = 50, b = 50),
-          font = list(size = 14)
-        )
+        layout(title = paste("SKU:", sku, "库存总览"))
     })
   })
   
