@@ -931,8 +931,8 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  observeEvent(input$item_table_rows_selected, {
-    selected_row <- input$item_table_rows_selected
+  observeEvent(input$unique_items_table_rows_selected, {
+    selected_row <- input$unique_items_table_rows_selected
     
     if (!is.null(selected_row)) {
       # 从 unique_items_data 中获取选中的 SKU
