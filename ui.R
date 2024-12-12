@@ -38,7 +38,8 @@ ui <- fluidPage(
       
       tags$hr(style = "margin: 10px 0; border: none; border-top: 1px solid #ccc;"),
       
-      actionButton("add_btn", "添加/更新商品信息", icon = icon("pen")),
+      actionButton("add_btn", "添加/更新商品信息", icon = icon("pen"),
+                   style = "background-color: #006400; color: white;"),
       
       tags$hr(style = "margin: 5px 0; border: none;"),
       
@@ -86,7 +87,7 @@ ui <- fluidPage(
         ))
       ),
       
-      tags$hr(style = "margin: 5px 0; border: none; border-top: 1px solid #ccc;"),
+      tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
         column(8, textInput("restock_sku", "返库:", placeholder = "请扫描条形码")),
