@@ -950,21 +950,31 @@ server <- function(input, output, session) {
     }
     
     # 更新图表
-    output$inventory_overview_plot <- renderPlotly({
+    output$inventory_overview_chart <- renderPlotly({
+      data <- inventory_details$data
+      
+      # 检查数据是否为空
+      if (nrow(data) == 0) {
+        return(NULL)  # 返回空图表
+      }
+      
+      # 添加切片显示实际库存数
       plot_ly(
-        labels = c("国内库存", "在途运输", "美国库存"),
-        values = c(
-          inventory_data$domestic_instock, 
-          inventory_data$in_transit, 
-          inventory_data$us_instock
-        ),
+        data = data,
+        labels = ~Status,
+        values = ~Count,
         type = "pie",
-        textinfo = "label+percent",
-        marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
+        text = ~paste(Status, ":", Count),  # 添加库存状态和数量标签
+        textinfo = "text+percent",         # 显示标签和百分比
+        hoverinfo = "label+value+percent", # 鼠标悬停显示标签、数量和百分比
+        marker = list(colors = c("green", "orange", "blue", "red", "purple")),  # 根据状态调整颜色
+        showlegend = TRUE                  # 显示图例
       ) %>%
-        layout(title = paste("SKU:", sku, "库存总览"))
+        layout(
+          title = paste("SKU:", sku, "库存分布"),
+          legend = list(orientation = "h", xanchor = "center", x = 0.5)  # 图例居中
+        )
     })
-  })
   
   
   # Disconnect from the database on app stop
