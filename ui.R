@@ -36,11 +36,12 @@ ui <- fluidPage(
       ),
       fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
       
-      tags$hr(), # 分隔线
-      h4("入库操作"),
+      tags$hr(style = "margin: 10px 0; border: none; border-top: 1px solid #ccc;"),
+      
       actionButton("add_btn", "添加/更新商品信息", icon = icon("pen")),
       
-      tags$hr(), # 分隔线
+      tags$hr(style = "margin: 5px 0; border: none;"),
+      
       fluidRow(
         column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
       ),
