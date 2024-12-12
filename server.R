@@ -797,6 +797,7 @@ server <- function(input, output, session) {
   observeEvent(input$move_selected, {
     # 获取选中的行索引
     selected_row <- input$unique_items_table_rows_selected
+    showNotification(length(selected_row), type = "message")
     
     # 检查是否有选中行
     if (is.null(selected_row) || length(selected_row) == 0) {
