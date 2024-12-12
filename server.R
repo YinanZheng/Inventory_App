@@ -492,8 +492,7 @@ server <- function(input, output, session) {
         dbCommit(con)  # Commit transaction
         showNotification("所有物品已成功入库到国内仓！", type = "message")
         # 切换触发器值，确保刷新
-        current_value <- refresh_trigger()
-        refresh_trigger(!current_value) 
+        refresh_trigger(!refresh_trigger()) 
       }, error = function(e) {
         dbRollback(con)  # Rollback on error
         showNotification(paste("批量入库失败:", e$message), type = "error")
@@ -544,6 +543,7 @@ server <- function(input, output, session) {
   
   # 渲染 unique_items 数据表
   output$unique_items_table <- renderDT({
+    refresh_trigger()  # 触发器变化时重新加载数据
     # Define column mapping for user-friendly display
     column_mapping <- list(
       SKU = "条形码",
