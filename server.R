@@ -493,14 +493,14 @@ server <- function(input, output, session) {
       ))
     } else {
       # 已生成条形码，直接提交入库逻辑
-      handle_inventory_submission(added_items(), con, input, inventory, refresh_trigger())
+      handle_inventory_submission(added_items(), con, input, inventory, refresh_trigger)
     }
   })
   
   # 处理用户点击“继续提交”的逻辑
   observeEvent(input$force_confirm_btn, {
     removeModal()  # 关闭模态框
-    handle_inventory_submission(added_items(), con, input, inventory, refresh_trigger())
+    handle_inventory_submission(added_items(), con, input, inventory, refresh_trigger)
   })
   
   

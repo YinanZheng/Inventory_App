@@ -141,9 +141,9 @@ handle_inventory_submission <- function(added_items_df, con, input, inventory, r
       }
       # dbCommit(con)  # Commit transaction
       showNotification("所有物品已成功入库到国内仓！", type = "message")
-      # 切换触发器值，确保刷新
-      current_value <- refresh_trigger()
-      refresh_trigger(!current_value) 
+  
+      refresh_trigger(!refresh_trigger())  # 切换触发器的值
+      
     }, error = function(e) {
       # dbRollback(con)  # Rollback on error
       showNotification(paste("批量入库失败:", e$message), type = "error")
