@@ -146,9 +146,11 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       textInput("sku_inventory", "查询库存总览:", placeholder = "请输入SKU"),
-      actionButton("refresh_inventory_btn", "查看", icon = icon("magnifying-glass")),
+      actionButton("refresh_inventory_btn", "刷新库存"),
       br(), br(),
-      uiOutput("inventory_overview_ui")  # 动态 UI
+      uiOutput("inventory_overview_ui"),  # 动态显示物品信息
+      plotlyOutput("inventory_overview_chart", height = "300px")  # 图表
+      
     ),
     
     mainPanel(

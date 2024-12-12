@@ -376,9 +376,10 @@ get_inventory_details <- function(con, sku) {
   result <- list(
     item_name = unique(inventory_data$ItemName),
     item_image = unique(inventory_data$ItemImagePath),
-    domestic_instock = sum(inventory_data$Count[inventory_data$Status == "国内入库"], na.rm = TRUE),
-    in_transit = sum(inventory_data$Count[inventory_data$Status %in% c("国内出库", "国内售出")], na.rm = TRUE),
-    us_instock = sum(inventory_data$Count[inventory_data$Status == "美国入库"], na.rm = TRUE)
+    data = data.frame(
+      Status = inventory_data$Status,
+      Count = inventory_data$Count
+    )
   )
   
   return(result)
