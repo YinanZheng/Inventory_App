@@ -96,7 +96,12 @@ ui <- fluidPage(
       tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
-        column(12, textInput("restock_sku", "返库:", placeholder = "请扫描条形码"))
+        column(12, actionButton(
+          "restock_selected", 
+          "返库选中物品", 
+          class = "btn-primary", 
+          style = "margin-top: 10px;"
+        ))
       ),
       
       tags$hr(), # 分隔线

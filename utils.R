@@ -271,6 +271,7 @@ handleSKU <- function(input, session, sku_input_id, target_status, valid_current
     )
     
     if (nrow(all_sku_items) == 0) {
+      updateTextInput(session, sku_input_id, value = "")
       showNotification("未找到该条形码对应的物品，请检查输入！", type = "error")
       return()
     }
@@ -278,6 +279,7 @@ handleSKU <- function(input, session, sku_input_id, target_status, valid_current
     # 检查当前状态是否符合要求
     matched_items <- all_sku_items[all_sku_items$Status %in% valid_current_status, ]
     if (nrow(matched_items) == 0) {
+      updateTextInput(session, sku_input_id, value = "")
       showNotification(paste("该条形码的物品不符合操作条件（需要状态为：", paste(valid_current_status, collapse = ", "), "）"), type = "error")
       return()
     }
