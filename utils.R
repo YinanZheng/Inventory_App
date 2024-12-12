@@ -253,3 +253,82 @@ update_status <- function(con, unique_id, new_status) {
             paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
             params = list(new_status, Sys.time(), unique_id))
 }
+
+update_item_status <- function(con, sku_input, target_status, undo_queue, inventory, refresh_trigger, notification_success, notification_error) {
+  observeEvent(sku_input, {
+    sku <- stri_replace_all_regex(sku_input(), "\\s", "")
+    
+    if (is.null(sku) || sku == "") {
+      return()
+    }
+    
+    # 查询 SKU 对应的数据
+    all_sku_items <- dbGetQuery(con, "
+      SELECT UniqueID, Status 
+      FROM unique_items 
+      WHERE SKU = ?", 
+                                params = list(sku)
+    )
+    
+    if (nrow(all_sku_items) == 0) {
+      showNotification("未找到该条形码对应的物品，请检查输入！", type = "error")
+      return()
+    }
+    
+    # 查询符合状态变更条件的物品
+    matched_items <- all_sku_items[all_sku_items$Status != target_status, ]
+    if (nrow(matched_items) == 0) {
+      showNotification(paste("该条形码的物品没有可以执行的状态变更（目标状态：", target_status, "）。"), type = "error")
+      return()
+    }
+    
+    # 获取匹配的 UniqueID
+    unique_id <- matched_items$UniqueID[1]
+    
+    # 更新状态
+    tryCatch({
+      update_status(con, unique_id, target_status)
+      
+      # 记录撤回队列
+      undo_list <- undo_queue()
+      undo_list <- append(undo_list, list(list(unique_id = unique_id, timestamp = Sys.time())))
+      undo_queue(undo_list)
+      
+      # 刷新数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      refresh_trigger(!refresh_trigger())
+      
+      showNotification(notification_success, type = "message")
+      
+    }, error = function(e) {
+      showNotification(paste(notification_error, e$message), type = "error")
+    })
+  })
+}
+
+undo_last_action <- function(con, undo_btn, undo_queue, refresh_trigger, status_to_restore, notification_success, notification_error) {
+  observeEvent(undo_btn, {
+    undo_list <- undo_queue()
+    
+    if (length(undo_list) == 0) {
+      showNotification("没有可撤回的操作！", type = "error")
+      return()
+    }
+    
+    last_action <- tail(undo_list, 1)[[1]]
+    unique_id <- last_action$unique_id
+    
+    undo_list <- head(undo_list, -1)
+    undo_queue(undo_list)  # 更新队列
+    
+    tryCatch({
+      update_status(con, unique_id, status_to_restore)
+      showNotification(notification_success, type = "message")
+      refresh_trigger(!refresh_trigger())
+    }, error = function(e) {
+      showNotification(paste(notification_error, e$message), type = "error")
+    })
+  })
+}
+
+

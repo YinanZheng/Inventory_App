@@ -26,8 +26,9 @@ server <- function(input, output, session) {
   barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
   
   # 用于存储撤回记录的队列
-  undo_queue <- reactiveVal(list())  # 每次出库时记录 UniqueID 和状态
-  
+  undo_outbound_queue <- reactiveVal(list())  # 出库撤回队列
+  undo_sold_queue <- reactiveVal(list()) # 售出撤回队列
+
   ###############################################################################################################
   
   # 应用启动时加载数据
@@ -734,103 +735,67 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  #### 出库模块
+  ################################################################
+  ##                                                            ##
+  ## 移库模块                                                   ##
+  ##                                                            ##
+  ################################################################
 
-  # 监听条形码输入框
-  observeEvent(input$outbound_sku, {
-    sku <- stri_replace_all_regex(input$outbound_sku, "\\s", "")
-    
-    # 如果输入为空，直接返回
-    if (is.null(sku) || sku == "") {
-      return()
-    }
-    
-    # 查询数据库中是否有匹配的 SKU
-    all_sku_items <- dbGetQuery(con, "
-      SELECT UniqueID, Status 
-      FROM unique_items 
-      WHERE SKU = ?", 
-                                params = list(sku)
-    )
-    
-    # 检查是否找到 SKU
-    if (nrow(all_sku_items) == 0) {
-      showNotification("未找到该条形码对应的物品，请检查输入！", type = "error")
-      return()
-    }
-    
-    # 查询符合出库条件的物品
-    matched_items <- all_sku_items[all_sku_items$Status == "国内入库", ]
-    
-    # 检查是否有符合条件的物品
-    if (nrow(matched_items) == 0) {
-      showNotification("该条形码的物品没有可以出库的库存！", type = "error")
-      return()
-    }
-    
-    # 获取匹配的 UniqueID
-    unique_id <- matched_items$UniqueID[1]
-    
-    # 更新状态为 "国内出库" 并设置出库时间
-    tryCatch({
-      update_status(con, unique_id, "国内出库")
-      
-      # 记录到撤回队列
-      undo_list <- undo_queue()
-      undo_list <- append(undo_list, list(list(unique_id = unique_id, timestamp = Sys.time())))
-      undo_queue(undo_list)  # 更新队列
-      
-      # 刷新 inventory 数据
-      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      
-      showNotification("物品出库成功！", type = "message")
-      
-      # 刷新物品状态追踪表
-      refresh_trigger(!refresh_trigger())
-      
-      # 清空输入框
-      updateTextInput(session, "outbound_sku", value = "")
-    }, error = function(e) {
-      showNotification(paste("出库操作失败:", e$message), type = "error")
-    })
-  })
+  # 出库逻辑
+  update_item_status(
+    con = con,
+    sku_input = reactive(input$outbound_sku),
+    target_status = "国内出库",
+    undo_queue = undo_outbound_queue,
+    inventory = inventory,
+    refresh_trigger = refresh_trigger,
+    notification_success = "物品出库成功！",
+    notification_error = "出库操作失败："
+  )
   
-  # 撤回最近出库操作
-  observeEvent(input$undo_outbound_btn, {
-    undo_list <- undo_queue()
-    
-    # 检查是否有可撤回的记录
-    if (length(undo_list) == 0) {
-      showNotification("没有可撤回的操作！", type = "error")
-      return()
-    }
-    
-    # 获取最近一条记录
-    last_action <- tail(undo_list, 1)[[1]]
-    unique_id <- last_action$unique_id
-    
-    # 从队列中移除最后一条记录
-    undo_list <- head(undo_list, -1)
-    undo_queue(undo_list)
-    
-    # 撤回数据库操作
-    tryCatch({
-      dbExecute(con, "
-        UPDATE unique_items 
-        SET Status = '国内入库', DomesticExitTime = NULL 
-        WHERE UniqueID = ?",
-                params = list(unique_id)
-      )
-      showNotification("撤回成功，物品状态已恢复为“国内入库”！", type = "message")
-      
-      # 刷新物品状态追踪表
-      refresh_trigger(!refresh_trigger())
-    }, error = function(e) {
-      showNotification(paste("撤回操作失败:", e$message), type = "error")
-    })
-  })
+  undo_last_action(
+    con = con,
+    undo_btn = input$undo_outbound_btn,
+    undo_queue = undo_outbound_queue,
+    refresh_trigger = refresh_trigger,
+    status_to_restore = "国内入库",
+    notification_success = "撤回成功，物品状态已恢复为“国内入库”！",
+    notification_error = "撤回出库操作失败："
+  )
   
+  # 售出逻辑
+  update_item_status(
+    con = con,
+    sku_input = reactive(input$sold_sku),
+    target_status = "国内售出",
+    undo_queue = undo_sold_queue,
+    inventory = inventory,
+    refresh_trigger = refresh_trigger,
+    notification_success = "物品售出成功！",
+    notification_error = "售出操作失败："
+  )
+  
+  undo_last_action(
+    con = con,
+    undo_btn = input$undo_sold_btn,
+    undo_queue = undo_sold_queue,
+    refresh_trigger = refresh_trigger,
+    status_to_restore = "国内入库",
+    notification_success = "撤回成功，物品状态已恢复为“国内入库”！",
+    notification_error = "撤回售出操作失败："
+  )
+  
+  # 返库逻辑
+  update_item_status(
+    con = con,
+    sku_input = reactive(input$restock_sku),
+    target_status = "国内入库",
+    undo_queue = undo_queue,
+    inventory = inventory,
+    refresh_trigger = refresh_trigger,
+    notification_success = "物品返库成功！",
+    notification_error = "返库操作失败："
+  )
   
   
   
