@@ -962,7 +962,9 @@ server <- function(input, output, session) {
         textinfo = "label+percent",
         marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
       ) %>%
-        layout(title = paste("SKU:", sku, "库存总览"))
+        layout(
+          margin = list(t = 20, b = 20)  # 可选：调整边距来美化布局
+        )
     })
   })
   
