@@ -576,7 +576,7 @@ server <- function(input, output, session) {
     input$new_name
     input$new_maker
   }, {
-    req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
+    # req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
     
     showNotification(paste0("[Debug]", 
                            input$new_major_type, 
