@@ -736,6 +736,91 @@ server <- function(input, output, session) {
     })
   })
   
+  
+  ################################################################
+  ##                                                            ##
+  ## 瑕疵商品模块                                               ##
+  ##                                                            ##
+  ################################################################
+  
+  observeEvent(input$defect_register, {
+    sku <- stri_replace_all_regex(input$defect_sku, "\\s", "")  # 清除空格
+    quantity <- input$defect_quantity
+    
+    # 校验输入
+    if (is.null(sku) || sku == "" || is.null(quantity) || quantity <= 0) {
+      showNotification("请输入有效的条形码和数量！", type = "error")
+      return()
+    }
+    
+    # 查询 SKU 数据
+    sku_data <- dbGetQuery(con, "SELECT * FROM unique_items WHERE SKU = ?", params = list(sku))
+    
+    if (nrow(sku_data) == 0) {
+      showNotification("条形码未找到！", type = "error")
+      return()
+    }
+    
+    # 检查库存数量
+    available_quantity <- nrow(sku_data[sku_data$Status == "国内入库", ])
+    if (quantity > available_quantity) {
+      showNotification("库存不足，无法登记为瑕疵品！", type = "error")
+      return()
+    }
+    
+    # 更新选定数量为“瑕疵”
+    tryCatch({
+      for (i in 1:quantity) {
+        unique_id <- sku_data$UniqueID[sku_data$Status == "国内入库"][i]
+        update_status(con, unique_id, "瑕疵")
+      }
+      showNotification("瑕疵品登记成功！", type = "message")
+      refresh_trigger(!refresh_trigger())  # 刷新数据表
+    }, error = function(e) {
+      showNotification(paste("登记失败：", e$message), type = "error")
+    })
+  })
+  
+  observeEvent(input$repair_register, {
+    sku <- stri_replace_all_regex(input$repair_sku, "\\s", "")  # 清除空格
+    quantity <- input$repair_quantity
+    
+    # 校验输入
+    if (is.null(sku) || sku == "" || is.null(quantity) || quantity <= 0) {
+      showNotification("请输入有效的条形码和数量！", type = "error")
+      return()
+    }
+    
+    # 查询 SKU 数据
+    sku_data <- dbGetQuery(con, "SELECT * FROM unique_items WHERE SKU = ?", params = list(sku))
+    
+    if (nrow(sku_data) == 0) {
+      showNotification("条形码未找到！", type = "error")
+      return()
+    }
+    
+    # 检查瑕疵数量
+    defect_quantity <- nrow(sku_data[sku_data$Status == "瑕疵", ])
+    if (quantity > defect_quantity) {
+      showNotification("瑕疵品数量不足，无法修复！", type = "error")
+      return()
+    }
+    
+    # 更新选定数量为“修复”
+    tryCatch({
+      for (i in 1:quantity) {
+        unique_id <- sku_data$UniqueID[sku_data$Status == "瑕疵"][i]
+        update_status(con, unique_id, "修复")
+      }
+      showNotification("瑕疵品修复登记成功！", type = "message")
+      refresh_trigger(!refresh_trigger())  # 刷新数据表
+    }, error = function(e) {
+      showNotification(paste("修复登记失败：", e$message), type = "error")
+    })
+  })
+  
+  
+  
   ################################################################
   ##                                                            ##
   ## 移库模块                                                   ##
@@ -834,6 +919,11 @@ server <- function(input, output, session) {
       showNotification(paste("移库操作失败：", e$message), type = "error")
     })
   })
+  
+  
+  
+  
+  
   
   # Disconnect from the database on app stop
   onStop(function() {

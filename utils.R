@@ -231,10 +231,7 @@ render_table_with_images <- function(data,
 }
 
 update_status <- function(con, unique_id, new_status) {
-  if (length(unique_id) != 1) {
-    showNotification("Invalid UniqueID: Expected a single value.", type = "error")
-  }
-  
+  # 定义需要记录时间的状态
   status_columns <- list(
     "国内入库" = "DomesticEntryTime",
     "国内出库" = "DomesticExitTime",
@@ -243,15 +240,24 @@ update_status <- function(con, unique_id, new_status) {
     "美国售出" = "UsSoldTime"
   )
   
-  if (!new_status %in% names(status_columns)) {
-    showNotification("Invalid status provided", type = "error")
+  # 检查状态是否有效
+  valid_statuses <- c(names(status_columns), "瑕疵", "修复")
+  if (!new_status %in% valid_statuses) {
+    stop("Invalid status provided")
   }
   
-  timestamp_column <- status_columns[[new_status]]
-  
-  dbExecute(con, 
-            paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
-            params = list(new_status, Sys.time(), unique_id))
+  # 根据状态更新
+  if (new_status %in% names(status_columns)) {
+    # 更新状态和时间
+    timestamp_column <- status_columns[[new_status]]
+    dbExecute(con, 
+              paste0("UPDATE unique_items SET Status = ?, ", timestamp_column, " = ? WHERE UniqueID = ?"),
+              params = list(new_status, Sys.time(), unique_id))
+  } else {
+    # 仅更新状态
+    dbExecute(con, "UPDATE unique_items SET Status = ? WHERE UniqueID = ?",
+              params = list(new_status, unique_id))
+  }
 }
 
 handleSKU <- function(input, session, sku_input_id, target_status, valid_current_status, undo_queue, con, refresh_trigger, inventory, notification_success, notification_error, record_undo = TRUE) {
