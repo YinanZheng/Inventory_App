@@ -940,29 +940,27 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 获取库存总览数据
-    inventory_data <- get_inventory_overview(con, sku)
+    # 获取库存详情
+    inventory_details <- get_inventory_details(con, sku)
     
     # 检查是否有数据
-    if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
+    if (is.null(inventory_details$item_name) || is.null(inventory_details$item_image)) {
       showNotification("未找到该 SKU 的库存数据！", type = "error")
       return()
     }
     
-    # 更新图表
-    output$inventory_overview_plot <- renderPlotly({
-      plot_ly(
-        labels = c("国内库存", "在途运输", "美国库存"),
-        values = c(
-          inventory_data$domestic_instock, 
-          inventory_data$in_transit, 
-          inventory_data$us_instock
-        ),
-        type = "pie",
-        textinfo = "label+percent",
-        marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
-      ) %>%
-        layout(title = paste("SKU:", sku, "库存总览"))
+    # 更新 UI
+    output$inventory_overview_ui <- renderUI({
+      tagList(
+        h4("物品总览"),
+        img(src = inventory_details$item_image, alt = "物品图片", height = "150px", style = "display: block; margin-bottom: 10px;"),
+        h5(strong("物品名称: "), inventory_details$item_name),
+        div(style = "margin-top: 20px;",
+            p(strong("国内库存: "), inventory_details$domestic_instock),
+            p(strong("在途运输: "), inventory_details$in_transit),
+            p(strong("美国库存: "), inventory_details$us_instock)
+        )
+      )
     })
   })
   
