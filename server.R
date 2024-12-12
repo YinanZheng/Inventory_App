@@ -84,7 +84,7 @@ server <- function(input, output, session) {
     
     type_data <- item_type_data()
     
-    if (is.null(type_data) || nrow(type_data) == 0 || is.null(input$new_major_type)) {
+    if (is.null(type_data) || nrow(type_data) == 0) {
       # 数据为空时显示提示
       selectInput("new_minor_type", "小类:", choices = c("暂无数据" = ""), selected = NULL)
     } else {
