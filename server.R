@@ -741,6 +741,12 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
 
+  observe({
+    showNotification(paste("[Debug]: outbound_sku =", input$outbound_sku))
+    showNotification(paste("[Debug]: sold_sku =", input$sold_sku))
+    showNotification(paste("[Debug]: restock_sku =", input$restock_sku))
+  })
+  
   # 出库逻辑
   update_item_status(
     con = con,
