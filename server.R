@@ -578,6 +578,8 @@ server <- function(input, output, session) {
   }, {
     req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
     
+    showNotification("[Debug]", type = "error")
+    
     # Dynamically generate SKU
     sku <- generate_sku(
       item_type_data = item_type_data(),
