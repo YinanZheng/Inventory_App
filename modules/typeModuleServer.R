@@ -111,20 +111,23 @@ typeModuleServer <- function(id, con, item_type_data) {
         return()
       }
       
-      # 创建小类数据框
-      new_minors <- data.frame(
-        MajorType = rep(selected_major, length(minor_type_names)),
-        MajorTypeSKU = rep(major_sku, length(minor_type_names)),
-        MinorType = minor_type_names,
-        MinorTypeSKU = sapply(minor_type_names, generate_unique_code, length = 2),
-        stringsAsFactors = FALSE
-      )
+      # 自动生成 SKU 并准备批量插入数据
+      new_minors <- lapply(minor_type_names, function(minor_name) {
+        list(
+          MajorType = selected_major,
+          MajorTypeSKU = major_sku,
+          MinorType = minor_name,
+          MinorTypeSKU = generate_unique_code(minor_name, length = 2)
+        )
+      })
       
       tryCatch({
         # 批量插入新小类到数据库
-        dbExecute(con, 
-                  "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
-                  params = as.list(as.data.frame(t(new_minors))))
+        for (minor in new_minors) {
+          dbExecute(con, 
+                    "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
+                    params = minor)
+        }
         
         # 删除与大类关联的小类为空的行
         dbExecute(con, "DELETE FROM item_type_data WHERE MajorType = ? AND (MinorType IS NULL OR MinorType = '')",
