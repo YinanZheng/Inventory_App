@@ -958,23 +958,35 @@ server <- function(input, output, session) {
         return(NULL)  # 返回空图表
       }
       
-      # 添加切片显示实际库存数
+      # 动态分配颜色
+      color_mapping <- c(
+        "国内入库" = "green",
+        "国内出库" = "orange",
+        "国内售出" = "red",
+        "美国入库" = "blue",
+        "美国售出" = "purple"
+      )
+      
+      # 生成饼图
       plot_ly(
         data = data,
         labels = ~Status,
         values = ~Count,
         type = "pie",
-        text = ~paste(Status, ":", Count),  # 添加库存状态和数量标签
-        textinfo = "text+percent",         # 显示标签和百分比
-        hoverinfo = "label+value+percent", # 鼠标悬停显示标签、数量和百分比
-        marker = list(colors = c("green", "orange", "blue", "red", "purple")),  # 根据状态调整颜色
+        text = ~paste(Status, ":", Count),  # 切片标签显示状态和实际库存数
+        textinfo = "text+percent",         # 同时显示百分比
+        hoverinfo = "label+value+percent", # 鼠标悬停显示详细信息
+        marker = list(colors = color_mapping[data$Status]),  # 使用动态颜色
         showlegend = TRUE                  # 显示图例
       ) %>%
         layout(
           title = paste("SKU:", sku, "库存分布"),
-          legend = list(orientation = "h", xanchor = "center", x = 0.5)  # 图例居中
+          legend = list(orientation = "h", xanchor = "center", x = 0.5),  # 图例居中
+          margin = list(t = 50, b = 50),  # 调整边距
+          font = list(size = 14)          # 设置字体大小
         )
     })
+  })
   
   
   # Disconnect from the database on app stop
