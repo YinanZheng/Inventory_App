@@ -522,6 +522,7 @@ server <- function(input, output, session) {
     
     dbGetQuery(con, "
     SELECT 
+      unique_items.UniqueID, 
       unique_items.SKU, 
       unique_items.Status,
       unique_items.Defect,
@@ -813,11 +814,7 @@ server <- function(input, output, session) {
     
     # 获取选中行的数据
     selected_data <- unique_items_data()[selected_row, ]
-    showNotification(length(selected_row), type = "message")
-    
     unique_id <- selected_data$UniqueID
-    showNotification(length(unique_id), type = "message")
-    
     current_status <- selected_data$Status
     
     # 如果当前状态已经是目标状态
