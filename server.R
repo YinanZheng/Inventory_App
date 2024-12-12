@@ -1,15 +1,34 @@
 # Define server logic
 server <- function(input, output, session) {
-  ## Database
+  # Database
   con <- db_connection()
-  
-  ## 大小类模块
   
   # ReactiveVal 存储 item_type_data 数据
   item_type_data <- reactiveVal()
   
   # ReactiveVal 用于存储 inventory 数据
   inventory <- reactiveVal()
+  
+  # 用于保存用户上传的文件信息
+  uploaded_file <- reactiveVal(NULL)
+  
+  # 声明一个 reactiveVal 用于触发表格刷新
+  refresh_trigger <- reactiveVal(FALSE)
+  
+  # Reactive value to store added items
+  added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
+  
+  # 用于存储 PDF 文件路径
+  single_pdf_file_path <- reactiveVal(NULL)
+  batch_pdf_file_path <- reactiveVal(NULL)
+  
+  # 存储条形码是否已生成的状态
+  barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
+  
+  # 用于存储撤回记录的队列
+  undo_queue <- reactiveVal(list())  # 每次出库时记录 UniqueID 和状态
+  
+  ###############################################################################################################
   
   # 应用启动时加载数据
   observe({
@@ -34,44 +53,51 @@ server <- function(input, output, session) {
   })
   
   
-  #################################################################
-  
+  ################################################################
+  ##                                                            ##
+  ## 物品大小类模块                                             ##
+  ##                                                            ##
+  ################################################################
   
   # Render Major Type Dropdown
   output$major_type_ui <- renderUI({
     req(item_type_data())  # Ensure item_type_data is not NULL
     
-    # Extract unique major types with their SKUs
     type_data <- item_type_data()
-    unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
     
-    # Generate choices for the dropdown
-    choices <- setNames(
-      unique_majors$MajorType, 
-      paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
-    )
-    
-    selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
+    if (is.null(data) || nrow(data) == 0) {
+      # 数据为空时显示提示
+      selectInput("new_major_type", "大类:", choices = c("暂无数据" = ""), selected = NULL, disabled = TRUE)
+    } else {
+      unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
+      choices <- setNames(
+        unique_majors$MajorType, 
+        paste0(unique_majors$MajorType, "（", unique_majors$MajorTypeSKU, "）")
+      )
+      selectInput("new_major_type", "大类:", choices = choices, selected = NULL)
+    }
   })
   
   # Render Minor Type Dropdown dynamically
   output$minor_type_ui <- renderUI({
     req(item_type_data(), input$new_major_type)  # Ensure required inputs are available
     
-    # Extract and filter for the selected major type
     type_data <- item_type_data()
-    selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
     
-    # Filter minor types for the selected major type
-    filtered_data <- type_data[type_data$MajorType == selected_major, ]
-    
-    # Generate choices for the dropdown
-    choices <- setNames(
-      filtered_data$MinorType, 
-      paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
-    )
-    
-    selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
+    if (is.null(data) || nrow(data) == 0 || is.null(input$new_major_type)) {
+      # 数据为空时显示提示
+      selectInput("new_minor_type", "小类:", choices = c("暂无数据" = ""), selected = NULL, disabled = TRUE)
+    } else {
+      selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
+      
+      filtered_data <- type_data[type_data$MajorType == selected_major, ]
+      
+      choices <- setNames(
+        filtered_data$MinorType, 
+        paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
+      )
+      selectInput("new_minor_type", "小类:", choices = choices, selected = NULL)
+    }
   })
   
   # Add Major Type Button Logic
@@ -189,9 +215,7 @@ server <- function(input, output, session) {
   #########################################################################
   
   
-  # 用于保存用户上传的文件信息
-  uploaded_file <- reactiveVal(NULL)
-  
+
   observeEvent(input$new_item_image, {
     if (!is.null(input$new_item_image)) {
       # 记录新上传的文件
@@ -199,10 +223,6 @@ server <- function(input, output, session) {
       showNotification("文件已上传并记录！", type = "message")
     }
   })
-  
-  # 声明一个 reactiveVal 用于触发表格刷新
-  refresh_trigger <- reactiveVal(FALSE)
-  
   
   observeEvent(input$toggle_inventory_table, {
     shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
@@ -212,9 +232,6 @@ server <- function(input, output, session) {
     shinyjs::toggle("item_table_container")  # 切换显示/隐藏
   })
   
-  
-  # Reactive value to store added items
-  added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
   
   #########################################################################
   
@@ -725,13 +742,7 @@ server <- function(input, output, session) {
     shinyjs::disable("download_batch_pdf")
   })
   
-  # 用于存储 PDF 文件路径
-  single_pdf_file_path <- reactiveVal(NULL)
-  batch_pdf_file_path <- reactiveVal(NULL)
-  
-  # 存储条形码是否已生成的状态
-  barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
-  
+
   # 单个 SKU 条形码生成逻辑
   observeEvent(input$export_single_btn, {
     if (is.null(input$new_sku) || input$new_sku == "") {
@@ -850,10 +861,7 @@ server <- function(input, output, session) {
   
   
   #### 出库模块
-  
-  # 用于存储撤回记录的队列
-  undo_queue <- reactiveVal(list())  # 每次出库时记录 UniqueID 和状态
-  
+
   # 监听条形码输入框
   observeEvent(input$outbound_sku, {
     sku <- stri_replace_all_regex(input$outbound_sku, "\\s", "")

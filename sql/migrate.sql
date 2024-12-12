@@ -5,13 +5,6 @@ SHOW FULL COLUMNS FROM inventory;
 SHOW FULL COLUMNS FROM item_type_data;
 
 
--- Delete tables
-DROP TABLE maker_list;
-DROP TABLE item_type_data;
-DROP TABLE inventory;
-DROP TABLE unique_items;
-
-
 -- Populate maker_list using csv files
 -- Use NotePad ++ to convert the encoding to UTF-8
 sudo mv /tmp/maker_list.csv /var/lib/mysql-files/
@@ -78,12 +71,11 @@ DELETE FROM item_type_data
 WHERE id BETWEEN 17 AND 22;
 
 
-
-
 -- Remove table completely
 DROP TABLE unique_items;
 DROP TABLE inventory;
 DROP TABLE maker_list;
+DROP TABLE item_type_data;
 
 
 
