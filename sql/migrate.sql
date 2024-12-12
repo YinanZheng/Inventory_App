@@ -56,6 +56,7 @@ USE inventory_system;
 SELECT * FROM inventory;
 SELECT * FROM unique_items;
 SELECT * FROM maker_list;
+SELECT * FROM item_type_data;
 
 -- Remove all record
 USE inventory_system;
