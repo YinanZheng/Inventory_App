@@ -9,6 +9,9 @@ server <- function(input, output, session) {
   # ReactiveVal 用于存储 inventory 数据
   inventory <- reactiveVal()
   
+  # ReactiveVal 用于存储 unique item 数据
+  unique_item_for_report <- reactiveVal()
+  
   # 用于保存用户上传的文件信息
   uploaded_file <- reactiveVal(NULL)
   
@@ -411,7 +414,7 @@ server <- function(input, output, session) {
                       WHERE SKU = ?",
                     params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), new_image_path, sku))
           
-          showNotification(paste("库存更新成功! SKU:", sku, ", 当前库存数:", new_quantity), type = "message")
+          showNotification(paste("库存更新成功! SKU:", sku, ", 商品名:", item_name, ", 当前库存数:", new_quantity), type = "message")
         } else {
           # 如果 SKU 不存在，插入新商品
           unique_image_name <- if (!is.na(new_image_path) && new_image_path != "") {
@@ -438,15 +441,12 @@ server <- function(input, output, session) {
                     params = list(sku, maker, major_type, minor_type, item_name, quantity, 
                                   round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
           
-          showNotification(paste("新商品添加成功! SKU:", sku, ", 商品名:", item_name), type = "message")
+          showNotification(paste("新商品入库成功! SKU:", sku, ", 商品名:", item_name), type = "message")
         }
       }
       
       # 刷新库存数据
       inventory({dbGetQuery(con, "SELECT * FROM inventory")})
-      
-      showNotification("库存已成功更新！", type = "message")
-      
       
       ### 同时添加信息到 unique_items 表中
       # Prepare data for batch insertion
@@ -940,27 +940,33 @@ server <- function(input, output, session) {
       
       # 更新 SKU 输入框
       updateTextInput(session, "sku_inventory", value = selected_sku)
+      
+      # 更新 unique_item_for_report
+      unique_item_for_report(get_inventory_overview(con, selected_sku))
     }
   })
-  
+  # 监听 SKU 输入框的变化，更新 unique_item_for_report
   observeEvent(input$sku_inventory, {
     sku <- stri_replace_all_regex(input$sku_inventory, "\\s", "")  # 清除空格
     
-    # 校验 SKU
     if (is.null(sku) || sku == "") {
-      # 清空图表和通知
+      # 清空数据和图表
+      unique_item_for_report(NULL)
       output$inventory_overview_plot <- renderPlotly(NULL)
       return()
     }
     
-    # 获取库存总览数据
-    inventory_data <- get_inventory_overview(con, sku)
+    # 更新 unique_item_for_report
+    unique_item_for_report(get_inventory_overview(con, sku))
+  })
+  
+  # 监听 unique_item_for_report，更新图表
+  observe({
+    inventory_data <- unique_item_for_report()
     
-    # 检查是否有数据
     if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
-      # 清空图表并通知
+      # 清空图表
       output$inventory_overview_plot <- renderPlotly(NULL)
-      showNotification("未找到该 SKU 的库存数据！", type = "error")
       return()
     }
     
