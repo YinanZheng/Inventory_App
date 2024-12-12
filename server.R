@@ -797,7 +797,6 @@ server <- function(input, output, session) {
   observeEvent(input$move_selected, {
     # 获取选中的行索引
     selected_row <- input$unique_items_table_rows_selected
-    showNotification(length(selected_row), type = "message")
     
     # 检查是否有选中行
     if (is.null(selected_row) || length(selected_row) == 0) {
@@ -815,6 +814,8 @@ server <- function(input, output, session) {
     # 获取选中行的数据
     selected_data <- unique_items_data()[selected_row, ]
     unique_id <- selected_data$UniqueID
+    showNotification(unique_id, type = "message")
+    
     current_status <- selected_data$Status
     
     # 如果当前状态已经是目标状态
