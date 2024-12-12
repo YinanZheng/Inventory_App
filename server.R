@@ -576,13 +576,7 @@ server <- function(input, output, session) {
     input$new_name
     input$new_maker
   }, {
-    # req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name, input$new_maker)
-    
-    showNotification(paste0("[Debug]", 
-                           input[["type_module-new_major_type"]], 
-                           input[["type_module-new_minor_type"]], 
-                           input$new_name, 
-                           input$new_maker), type = "message")
+    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name, input$new_maker)
     
     # Dynamically generate SKU
     sku <- generate_sku(
