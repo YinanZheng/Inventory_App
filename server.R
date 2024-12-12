@@ -813,8 +813,10 @@ server <- function(input, output, session) {
     
     # 获取选中行的数据
     selected_data <- unique_items_data()[selected_row, ]
+    showNotification(length(selected_row), type = "message")
+    
     unique_id <- selected_data$UniqueID
-    showNotification(unique_id, type = "message")
+    showNotification(length(unique_id), type = "message")
     
     current_status <- selected_data$Status
     
