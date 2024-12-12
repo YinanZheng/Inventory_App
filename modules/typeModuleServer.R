@@ -111,22 +111,21 @@ typeModuleServer <- function(id, con, item_type_data) {
         return()
       }
       
-      # 自动生成 SKU 并准备批量插入数据
-      new_minors <- lapply(minor_type_names, function(minor_name) {
-        list(
-          MajorType = selected_major,
-          MajorTypeSKU = major_sku,
-          MinorType = minor_name,
-          MinorTypeSKU = generate_unique_code(minor_name, length = 2)
-        )
-      })
-      
       tryCatch({
-        # 批量插入新小类到数据库
-        for (minor in new_minors) {
+        # 批量处理小类
+        for (minor_name in minor_type_names) {
+          # 校验名称有效性
+          if (is.null(minor_name) || minor_name == "") {
+            next  # 跳过无效行
+          }
+          
+          # 自动生成 SKU
+          minor_sku <- generate_unique_code(minor_name, length = 2)
+          
+          # 插入到数据库
           dbExecute(con, 
                     "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
-                    params = minor)
+                    params = list(selected_major, major_sku, minor_name, minor_sku))
         }
         
         # 删除与大类关联的小类为空的行
@@ -141,6 +140,7 @@ typeModuleServer <- function(id, con, item_type_data) {
         updateSelectInput(session, "new_major_type", selected = selected_major)
       }, error = function(e) {
         showNotification(paste("批量新增小类失败：", e$message), type = "error")
+        print(e)  # 打印错误详情到控制台
       })
     })
   })
