@@ -578,11 +578,11 @@ server <- function(input, output, session) {
   }, {
     req(input$new_major_type, input$new_minor_type, input$new_name, input$new_maker)
     
-    showNotification(paste("[Debug]", 
+    showNotification(paste0("[Debug]", 
                            input$new_major_type, 
                            input$new_minor_type, 
                            input$new_name, 
-                           input$new_maker), type = "error")
+                           input$new_maker), type = "message")
     
     # Dynamically generate SKU
     sku <- generate_sku(
