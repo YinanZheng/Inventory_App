@@ -258,6 +258,10 @@ handleSKU <- function(input, session, sku_input_id, target_status, valid_current
   observeEvent(input[[sku_input_id]], {
     sku <- stri_replace_all_regex(input[[sku_input_id]], "\\s", "")
     
+    if (is.null(sku) || sku == "") {
+      return()
+    }
+    
     # 查询数据库中是否有匹配的 SKU
     all_sku_items <- dbGetQuery(con, "
       SELECT UniqueID, Status 
