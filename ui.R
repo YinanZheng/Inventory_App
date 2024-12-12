@@ -85,13 +85,13 @@ ui <- fluidPage(
         ))
       ),
       
-      tags$hr(), # 分隔线
+      tags$hr(style = "margin: 5px 0; border: none; border-top: 1px solid #ccc;"),
       
       fluidRow(
         column(8, textInput("restock_sku", "返库:", placeholder = "请扫描条形码")),
         column(4, actionButton(
           "undo_restock_btn", 
-          "撤回最近售出", 
+          "撤回最近返库", 
           icon = icon("undo"),
           class = "btn-warning", 
           style = "margin-top: 25px; height: 34px; width: 100%;"
