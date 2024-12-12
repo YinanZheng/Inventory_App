@@ -75,21 +75,22 @@ typeModuleServer <- function(id, con, item_type_data) {
       selected_major <- gsub("（.*）", "", input$new_major_type)
       
       showModal(modalDialog(
-        title = paste0("新增小类（大类: ", selected_major, "）"),
-        textInput(ns("new_minor_type_name"), "小类名称:"),
-        textInput(ns("new_minor_type_sku"), "小类SKU:"),
+        title = paste0("批量新增小类（大类: ", selected_major, "）"),
+        textAreaInput(ns("new_minor_types"), "小类名称（每行一个）:", placeholder = "输入小类名称，每行一个"),
         footer = tagList(
           modalButton("取消"),
-          actionButton(ns("confirm_add_minor_type"), "添加")
+          actionButton(ns("confirm_add_minor_types"), "批量添加")
         )
       ))
     })
     
-    observeEvent(input$confirm_add_minor_type, {
-      req(input$new_minor_type_name, input$new_minor_type_sku, input$new_major_type)
+    observeEvent(input$confirm_add_minor_types, {
+      req(input$new_minor_types, input$new_major_type)
       
+      # 获取选择的大类名称（去除 SKU 部分）
       selected_major <- gsub("（.*）", "", input$new_major_type)
       
+      # 查询大类 SKU
       major_sku <- tryCatch({
         type_data <- item_type_data()
         type_row <- type_data[type_data$MajorType == selected_major, ]
@@ -98,27 +99,45 @@ typeModuleServer <- function(id, con, item_type_data) {
         NA
       })
       
-      req(!is.na(major_sku))
+      req(!is.na(major_sku))  # 确保大类 SKU 存在
       
-      new_minor <- data.frame(
-        MajorType = selected_major,
-        MajorTypeSKU = major_sku,
-        MinorType = input$new_minor_type_name,
-        MinorTypeSKU = input$new_minor_type_sku,
+      # 解析用户输入的小类名称
+      minor_type_names <- strsplit(input$new_minor_types, "\n")[[1]]
+      minor_type_names <- trimws(minor_type_names)  # 去除多余空格
+      minor_type_names <- minor_type_names[minor_type_names != ""]  # 去除空行
+      
+      if (length(minor_type_names) == 0) {
+        showNotification("请输入至少一个有效的小类名称！", type = "error")
+        return()
+      }
+      
+      # 创建小类数据框
+      new_minors <- data.frame(
+        MajorType = rep(selected_major, length(minor_type_names)),
+        MajorTypeSKU = rep(major_sku, length(minor_type_names)),
+        MinorType = minor_type_names,
+        MinorTypeSKU = sapply(minor_type_names, generate_unique_code, length = 2),
         stringsAsFactors = FALSE
       )
       
       tryCatch({
-        dbExecute(con, "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
-                  params = list(new_minor$MajorType, new_minor$MajorTypeSKU, new_minor$MinorType, new_minor$MinorTypeSKU))
+        # 批量插入新小类到数据库
+        dbExecute(con, 
+                  "INSERT INTO item_type_data (MajorType, MajorTypeSKU, MinorType, MinorTypeSKU) VALUES (?, ?, ?, ?)",
+                  params = as.list(as.data.frame(t(new_minors))))
+        
+        # 删除与大类关联的小类为空的行
         dbExecute(con, "DELETE FROM item_type_data WHERE MajorType = ? AND (MinorType IS NULL OR MinorType = '')",
                   params = list(selected_major))
-        showNotification("新增小类成功！", type = "message")
+        
+        showNotification("批量新增小类成功！", type = "message")
         removeModal()
+        
+        # 重新加载数据
         item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
         updateSelectInput(session, "new_major_type", selected = selected_major)
       }, error = function(e) {
-        showNotification("新增小类失败。", type = "error")
+        showNotification(paste("批量新增小类失败：", e$message), type = "error")
       })
     })
   })
