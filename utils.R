@@ -254,16 +254,16 @@ update_status <- function(con, unique_id, new_status) {
             params = list(new_status, Sys.time(), unique_id))
 }
 
-update_item_status <- function(con, sku_input, target_status, undo_queue, inventory, refresh_trigger, notification_success, notification_error) {
-  observeEvent(sku_input, {
-    sku <- stri_replace_all_regex(sku_input(), "\\s", "")
-    showNotification(paste("[Debug]: Received SKU =", sku), type = "message")
+handleSKU <- function(input, session, sku_input_id, target_status, undo_queue, con, refresh_trigger, inventory, notification_success, notification_error) {
+  observeEvent(input[[sku_input_id]], {
+    sku <- stri_replace_all_regex(input[[sku_input_id]], "\\s", "")
     
     if (is.null(sku) || sku == "") {
+      showNotification("条形码为空，请检查输入！", type = "error")
       return()
     }
     
-    # 查询 SKU 对应的数据
+    # 查询数据库中是否有匹配的 SKU
     all_sku_items <- dbGetQuery(con, "
       SELECT UniqueID, Status 
       FROM unique_items 
@@ -276,10 +276,10 @@ update_item_status <- function(con, sku_input, target_status, undo_queue, invent
       return()
     }
     
-    # 查询符合状态变更条件的物品
+    # 查询符合条件的物品
     matched_items <- all_sku_items[all_sku_items$Status != target_status, ]
     if (nrow(matched_items) == 0) {
-      showNotification(paste("该条形码的物品没有可以执行的状态变更（目标状态：", target_status, "）。"), type = "error")
+      showNotification(paste("没有符合条件的物品（目标状态：", target_status, "）"), type = "error")
       return()
     }
     
@@ -301,13 +301,15 @@ update_item_status <- function(con, sku_input, target_status, undo_queue, invent
       
       showNotification(notification_success, type = "message")
       
+      # 清空输入框
+      updateTextInput(session, sku_input_id, value = "")
     }, error = function(e) {
       showNotification(paste(notification_error, e$message), type = "error")
     })
   })
 }
 
-undo_last_action <- function(con, undo_btn, undo_queue, refresh_trigger, status_to_restore, notification_success, notification_error) {
+undoLastAction <- function(con, undo_btn, undo_queue, refresh_trigger, status_to_restore, notification_success, notification_error) {
   observeEvent(undo_btn, {
     undo_list <- undo_queue()
     
@@ -324,12 +326,10 @@ undo_last_action <- function(con, undo_btn, undo_queue, refresh_trigger, status_
     
     tryCatch({
       update_status(con, unique_id, status_to_restore)
-      showNotification(notification_success, type = "message")
       refresh_trigger(!refresh_trigger())
+      showNotification(notification_success, type = "message")
     }, error = function(e) {
       showNotification(paste(notification_error, e$message), type = "error")
     })
   })
 }
-
-

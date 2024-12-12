@@ -740,28 +740,24 @@ server <- function(input, output, session) {
   ## 移库模块                                                   ##
   ##                                                            ##
   ################################################################
-
-  observe({
-    showNotification(paste("[Debug]: outbound_sku =", input$outbound_sku))
-    showNotification(paste("[Debug]: sold_sku =", input$sold_sku))
-    showNotification(paste("[Debug]: restock_sku =", input$restock_sku))
-  })
   
   # 出库逻辑
-  update_item_status(
-    con = con,
-    sku_input = reactive(input$outbound_sku),
+  handleSKU(
+    input = input,
+    session = session,
+    sku_input_id = "outbound_sku",
     target_status = "国内出库",
     undo_queue = undo_outbound_queue,
-    inventory = inventory,
+    con = con,
     refresh_trigger = refresh_trigger,
+    inventory = inventory,
     notification_success = "物品出库成功！",
     notification_error = "出库操作失败："
   )
   
-  undo_last_action(
+  undoLastAction(
     con = con,
-    undo_btn = input$undo_outbound_btn,
+    undo_btn = input$undo_sold_btn,
     undo_queue = undo_outbound_queue,
     refresh_trigger = refresh_trigger,
     status_to_restore = "国内入库",
@@ -770,18 +766,20 @@ server <- function(input, output, session) {
   )
   
   # 售出逻辑
-  update_item_status(
-    con = con,
-    sku_input = reactive(input$sold_sku),
+  handleSKU(
+    input = input,
+    session = session,
+    sku_input_id = "sold_sku",
     target_status = "国内售出",
     undo_queue = undo_sold_queue,
-    inventory = inventory,
+    con = con,
     refresh_trigger = refresh_trigger,
+    inventory = inventory,
     notification_success = "物品售出成功！",
     notification_error = "售出操作失败："
   )
   
-  undo_last_action(
+  undoLastAction(
     con = con,
     undo_btn = input$undo_sold_btn,
     undo_queue = undo_sold_queue,
@@ -792,13 +790,15 @@ server <- function(input, output, session) {
   )
   
   # 返库逻辑
-  update_item_status(
-    con = con,
-    sku_input = reactive(input$restock_sku),
+  handleSKU(
+    input = input,
+    session = session,
+    sku_input_id = "restock_sku",
     target_status = "国内入库",
-    undo_queue = undo_queue,
-    inventory = inventory,
+    undo_queue = undo_restock_queue,
+    con = con,
     refresh_trigger = refresh_trigger,
+    inventory = inventory,
     notification_success = "物品返库成功！",
     notification_error = "返库操作失败："
   )
