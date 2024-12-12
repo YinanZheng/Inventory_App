@@ -743,13 +743,13 @@ server <- function(input, output, session) {
   
   # 国内出库逻辑
   handleSKU(
+    con = con,
     input = input,
     session = session,
     sku_input_id = "outbound_sku",
     target_status = "国内出库",
     valid_current_status = c("国内入库"),  # 仅限国内入库状态
     undo_queue = undo_outbound_queue,
-    con = con,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
     notification_success = "物品出库成功！",
@@ -758,8 +758,8 @@ server <- function(input, output, session) {
   )
   
   undoLastAction(
-    con = con,
-    undo_btn = input$undo_outbound_btn,
+    con = con, input = input,
+    undo_btn = "undo_outbound_btn",
     undo_queue = undo_outbound_queue,
     refresh_trigger = refresh_trigger,
     inventory = inventory,
@@ -784,8 +784,8 @@ server <- function(input, output, session) {
   )
   
   undoLastAction(
-    con = con,
-    undo_btn = input$undo_sold_btn,
+    con = con, input = input,
+    undo_btn = "undo_sold_btn",
     undo_queue = undo_sold_queue,
     refresh_trigger = refresh_trigger,
     inventory = inventory,

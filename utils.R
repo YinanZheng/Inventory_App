@@ -310,8 +310,8 @@ handleSKU <- function(input, session, sku_input_id, target_status, valid_current
   })
 }
 
-undoLastAction <- function(con, undo_btn, undo_queue, refresh_trigger, inventory, notification_success, notification_error) {
-  observeEvent(undo_btn, {
+undoLastAction <- function(con, input, undo_btn, undo_queue, refresh_trigger, inventory, notification_success, notification_error) {
+  observeEvent(input[[undo_btn]], {
     undo_list <- undo_queue()
     
     if (length(undo_list) == 0) {
