@@ -146,7 +146,7 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       fluidRow(
-        column(12, textInput("sku_inventory", "输入 SKU 查看库存:", placeholder = "请扫描条形码或手动输入"))
+        column(12, textInput("sku_inventory", "输入 SKU 查看库存概览:", placeholder = "请扫描条形码或手动输入"))
       ),
       fluidRow(
         column(12, plotlyOutput("inventory_overview_plot"))
