@@ -67,7 +67,7 @@ server <- function(input, output, session) {
     
     if (is.null(type_data) || nrow(type_data) == 0) {
       # 数据为空时显示提示
-      selectInput("new_major_type", "大类:", choices = c("暂无数据" = ""), selected = NULL, disabled = TRUE)
+      selectInput("new_major_type", "大类:", choices = c("暂无数据" = ""), selected = NULL)
     } else {
       unique_majors <- unique(type_data[, c("MajorType", "MajorTypeSKU")])
       choices <- setNames(
@@ -86,7 +86,7 @@ server <- function(input, output, session) {
     
     if (is.null(type_data) || nrow(type_data) == 0 || is.null(input$new_major_type)) {
       # 数据为空时显示提示
-      selectInput("new_minor_type", "小类:", choices = c("暂无数据" = ""), selected = NULL, disabled = TRUE)
+      selectInput("new_minor_type", "小类:", choices = c("暂无数据" = ""), selected = NULL)
     } else {
       selected_major <- gsub("（.*）", "", input$new_major_type)  # Remove SKU from the display
       
