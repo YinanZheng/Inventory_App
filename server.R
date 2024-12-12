@@ -856,7 +856,7 @@ server <- function(input, output, session) {
   
   # 监听条形码输入框
   observeEvent(input$outbound_sku, {
-    sku <- str_replace_all(input$outbound_sku, " ", "")
+    sku <- stri_replace_all_regex(input$outbound_sku, "\\s", "")
     
     # 如果输入为空，直接返回
     if (is.null(sku) || sku == "") {
