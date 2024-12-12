@@ -33,9 +33,7 @@ SET Name = TRIM(REPLACE(Name, '\r', '')),
 
 SELECT * FROM maker_list;
 
--- Delete a record using Maker's Name
-DELETE FROM maker_list
-WHERE Name = '';
+
 
 
 -- Populate item_type_data using csv files
@@ -64,6 +62,7 @@ USE inventory_system;
 
 SELECT * FROM inventory;
 SELECT * FROM unique_items;
+SELECT * FROM maker_list;
 
 -- Remove all record
 USE inventory_system;
@@ -71,10 +70,20 @@ USE inventory_system;
 DELETE FROM unique_items;
 DELETE FROM inventory;
 
-DROP TABLE unique_items;
-DROP TABLE inventory;
+-- Delete a record using Maker's Name
+DELETE FROM maker_list
+WHERE Name = '';
 
 DELETE FROM item_type_data
 WHERE id BETWEEN 17 AND 22;
+
+
+
+
+-- Remove table completely
+DROP TABLE unique_items;
+DROP TABLE inventory;
+DROP TABLE maker_list;
+
 
 
