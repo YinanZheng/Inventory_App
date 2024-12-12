@@ -36,23 +36,28 @@ ui <- fluidPage(
       ),
       fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
       
-      tags$hr(style = "margin: 10px 0; border: none; border-top: 1px solid #ccc;"),
-      
       actionButton("add_btn", "添加/更新商品信息", icon = icon("pen"),
                    style = "background-color: #006400; color: white;"),
       
-      tags$hr(style = "margin: 5px 0; border: none;"),
+      tags$hr(style = "margin: 10px 0; border: none; border-top: 1px solid #ccc;"),
       
       fluidRow(
         column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
       ),
-      fluidRow(
-        column(6, actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"))),
-        column(6, downloadButton("download_single_pdf", "下载条形码"))
-      ),
-      fluidRow(
-        column(6, actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"))),
-        column(6, downloadButton("download_batch_pdf", "下载批量条形码"))
+      tags$div(
+        class = "card",
+        style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
+        # tags$h4("条形码生成"),
+        tags$div(
+          style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
+          actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode")),
+          downloadButton("download_single_pdf", "下载条形码")
+        ),
+        tags$div(
+          style = "display: flex; justify-content: space-between; align-items: center;",
+          actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode")),
+          downloadButton("download_batch_pdf", "下载批量条形码")
+        )
       ),
       
       tags$hr(), # 分隔线
