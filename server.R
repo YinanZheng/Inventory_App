@@ -761,8 +761,10 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 检查库存数量
-    available_quantity <- nrow(sku_data[sku_data$Status == "国内入库", ])
+    # 检查符合条件的无瑕商品数量
+    available_items <- sku_data[sku_data$Status == "国内入库" & sku_data$Defect == "无瑕", ]
+    available_quantity <- nrow(available_items)
+    
     if (quantity > available_quantity) {
       showNotification("库存不足，无法登记为瑕疵品！", type = "error")
       return()
@@ -771,7 +773,7 @@ server <- function(input, output, session) {
     # 更新选定数量为“瑕疵”
     tryCatch({
       for (i in 1:quantity) {
-        unique_id <- sku_data$UniqueID[sku_data$Status == "国内入库"][i]
+        unique_id <- available_items$UniqueID[i]
         update_status(con, unique_id, "瑕疵")
       }
       showNotification("瑕疵品登记成功！", type = "message")
@@ -780,6 +782,7 @@ server <- function(input, output, session) {
       showNotification(paste("登记失败：", e$message), type = "error")
     })
   })
+  
   
   observeEvent(input$repair_register, {
     sku <- stri_replace_all_regex(input$repair_sku, "\\s", "")  # 清除空格
