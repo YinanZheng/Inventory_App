@@ -966,28 +966,45 @@ server <- function(input, output, session) {
     
     inventory_data <- unique_item_for_report()
     
-    if (is.null(inventory_data) || all(unlist(inventory_data) == 0)) {
+    if (is.null(inventory_data)) {
       # 清空图表
       output$inventory_overview_plot <- renderPlotly(NULL)
       return()
     }
     
-    # 动态更新图表
+    # 将数据转化为数据框
+    data <- data.frame(
+      Group = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
+      Status = rep(c("瑕疵", "修复", "无瑕"), 3),
+      Count = c(
+        inventory_data$domestic_instock$defect, 
+        inventory_data$domestic_instock$repaired, 
+        inventory_data$domestic_instock$pristine,
+        inventory_data$in_transit$defect, 
+        inventory_data$in_transit$repaired, 
+        inventory_data$in_transit$pristine,
+        inventory_data$us_instock$defect, 
+        inventory_data$us_instock$repaired, 
+        inventory_data$us_instock$pristine
+      )
+    )
+    
+    # 绘制分组条形图
     output$inventory_overview_plot <- renderPlotly({
       plot_ly(
-        labels = c("国内库存", "在途运输", "美国库存"),
-        values = c(
-          inventory_data$domestic_instock, 
-          inventory_data$in_transit, 
-          inventory_data$us_instock
-        ),
-        type = "pie",
-        textinfo = "label+percent",
-        hoverinfo = "label+value+percent",
-        marker = list(colors = c("#87CEFA", "#FF7F50", "#32CD32"))  # 可调整颜色
+        data, 
+        x = ~Group, 
+        y = ~Count, 
+        color = ~Status, 
+        type = "bar",
+        text = ~paste("状态:", Status, "<br>数量:", Count),
+        hoverinfo = "text"
       ) %>%
         layout(
-          margin = list(t = 20, b = 20)  # 可选：调整边距来美化布局
+          barmode = "stack",
+          title = "库存分布状态",
+          xaxis = list(title = ""),
+          yaxis = list(title = "数量")
         )
     })
   })
