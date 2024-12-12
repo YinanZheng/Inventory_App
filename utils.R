@@ -72,22 +72,19 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
 
 
 # Generate unique code
-generate_unique_code <- function(item_name, maker, length = 4) {
-  # Validate inputs
-  if (is.null(item_name) || item_name == "" || is.null(maker) || maker == "") {
-    return(paste0(rep("X", length), collapse = ""))  # Default output for invalid input
+generate_unique_code <- function(input, length = 4) {
+  # Validate input
+  if (is.null(input) || txt == "") {
+    return(NULL)  
   }
     
   # Validate length parameter
   if (!is.numeric(length) || length <= 0) {
     stop("Length must be a positive integer.")
   }
-  
-  # Combine item_name and maker to generate a unique hash
-  combined_input <- paste(item_name, maker, sep = "_")
-  
+
   # Generate a hash value
-  hash_value <- digest::digest(enc2utf8(combined_input), algo = "sha512")
+  hash_value <- digest::digest(enc2utf8(input), algo = "sha512")
   
   # Extract numeric seed from the hash
   hash_numeric <- abs(sum(utf8ToInt(hash_value))) %% .Machine$integer.max
@@ -124,7 +121,7 @@ generate_sku <- function(item_type_data, major_type, minor_type, item_name, make
   }
   
   # Generate unique code
-  unique_code <- generate_unique_code(item_name, maker, length = 4)
+  unique_code <- generate_unique_code(paste(item_name, maker, sep = "_"), length = 4)
   
   # Create the SKU in the format: MajorTypeSKU-MinorTypeSKU-UniqueCode
   paste0(major_type_sku, "-", minor_type_sku, "-", unique_code)
