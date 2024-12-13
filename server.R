@@ -156,6 +156,9 @@ server <- function(input, output, session) {
       updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
+      
+      # 更新 SKU 输入框(生成库存图表用)
+      updateTextInput(session, "sku_inventory", value = selected_data$SKU)
     }
   })
   
@@ -889,7 +892,7 @@ server <- function(input, output, session) {
     
     # 检查是否有选中行
     if (is.null(selected_row) || length(selected_row) == 0) {
-      showNotification("请先选择一行物品再执行移库操作！", type = "error")
+      showNotification("请先在物品状态表中选择一行物品再执行移库操作！", type = "error")
       return()
     }
     
@@ -938,13 +941,11 @@ server <- function(input, output, session) {
       # 从 unique_items_data 中获取选中的 SKU
       selected_sku <- unique_items_data()[selected_row, "SKU"]
       
-      # 更新 SKU 输入框
+      # 更新 SKU 输入框 (生成报表用)
       updateTextInput(session, "sku_inventory", value = selected_sku)
-      
-      # 更新 unique_item_for_report
-      unique_item_for_report(get_inventory_overview(con, selected_sku))
     }
   })
+  
   # 监听 SKU 输入框的变化，更新 unique_item_for_report
   observeEvent(input$sku_inventory, {
     sku <- trimws(input$sku_inventory)  # 清除空格
@@ -958,8 +959,6 @@ server <- function(input, output, session) {
     
     # 更新 unique_item_for_report
     unique_item_for_report(get_inventory_overview(con, sku))
-    
-    refresh_trigger(!refresh_trigger())
   })
   
   # 监听 unique_item_for_report，更新图表
