@@ -963,16 +963,12 @@ server <- function(input, output, session) {
   
   # 监听 unique_item_for_report，更新图表
   observe({
+    # 确保 unique_item_for_report 存在有效数据
+    req(unique_item_for_report())
     
     inventory_data <- unique_item_for_report()
     
-    if (is.null(inventory_data)) {
-      # 清空表格
-      output$inventory_overview_table <- renderTable(NULL)
-      return()
-    }
-    
-    # 将数据转化为数据框
+    # 转换为数据框
     data <- data.frame(
       组别 = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
       状态 = rep(c("瑕疵", "修复", "无瑕"), 3),
@@ -989,8 +985,11 @@ server <- function(input, output, session) {
       )
     )
     
+    # 如果总数为 0，清空表格并通知
     if (sum(data$数量) == 0) {
-      output$inventory_overview_table <- renderTable(NULL)
+      output$inventory_overview_table <- renderTable({
+        data.frame(组别 = character(0), 状态 = character(0), 数量 = numeric(0))
+      })
       showNotification("未找到有效的库存数据！", type = "error")
       return()
     }
