@@ -14,6 +14,7 @@ library(DBI)
 library(RMariaDB)
 library(uuid)
 library(plotly)
+library(rlang)
 
 # Source all modular functions
 source("./modules/supplierModuleServer.R")
