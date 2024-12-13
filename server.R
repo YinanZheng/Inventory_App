@@ -963,20 +963,20 @@ server <- function(input, output, session) {
   
   # 监听 unique_item_for_report，更新图表
   observe({
-
+    
     inventory_data <- unique_item_for_report()
     
     if (is.null(inventory_data)) {
-      # 清空图表
-      output$inventory_overview_plot <- renderPlotly(NULL)
+      # 清空表格
+      output$inventory_overview_table <- renderTable(NULL)
       return()
     }
     
     # 将数据转化为数据框
     data <- data.frame(
-      Group = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
-      Status = rep(c("瑕疵", "修复", "无瑕"), 3),
-      Count = c(
+      组别 = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
+      状态 = rep(c("瑕疵", "修复", "无瑕"), 3),
+      数量 = c(
         inventory_data$domestic_instock$defect %||% 0, 
         inventory_data$domestic_instock$repaired %||% 0, 
         inventory_data$domestic_instock$pristine %||% 0,
@@ -989,31 +989,16 @@ server <- function(input, output, session) {
       )
     )
     
-    if (sum(data$Count) == 0) {
-      output$inventory_overview_plot <- renderPlotly(NULL)
+    if (sum(data$数量) == 0) {
+      output$inventory_overview_table <- renderTable(NULL)
       showNotification("未找到有效的库存数据！", type = "error")
       return()
     }
     
-    # 绘制分组条形图
-    output$inventory_overview_plot <- renderPlotly({
-      plot_ly(
-        data, 
-        x = ~Group, 
-        y = ~Count, 
-        color = ~Status, 
-        type = "bar",
-        text = ~paste("状态:", Status, "<br>数量:", Count),
-        hoverinfo = "text"
-      ) %>%
-        layout(
-          barmode = "stack",
-          title = "库存分布状态",
-          xaxis = list(title = ""),
-          yaxis = list(title = "数量", zeroline = TRUE),
-          margin = list(t = 20, b = 50)
-        )
-    })
+    # 渲染静态表格
+    output$inventory_overview_table <- renderTable({
+      data
+    }, striped = TRUE, bordered = TRUE, hover = TRUE)
   })
   
   

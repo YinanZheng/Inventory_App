@@ -149,7 +149,7 @@ ui <- fluidPage(
         column(12, textInput("sku_inventory", "输入 SKU 查看库存概览:", placeholder = "请扫描条形码或手动输入"))
       ),
       fluidRow(
-        column(12, plotlyOutput("inventory_overview_plot"))
+        column(12, tableOutput("inventory_overview_table"))
       )
     ),
     
