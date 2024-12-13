@@ -744,7 +744,7 @@ server <- function(input, output, session) {
   ################################################################
   
   observeEvent(input$defect_register, {
-    sku <- stri_replace_all_regex(input$defect_sku, "\\s", "")  # 清除空格
+    sku <- trimws(input$defect_sku)  # 清除空格
     quantity <- input$defect_quantity
     
     # 校验输入
@@ -785,7 +785,7 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$repair_register, {
-    sku <- stri_replace_all_regex(input$repair_sku, "\\s", "")  # 清除空格
+    sku <- trimws(input$repair_sku)  # 清除空格
     quantity <- input$repair_quantity
     
     # 校验输入
@@ -947,7 +947,7 @@ server <- function(input, output, session) {
   })
   # 监听 SKU 输入框的变化，更新 unique_item_for_report
   observeEvent(input$sku_inventory, {
-    sku <- stri_replace_all_regex(input$sku_inventory, "\\s", "")  # 清除空格
+    sku <- trimws(input$sku_inventory)  # 清除空格
     
     if (is.null(sku) || sku == "") {
       # 清空数据和图表
@@ -972,39 +972,36 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 将数据转化为数据框
-    data <- data.frame(
-      Group = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
-      Status = rep(c("瑕疵", "修复", "无瑕"), 3),
-      Count = c(
-        inventory_data$domestic_instock$defect, 
-        inventory_data$domestic_instock$repaired, 
-        inventory_data$domestic_instock$pristine,
-        inventory_data$in_transit$defect, 
-        inventory_data$in_transit$repaired, 
-        inventory_data$in_transit$pristine,
-        inventory_data$us_instock$defect, 
-        inventory_data$us_instock$repaired, 
-        inventory_data$us_instock$pristine
-      )
+    # 组织数据
+    labels <- c("国内库存", "在途运输", "美国库存", "瑕疵", "修复", "无瑕", "瑕疵", "修复", "无瑕", "瑕疵", "修复", "无瑕")
+    parents <- c("", "", "", "国内库存", "国内库存", "国内库存", "在途运输", "在途运输", "在途运输", "美国库存", "美国库存", "美国库存")
+    values <- c(
+      sum(unlist(inventory_data$domestic_instock)),
+      sum(unlist(inventory_data$in_transit)),
+      sum(unlist(inventory_data$us_instock)),
+      inventory_data$domestic_instock$defect,
+      inventory_data$domestic_instock$repaired,
+      inventory_data$domestic_instock$pristine,
+      inventory_data$in_transit$defect,
+      inventory_data$in_transit$repaired,
+      inventory_data$in_transit$pristine,
+      inventory_data$us_instock$defect,
+      inventory_data$us_instock$repaired,
+      inventory_data$us_instock$pristine
     )
     
-    # 绘制分组条形图
+    # 绘制嵌套饼图
     output$inventory_overview_plot <- renderPlotly({
       plot_ly(
-        data, 
-        x = ~Group, 
-        y = ~Count, 
-        color = ~Status, 
-        type = "bar",
-        text = ~paste("状态:", Status, "<br>数量:", Count),
-        hoverinfo = "text"
+        labels = labels,
+        parents = parents,
+        values = values,
+        type = "sunburst",
+        textinfo = "label+percent entry",
+        hoverinfo = "label+value+percent"
       ) %>%
         layout(
-          barmode = "stack",
-          title = "库存分布状态",
-          xaxis = list(title = ""),
-          yaxis = list(title = "数量")
+          margin = list(t = 20, b = 20)
         )
     })
   })
