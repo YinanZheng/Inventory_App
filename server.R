@@ -958,6 +958,8 @@ server <- function(input, output, session) {
     
     # 更新 unique_item_for_report
     unique_item_for_report(get_inventory_overview(con, sku))
+    
+    refresh_trigger(!refresh_trigger())
   })
   
   # 监听 unique_item_for_report，更新图表
@@ -977,17 +979,23 @@ server <- function(input, output, session) {
       Group = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
       Status = rep(c("瑕疵", "修复", "无瑕"), 3),
       Count = c(
-        inventory_data$domestic_instock$defect, 
-        inventory_data$domestic_instock$repaired, 
-        inventory_data$domestic_instock$pristine,
-        inventory_data$in_transit$defect, 
-        inventory_data$in_transit$repaired, 
-        inventory_data$in_transit$pristine,
-        inventory_data$us_instock$defect, 
-        inventory_data$us_instock$repaired, 
-        inventory_data$us_instock$pristine
+        inventory_data$domestic_instock$defect %||% 0, 
+        inventory_data$domestic_instock$repaired %||% 0, 
+        inventory_data$domestic_instock$pristine %||% 0,
+        inventory_data$in_transit$defect %||% 0, 
+        inventory_data$in_transit$repaired %||% 0, 
+        inventory_data$in_transit$pristine %||% 0,
+        inventory_data$us_instock$defect %||% 0, 
+        inventory_data$us_instock$repaired %||% 0, 
+        inventory_data$us_instock$pristine %||% 0
       )
     )
+    
+    if (sum(data$Count) == 0) {
+      output$inventory_overview_plot <- renderPlotly(NULL)
+      showNotification("未找到有效的库存数据！", type = "error")
+      return()
+    }
     
     # 绘制分组条形图
     output$inventory_overview_plot <- renderPlotly({
@@ -1004,7 +1012,8 @@ server <- function(input, output, session) {
           barmode = "stack",
           title = "库存分布状态",
           xaxis = list(title = ""),
-          yaxis = list(title = "数量")
+          yaxis = list(title = "数量", zeroline = TRUE),
+          margin = list(t = 20, b = 50)
         )
     })
   })
