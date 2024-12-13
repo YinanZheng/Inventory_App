@@ -972,36 +972,39 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 组织数据
-    labels <- c("国内库存", "在途运输", "美国库存", "瑕疵", "修复", "无瑕", "瑕疵", "修复", "无瑕", "瑕疵", "修复", "无瑕")
-    parents <- c("", "", "", "国内库存", "国内库存", "国内库存", "在途运输", "在途运输", "在途运输", "美国库存", "美国库存", "美国库存")
-    values <- c(
-      sum(unlist(inventory_data$domestic_instock)),
-      sum(unlist(inventory_data$in_transit)),
-      sum(unlist(inventory_data$us_instock)),
-      inventory_data$domestic_instock$defect,
-      inventory_data$domestic_instock$repaired,
-      inventory_data$domestic_instock$pristine,
-      inventory_data$in_transit$defect,
-      inventory_data$in_transit$repaired,
-      inventory_data$in_transit$pristine,
-      inventory_data$us_instock$defect,
-      inventory_data$us_instock$repaired,
-      inventory_data$us_instock$pristine
+    # 将数据转化为数据框
+    data <- data.frame(
+      Group = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
+      Status = rep(c("瑕疵", "修复", "无瑕"), 3),
+      Count = c(
+        inventory_data$domestic_instock$defect, 
+        inventory_data$domestic_instock$repaired, 
+        inventory_data$domestic_instock$pristine,
+        inventory_data$in_transit$defect, 
+        inventory_data$in_transit$repaired, 
+        inventory_data$in_transit$pristine,
+        inventory_data$us_instock$defect, 
+        inventory_data$us_instock$repaired, 
+        inventory_data$us_instock$pristine
+      )
     )
     
-    # 绘制嵌套饼图
+    # 绘制分组条形图
     output$inventory_overview_plot <- renderPlotly({
       plot_ly(
-        labels = labels,
-        parents = parents,
-        values = values,
-        type = "sunburst",
-        textinfo = "label+percent entry",
-        hoverinfo = "label+value+percent"
+        data, 
+        x = ~Group, 
+        y = ~Count, 
+        color = ~Status, 
+        type = "bar",
+        text = ~paste("状态:", Status, "<br>数量:", Count),
+        hoverinfo = "text"
       ) %>%
         layout(
-          margin = list(t = 20, b = 20)
+          barmode = "stack",
+          title = "库存分布状态",
+          xaxis = list(title = ""),
+          yaxis = list(title = "数量")
         )
     })
   })
