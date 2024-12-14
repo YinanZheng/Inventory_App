@@ -546,7 +546,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 检查是否已经选择物品
+    # 查询 SKU 数据
     item_info <- dbGetQuery(con, "
     SELECT SKU 
     FROM inventory 
@@ -561,12 +561,11 @@ server <- function(input, output, session) {
     # 更新物品状态
     is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
     tryCatch({
-      # 从 unique_items 中获取对应的记录
       sku_items <- dbGetQuery(con, "
-        SELECT UniqueID 
-        FROM unique_items 
-        WHERE SKU = ? AND Status = '采购' 
-        LIMIT 1", 
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '采购' 
+      LIMIT 1", 
                               params = list(sku))
       
       if (nrow(sku_items) == 0) {
@@ -574,17 +573,22 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 更新状态为“国内入库”，并设置是否为瑕疵
+      # 更新状态
       update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
+      # 刷新并渲染
       showNotification("物品成功入库！", type = "message")
-      
-      # 清空输入框和物品信息
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
       
       # 更新物品信息
       item_info <- fetchSkuData(sku, con)
+      if (is.null(item_info) || nrow(item_info) == 0) {
+        showNotification("无法获取物品信息！", type = "error")
+        output$inbound_item_info <- renderUI(NULL)
+        return()
+      }
+      
       img_path <- ifelse(
         is.na(item_info$ItemImagePath[1]),
         "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
