@@ -131,7 +131,21 @@ ui <- navbarPage(
       mainPanel(
         fluidRow(
           column(12, uiOutput("inbound_item_info")), # 动态渲染物品信息
-          column(12, checkboxInput("defective_item", "瑕疵品", value = FALSE)), # 添加瑕疵品勾选框
+          
+          tags$hr(), # 分隔线
+          
+          column(
+            12,
+            div(
+              style = "display: flex; align-items: center;",
+              tags$input(
+                type = "checkbox", 
+                id = "defective_item", 
+                style = "width: 20px; height: 20px; margin-right: 10px;"
+              ),
+              tags$label("瑕疵品", `for` = "defective_item", style = "font-size: 18px; font-weight: bold; color: #444;")
+            )
+          ),
           column(12, actionButton(
             "confirm_inbound_btn", 
             "确认入库", 
