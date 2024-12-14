@@ -511,6 +511,14 @@ server <- function(input, output, session) {
   
   ####################################################################
   
+  
+  ################################################################
+  ##                                                            ##
+  ## 入库模块                                                   ##
+  ##                                                            ##
+  ################################################################
+  
+  
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
     sku <- trimws(input$inbound_sku) # 清理空格
@@ -578,6 +586,17 @@ server <- function(input, output, session) {
       
       # 刷新并渲染
       showNotification("物品成功入库！", type = "message")
+      
+      # 如果剩余数量为 0，显示模态弹窗
+      if (remaining_items$PendingCount[1] == 0) {
+        showModal(modalDialog(
+          title = "入库完成",
+          paste0("此 SKU 的商品已全部入库完毕！"),
+          easyClose = TRUE,
+          footer = modalButton("确定")
+        ))
+      }
+      
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
       
