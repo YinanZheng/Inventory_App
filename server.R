@@ -551,40 +551,52 @@ server <- function(input, output, session) {
         column(
           4, 
           div(
-            style = "text-align: center; padding: 10px;",
-            img(src = img_path, height = "200px", style = "border: 1px solid #ddd; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"),
-            tags$p(style = "margin-top: 10px; font-size: 14px; color: #555;", "商品图片")
+            style = "text-align: center; padding: 15px;",
+            img(
+              src = img_path, 
+              height = "200px", 
+              style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+            ),
+            tags$p(style = "margin-top: 10px; font-size: 14px; color: #777;", "商品图片")
           )
         ),
         column(
           8,
           div(
-            style = "padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);",
-            tags$h4("商品信息", style = "border-bottom: 2px solid #4CAF50; padding-bottom: 5px; color: #333;"),
-            tags$div(
-              style = "margin-bottom: 8px;",
-              tags$strong("商品名: "), tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;")
+            style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px; 
+                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
+            tags$h4(
+              "商品信息", 
+              style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
             ),
-            tags$div(
-              style = "margin-bottom: 8px;",
-              tags$strong("供应商: "), tags$span(item_info$Maker[1], style = "color: #4CAF50;")
-            ),
-            tags$div(
-              style = "margin-bottom: 8px;",
-              tags$strong("大类: "), tags$span(item_info$MajorType[1], style = "color: #4CAF50;")
-            ),
-            tags$div(
-              style = "margin-bottom: 8px;",
-              tags$strong("小类: "), tags$span(item_info$MinorType[1], style = "color: #4CAF50;")
-            ),
-            tags$div(
-              style = "margin-bottom: 8px;",
-              tags$strong("待入库数: "), tags$span(item_info$PendingQuantity[1], style = "color: #4CAF50; font-weight: bold;")
+            tags$table(
+              style = "width: 100%; font-size: 16px; color: #444;",
+              tags$tr(
+                tags$td(tags$strong("商品名:"), style = "padding: 8px 10px; width: 120px; vertical-align: top;"),
+                tags$td(tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("供应商:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$Maker[1], style = "color: #4CAF50;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("大类:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$MajorType[1], style = "color: #4CAF50;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("小类:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$PendingQuantity[1], style = "color: #4CAF50; font-weight: bold;"))
+              )
             )
           )
         )
       )
     })
+    
   })
   
   
