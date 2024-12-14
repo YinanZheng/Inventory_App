@@ -227,28 +227,35 @@ render_table_with_images <- function(data,
   )
 }
 
-update_status <- function(con, unique_id, new_status) {
-  # 检查状态是否有效
-  valid_statuses <- c(names(status_columns), defect_statuses)
-  if (!new_status %in% valid_statuses) {
+
+update_status <- function(con, unique_id, new_status, defect_status = NULL) {
+
+  if (!new_status %in% names(status_columns)) {
     stop("Invalid status provided")
   }
   
+  # 获取时间戳列
+  timestamp_column <- status_columns[[new_status]]
+  
   # 动态生成 SQL 查询
-  if (new_status %in% names(status_columns)) {
-    # 更新状态并记录时间
-    timestamp_column <- status_columns[[new_status]]
+  if (!is.null(defect_status)) {
     query <- paste0(
-      "UPDATE unique_items SET Status = '", new_status, 
-      "', ", timestamp_column, " = NOW() WHERE UniqueID = ?"
+      "UPDATE unique_items SET Status = ?, ", 
+      timestamp_column, " = NOW(), Defect = ? WHERE UniqueID = ?"
     )
-    dbExecute(con, query, params = list(unique_id))
-  } else if (new_status %in% defect_statuses) {
-    # 更新瑕疵相关状态
-    query <- "UPDATE unique_items SET Defect = ? WHERE UniqueID = ?"
-    dbExecute(con, query, params = list(new_status, unique_id))
+    params <- list(new_status, defect_status, unique_id)
+  } else {
+    query <- paste0(
+      "UPDATE unique_items SET Status = ?, ", 
+      timestamp_column, " = NOW() WHERE UniqueID = ?"
+    )
+    params <- list(new_status, unique_id)
   }
+  
+  # 执行 SQL 更新
+  dbExecute(con, query, params = params)
 }
+
 
 handleSKU <- function(input, session, sku_input_id, target_status, valid_current_status, undo_queue, con, refresh_trigger, inventory, notification_success, notification_error, record_undo = TRUE) {
   observeEvent(input[[sku_input_id]], {
