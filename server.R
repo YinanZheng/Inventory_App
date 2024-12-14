@@ -589,6 +589,11 @@ server <- function(input, output, session) {
       
       # 更新物品信息
       item_info <- fetchSkuData(sku, con)
+      img_path <- ifelse(
+        is.na(item_info$ItemImagePath[1]),
+        "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
+        paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+      )
       renderInboundItemInfo(output, item_info, img_path)
     }, error = function(e) {
       showNotification(paste("入库失败：", e$message), type = "error")
