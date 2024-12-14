@@ -551,7 +551,7 @@ server <- function(input, output, session) {
         column(
           4, 
           div(
-            style = "text-align: center; padding: 15px;",
+            style = "text-align: center;",
             img(
               src = img_path, 
               height = "280px", 
