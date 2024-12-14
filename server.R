@@ -584,6 +584,13 @@ server <- function(input, output, session) {
       # 更新状态
       update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
+      # 检查该 SKU 是否还有待入库的商品
+      remaining_items <- dbGetQuery(con, "
+      SELECT COUNT(*) AS PendingCount
+      FROM unique_items
+      WHERE SKU = ? AND Status = '采购'", 
+                                    params = list(sku))
+      
       # 刷新并渲染
       showNotification("物品成功入库！", type = "message")
       
