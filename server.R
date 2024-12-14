@@ -577,10 +577,6 @@ server <- function(input, output, session) {
       # 更新状态为“国内入库”，并设置是否为瑕疵
       update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
-      # 刷新数据并重新渲染物品信息
-      refresh_trigger(!refresh_trigger())
-      # inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      
       showNotification("物品成功入库！", type = "message")
       
       # 清空输入框和物品信息
