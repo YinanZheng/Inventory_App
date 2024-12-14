@@ -554,20 +554,9 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 查询 SKU 数据
-    item_info <- dbGetQuery(con, "
-    SELECT SKU 
-    FROM inventory 
-    WHERE SKU = ?", 
-                            params = list(sku))
-    
-    if (nrow(item_info) == 0) {
-      showNotification("未找到该 SKU 的物品信息，请重新扫描！", type = "error")
-      return()
-    }
-    
     # 更新物品状态
     is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
+    
     tryCatch({
       sku_items <- dbGetQuery(con, "
       SELECT UniqueID 
@@ -584,18 +573,14 @@ server <- function(input, output, session) {
       # 更新状态
       update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
-      # 检查该 SKU 是否还有待入库的商品
-      remaining_items <- dbGetQuery(con, "
-      SELECT COUNT(*) AS PendingCount
-      FROM unique_items
-      WHERE SKU = ? AND Status = '采购'", 
-                                    params = list(sku))
-      
       # 刷新并渲染
       showNotification("物品成功入库！", type = "message")
       
+      # 查询 SKU 数据
+      item_info <- fetchSkuData(sku, con)
+      
       # 如果剩余数量为 0，显示模态弹窗
-      if (remaining_items$PendingCount[1] == 0) {
+      if (item_info$PendingCount[1] == 0) {
         showModal(modalDialog(
           title = "入库完成",
           paste0("此 SKU 的商品已全部入库完毕！"),
