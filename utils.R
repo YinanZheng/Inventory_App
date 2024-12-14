@@ -400,27 +400,27 @@ get_inventory_overview <- function(con, sku) {
   return(overview)
 }
 
+# 提取公共方法：获取 SKU 数据
+fetchSkuData <- function(sku, con) {
+  dbGetQuery(con, "
+    SELECT 
+      ItemImagePath, ItemName, Maker, MajorType, MinorType, 
+      SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
+    FROM 
+      unique_items
+    JOIN 
+      inventory 
+    ON 
+      unique_items.SKU = inventory.SKU
+    WHERE 
+      unique_items.SKU = ?
+    GROUP BY 
+      ItemImagePath, ItemName, Maker, MajorType, MinorType
+  ", params = list(sku))
+}
+
 # 渲染物品信息的函数
 renderInboundItemInfo <- function(item_info, img_path) {
-  # 参数检查
-  if (is.null(item_info) || nrow(item_info) == 0) {
-    stop("item_info is null or empty. Cannot render UI.")
-  }
-  if (is.null(img_path) || img_path == "") {
-    img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
-  }
-  
-  # 数据列名检查
-  required_columns <- c("ItemName", "Maker", "MajorType", "MinorType", "PendingQuantity")
-  if (!all(required_columns %in% names(item_info))) {
-    stop("item_info does not contain all required columns: ", paste(required_columns, collapse = ", "))
-  }
-  
-  # 数据提取
-  pending_quantity <- ifelse(is.na(item_info$PendingQuantity[1]), 0, item_info$PendingQuantity[1])
-  pending_text <- ifelse(pending_quantity == 0, "无待入库物品", pending_quantity)
-  
-  # 渲染 UI
   output$inbound_item_info <- renderUI({
     fluidRow(
       column(
@@ -439,32 +439,21 @@ renderInboundItemInfo <- function(item_info, img_path) {
         div(
           style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px;
                    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
-          tags$h4(
-            "商品信息",
-            style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
-          ),
+          tags$h4("商品信息",
+                  style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
           tags$table(
             style = "width: 100%; font-size: 16px; color: #444;",
-            tags$tr(
-              tags$td(tags$strong("商品名:"), style = "padding: 8px 10px; width: 120px; vertical-align: top;"),
-              tags$td(tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;"))
-            ),
-            tags$tr(
-              tags$td(tags$strong("供应商:"), style = "padding: 8px 10px; vertical-align: top;"),
-              tags$td(tags$span(item_info$Maker[1], style = "color: #4CAF50;"))
-            ),
-            tags$tr(
-              tags$td(tags$strong("大类:"), style = "padding: 8px 10px; vertical-align: top;"),
-              tags$td(tags$span(item_info$MajorType[1], style = "color: #4CAF50;"))
-            ),
-            tags$tr(
-              tags$td(tags$strong("小类:"), style = "padding: 8px 10px; vertical-align: top;"),
-              tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
-            ),
-            tags$tr(
-              tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
-              tags$td(tags$span(pending_text, style = "color: #FF4500; font-weight: bold;"))
-            )
+            tags$tr(tags$td("商品名:", style = "padding: 8px 10px;"),
+                    tags$td(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;")),
+            tags$tr(tags$td("供应商:", style = "padding: 8px 10px;"),
+                    tags$td(item_info$Maker[1], style = "color: #4CAF50;")),
+            tags$tr(tags$td("大类:", style = "padding: 8px 10px;"),
+                    tags$td(item_info$MajorType[1], style = "color: #4CAF50;")),
+            tags$tr(tags$td("小类:", style = "padding: 8px 10px;"),
+                    tags$td(item_info$MinorType[1], style = "color: #4CAF50;")),
+            tags$tr(tags$td("待入库数:", style = "padding: 8px 10px;"),
+                    tags$td(ifelse(item_info$PendingQuantity[1] == 0, "无待入库物品", item_info$PendingQuantity[1]),
+                            style = "color: #FF4500; font-weight: bold;"))
           )
         )
       )
