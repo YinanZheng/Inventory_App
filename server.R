@@ -545,7 +545,7 @@ server <- function(input, output, session) {
     }
     
     img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
-    if(!is.null(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+    if(!is.na(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
     
     
     # 渲染物品信息
