@@ -36,7 +36,7 @@ CREATE TABLE unique_items (
     DomesticShippingCost DECIMAL(10, 2) NOT NULL, -- unit domestic shipping cost with 2 decimal places
     Status ENUM('采购', '国内入库', '国内出库', '国内售出', '美国入库', '美国售出', '退货') NOT NULL, -- status
     Defect ENUM('未知', '无瑕', '瑕疵', '修复') NOT NULL,
-    PuchaseTime DATE,                         -- Timestamp for '采购'
+    PurchaseTime DATE,                        -- Timestamp for '采购'
     DomesticEntryTime DATE,                   -- Timestamp for '国内入库'
     DomesticExitTime DATE,                    -- Timestamp for '国内出库'
     DomesticSoldTime DATE,                    -- Timestamp for '国内售出'

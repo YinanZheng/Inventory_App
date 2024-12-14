@@ -562,24 +562,24 @@ server <- function(input, output, session) {
       formatStyle(
         "物品状态",  # 指定要设置样式的列
         backgroundColor = styleEqual(
-          c("无瑕", "瑕疵", "修复"),  # 状态值
-          c("green", "red", "orange")  # 对应的背景色
+          c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
+          c("darkgray","green", "red", "orange")  # 对应的背景色
         ),
         color = styleEqual(
-          c("无瑕", "瑕疵", "修复"),  # 状态值
-          c("white", "white", "white")  # 对应的字体颜色
+          c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
+          c("black","white", "white", "white")  # 对应的字体颜色
         )
       ) %>%
       # 设置库存状态列的样式
       formatStyle(
         "库存状态",  # 指定列名
         backgroundColor = styleEqual(
-          c("国内入库", "国内售出", "国内出库", "美国入库", "美国售出"),  # 状态值 
-          c("lightblue", "purple", "blue", "yellow", "brown")  # 对应的背景色
+          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值 
+          c("lightblue", "blue", "purple", "darkblue", "yellow", "brown", "red")  # 对应的背景色
         ),
         color = styleEqual(
-          c("国内入库", "国内售出", "国内出库", "美国入库", "美国售出"),  # 状态值
-          c("black", "white", "white", "black", "white")  # 对应的文字颜色
+          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值
+          c("black", "black", "white", "white", "black", "white", "white")  # 对应的文字颜色
         )
       )
   })
