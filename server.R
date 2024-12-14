@@ -602,49 +602,54 @@ server <- function(input, output, session) {
   observeEvent(input$confirm_inbound_btn, {
     sku <- trimws(input$inbound_sku) # 清理空格
     
-    # 验证 SKU
     if (is.null(sku) || sku == "") {
-      showNotification("请扫描条形码！", type = "error")
+      showNotification("请先扫描 SKU！", type = "error")
       return()
     }
     
-    # 查询待入库商品
-    pending_items <- dbGetQuery(con, "
-    SELECT UniqueID 
-    FROM unique_items 
-    WHERE SKU = ? AND Status = '采购'
-    LIMIT 1
-  ", params = list(sku))
+    # 检查是否已经选择物品
+    item_info <- dbGetQuery(con, "
+    SELECT SKU 
+    FROM inventory 
+    WHERE SKU = ?", 
+                            params = list(sku))
     
-    if (nrow(pending_items) == 0) {
-      showNotification("未找到待入库的商品！", type = "error")
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该 SKU 的物品信息，请重新扫描！", type = "error")
       return()
     }
     
-    # 确定 Defect 状态
-    new_defect <- if (input$defective_item) "瑕疵" else "无瑕"
-    
-    # 更新 `unique_items` 表
+    # 更新物品状态
+    is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
     tryCatch({
-      dbExecute(con, "
-      UPDATE unique_items 
-      SET Status = '国内入库', Defect = ?, DomesticEntryTime = CURDATE()
-      WHERE UniqueID = ?
-    ", params = list(new_defect, pending_items$UniqueID[1]))
+      # 从 unique_items 中获取对应的记录
+      sku_items <- dbGetQuery(con, "
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '采购' 
+      LIMIT 1", 
+                              params = list(sku))
       
-      # 更新 `inventory` 表
-      dbExecute(con, "
-      UPDATE inventory 
-      SET Quantity = Quantity + 1
-      WHERE SKU = ?
-    ", params = list(sku))
+      if (nrow(sku_items) == 0) {
+        showNotification("无待入库的物品！", type = "error")
+        return()
+      }
       
-      showNotification("入库成功！", type = "message")
+      # 更新状态为“国内入库”，并设置是否为瑕疵
+      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
-      # 刷新界面
-      updateTextInput(session, "inbound_sku", value = "")
+      # 刷新数据
       refresh_trigger(!refresh_trigger())
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
       
+      showNotification("物品成功入库！", type = "message")
+      
+      # 清空输入框和物品信息
+      updateTextInput(session, "inbound_sku", value = "")
+      output$inbound_item_info <- renderUI(NULL)
+      
+      # 清空勾选框
+      updateCheckboxInput(session, "defective_item", value = FALSE)
     }, error = function(e) {
       showNotification(paste("入库失败：", e$message), type = "error")
     })
