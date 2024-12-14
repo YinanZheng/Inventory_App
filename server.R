@@ -543,10 +543,12 @@ server <- function(input, output, session) {
       return()
     }
     
+    img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+    
     # 渲染物品信息
     output$inbound_item_info <- renderUI({
       fluidRow(
-        column(4, img(src = item_info$ItemImagePath[1], height = "200px", style = "border: 1px solid #ccc;")),
+        column(4, img(src = img_path, height = "200px", style = "border: 1px solid #ccc;")),
         column(8, 
                tags$div(tags$strong("商品名: "), item_info$ItemName[1]),
                tags$div(tags$strong("供应商: "), item_info$Maker[1]),
