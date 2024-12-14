@@ -513,17 +513,23 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
-    sku <- trimws(input$inbound_sku) # 清理空格
+    sku <- trimws(input$inbound_sku)
     if (is.null(sku) || sku == "") {
       output$inbound_item_info <- renderUI(NULL)
+      showNotification("请扫描 SKU！", type = "error")
       return()
     }
     
-    item_info <- fetchSkuData(sku, con)
+    item_info <- tryCatch({
+      fetchSkuData(sku, con)
+    }, error = function(e) {
+      showNotification(paste("查询失败：", e$message), type = "error")
+      return(NULL)
+    })
     
-    if (nrow(item_info) == 0) {
-      showNotification("未找到该条形码对应的物品！", type = "error")
+    if (is.null(item_info) || nrow(item_info) == 0) {
       output$inbound_item_info <- renderUI(NULL)
+      showNotification("未找到该条形码对应的物品！", type = "error")
       return()
     }
     
