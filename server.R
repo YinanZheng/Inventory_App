@@ -524,7 +524,7 @@ server <- function(input, output, session) {
     item_info <- dbGetQuery(con, "
     SELECT 
       ItemImagePath, ItemName, Maker, MajorType, MinorType, 
-      COUNT(*) as PendingQuantity
+      SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
     FROM 
       unique_items
     JOIN 
@@ -532,14 +532,14 @@ server <- function(input, output, session) {
     ON 
       unique_items.SKU = inventory.SKU
     WHERE 
-      unique_items.SKU = ? AND unique_items.Status = '采购'
+      unique_items.SKU = ?
     GROUP BY 
       ItemImagePath, ItemName, Maker, MajorType, MinorType
   ", params = list(sku))
     
     # 检查是否有结果
     if (nrow(item_info) == 0) {
-      showNotification("未找到该条形码对应的物品或无待入库数量！", type = "error")
+      showNotification("未找到该条形码对应的物品！", type = "error")
       output$inbound_item_info <- renderUI(NULL)
       return()
     }
@@ -564,7 +564,7 @@ server <- function(input, output, session) {
           8,
           div(
             style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px; 
-                box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
+                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
             tags$h4(
               "商品信息", 
               style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
@@ -589,15 +589,18 @@ server <- function(input, output, session) {
               ),
               tags$tr(
                 tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$PendingQuantity[1], style = "color: #4CAF50; font-weight: bold;"))
+                tags$td(tags$span(ifelse(item_info$PendingQuantity[1] == 0, 
+                                         "无待入库物品", 
+                                         item_info$PendingQuantity[1]), 
+                                  style = "color: #FF4500; font-weight: bold;"))
               )
             )
           )
         )
       )
     })
-    
   })
+  
   
   observeEvent(input$confirm_inbound_btn, {
     sku <- trimws(input$inbound_sku) # 清理空格
@@ -631,7 +634,7 @@ server <- function(input, output, session) {
                               params = list(sku))
       
       if (nrow(sku_items) == 0) {
-        showNotification("无待入库的物品！", type = "error")
+        showNotification("无待入库的物品，所有该商品已入库完毕！", type = "message")
         return()
       }
       
