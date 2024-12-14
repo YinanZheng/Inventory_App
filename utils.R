@@ -196,8 +196,7 @@ render_image_column <- function(image_column_data,
     } else {
       # 拼接完整的图片 URL
       img_path <- paste0(host_url, "/images/", basename(img))
-      print(img_path)  # 打印路径进行调试
-      paste0('<img src="', img_path, '" width="50" height="50" style="object-fit:cover;"/>')
+      paste0('<img src="', img_path, '" loading="lazy" width="50" height="50" style="object-fit:cover;"/>')
     }
   }, USE.NAMES = FALSE)
 }
