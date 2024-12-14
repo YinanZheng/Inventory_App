@@ -511,6 +511,55 @@ server <- function(input, output, session) {
   ####################################################################
   
   
+  observeEvent(input$inbound_sku, {
+    sku <- stri_trim_both(input$inbound_sku) # 清理空格
+    
+    if (is.null(sku) || sku == "") {
+      output$inbound_item_info <- renderUI(NULL)
+      return()
+    }
+    
+    # 查询 SKU 数据
+    item_info <- dbGetQuery(con, "
+    SELECT 
+      ItemImagePath, ItemName, Maker, MajorType, MinorType, 
+      COUNT(*) as PendingQuantity
+    FROM 
+      unique_items
+    JOIN 
+      inventory 
+    ON 
+      unique_items.SKU = inventory.SKU
+    WHERE 
+      unique_items.SKU = ? AND unique_items.Status = '采购'
+    GROUP BY 
+      ItemImagePath, ItemName, Maker, MajorType, MinorType
+  ", params = list(sku))
+    
+    # 检查是否有结果
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该条形码对应的物品或无待入库数量！", type = "error")
+      output$inbound_item_info <- renderUI(NULL)
+      return()
+    }
+    
+    # 渲染物品信息
+    output$inbound_item_info <- renderUI({
+      fluidRow(
+        column(4, img(src = item_info$ItemImagePath[1], height = "200px", style = "border: 1px solid #ccc;")),
+        column(8, 
+               tags$div(tags$strong("商品名: "), item_info$ItemName[1]),
+               tags$div(tags$strong("供应商: "), item_info$Maker[1]),
+               tags$div(tags$strong("大类: "), item_info$MajorType[1]),
+               tags$div(tags$strong("小类: "), item_info$MinorType[1]),
+               tags$div(tags$strong("待入库数: "), item_info$PendingQuantity[1])
+        )
+      )
+    })
+  })
+  
+  
+  
   ## 物品追踪表
   unique_items_data <- reactive({
     # 当 refresh_trigger 改变时触发更新
