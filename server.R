@@ -29,9 +29,10 @@ server <- function(input, output, session) {
   barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
   
   # 用于存储撤回记录的队列
+  undo_inbound_queue <- reactiveVal(list()) # 入库撤回队列
   undo_outbound_queue <- reactiveVal(list())  # 出库撤回队列
   undo_sold_queue <- reactiveVal(list()) # 售出撤回队列
-
+  
   ###############################################################################################################
   
   # 应用启动时加载数据
@@ -598,56 +599,31 @@ server <- function(input, output, session) {
     
   })
   
-  observeEvent(input$confirm_inbound_btn, {
-    sku <- trimws(input$inbound_sku) # 清理空格
-    
-    # 验证 SKU
-    if (is.null(sku) || sku == "") {
-      showNotification("请扫描条形码！", type = "error")
-      return()
-    }
-    
-    # 查询待入库商品
-    pending_items <- dbGetQuery(con, "
-    SELECT UniqueID 
-    FROM unique_items 
-    WHERE SKU = ? AND Status = '采购'
-    LIMIT 1
-  ", params = list(sku))
-    
-    if (nrow(pending_items) == 0) {
-      showNotification("未找到待入库的商品！", type = "error")
-      return()
-    }
-    
-    # 确定 Defect 状态
-    new_defect <- if (input$defective_item) "瑕疵" else "无瑕"
-    
-    # 更新 `unique_items` 表
-    tryCatch({
-      dbExecute(con, "
-      UPDATE unique_items 
-      SET Status = '国内入库', Defect = ?, DomesticEntryTime = CURDATE()
-      WHERE UniqueID = ?
-    ", params = list(new_defect, pending_items$UniqueID[1]))
-      
-      # 更新 `inventory` 表
-      dbExecute(con, "
-      UPDATE inventory 
-      SET Quantity = Quantity + 1
-      WHERE SKU = ?
-    ", params = list(sku))
-      
-      showNotification("入库成功！", type = "message")
-      
-      # 刷新界面
-      updateTextInput(session, "inbound_sku", value = "")
-      refresh_trigger(!refresh_trigger())
-      
-    }, error = function(e) {
-      showNotification(paste("入库失败：", e$message), type = "error")
-    })
-  })
+  handleSKU(
+    input = input,
+    session = session,
+    sku_input_id = "inbound_sku",
+    target_status = "国内入库", 
+    valid_current_status = c("采购"),  # 入库前状态必须为采购
+    undo_queue = undo_inbound_queue,  # 撤回队列
+    con = con,
+    refresh_trigger = refresh_trigger,
+    inventory = inventory,
+    notification_success = "入库成功！",
+    notification_error = "入库失败！"
+  )
+  
+  undoLastAction(
+    con = con,
+    input = input,
+    undo_btn = "undo_inbound_btn",  # 撤回按钮 ID
+    undo_queue = undo_inbound_queue,  # 撤回队列
+    refresh_trigger = refresh_trigger,
+    inventory = inventory,
+    notification_success = "撤回成功，物品状态已恢复为“采购”！",
+    notification_error = "撤回操作失败："
+  )
+  
   
   ## 物品追踪表
   unique_items_data <- reactive({
@@ -717,7 +693,7 @@ server <- function(input, output, session) {
         ),
         color = styleEqual(
           c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值
-          c("black", "black", "white", "white", "black", "white", "white")  # 对应的文字颜色
+          c("black", "white", "white", "white", "black", "white", "white")  # 对应的文字颜色
         )
       )
   })
