@@ -239,7 +239,7 @@ server <- function(input, output, session) {
       if (!is.null(uploaded_file())) {
         tryCatch({
           file_data <- uploaded_file()
-          unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+          unique_image_name <- paste0(input$new_sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           output_dir <- "/var/www/images"
           final_image_path <- file.path(output_dir, unique_image_name)
           
