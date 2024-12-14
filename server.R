@@ -169,7 +169,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    if (is.null(input$new_quantity) || input$new_quantity < 0) {
+    if (is.null(input$new_quantity) || input$new_quantity <= 0) {
       showNotification("请填写正确商品数量！", type = "error")
       return()
     }
