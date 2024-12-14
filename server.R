@@ -513,75 +513,83 @@ server <- function(input, output, session) {
   
   # 定义 reactive 表达式，用于动态获取物品信息
   inbound_item_info <- reactive({
-    req(input$inbound_sku)  # 确保 SKU 输入不为空
-    sku <- trimws(input$inbound_sku)  # 清理空格
+    sku <- trimws(input$inbound_sku)  # Clean whitespace
+    req(sku)  # Ensure SKU is not null or empty
     
-    # 检查是否为空
-    if (is.null(sku) || sku == "") {
-      return(NULL)
-    }
-    
-    # 查询 SKU 数据
-    dbGetQuery(con, "
-        SELECT 
-          ItemImagePath, ItemName, Maker, MajorType, MinorType, 
-          SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
-        FROM 
-          unique_items
-        JOIN 
-          inventory 
-        ON 
-          unique_items.SKU = inventory.SKU
-        WHERE 
-          unique_items.SKU = ?
-        GROUP BY 
-          ItemImagePath, ItemName, Maker, MajorType, MinorType
+    tryCatch({
+      dbGetQuery(con, "
+      SELECT 
+        ItemImagePath, ItemName, Maker, MajorType, MinorType, 
+        SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
+      FROM 
+        unique_items
+      JOIN 
+        inventory 
+      ON 
+        unique_items.SKU = inventory.SKU
+      WHERE 
+        unique_items.SKU = ?
+      GROUP BY 
+        ItemImagePath, ItemName, Maker, MajorType, MinorType
     ", params = list(sku))
+    }, error = function(e) {
+      showNotification(paste("采购数据库查询失败：", e$message), type = "error")
+      return(NULL)
+    })
   })
   
+  # Observe the reactive data and update the UI
   observe({
-    # 获取物品信息
+    # Fetch item info
     item_info <- inbound_item_info()
     
-    # 检查是否有结果
+    # Check if item info is available
     if (is.null(item_info) || nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      output$inbound_item_info <- renderUI(NULL)
+      output$inbound_item_info <- renderUI({
+        div(style = "padding: 20px; text-align: center; color: #888;",
+            "无相关物品信息")
+      })
       return()
     }
     
-    # 处理图片路径
+    # Determine the image path
     img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
-    if (!is.na(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+    if (!is.na(item_info$ItemImagePath[1])) {
+      img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+    }
     
-    # 渲染物品信息
+    # Use the helper function to render the item info
     renderInboundItemInfo(item_info, img_path)
   })
   
+  # Confirm inbound button logic
   observeEvent(input$confirm_inbound_btn, {
-    sku <- trimws(input$inbound_sku)  # 清理空格
+    sku <- trimws(input$inbound_sku)  # Clean whitespace
     
+    # Ensure SKU is present
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
       return()
     }
     
+    # Use the reactive data
     item_info <- inbound_item_info()
     
-    if (nrow(item_info) == 0) {
+    if (is.null(item_info) || nrow(item_info) == 0) {
       showNotification("未找到该 SKU 的物品信息，请重新扫描！", type = "error")
       return()
     }
     
-    # 更新物品状态
+    # Update item status
     is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
     tryCatch({
-      # 从 unique_items 中获取对应的记录
+      # Query for pending items
       sku_items <- dbGetQuery(con, "
-            SELECT UniqueID 
-            FROM unique_items 
-            WHERE SKU = ? AND Status = '采购' 
-            LIMIT 1", 
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '采购' 
+      LIMIT 1", 
                               params = list(sku)
       )
       
@@ -590,15 +598,14 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 更新状态为“国内入库”，并设置是否为瑕疵
+      # Update status
       update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
-      # 刷新数据
+      # Refresh data and UI
       refresh_trigger(!refresh_trigger())
-
       showNotification("物品成功入库！", type = "message")
       
-      # 清空输入框和勾选框
+      # Clear inputs
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
       
