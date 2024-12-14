@@ -554,7 +554,7 @@ server <- function(input, output, session) {
             style = "text-align: center;",
             img(
               src = img_path, 
-              height = "280px", 
+              height = "300px", 
               style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
             ),
           )
