@@ -130,10 +130,8 @@ ui <- navbarPage(
       ),
       mainPanel(
         fluidRow(
-          div(
-            style = "margin-bottom: 20px;",  # Add spacing
-            column(12, uiOutput("inbound_item_info")), # 动态渲染物品信息
-          ),
+          
+          column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;"), # 动态渲染物品信息
           
           column(12,
                  div(
