@@ -511,113 +511,62 @@ server <- function(input, output, session) {
   
   ####################################################################
   
-  
-  observeEvent(input$inbound_sku, {
-    sku <- trimws(input$inbound_sku) # 清理空格
+  # 定义 reactive 表达式，用于动态获取物品信息
+  inbound_item_info <- reactive({
+    req(input$inbound_sku)  # 确保 SKU 输入不为空
+    sku <- trimws(input$inbound_sku)  # 清理空格
     
+    # 检查是否为空
     if (is.null(sku) || sku == "") {
-      output$inbound_item_info <- renderUI(NULL)
-      return()
+      return(NULL)
     }
     
     # 查询 SKU 数据
-    item_info <- dbGetQuery(con, "
-    SELECT 
-      ItemImagePath, ItemName, Maker, MajorType, MinorType, 
-      SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
-    FROM 
-      unique_items
-    JOIN 
-      inventory 
-    ON 
-      unique_items.SKU = inventory.SKU
-    WHERE 
-      unique_items.SKU = ?
-    GROUP BY 
-      ItemImagePath, ItemName, Maker, MajorType, MinorType
-  ", params = list(sku))
+    dbGetQuery(con, "
+        SELECT 
+          ItemImagePath, ItemName, Maker, MajorType, MinorType, 
+          SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
+        FROM 
+          unique_items
+        JOIN 
+          inventory 
+        ON 
+          unique_items.SKU = inventory.SKU
+        WHERE 
+          unique_items.SKU = ?
+        GROUP BY 
+          ItemImagePath, ItemName, Maker, MajorType, MinorType
+    ", params = list(sku))
+  })
+  
+  observe({
+    # 获取物品信息
+    item_info <- inbound_item_info()
     
     # 检查是否有结果
-    if (nrow(item_info) == 0) {
+    if (is.null(item_info) || nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
       output$inbound_item_info <- renderUI(NULL)
       return()
     }
     
+    # 处理图片路径
     img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
-    if(!is.na(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
-    
+    if (!is.na(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
     
     # 渲染物品信息
-    output$inbound_item_info <- renderUI({
-      fluidRow(
-        column(
-          4, 
-          div(
-            style = "text-align: center;",
-            img(
-              src = img_path, 
-              height = "300px", 
-              style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
-            ),
-          )
-        ),
-        column(
-          8,
-          div(
-            style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px; 
-                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
-            tags$h4(
-              "商品信息", 
-              style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
-            ),
-            tags$table(
-              style = "width: 100%; font-size: 16px; color: #444;",
-              tags$tr(
-                tags$td(tags$strong("商品名:"), style = "padding: 8px 10px; width: 120px; vertical-align: top;"),
-                tags$td(tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("供应商:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$Maker[1], style = "color: #4CAF50;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("大类:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$MajorType[1], style = "color: #4CAF50;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("小类:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(ifelse(item_info$PendingQuantity[1] == 0, 
-                                         "无待入库物品", 
-                                         item_info$PendingQuantity[1]), 
-                                  style = "color: #FF4500; font-weight: bold;"))
-              )
-            )
-          )
-        )
-      )
-    })
+    renderInboundItemInfo(item_info, img_path)
   })
   
-  
   observeEvent(input$confirm_inbound_btn, {
-    sku <- trimws(input$inbound_sku) # 清理空格
+    sku <- trimws(input$inbound_sku)  # 清理空格
     
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
       return()
     }
     
-    # 检查是否已经选择物品
-    item_info <- dbGetQuery(con, "
-    SELECT SKU 
-    FROM inventory 
-    WHERE SKU = ?", 
-                            params = list(sku))
+    item_info <- inbound_item_info()
     
     if (nrow(item_info) == 0) {
       showNotification("未找到该 SKU 的物品信息，请重新扫描！", type = "error")
@@ -629,11 +578,12 @@ server <- function(input, output, session) {
     tryCatch({
       # 从 unique_items 中获取对应的记录
       sku_items <- dbGetQuery(con, "
-      SELECT UniqueID 
-      FROM unique_items 
-      WHERE SKU = ? AND Status = '采购' 
-      LIMIT 1", 
-                              params = list(sku))
+            SELECT UniqueID 
+            FROM unique_items 
+            WHERE SKU = ? AND Status = '采购' 
+            LIMIT 1", 
+                              params = list(sku)
+      )
       
       if (nrow(sku_items) == 0) {
         showNotification("无待入库的物品，所有该商品已入库完毕！", type = "message")
@@ -645,20 +595,20 @@ server <- function(input, output, session) {
       
       # 刷新数据
       refresh_trigger(!refresh_trigger())
-      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      
+
       showNotification("物品成功入库！", type = "message")
       
-      # 清空输入框和物品信息
+      # 清空输入框和勾选框
       updateTextInput(session, "inbound_sku", value = "")
-      output$inbound_item_info <- renderUI(NULL)
-      
-      # 清空勾选框
       updateCheckboxInput(session, "defective_item", value = FALSE)
+      
     }, error = function(e) {
       showNotification(paste("入库失败：", e$message), type = "error")
     })
   })
+  
+  
+  ###########################################################################
   
   
   ## 物品追踪表
