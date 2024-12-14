@@ -438,22 +438,36 @@ renderInboundItemInfo <- function(item_info, img_path) {
         8,
         div(
           style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px;
-                   box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
-          tags$h4("商品信息",
-                  style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
+                             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
+          tags$h4(
+            "商品信息",
+            style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
+          ),
           tags$table(
             style = "width: 100%; font-size: 16px; color: #444;",
-            tags$tr(tags$td("商品名:", style = "padding: 8px 10px;"),
-                    tags$td(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;")),
-            tags$tr(tags$td("供应商:", style = "padding: 8px 10px;"),
-                    tags$td(item_info$Maker[1], style = "color: #4CAF50;")),
-            tags$tr(tags$td("大类:", style = "padding: 8px 10px;"),
-                    tags$td(item_info$MajorType[1], style = "color: #4CAF50;")),
-            tags$tr(tags$td("小类:", style = "padding: 8px 10px;"),
-                    tags$td(item_info$MinorType[1], style = "color: #4CAF50;")),
-            tags$tr(tags$td("待入库数:", style = "padding: 8px 10px;"),
-                    tags$td(ifelse(item_info$PendingQuantity[1] == 0, "无待入库物品", item_info$PendingQuantity[1]),
-                            style = "color: #FF4500; font-weight: bold;"))
+            tags$tr(
+              tags$td(tags$strong("商品名:"), style = "padding: 8px 10px; width: 120px; vertical-align: top;"),
+              tags$td(tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;"))
+            ),
+            tags$tr(
+              tags$td(tags$strong("供应商:"), style = "padding: 8px 10px; vertical-align: top;"),
+              tags$td(tags$span(item_info$Maker[1], style = "color: #4CAF50;"))
+            ),
+            tags$tr(
+              tags$td(tags$strong("大类:"), style = "padding: 8px 10px; vertical-align: top;"),
+              tags$td(tags$span(item_info$MajorType[1], style = "color: #4CAF50;"))
+            ),
+            tags$tr(
+              tags$td(tags$strong("小类:"), style = "padding: 8px 10px; vertical-align: top;"),
+              tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
+            ),
+            tags$tr(
+              tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
+              tags$td(tags$span(
+                ifelse(item_info$PendingQuantity[1] == 0, "无待入库物品", item_info$PendingQuantity[1]),
+                style = "color: #FF4500; font-weight: bold;"
+              ))
+            )
           )
         )
       )
