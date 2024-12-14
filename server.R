@@ -548,13 +548,40 @@ server <- function(input, output, session) {
     # 渲染物品信息
     output$inbound_item_info <- renderUI({
       fluidRow(
-        column(4, img(src = img_path, height = "200px", style = "border: 1px solid #ccc;")),
-        column(8, 
-               tags$div(tags$strong("商品名: "), item_info$ItemName[1]),
-               tags$div(tags$strong("供应商: "), item_info$Maker[1]),
-               tags$div(tags$strong("大类: "), item_info$MajorType[1]),
-               tags$div(tags$strong("小类: "), item_info$MinorType[1]),
-               tags$div(tags$strong("待入库数: "), item_info$PendingQuantity[1])
+        column(
+          4, 
+          div(
+            style = "text-align: center; padding: 10px;",
+            img(src = img_path, height = "200px", style = "border: 1px solid #ddd; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"),
+            tags$p(style = "margin-top: 10px; font-size: 14px; color: #555;", "商品图片")
+          )
+        ),
+        column(
+          8,
+          div(
+            style = "padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);",
+            tags$h4("商品信息", style = "border-bottom: 2px solid #4CAF50; padding-bottom: 5px; color: #333;"),
+            tags$div(
+              style = "margin-bottom: 8px;",
+              tags$strong("商品名: "), tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;")
+            ),
+            tags$div(
+              style = "margin-bottom: 8px;",
+              tags$strong("供应商: "), tags$span(item_info$Maker[1], style = "color: #4CAF50;")
+            ),
+            tags$div(
+              style = "margin-bottom: 8px;",
+              tags$strong("大类: "), tags$span(item_info$MajorType[1], style = "color: #4CAF50;")
+            ),
+            tags$div(
+              style = "margin-bottom: 8px;",
+              tags$strong("小类: "), tags$span(item_info$MinorType[1], style = "color: #4CAF50;")
+            ),
+            tags$div(
+              style = "margin-bottom: 8px;",
+              tags$strong("待入库数: "), tags$span(item_info$PendingQuantity[1], style = "color: #4CAF50; font-weight: bold;")
+            )
+          )
         )
       )
     })
