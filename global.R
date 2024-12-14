@@ -4,6 +4,7 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(shinythemes)
 library(dplyr)
 library(DT)
 library(digest) # For has value
