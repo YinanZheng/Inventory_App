@@ -513,11 +513,10 @@ server <- function(input, output, session) {
   
   # 定义 reactive 表达式，用于动态获取物品信息
   inbound_item_info <- reactive({
-    req(input$inbound_sku)  # Ensure SKU input exists
-    sku <- trimws(input$inbound_sku)  # Clean whitespace
-    req(sku != "")  # Ensure SKU is not empty
+    req(input$inbound_sku)  # 确保输入不为空
+    sku <- trimws(input$inbound_sku)  # 去除空格
+    req(sku != "")  # 确保 SKU 非空
     
-    # Query the database for item info
     tryCatch({
       result <- dbGetQuery(con, "
       SELECT 
@@ -536,57 +535,57 @@ server <- function(input, output, session) {
     ", params = list(sku))
       
       if (nrow(result) == 0) {
-        NULL
-      } else {
-        result
+        # 如果查询无结果，返回 NULL
+        showNotification("未找到 SKU 对应的物品或无待入库数量！", type = "error")
+        return(NULL)
       }
+      
+      return(result)
     }, error = function(e) {
       showNotification(paste("数据库查询失败：", e$message), type = "error")
-      NULL
+      return(NULL)  # 确保在错误时返回 NULL
     })
   })
+  
   
   # Observe reactive data and update the UI
   observe({
     item_info <- inbound_item_info()
     
     if (is.null(item_info)) {
-      showNotification("未找到该条形码对应的物品！", type = "error")
       output$inbound_item_info <- renderUI({
         div(style = "padding: 20px; text-align: center; color: #888;", "无相关物品信息")
       })
       return()
     }
     
-    # Handle the image path
-    img_path <- if (!is.na(item_info$ItemImagePath[1])) {
-      paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
-    } else {
-      "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
+    # 构造图片路径
+    img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
+    if (!is.na(item_info$ItemImagePath[1])) {
+      img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
     }
     
-    # Render item info using helper function
+    # 渲染物品信息
     renderInboundItemInfo(item_info, img_path)
   })
   
+  
   # Confirm inbound button logic
   observeEvent(input$confirm_inbound_btn, {
-    req(input$inbound_sku)  # Ensure SKU input exists
-    sku <- trimws(input$inbound_sku)  # Clean whitespace
-    req(sku != "")  # Ensure SKU is not empty
+    sku <- trimws(input$inbound_sku)
+    req(sku != "")  # 确保 SKU 非空
     
     item_info <- inbound_item_info()
     
-    if (is.null(item_info)) {
-      showNotification("未找到该 SKU 的物品信息，请重新扫描！", type = "error")
+    if (is.null(item_info) || nrow(item_info) == 0) {
+      showNotification("未找到 SKU 对应的物品信息，请重新扫描！", type = "error")
       return()
     }
     
-    # Determine defect status
     is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
     
     tryCatch({
-      # Query for pending items
+      # 查询待入库物品
       sku_items <- dbGetQuery(con, "
       SELECT UniqueID 
       FROM unique_items 
@@ -598,21 +597,21 @@ server <- function(input, output, session) {
         return()
       }
       
-      # Update the item status
+      # 更新状态为“国内入库”
       update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
       
-      # Refresh data and UI
+      # 刷新数据和 UI
       refresh_trigger(!refresh_trigger())
       showNotification("物品成功入库！", type = "message")
       
-      # Clear inputs and reset UI
+      # 清空输入框和勾选框
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
-      
     }, error = function(e) {
       showNotification(paste("入库失败：", e$message), type = "error")
     })
   })
+  
   
   
   ###########################################################################
