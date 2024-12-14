@@ -124,7 +124,7 @@ ui <- navbarPage(
             "撤回最近入库", 
             icon = icon("undo"),
             class = "btn-warning", 
-            style = "margin-top: 25px; height: 34px; width: 100%;"
+            style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
           ))
         )
       ),
