@@ -200,7 +200,7 @@ server <- function(input, output, session) {
         tryCatch({
           file_data <- uploaded_file()
           # 为图片生成唯一文件名
-          unique_image_name <- paste0(input$new_sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+          unique_image_name <- paste0(input$new_sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           output_dir <- "/var/www/images"
           final_image_path <- file.path(output_dir, unique_image_name)
           
@@ -392,7 +392,7 @@ server <- function(input, output, session) {
           
           # 如果有新图片上传，为图片生成唯一路径
           if (!is.na(new_image_path) && new_image_path != "") {
-            unique_image_name <- paste0(sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+            unique_image_name <- paste0(sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
             final_image_path <- file.path("/var/www/images", unique_image_name)
             
             tryCatch({
@@ -418,7 +418,7 @@ server <- function(input, output, session) {
         } else {
           # 如果 SKU 不存在，插入新商品
           unique_image_name <- if (!is.na(new_image_path) && new_image_path != "") {
-            paste0(sku, "-", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+            paste0(sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           } else {
             NA
           }
