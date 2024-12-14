@@ -581,20 +581,6 @@ server <- function(input, output, session) {
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
       
-      # 更新物品信息
-      item_info <- fetchSkuData(sku, con)
-      if (is.null(item_info) || nrow(item_info) == 0) {
-        showNotification("无法获取物品信息！", type = "error")
-        output$inbound_item_info <- renderUI(NULL)
-        return()
-      }
-      
-      img_path <- ifelse(
-        is.na(item_info$ItemImagePath[1]),
-        "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
-        paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
-      )
-      renderInboundItemInfo(output, item_info, img_path)
     }, error = function(e) {
       showNotification(paste("入库失败：", e$message), type = "error")
     })
