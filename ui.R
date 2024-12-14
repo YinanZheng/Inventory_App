@@ -70,6 +70,19 @@ ui <- fluidPage(
       tags$hr(), # 分隔线
       
       fluidRow(
+        column(8, textInput("inbound_sku", "入库:", placeholder = "请扫描条形码")),
+        column(4, actionButton(
+          "undo_inbound_btn", 
+          "撤回最近入库", 
+          icon = icon("undo"),
+          class = "btn-warning", 
+          style = "margin-top: 25px; height: 34px; width: 100%;"
+        ))
+      ),
+      
+      tags$hr(), # 分隔线
+      
+      fluidRow(
         column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描条形码")),
         column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
         column(4, actionButton(
