@@ -34,7 +34,7 @@ ui <- navbarPage(
         fluidRow(
           column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
           column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
-                                style = "margin-top: 25px; height: 34px; width: 100%;"))
+                                style = "margin-top: 27px; height: 38px; width: 100%;"))
         ),
         
         fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
