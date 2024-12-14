@@ -75,6 +75,7 @@ WHERE id BETWEEN 17 AND 22;
 
 
 -- Remove table completely
+USE inventory_system;
 DROP TABLE unique_items;
 DROP TABLE inventory;
 DROP TABLE maker_list;

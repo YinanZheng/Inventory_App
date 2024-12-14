@@ -228,18 +228,6 @@ render_table_with_images <- function(data,
 }
 
 update_status <- function(con, unique_id, new_status) {
-  # 定义需要记录时间的状态
-  status_columns <- list(
-    "国内入库" = "DomesticEntryTime",
-    "国内出库" = "DomesticExitTime",
-    "国内售出" = "DomesticSoldTime",
-    "美国入库" = "UsEntryTime",
-    "美国售出" = "UsSoldTime"
-  )
-  
-  # 定义瑕疵和修复的状态
-  defect_statuses <- c("瑕疵", "修复")
-  
   # 检查状态是否有效
   valid_statuses <- c(names(status_columns), defect_statuses)
   if (!new_status %in% valid_statuses) {

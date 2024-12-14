@@ -104,9 +104,6 @@ server <- function(input, output, session) {
   
   # Filter inventory based on major and minor type
   filtered_inventory <- reactive({
-    # 当 refresh_trigger 改变时触发更新
-    refresh_trigger()
-    
     req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]])
     
     # Filter the inventory data
@@ -332,7 +329,7 @@ server <- function(input, output, session) {
   # Calculate total cost
   output$total_cost <- renderText({
     total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
-    paste0("本次入库总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
+    paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
            "（其中包含运费: ¥", input$new_shipping_cost, ")")
   })
   
@@ -360,7 +357,7 @@ server <- function(input, output, session) {
     tryCatch({
       
       if (nrow(added_items()) == 0) {
-        showNotification("请先添加至少一个商品再确认!", type = "error")
+        showNotification("请先录入至少一个商品!", type = "error")
         return()
       }
       
@@ -403,7 +400,7 @@ server <- function(input, output, session) {
               file.rename(new_image_path, final_image_path)
               new_image_path <- final_image_path
             }, error = function(e) {
-              showNotification(paste("图片保存失败! SKU:", sku), type = "error")
+              showNotification(paste("商品新图片保存失败! SKU:", sku), type = "error")
               new_image_path <- existing_item$ItemImagePath  # 回退为原始路径
             })
           } else {
@@ -413,11 +410,11 @@ server <- function(input, output, session) {
           
           # 更新库存数据
           dbExecute(con, "UPDATE inventory 
-                      SET Quantity = ?, ProductCost = ?, ShippingCost = ?, ItemImagePath = ?, updated_at = NOW() 
+                      SET Quantity = ?, ProductCost = ?, ShippingCost = ?, ItemImagePath = ? 
                       WHERE SKU = ?",
                     params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), new_image_path, sku))
           
-          showNotification(paste("库存更新成功! SKU:", sku, ", 商品名:", item_name, ", 当前库存数:", new_quantity), type = "message")
+          showNotification(paste("商品更新成功! SKU:", sku, ", 商品名:", item_name), type = "message")
         } else {
           # 如果 SKU 不存在，插入新商品
           unique_image_name <- if (!is.na(new_image_path) && new_image_path != "") {
@@ -439,12 +436,12 @@ server <- function(input, output, session) {
           }
           
           dbExecute(con, "INSERT INTO inventory 
-                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath, created_at, updated_at) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())",
+                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     params = list(sku, maker, major_type, minor_type, item_name, quantity, 
                                   round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
           
-          showNotification(paste("新商品入库成功! SKU:", sku, ", 商品名:", item_name), type = "message")
+          showNotification(paste("新商品创建成功! SKU:", sku, ", 商品名:", item_name), type = "message")
         }
       }
       
@@ -464,41 +461,38 @@ server <- function(input, output, session) {
           as.character(sku),
           as.numeric(product_cost),
           as.numeric(unit_shipping_cost),
-          "国内入库",
-          "无瑕",
-          format(Sys.time(), "%Y-%m-%d %H:%M:%S")
+          "采购",
+          "未知",
+          format(Sys.time(), "%Y-%m-%d", tz = "Asia/Shanghai")
         )))
       }))
       
       # Validate data
       if (is.null(batch_data) || nrow(batch_data) == 0) {
-        showNotification("批量数据无效，请检查输入！", type = "error")
+        showNotification("采购数据无效，请检查输入！", type = "error")
         return()
       }
       
       # Convert to data frame
       batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
-      # colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", "Status", "Defect", "DomesticEntryTime")
-      
+
       # Insert into database
       dbBegin(con)
       tryCatch({
         # Insert rows one by one
         for (i in 1:nrow(batch_data)) {
           # Ensure the parameters are passed as an unnamed vector
-          dbExecute(con, "
-      INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, DomesticEntryTime) 
-      VALUES (?, ?, ?, ?, ?, ?, ?)",
+          dbExecute(con, "INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, PurchaseTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
                     unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
           )
         }
         dbCommit(con)  # Commit transaction
-        showNotification("所有物品已成功入库到国内仓！", type = "message")
+        showNotification("所有采购货物已成功登记！", type = "message")
         # 切换触发器值，确保刷新
         refresh_trigger(!refresh_trigger()) 
       }, error = function(e) {
         dbRollback(con)  # Rollback on error
-        showNotification(paste("批量入库失败:", e$message), type = "error")
+        showNotification(paste("采购登记失败:", e$message), type = "error")
       })
       
       # Clear added items and reset input fields

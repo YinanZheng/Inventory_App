@@ -34,17 +34,16 @@ CREATE TABLE unique_items (
     SKU VARCHAR(50) NOT NULL,                     -- Foreign key referencing inventory table
     ProductCost DECIMAL(10, 2) NOT NULL,          -- unit product cost with 2 decimal places
     DomesticShippingCost DECIMAL(10, 2) NOT NULL, -- unit domestic shipping cost with 2 decimal places
-    Status ENUM('国内入库', '国内出库', '国内售出', '美国入库', '美国售出') NOT NULL DEFAULT '国内入库', -- Current status
-    Defect ENUM('无瑕', '瑕疵', '修复') NOT NULL DEFAULT '无瑕',
-    DomesticEntryTime DATETIME,                   -- Timestamp for '国内入库'
-    DomesticExitTime DATETIME,                    -- Timestamp for '国内出库'
-    DomesticSoldTime DATETIME,                    -- Timestamp for '国内售出'
-    UsEntryTime DATETIME,                         -- Timestamp for '美国入库'
-    UsSoldTime DATETIME,                          -- Timestamp for '美国售出'
+    Status ENUM('采购', '国内入库', '国内出库', '国内售出', '美国入库', '美国售出', '退货') NOT NULL, -- status
+    Defect ENUM('未知', '无瑕', '瑕疵', '修复') NOT NULL,
+    PuchaseTime DATE,                         -- Timestamp for '采购'
+    DomesticEntryTime DATE,                   -- Timestamp for '国内入库'
+    DomesticExitTime DATE,                    -- Timestamp for '国内出库'
+    DomesticSoldTime DATE,                    -- Timestamp for '国内售出'
+    UsEntryTime DATE,                         -- Timestamp for '美国入库'
+    UsSoldTime DATE,                          -- Timestamp for '美国售出'
+    ReturnTime DATE,                          -- Timestamp for '退货'
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Creation timestamp
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last update timestamp
-    FOREIGN KEY (SKU) REFERENCES inventory(SKU),  -- Relationship with inventory table
-    INDEX idx_status (Status),                    -- Index for Status
-    INDEX idx_sku (SKU),                          -- Index for SKU
-    INDEX idx_domestic_entry_time (DomesticEntryTime) -- Index for DomesticEntryTime
+    FOREIGN KEY (SKU) REFERENCES inventory(SKU)  -- Relationship with inventory table
 );

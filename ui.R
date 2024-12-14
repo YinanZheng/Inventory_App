@@ -2,7 +2,7 @@
 ui <- fluidPage(
   useShinyjs(),
   
-  titlePanel("国内入库出库系统"),
+  titlePanel("国内采购入库系统"),
   
   sidebarLayout(
     sidebarPanel(
@@ -64,7 +64,7 @@ ui <- fluidPage(
       tags$hr(style = "margin: 5px 0; border: none;"),
       
       fluidRow(
-        column(12, actionButton("confirm_btn", "确认入库", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
+        column(12, actionButton("confirm_btn", "登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
       ),
    
       tags$hr(), # 分隔线
