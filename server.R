@@ -512,7 +512,7 @@ server <- function(input, output, session) {
   
   
   observeEvent(input$inbound_sku, {
-    sku <- stri_trim_both(input$inbound_sku) # 清理空格
+    sku <- trimws(input$inbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
       output$inbound_item_info <- renderUI(NULL)
@@ -598,7 +598,56 @@ server <- function(input, output, session) {
     
   })
   
-  
+  observeEvent(input$confirm_inbound_btn, {
+    sku <- trimws(input$inbound_sku) # 清理空格
+    
+    # 验证 SKU
+    if (is.null(sku) || sku == "") {
+      showNotification("请扫描条形码！", type = "error")
+      return()
+    }
+    
+    # 查询待入库商品
+    pending_items <- dbGetQuery(con, "
+    SELECT UniqueID 
+    FROM unique_items 
+    WHERE SKU = ? AND Status = '采购'
+    LIMIT 1
+  ", params = list(sku))
+    
+    if (nrow(pending_items) == 0) {
+      showNotification("未找到待入库的商品！", type = "error")
+      return()
+    }
+    
+    # 确定 Defect 状态
+    new_defect <- if (input$defective_item) "瑕疵" else "无瑕"
+    
+    # 更新 `unique_items` 表
+    tryCatch({
+      dbExecute(con, "
+      UPDATE unique_items 
+      SET Status = '国内入库', Defect = ?, DomesticEntryTime = CURDATE()
+      WHERE UniqueID = ?
+    ", params = list(new_defect, pending_items$UniqueID[1]))
+      
+      # 更新 `inventory` 表
+      dbExecute(con, "
+      UPDATE inventory 
+      SET Quantity = Quantity + 1
+      WHERE SKU = ?
+    ", params = list(sku))
+      
+      showNotification("入库成功！", type = "message")
+      
+      # 刷新界面
+      updateTextInput(session, "inbound_sku", value = "")
+      refresh_trigger(!refresh_trigger())
+      
+    }, error = function(e) {
+      showNotification(paste("入库失败：", e$message), type = "error")
+    })
+  })
   
   ## 物品追踪表
   unique_items_data <- reactive({
