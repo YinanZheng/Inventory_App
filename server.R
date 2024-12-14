@@ -513,68 +513,144 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
-    sku <- trimws(input$inbound_sku)
+    sku <- trimws(input$inbound_sku) # 清理空格
+    
     if (is.null(sku) || sku == "") {
       output$inbound_item_info <- renderUI(NULL)
-      showNotification("请扫描 SKU！", type = "error")
       return()
     }
     
-    item_info <- tryCatch({
-      fetchSkuData(sku, con)
-    }, error = function(e) {
-      showNotification(paste("查询失败：", e$message), type = "error")
-      return(NULL)
-    })
+    # 查询 SKU 数据
+    item_info <- fetchSkuData(sku, con)
     
-    if (is.null(item_info) || nrow(item_info) == 0) {
-      output$inbound_item_info <- renderUI(NULL)
+    # 检查是否有结果
+    if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
+      output$inbound_item_info <- renderUI(NULL)
       return()
     }
     
-    img_path <- ifelse(is.na(item_info$ItemImagePath[1]),
-                       "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
-                       paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
+    img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
+    if (!is.na(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+    
+    # 渲染物品信息
     renderInboundItemInfo(item_info, img_path)
   })
   
+  # 渲染物品信息的函数
+  renderInboundItemInfo <- function(item_info, img_path) {
+    output$inbound_item_info <- renderUI({
+      fluidRow(
+        column(
+          4,
+          div(
+            style = "text-align: center;",
+            img(
+              src = img_path,
+              height = "300px",
+              style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+            )
+          )
+        ),
+        column(
+          8,
+          div(
+            style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px;
+                             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
+            tags$h4(
+              "商品信息",
+              style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
+            ),
+            tags$table(
+              style = "width: 100%; font-size: 16px; color: #444;",
+              tags$tr(
+                tags$td(tags$strong("商品名:"), style = "padding: 8px 10px; width: 120px; vertical-align: top;"),
+                tags$td(tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("供应商:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$Maker[1], style = "color: #4CAF50;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("大类:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$MajorType[1], style = "color: #4CAF50;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("小类:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
+              ),
+              tags$tr(
+                tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
+                tags$td(tags$span(
+                  ifelse(item_info$PendingQuantity[1] == 0, "无待入库物品", item_info$PendingQuantity[1]),
+                  style = "color: #FF4500; font-weight: bold;"
+                ))
+              )
+            )
+          )
+        )
+      )
+    })
+  }
+  
   # 确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
-    sku <- trimws(input$inbound_sku)
+    sku <- trimws(input$inbound_sku) # 清理空格
+    
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
       return()
     }
     
-    item_info <- fetchSkuData(sku, con)
-    if (nrow(item_info) == 0 || item_info$PendingQuantity[1] == 0) {
-      showNotification("无待入库的物品！", type = "message")
+    # 检查是否已经选择物品
+    item_info <- dbGetQuery(con, "
+    SELECT SKU 
+    FROM inventory 
+    WHERE SKU = ?", 
+                            params = list(sku))
+    
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该 SKU 的物品信息，请重新扫描！", type = "error")
       return()
     }
     
+    # 更新物品状态
     is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
-    
     tryCatch({
-      # 获取采购状态的物品并更新状态
-      dbExecute(con, "
-      UPDATE unique_items
-      SET Status = ?, DefectiveStatus = ?
-      WHERE SKU = ? AND Status = '采购' LIMIT 1
-    ", params = list("国内入库", is_defective, sku))
+      # 从 unique_items 中获取对应的记录
+      sku_items <- dbGetQuery(con, "
+        SELECT UniqueID 
+        FROM unique_items 
+        WHERE SKU = ? AND Status = '采购' 
+        LIMIT 1", 
+                              params = list(sku))
+      
+      if (nrow(sku_items) == 0) {
+        showNotification("无待入库的物品，所有该商品已入库完毕！", type = "message")
+        return()
+      }
+      
+      # 更新状态为“国内入库”，并设置是否为瑕疵
+      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
+      
+      # 刷新数据并重新渲染物品信息
+      refresh_trigger(!refresh_trigger())
+      # inventory(dbGetQuery(con, "SELECT * FROM inventory"))
       
       showNotification("物品成功入库！", type = "message")
+      
+      # 清空输入框和物品信息
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
       
-      # 更新显示信息
+      # 更新物品信息
       item_info <- fetchSkuData(sku, con)
+
       renderInboundItemInfo(item_info, img_path)
     }, error = function(e) {
       showNotification(paste("入库失败：", e$message), type = "error")
     })
   })
-  
   
   
   ###########################################################################
