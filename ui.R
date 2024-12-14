@@ -119,13 +119,6 @@ ui <- navbarPage(
       sidebarPanel(
         fluidRow(
           column(12, textInput("inbound_sku", "入库:", placeholder = "请扫描条形码")),
-        )
-      ),
-      mainPanel(
-        fluidRow(
-          
-          column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;"), # 动态渲染物品信息
-          
           column(12,
                  div(
                    style = "display: flex; align-items: center;",
@@ -146,6 +139,11 @@ ui <- navbarPage(
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 20px;"
           )
           )
+        )
+      ),
+      mainPanel(
+        fluidRow(
+          column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;"), # 动态渲染物品信息
         ),
         
         tags$hr(), # 分隔线
