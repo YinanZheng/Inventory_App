@@ -16,7 +16,7 @@ ui <- navbarPage(
           column(2, 
                  div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
                      actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
-                                  style = "font-size: 14px; width: 100%; max-width: 70px; height: 34px; padding: 0px; margin-top: 27px;")
+                                  style = "font-size: 14px; width: 100%; max-width: 70px; height: 32px; padding: 0px; margin-top: 27px;")
                  )
           )
         ),
