@@ -118,14 +118,7 @@ ui <- navbarPage(
     sidebarLayout(
       sidebarPanel(
         fluidRow(
-          column(8, textInput("inbound_sku", "入库:", placeholder = "请扫描条形码")),
-          column(4, actionButton(
-            "undo_inbound_btn", 
-            "撤回最近入库", 
-            icon = icon("undo"),
-            class = "btn-warning", 
-            style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
-          ))
+          column(12, textInput("inbound_sku", "入库:", placeholder = "请扫描条形码")),
         )
       ),
       mainPanel(
