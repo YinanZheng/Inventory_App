@@ -550,6 +550,34 @@ server <- function(input, output, session) {
     
     # 渲染物品信息
     output$inbound_item_info <- renderUI({
+      # 定义样式
+      img_style <- "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+      info_box_style <- "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px; 
+                       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;"
+      table_style <- "width: 100%; font-size: 16px; color: #444;"
+      header_style <- "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
+      label_style <- "padding: 8px 10px; vertical-align: top;"
+      value_style <- "color: #4CAF50; font-weight: bold;"
+      pending_style <- "color: #FF4500; font-weight: bold;"
+      
+      # 表格内容生成
+      table_rows <- lapply(
+        c("商品名" = item_info$ItemName[1],
+          "供应商" = item_info$Maker[1],
+          "大类" = item_info$MajorType[1],
+          "小类" = item_info$MinorType[1],
+          "待入库数" = ifelse(item_info$PendingQuantity[1] == 0, 
+                          "无待入库物品", 
+                          item_info$PendingQuantity[1])
+        ), function(value) {
+          tags$tr(
+            tags$td(tags$strong(names(value)), style = label_style),
+            tags$td(tags$span(value, style = ifelse(names(value) == "待入库数" && value == "无待入库物品", pending_style, value_style)))
+          )
+        }
+      )
+      
+      # 渲染UI
       fluidRow(
         column(
           4, 
@@ -558,44 +586,18 @@ server <- function(input, output, session) {
             img(
               src = img_path, 
               height = "300px", 
-              style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
-            ),
+              style = img_style
+            )
           )
         ),
         column(
           8,
           div(
-            style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px; 
-                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
-            tags$h4(
-              "商品信息", 
-              style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
-            ),
+            style = info_box_style,
+            tags$h4("商品信息", style = header_style),
             tags$table(
-              style = "width: 100%; font-size: 16px; color: #444;",
-              tags$tr(
-                tags$td(tags$strong("商品名:"), style = "padding: 8px 10px; width: 120px; vertical-align: top;"),
-                tags$td(tags$span(item_info$ItemName[1], style = "color: #4CAF50; font-weight: bold;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("供应商:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$Maker[1], style = "color: #4CAF50;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("大类:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$MajorType[1], style = "color: #4CAF50;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("小类:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
-              ),
-              tags$tr(
-                tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
-                tags$td(tags$span(ifelse(item_info$PendingQuantity[1] == 0, 
-                                         "无待入库物品", 
-                                         item_info$PendingQuantity[1]), 
-                                  style = "color: #FF4500; font-weight: bold;"))
-              )
+              style = table_style,
+              do.call(tagList, table_rows)
             )
           )
         )
