@@ -378,8 +378,8 @@ ui <- navbarPage(
                     tags$h4("商品信息", style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
                     tags$table(
                       style = "width: 100%; font-size: 16px; color: #444;",
-                      tags$tr(tags$td("商品名:", style = "padding: 8px 10px;"), tags$td(textOutput("report_item_name"))),
-                      tags$tr(tags$td("供应商:", style = "padding: 8px 10px;"), tags$td(textOutput("report_item_maker"))),
+                      tags$tr(tags$td(span("商品名:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_name"))),
+                      tags$tr(tags$td(span("供应商:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_maker"))),
                       tags$tr(
                         tags$td(
                           colspan = 2, 
@@ -398,9 +398,9 @@ ui <- navbarPage(
                           )
                         )
                       ),
-                      tags$tr(tags$td("总库存:", style = "padding: 8px 10px;"), tags$td(textOutput("report_total_quantity"))),
-                      tags$tr(tags$td("平均成本:", style = "padding: 8px 10px;"), tags$td(textOutput("report_avg_cost"))),
-                      tags$tr(tags$td("平均运费:", style = "padding: 8px 10px;"), tags$td(textOutput("report_avg_shipping_cost")))
+                      tags$tr(tags$td(span("总库存:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_total_quantity"))),
+                      tags$tr(tags$td(span("平均成本:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_cost"))),
+                      tags$tr(tags$td(span("平均运费:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_shipping_cost")))
                     )
                   )
                 )
