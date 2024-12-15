@@ -1092,7 +1092,7 @@ server <- function(input, output, session) {
       
       if (nrow(inventory_status_data) == 0) {
         # 无数据时渲染占位饼图
-        plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+percent")
+        plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
       } else {
         # 渲染库存状态饼图
         plot_ly(
@@ -1100,7 +1100,8 @@ server <- function(input, output, session) {
           labels = ~Status,
           values = ~Count,
           type = "pie",
-          textinfo = "label+value+percent", # 显示名称、具体数量和百分比
+          textinfo = "value",       # 图上只显示数量
+          hoverinfo = "label+percent+value", # 鼠标悬停时显示名称、百分比和数量
           insidetextorientation = "horizontal",
           marker = list(colors = status_colors) # 映射固定颜色
         ) %>%
@@ -1110,6 +1111,7 @@ server <- function(input, output, session) {
           )
       }
     })
+    
     
     
     output$defect_status_chart <- renderPlotly({
@@ -1139,7 +1141,7 @@ server <- function(input, output, session) {
       
       if (nrow(defect_status_data) == 0) {
         # 无数据时渲染占位饼图
-        plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+percent")
+        plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
       } else {
         # 渲染瑕疵情况饼图
         plot_ly(
@@ -1147,7 +1149,8 @@ server <- function(input, output, session) {
           labels = ~Defect,
           values = ~Count,
           type = "pie",
-          textinfo = "label+value+percent", # 显示名称、具体数量和百分比
+          textinfo = "value",       # 图上只显示数量
+          hoverinfo = "label+percent+value", # 鼠标悬停时显示名称、百分比和数量
           insidetextorientation = "horizontal",
           marker = list(colors = defect_colors) # 映射固定颜色
         ) %>%
@@ -1157,6 +1160,7 @@ server <- function(input, output, session) {
           )
       }
     })
+    
     
     
     
