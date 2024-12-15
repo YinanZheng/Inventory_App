@@ -320,10 +320,8 @@ ui <- navbarPage(
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("query_sku", NULL, placeholder = "请输入 SKU 或条形码", width = "100%")
-        )
-      ),
-      # 右侧显示区域
-      mainPanel(
+        ),
+        
         fluidRow(
           # 物品详情
           column(
@@ -335,8 +333,10 @@ ui <- navbarPage(
               uiOutput("query_item_info") # 动态渲染物品信息
             )
           )
-        ),
-        
+        )
+      ),
+      # 右侧显示区域
+      mainPanel(
         fluidRow(
           # 库存状态图表
           column(
@@ -345,7 +345,7 @@ ui <- navbarPage(
               class = "card",
               style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
               tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; margin-bottom: 15px;"),
-              plotlyOutput("inventory_status_chart", height = "300px") # 使用 plotlyOutput
+              plotlyOutput("inventory_status_chart", height = "500px") # 使用 plotlyOutput
             )
           ),
           # 瑕疵情况图表
@@ -355,7 +355,7 @@ ui <- navbarPage(
               class = "card",
               style = "margin-bottom: 20px; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
               tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; margin-bottom: 15px;"),
-              plotlyOutput("defect_status_chart", height = "300px") # 使用 plotlyOutput
+              plotlyOutput("defect_status_chart", height = "500px") # 使用 plotlyOutput
             )
           )
         )
