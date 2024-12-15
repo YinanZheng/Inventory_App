@@ -164,6 +164,8 @@ server <- function(input, output, session) {
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
   unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", data = unique_items_data)
+  unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold", data = unique_items_data)
+  
   ####################################################################################################################################
   
   # 显示总采购开销（含运费）
@@ -942,37 +944,26 @@ server <- function(input, output, session) {
   
   # 监听出库 SKU 输入
   observeEvent(input$outbound_sku, {
-    sku <- trimws(input$outbound_sku) # 清理空格
+    sku <- trimws(input$outbound_sku)
     
     if (is.null(sku) || sku == "") {
       renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path)
       return()
     }
     
-    # 查询 SKU 数据
     item_info <- fetchSkuData(sku, con)
     
-    # 检查是否有结果
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, NULL, placeholder_300px_path)
-      return()
-    }
-    
-    # 检查状态
-    if (item_info$Status[1] != "国内入库" || item_info$Defect[1] == "瑕疵") {
-      showNotification("该物品状态不符合出库要求！", type = "error")
       renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path)
       return()
     }
     
-    # 渲染物品信息
     renderItemInfo(output, "outbound_item_info", item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
   })
   
-  # 确认出库逻辑
   observeEvent(input$confirm_outbound_btn, {
-    sku <- trimws(input$outbound_sku) # 清理空格
+    sku <- trimws(input$outbound_sku)
     
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
@@ -993,19 +984,48 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 更新状态为出库
-      update_status(con, sku_items$UniqueID[1], "国内出库",
-                    refresh_trigger = unique_items_data_refresh_trigger)
+      # 调用 update_status 更新物品状态
+      update_status(
+        con = con,
+        unique_id = sku_items$UniqueID[1],
+        new_status = "国内出库",
+        refresh_trigger = unique_items_data_refresh_trigger
+      )
+      
+      # 成功提示
       showNotification("物品成功出库！", type = "message")
+      
+      # 清空输入框
       updateTextInput(session, "outbound_sku", value = "")
     }, error = function(e) {
       showNotification(paste("出库失败：", e$message), type = "error")
     })
   })
   
-  # 确认售出逻辑
+  
+  
+  # 监听售出 SKU 输入
+  observeEvent(input$sold_sku, {
+    sku <- trimws(input$sold_sku)
+    
+    if (is.null(sku) || sku == "") {
+      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path)
+      return()
+    }
+    
+    item_info <- fetchSkuData(sku, con)
+    
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该条形码对应的物品！", type = "error")
+      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path)
+      return()
+    }
+    
+    renderItemInfo(output, "sold_item_info", item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
+  })
+  
   observeEvent(input$confirm_sold_btn, {
-    sku <- trimws(input$sold_sku) # 清理空格
+    sku <- trimws(input$sold_sku)
     
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
@@ -1026,23 +1046,42 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 更新状态为售出
-      update_status(con, sku_items$UniqueID[1], "国内售出",
-                    refresh_trigger = unique_items_data_refresh_trigger)
+      # 调用 update_status 更新物品状态
+      update_status(
+        con = con,
+        unique_id = sku_items$UniqueID[1],
+        new_status = "国内售出",
+        refresh_trigger = unique_items_data_refresh_trigger
+      )
+      
+      # 成功提示
       showNotification("物品成功售出！", type = "message")
+      
+      # 清空输入框
       updateTextInput(session, "sold_sku", value = "")
     }, error = function(e) {
       showNotification(paste("售出失败：", e$message), type = "error")
     })
   })
   
-  # # 监听选中行并更新出库 SKU
-  # observeEvent(unique_items_table_outbound_selected_row(), {
-  #   if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
-  #     selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
-  #     updateTextInput(session, "outbound_sku", value = selected_sku)
-  #   }
-  # })
+  
+  # 监听选中行并更新出库 SKU
+  observeEvent(unique_items_table_outbound_selected_row(), {
+    if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "outbound_sku", value = selected_sku)
+    }
+  })
+
+  # 监听选中行并更新售出 SKU
+  observeEvent(unique_items_table_sold_selected_row(), {
+    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "sold_sku", value = selected_sku)
+    }
+  })
+  
+  
   
   ################################################################
   ##                                                            ##
