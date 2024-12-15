@@ -467,17 +467,17 @@ handleSkuInput <- function(
 }
 
 handleOperation <- function(
-    operation_name, # 操作名称（入库、出库、售出）
-    sku_input,      # SKU 输入字段
-    output_name,    # 输出的 UI 名称
-    query_status,   # 查询的初始状态
-    update_status_value, # 更新后的状态
-    count_label,    # 显示的计数标签
-    count_field,    # 计数字段名称
-    con,            # 数据库连接
-    output,         # 输出对象
-    refresh_trigger, # 数据刷新触发器
-    session         # 当前会话对象
+    operation_name,       # 操作名称（入库、出库、售出）
+    sku_input,            # SKU 输入字段
+    output_name,          # 输出的 UI 名称
+    query_status,         # 查询的初始状态
+    update_status_value,  # 更新后的状态
+    count_label,          # 显示的计数标签
+    count_field,          # 计数字段名称
+    con,                  # 数据库连接
+    output,               # 输出对象
+    refresh_trigger,      # 数据刷新触发器
+    session               # 当前会话对象
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -501,11 +501,11 @@ handleOperation <- function(
       return()
     }
     
-    # 判断是否需要更新为瑕疵品（仅针对入库操作）
+    # 动态设置瑕疵状态
     defect_status <- NULL
     if (operation_name == "入库") {
       is_defective <- input$defective_item
-      defect_status <- ifelse(is_defective, "瑕疵", "无瑕")
+      defect_status <- ifelse(is.null(is_defective) || !is_defective, "无瑕", "瑕疵")
     }
     
     # 更新状态
@@ -513,7 +513,7 @@ handleOperation <- function(
       con = con,
       unique_id = sku_items$UniqueID[1],
       new_status = update_status_value,
-      defect_status = defect_status, # 更新瑕疵状态
+      defect_status = defect_status, # 动态传递瑕疵状态
       refresh_trigger = refresh_trigger
     )
     
@@ -549,7 +549,7 @@ handleOperation <- function(
     # 清空输入框
     updateTextInput(session, paste0(operation_name, "_sku"), value = "")
     if (operation_name == "入库") {
-      updateCheckboxInput(session, "defective_item", value = FALSE)
+      updateCheckboxInput(session, "defective_item", value = FALSE) # 重置瑕疵复选框
     }
     
   }, error = function(e) {
