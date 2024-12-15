@@ -768,7 +768,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$inbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path)
+      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, count_label = "")
       return()
     }
     
@@ -778,12 +778,19 @@ server <- function(input, output, session) {
     # 检查是否有结果
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path)
+      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, count_label = "")
     }
     
     if (!is.na(item_info$ItemImagePath[1])) 
-      renderItemInfo(output, "inbound_item_info", item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
-  })
+      renderItemInfo(
+        output = output,
+        output_name = "inbound_item_info",
+        item_info = item_info,
+        img_path = paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])),
+        count_label = "待入库数",
+        count_value_func = NULL  # 不需要自定义数量计算
+      )
+    })
   
   # 确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
@@ -947,7 +954,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$outbound_sku)
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path)
+      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, count_label = "")
       return()
     }
     
@@ -955,12 +962,21 @@ server <- function(input, output, session) {
     
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path)
+      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, count_label = "")
       return()
     }
     
-    renderItemInfo(output, "outbound_item_info", item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
-  })
+    renderItemInfo(
+      output = output,
+      output_name = "outbound_item_info",
+      item_info = item_info,
+      img_path = paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])),
+      count_label = "可出库数",
+      count_value_func = function(data) {
+        sum(data$Status == "国内入库" & data$Defect != "瑕疵")
+      }
+    )
+    })
   
   observeEvent(input$confirm_outbound_btn, {
     sku <- trimws(input$outbound_sku)
@@ -1009,7 +1025,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$sold_sku)
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path)
+      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, count_label = "")
       return()
     }
     
@@ -1017,11 +1033,20 @@ server <- function(input, output, session) {
     
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path)
+      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, count_label = "")
       return()
     }
     
-    renderItemInfo(output, "sold_item_info", item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
+    renderItemInfo(
+      output = output,
+      output_name = "sold_item_info",
+      item_info = item_info,
+      img_path = paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])),
+      count_label = "可售出数",
+      count_value_func = function(data) {
+        sum(data$Status == "国内入库" & data$Defect != "瑕疵")
+      }
+    )
   })
   
   observeEvent(input$confirm_sold_btn, {

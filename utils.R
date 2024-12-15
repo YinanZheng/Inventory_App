@@ -338,7 +338,7 @@ fetchSkuData <- function(sku, con) {
   ", params = list(sku))
 }
 
-renderItemInfo <- function(output, output_name, item_info, img_path) {
+renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_value_func = NULL) {
   # 如果 item_info 为空或没有数据，构造一个默认空数据框
   if (is.null(item_info) || nrow(item_info) == 0) {
     item_info <- data.frame(
@@ -346,12 +346,19 @@ renderItemInfo <- function(output, output_name, item_info, img_path) {
       Maker = "",
       MajorType = "",
       MinorType = "",
-      PendingQuantity = 0,  # 假设待入库数量为 0
+      PendingQuantity = 0,  # 假设默认为 0
       stringsAsFactors = FALSE
     )
   }
   
-  # 动态设置输出名称
+  # 动态计算数量
+  count_value <- if (!is.null(count_value_func)) {
+    count_value_func(item_info)  # 使用提供的函数计算数量
+  } else {
+    item_info$PendingQuantity[1] # 默认使用 PendingQuantity
+  }
+  
+  # 动态渲染 UI
   output[[output_name]] <- renderUI({
     fluidRow(
       column(
@@ -393,9 +400,9 @@ renderItemInfo <- function(output, output_name, item_info, img_path) {
               tags$td(tags$span(item_info$MinorType[1], style = "color: #4CAF50;"))
             ),
             tags$tr(
-              tags$td(tags$strong("待入库数:"), style = "padding: 8px 10px; vertical-align: top;"),
+              tags$td(tags$strong(count_label), style = "padding: 8px 10px; vertical-align: top;"),
               tags$td(tags$span(
-                ifelse(item_info$PendingQuantity[1] == 0, "无待入库物品", item_info$PendingQuantity[1]),
+                ifelse(count_value == 0, paste0("无", count_label), count_value),
                 style = "color: #FF4500; font-weight: bold;"
               ))
             )
@@ -405,3 +412,4 @@ renderItemInfo <- function(output, output_name, item_info, img_path) {
     )
   })
 }
+
