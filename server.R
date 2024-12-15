@@ -993,107 +993,122 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 查询按钮逻辑
-  observeEvent(input$query_report_btn, {
-    sku <- trimws(input$report_sku)
+  # 查询按钮点击事件
+  observeEvent(input$search_report_btn, {
+    sku <- trimws(input$query_sku)
     
+    # 校验输入
     if (is.null(sku) || sku == "") {
-      showNotification("请输入有效的条形码！", type = "error")
-      resetReportUI()
+      showNotification("请输入有效的 SKU！", type = "error")
+      output$query_item_info <- renderUI({
+        div(
+          tags$img(src = placeholder_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
+          tags$p("未找到相关商品信息。", style = "color: red; font-size: 16px;")
+        )
+      })
+      output$inventory_status_chart <- renderPlot({ NULL })
+      output$defect_status_chart <- renderPlot({ NULL })
       return()
     }
     
     tryCatch({
-      # 获取 SKU 数据
-      sku_data <- fetchSkuData(sku, con)
-      if (is.null(sku_data) || nrow(sku_data) == 0) {
-        showNotification("未找到该 SKU 的商品信息！", type = "error")
-        resetReportUI()
+      # 查询商品详情
+      sku_query <- "
+        SELECT 
+          ItemName, Maker, MajorType, MinorType, Quantity, 
+          ProductCost, ShippingCost, ItemImagePath 
+        FROM inventory
+        WHERE SKU = ?"
+      sku_data <- dbGetQuery(con, sku_query, params = list(sku))
+      
+      if (nrow(sku_data) == 0) {
+        showNotification("未找到该 SKU 对应的商品信息！", type = "error")
+        output$query_item_info <- renderUI({
+          div(
+            tags$img(src = placeholder_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
+            tags$p("未找到相关商品信息。", style = "color: red; font-size: 16px;")
+          )
+        })
+        output$inventory_status_chart <- renderPlot({ NULL })
+        output$defect_status_chart <- renderPlot({ NULL })
         return()
       }
       
-      # 更新商品信息
-      output$report_item_name <- renderText(sku_data$ItemName[1])
-      output$report_item_maker <- renderText(sku_data$Maker[1])
-      output$report_major_type <- renderText(sku_data$MajorType[1])
-      output$report_minor_type <- renderText(sku_data$MinorType[1])
-      output$report_total_quantity <- renderText(sku_data$TotalQuantity[1])
-      output$report_avg_cost <- renderText(sprintf("¥%.2f", sku_data$AverageCost[1]))
-      output$report_avg_shipping_cost <- renderText(sprintf("¥%.2f", sku_data$AverageShippingCost[1]))
-      
-      # 更新图片
-      output$report_item_image <- renderUI({
+      # 渲染商品信息
+      output$query_item_info <- renderUI({
         img_path <- ifelse(
           is.na(sku_data$ItemImagePath[1]),
-          "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
+          placeholder_path,
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
-        tags$img(
-          src = img_path,
-          height = "300px",
-          style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+        div(
+          tags$img(src = img_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
+          tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
+          tags$p(tags$b("供应商："), sku_data$Maker[1]),
+          tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
+          tags$p(tags$b("库存数量："), sku_data$Quantity[1]),
+          tags$p(tags$b("平均成本："), sprintf("¥%.2f", sku_data$ProductCost[1])),
+          tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
         )
       })
       
-      # 绘制库存状态图
-      output$inventory_status_plot <- renderPlotly({
-        inventory_status_data <- fetchInventoryStatusData(sku, con)
+      # 查询库存状态数据
+      inventory_status_query <- "
+        SELECT Status, COUNT(*) AS Count
+        FROM unique_items
+        WHERE SKU = ?
+        GROUP BY Status"
+      inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(sku))
+      
+      # 渲染库存状态图表
+      output$inventory_status_chart <- renderPlot({
         if (nrow(inventory_status_data) == 0) {
-          plotly::plot_ly(type = "scatter", mode = "text") %>%
-            plotly::add_text(x = 0.5, y = 0.5, text = "无库存状态数据", textfont = list(size = 20, color = "red"))
+          plot.new()
+          text(0.5, 0.5, "无库存状态数据", cex = 1.5, col = "red")
         } else {
-          plotBarChart(
-            data = inventory_status_data,
-            x = "Status",
-            y = "Count",
-            x_label = "库存状态",
-            y_label = "数量",
-            colors = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red")
-          )
+          barplot(inventory_status_data$Count,
+                  names.arg = inventory_status_data$Status,
+                  col = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red"),
+                  main = "库存状态",
+                  xlab = "状态",
+                  ylab = "数量")
         }
       })
       
-      # 绘制瑕疵情况图
-      output$defect_status_plot <- renderPlotly({
-        defect_status_data <- fetchDefectStatusData(sku, con)
+      # 查询瑕疵情况数据
+      defect_status_query <- "
+        SELECT Defect, COUNT(*) AS Count
+        FROM unique_items
+        WHERE SKU = ?
+        GROUP BY Defect"
+      defect_status_data <- dbGetQuery(con, defect_status_query, params = list(sku))
+      
+      # 渲染瑕疵情况图表
+      output$defect_status_chart <- renderPlot({
         if (nrow(defect_status_data) == 0) {
-          plotly::plot_ly(type = "scatter", mode = "text") %>%
-            plotly::add_text(x = 0.5, y = 0.5, text = "无瑕疵情况数据", textfont = list(size = 20, color = "red"))
+          plot.new()
+          text(0.5, 0.5, "无瑕疵情况数据", cex = 1.5, col = "red")
         } else {
-          plotPieChart(
-            data = defect_status_data,
-            labels = "Defect",
-            values = "Count",
-            colors = c("darkgray", "green", "red", "orange")
-          )
+          pie(defect_status_data$Count,
+              labels = defect_status_data$Defect,
+              col = c("darkgray", "green", "red", "orange"),
+              main = "瑕疵情况")
         }
       })
       
     }, error = function(e) {
-      showNotification(paste0("查询失败：", e$message), type = "error")
-      resetReportUI()
+      showNotification(paste("查询失败：", e$message), type = "error")
+      output$query_item_info <- renderUI({
+        div(
+          tags$img(src = placeholder_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
+          tags$p("查询失败，请稍后重试。", style = "color: red; font-size: 16px;")
+        )
+      })
+      output$inventory_status_chart <- renderPlot({ NULL })
+      output$defect_status_chart <- renderPlot({ NULL })
     })
   })
   
-  # 重置报表 UI
-  resetReportUI <- function() {
-    output$report_item_name <- renderText("")
-    output$report_item_maker <- renderText("")
-    output$report_major_type <- renderText("")
-    output$report_minor_type <- renderText("")
-    output$report_total_quantity <- renderText("")
-    output$report_avg_cost <- renderText("")
-    output$report_avg_shipping_cost <- renderText("")
-    output$report_item_image <- renderUI({
-      tags$img(
-        src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
-        height = "300px",
-        style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
-      )
-    })
-    output$inventory_status_plot <- renderPlotly({ NULL })
-    output$defect_status_plot <- renderPlotly({ NULL })
-  }
 
   
   ################################################################
