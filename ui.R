@@ -355,54 +355,48 @@ ui <- navbarPage(
             12,
             div(
               class = "card shadow-sm",
-              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;",
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px; display: flex; align-items: stretch;",
               
-              # 图片和商品信息
-              fluidRow(
-                column(
-                  4,
-                  div(
-                    style = "text-align: center;",
-                    img(
-                      src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
-                      id = "report_item_image",
-                      height = "300px",
-                      style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
-                    )
-                  )
-                ),
-                column(
-                  8,
-                  div(
-                    style = "padding: 20px;",
-                    tags$h4("商品信息", style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
-                    tags$table(
-                      style = "width: 100%; font-size: 16px; color: #444; border-spacing: 0 15px; border-collapse: separate;", # 强制使用 border-spacing
-                      tags$tr(tags$td(span("商品名:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_name"))),
-                      tags$tr(tags$td(span("供应商:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_maker"))),
-                      tags$tr(
-                        tags$td(
-                          colspan = 2, 
-                          div(
-                            style = "display: flex; justify-content: space-between; padding: 8px 10px;",
-                            div(
-                              style = "flex: 1;",
-                              span("大类:", style = "font-weight: bold; margin-right: 10px;"),
-                              textOutput("report_major_type", inline = TRUE)
-                            ),
-                            div(
-                              style = "flex: 1;",
-                              span("小类:", style = "font-weight: bold; margin-right: 10px;"),
-                              textOutput("report_minor_type", inline = TRUE)
-                            )
-                          )
+              # 图片区域
+              div(
+                style = "flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; border-right: 1px solid #e0e0e0;",
+                img(
+                  src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
+                  id = "report_item_image",
+                  height = "300px",
+                  style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+                )
+              ),
+              
+              # 商品信息区域
+              div(
+                style = "flex: 2; padding: 20px;",
+                tags$h4("商品信息", style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
+                tags$table(
+                  style = "width: 100%; font-size: 16px; color: #444; border-spacing: 0 15px; border-collapse: separate;",
+                  tags$tr(tags$td(span("商品名:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_name"))),
+                  tags$tr(tags$td(span("供应商:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_maker"))),
+                  tags$tr(
+                    tags$td(
+                      colspan = 2, 
+                      div(
+                        style = "display: flex; justify-content: space-between; padding: 8px 10px;",
+                        div(
+                          style = "flex: 1;",
+                          span("大类:", style = "font-weight: bold; margin-right: 10px;"),
+                          textOutput("report_major_type", inline = TRUE)
+                        ),
+                        div(
+                          style = "flex: 1;",
+                          span("小类:", style = "font-weight: bold; margin-right: 10px;"),
+                          textOutput("report_minor_type", inline = TRUE)
                         )
-                      ),
-                      tags$tr(tags$td(span("总库存:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_total_quantity"))),
-                      tags$tr(tags$td(span("平均成本:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_cost"))),
-                      tags$tr(tags$td(span("平均运费:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_shipping_cost")))
+                      )
                     )
-                  )
+                  ),
+                  tags$tr(tags$td(span("总库存:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_total_quantity"))),
+                  tags$tr(tags$td(span("平均成本:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_cost"))),
+                  tags$tr(tags$td(span("平均运费:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_shipping_cost")))
                 )
               )
             )
