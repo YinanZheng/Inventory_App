@@ -1011,107 +1011,60 @@ server <- function(input, output, session) {
       return()
     }
     
-    tryCatch({
-      # 查询商品详情
-      sku_query <- "
+    # 查询商品详情
+    sku_query <- "
         SELECT 
           ItemName, Maker, MajorType, MinorType, Quantity, 
           ProductCost, ShippingCost, ItemImagePath 
         FROM inventory
         WHERE SKU = ?"
-      sku_data <- dbGetQuery(con, sku_query, params = list(sku))
-      
-      if (nrow(sku_data) == 0) {
-        showNotification("未找到该 SKU 对应的商品信息！", type = "error")
-        output$query_item_info <- renderUI({
-          div(
-            tags$img(src = placeholder_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
-            tags$p("未找到相关商品信息。", style = "color: red; font-size: 16px;")
-          )
-        })
-        output$inventory_status_chart <- renderPlot({ NULL })
-        output$defect_status_chart <- renderPlot({ NULL })
-        return()
-      }
-      
-      # 渲染商品信息
-      output$query_item_info <- renderUI({
-        img_path <- ifelse(
-          is.na(sku_data$ItemImagePath[1]),
-          placeholder_path,
-          paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
-        )
-        div(
-          tags$img(src = img_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
-          tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
-          tags$p(tags$b("供应商："), sku_data$Maker[1]),
-          tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
-          tags$p(tags$b("库存数量："), sku_data$Quantity[1]),
-          tags$p(tags$b("平均成本："), sprintf("¥%.2f", sku_data$ProductCost[1])),
-          tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
-        )
-      })
-      
-      # 查询库存状态数据
-      inventory_status_query <- "
-        SELECT Status, COUNT(*) AS Count
-        FROM unique_items
-        WHERE SKU = ?
-        GROUP BY Status"
-      inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(sku))
-      
-      # 渲染库存状态图表
-      output$inventory_status_chart <- renderPlot({
-        if (nrow(inventory_status_data) == 0 || is.null(inventory_status_data$Count) || all(is.na(inventory_status_data$Count))) {
-          # 如果数据为空或无效，显示默认提示
-          plot.new()
-          text(0.5, 0.5, "无库存状态数据", cex = 1.5, col = "red")
-        } else {
-          # 确保 Count 是一个非空数值向量
-          counts <- inventory_status_data$Count
-          barplot(counts,
-                  names.arg = inventory_status_data$Status,
-                  col = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red"),
-                  main = "库存状态",
-                  xlab = "状态",
-                  ylab = "数量")
-        }
-      })
-      
-      # 查询瑕疵情况数据
-      defect_status_query <- "
-        SELECT Defect, COUNT(*) AS Count
-        FROM unique_items
-        WHERE SKU = ?
-        GROUP BY Defect"
-      defect_status_data <- dbGetQuery(con, defect_status_query, params = list(sku))
-      
-      # 渲染瑕疵情况图表
-      output$defect_status_chart <- renderPlot({
-        if (nrow(defect_status_data) == 0) {
-          plot.new()
-          text(0.5, 0.5, "无瑕疵情况数据", cex = 1.5, col = "red")
-        } else {
-          pie(defect_status_data$Count,
-              labels = defect_status_data$Defect,
-              col = c("darkgray", "green", "red", "orange"),
-              main = "瑕疵情况")
-        }
-      })
-      
-    }, error = function(e) {
-      showNotification(paste("查询失败：", e$message), type = "error")
+    sku_data <- dbGetQuery(con, sku_query, params = list(sku))
+    
+    if (nrow(sku_data) == 0) {
+      showNotification("未找到该 SKU 对应的商品信息！", type = "error")
       output$query_item_info <- renderUI({
         div(
           tags$img(src = placeholder_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 20px;"),
-          tags$p("查询失败，请稍后重试。", style = "color: red; font-size: 16px;")
+          tags$p("未找到相关商品信息。", style = "color: red; font-size: 16px;")
         )
       })
       output$inventory_status_chart <- renderPlot({ NULL })
       output$defect_status_chart <- renderPlot({ NULL })
+      return()
+    }
+    
+    # 渲染商品信息
+    output$query_item_info <- renderUI({
+      img_path <- ifelse(
+        is.na(sku_data$ItemImagePath[1]),
+        placeholder_path,
+        paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
+      )
+      
+      div(
+        style = "display: flex; align-items: center; border: 1px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); padding: 20px; background-color: #f9f9f9;",
+        # 图片区域
+        div(
+          style = "flex: 1; text-align: center; margin-right: 20px;",
+          tags$img(
+            src = img_path, 
+            height = "300px", 
+            style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);"
+          )
+        ),
+        # 文字信息区域
+        div(
+          style = "flex: 2; display: flex; flex-direction: column; justify-content: center;",
+          tags$p(tags$b("商品名称："), style = "font-size: 18px; color: #333;", sku_data$ItemName[1]),
+          tags$p(tags$b("供应商："), style = "font-size: 18px; color: #333;", sku_data$Maker[1]),
+          tags$p(tags$b("分类："), style = "font-size: 18px; color: #333;", paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
+          tags$p(tags$b("库存数量："), style = "font-size: 18px; color: #333;", sku_data$Quantity[1]),
+          tags$p(tags$b("平均成本："), style = "font-size: 18px; color: #333;", sprintf("¥%.2f", sku_data$ProductCost[1])),
+          tags$p(tags$b("平均运费："), style = "font-size: 18px; color: #333;", sprintf("¥%.2f", sku_data$ShippingCost[1]))
+        )
+      )
     })
   })
-  
 
   
   ################################################################
