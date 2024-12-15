@@ -228,7 +228,9 @@ ui <- navbarPage(
             class = "btn-primary", 
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 20px;"
           )),
-          tags$hr(style = "margin: 20px 0;"), # 分隔线
+          
+          tags$hr(), # 分隔线
+          
           column(12, textInput("sold_sku", "售出:", placeholder = "请扫描条形码")),
           column(12, actionButton(
             "confirm_sold_btn", 
