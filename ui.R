@@ -219,28 +219,37 @@ ui <- navbarPage(
     "出库 / 售出",
     sidebarLayout(
       sidebarPanel(
-        fluidRow(
-          column(12, textInput("outbound_sku", "出库:", placeholder = "请扫描条形码")),
-          column(12, actionButton(
+        # 出库区
+        div(
+          class = "card",
+          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+          textInput("outbound_sku", "出库:", placeholder = "请扫描条形码"),
+          actionButton(
             "confirm_outbound_btn", 
             "确认出库", 
             icon = icon("check"), 
             class = "btn-primary", 
-            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 20px;"
-          )),
-          
-          tags$hr(), # 分隔线
-          
-          column(12, textInput("sold_sku", "售出:", placeholder = "请扫描条形码")),
-          column(12, actionButton(
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
+          )
+        ),
+        
+        # 售出区
+        div(
+          class = "card",
+          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          tags$h4("售出操作", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+          textInput("sold_sku", "售出:", placeholder = "请扫描条形码"),
+          actionButton(
             "confirm_sold_btn", 
             "确认售出", 
             icon = icon("check"), 
             class = "btn-success", 
-            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 20px;"
-          ))
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
+          )
         )
       ),
+      
       mainPanel(
         fluidRow(
           column(12, uiOutput("outbound_item_info"), style = "margin-bottom: 40px;"), # 动态渲染物品信息
