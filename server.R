@@ -1008,11 +1008,11 @@ server <- function(input, output, session) {
     # 渲染商品详情
     tryCatch({
       sku_query <- "
-        SELECT 
-          ItemName, Maker, MajorType, MinorType, Quantity, 
-          ProductCost, ShippingCost, ItemImagePath 
-        FROM inventory
-        WHERE SKU = ?"
+      SELECT 
+        ItemName, Maker, MajorType, MinorType, Quantity, 
+        ProductCost, ShippingCost, ItemImagePath 
+      FROM inventory
+      WHERE SKU = ?"
       sku_data <- dbGetQuery(con, sku_query, params = list(sku))
       
       if (nrow(sku_data) == 0) {
@@ -1053,14 +1053,13 @@ server <- function(input, output, session) {
       showNotification("查询商品详情失败！", type = "error")
     })
     
-    # 渲染库存状态和瑕疵情况图表
+    # 渲染库存状态图表
     output$inventory_status_chart <- renderPlotly({
-      # 查询库存状态分布
       inventory_status_query <- "
-    SELECT Status, COUNT(*) AS Count
-    FROM unique_items
-    WHERE SKU = ?
-    GROUP BY Status"
+      SELECT Status, COUNT(*) AS Count
+      FROM unique_items
+      WHERE SKU = ?
+      GROUP BY Status"
       inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(sku))
       
       # 定义状态顺序和对应颜色
@@ -1076,7 +1075,7 @@ server <- function(input, output, session) {
       )
       inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
       
-      if (nrow(inventory_status_data) == 0) {
+      if (sum(inventory_status_data$Count) == 0) {
         # 无数据时渲染占位饼图
         plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
       } else {
@@ -1086,10 +1085,10 @@ server <- function(input, output, session) {
           labels = ~Status,
           values = ~Count,
           type = "pie",
-          textinfo = "label+value",     
-          hoverinfo = "percent+value", 
+          textinfo = "label+value",       # 图上显示类别和数量
+          hoverinfo = "label+percent+value", # 鼠标悬停时显示类别、百分比和数量
           insidetextorientation = "horizontal",
-          marker = list(colors = status_colors) # 映射固定颜色
+          marker = list(colors = status_colors)
         ) %>%
           layout(
             showlegend = TRUE, # 显示图例
@@ -1098,13 +1097,13 @@ server <- function(input, output, session) {
       }
     })
     
+    # 渲染瑕疵情况图表
     output$defect_status_chart <- renderPlotly({
-      # 查询瑕疵情况分布
       defect_status_query <- "
-    SELECT Defect, COUNT(*) AS Count
-    FROM unique_items
-    WHERE SKU = ?
-    GROUP BY Defect"
+      SELECT Defect, COUNT(*) AS Count
+      FROM unique_items
+      WHERE SKU = ?
+      GROUP BY Defect"
       defect_status_data <- dbGetQuery(con, defect_status_query, params = list(sku))
       
       # 定义瑕疵类型顺序和对应颜色
@@ -1120,7 +1119,7 @@ server <- function(input, output, session) {
       )
       defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
       
-      if (nrow(defect_status_data) == 0) {
+      if (sum(defect_status_data$Count) == 0) {
         # 无数据时渲染占位饼图
         plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
       } else {
@@ -1130,10 +1129,10 @@ server <- function(input, output, session) {
           labels = ~Defect,
           values = ~Count,
           type = "pie",
-          textinfo = "label+value",     
-          hoverinfo = "percent+value", 
+          textinfo = "label+value",       # 图上显示类别和数量
+          hoverinfo = "label+percent+value", # 鼠标悬停时显示类别、百分比和数量
           insidetextorientation = "horizontal",
-          marker = list(colors = defect_colors) # 映射固定颜色
+          marker = list(colors = defect_colors)
         ) %>%
           layout(
             showlegend = TRUE, # 显示图例
@@ -1142,6 +1141,7 @@ server <- function(input, output, session) {
       }
     })
   })
+  
   
   
   
