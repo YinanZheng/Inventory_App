@@ -501,11 +501,19 @@ handleOperation <- function(
       return()
     }
     
+    # 判断是否需要更新为瑕疵品（仅针对入库操作）
+    defect_status <- NULL
+    if (operation_name == "入库") {
+      is_defective <- input$defective_item
+      defect_status <- ifelse(is_defective, "瑕疵", "无瑕")
+    }
+    
     # 更新状态
     update_status(
       con = con,
       unique_id = sku_items$UniqueID[1],
       new_status = update_status_value,
+      defect_status = defect_status, # 更新瑕疵状态
       refresh_trigger = refresh_trigger
     )
     
@@ -549,4 +557,5 @@ handleOperation <- function(
     showNotification(paste0(operation_name, "失败：", e$message), type = "error")
   })
 }
+
 
