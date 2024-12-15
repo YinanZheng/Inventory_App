@@ -316,113 +316,72 @@ ui <- navbarPage(
       # 左侧输入区域
       sidebarPanel(
         div(
-          class = "card shadow-sm",
-          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-          
-          # 卡片标题
-          div(
-            style = "border-bottom: 2px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px;",
-            tags$h4("商品查询", style = "margin: 0; font-weight: bold; color: #333; text-align: center;")
-          ),
-          
-          # SKU 输入框
-          div(
-            style = "margin-bottom: 15px;",
-            textInput(
-              "report_sku", 
-              label = NULL, 
-              placeholder = "请扫描或输入条形码",
-              width = "100%"
-            )
-          ),
-          
-          # 查询按钮
+          class = "card",
+          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+          textInput("query_sku", NULL, placeholder = "请输入 SKU 或条形码"),
           actionButton(
-            "query_report_btn", 
+            "search_report_btn", 
             "查询", 
             icon = icon("search"), 
             class = "btn-primary", 
-            style = "font-size: 16px; width: 100%; height: 42px;"
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
           )
         )
       ),
-      
       # 右侧显示区域
       mainPanel(
         fluidRow(
-          # 商品基本信息卡片
+          # 物品详情
           column(
             12,
             div(
-              class = "card shadow-sm",
-              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px; display: flex; align-items: stretch;",
-              
-              # 图片区域
-              div(
-                style = "flex: 1; display: flex; justify-content: center; align-items: center; padding: 20px; border-right: 1px solid #e0e0e0;",
-                img(
-                  src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
-                  id = "report_item_image",
-                  height = "300px",
-                  style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
-                )
-              ),
-              
-              # 商品信息区域
-              div(
-                style = "flex: 2; padding: 20px;",
-                tags$h4("商品信息", style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
-                tags$table(
-                  style = "width: 100%; font-size: 16px; color: #444; border-spacing: 0 15px; border-collapse: separate;",
-                  tags$tr(tags$td(span("商品名:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_name"))),
-                  tags$tr(tags$td(span("供应商:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_maker"))),
-                  tags$tr(
-                    tags$td(
-                      colspan = 2, 
-                      div(
-                        style = "display: flex; justify-content: space-between; padding: 8px 10px;",
-                        div(
-                          style = "flex: 1;",
-                          span("大类:", style = "font-weight: bold; margin-right: 10px;"),
-                          textOutput("report_major_type", inline = TRUE)
-                        ),
-                        div(
-                          style = "flex: 1;",
-                          span("小类:", style = "font-weight: bold; margin-right: 10px;"),
-                          textOutput("report_minor_type", inline = TRUE)
-                        )
-                      )
-                    )
-                  ),
-                  tags$tr(tags$td(span("总库存:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_total_quantity"))),
-                  tags$tr(tags$td(span("平均成本:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_cost"))),
-                  tags$tr(tags$td(span("平均运费:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_avg_shipping_cost")))
-                )
-              )
+              class = "card",
+              style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+              tags$h4("商品详情", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+              uiOutput("query_item_info") # 动态渲染物品信息
             )
           )
         ),
-        
+        tags$hr(),
         fluidRow(
-          # 库存状态汇总
+          # 图表区域
           column(
             6,
             div(
-              class = "card shadow-sm",
-              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;",
-              tags$h4("库存状态汇总", style = "margin: 0 0 15px 0; font-weight: bold; color: #333;"),
-              plotOutput("inventory_status_plot", height = "300px")
+              class = "card",
+              style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+              tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; margin-bottom: 15px;"),
+              plotOutput("inventory_status_chart", height = "300px")
             )
           ),
-          
-          # 瑕疵情况汇总
           column(
             6,
             div(
-              class = "card shadow-sm",
-              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;",
-              tags$h4("瑕疵情况汇总", style = "margin: 0 0 15px 0; font-weight: bold; color: #333;"),
-              plotOutput("defect_status_plot", height = "300px")
+              class = "card",
+              style = "margin-bottom: 20px; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+              tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; margin-bottom: 15px;"),
+              plotOutput("defect_status_chart", height = "300px")
+            )
+          )
+        ),
+        tags$hr(),
+        fluidRow(
+          # 可折叠的状态表
+          column(
+            12,
+            actionButton(
+              "toggle_item_table_query", 
+              "物品详细状态表（点击显示/隐藏）",
+              style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;"
+            )
+          ),
+          column(
+            12,
+            div(
+              id = "item_table_container_query", # 表格容器
+              style = "margin-top: 20px; margin-bottom: 100px; display: none;", # 默认隐藏
+              uniqueItemsTableUI("unique_items_table_query") # 自定义组件，用于渲染表格
             )
           )
         )
