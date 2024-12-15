@@ -163,7 +163,7 @@ server <- function(input, output, session) {
   # 渲染物品追踪数据表
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
   unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
-  
+  unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", data = unique_items_data)
   ####################################################################################################################################
   
   # 显示总采购开销（含运费）
@@ -936,62 +936,120 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
+  ## 出库售出商品模块                                           ##
+  ##                                                            ##
+  ################################################################
+  
+  # 监听出库 SKU 输入
+  observeEvent(input$outbound_sku, {
+    sku <- trimws(input$outbound_sku) # 清理空格
+    
+    if (is.null(sku) || sku == "") {
+      renderItemInfo(output, NULL, placeholder_300px_path)
+      return()
+    }
+    
+    # 查询 SKU 数据
+    item_info <- fetchSkuData(sku, con)
+    
+    # 检查是否有结果
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该条形码对应的物品！", type = "error")
+      renderItemInfo(output, NULL, placeholder_300px_path)
+      return()
+    }
+    
+    # 检查状态
+    if (item_info$Status[1] != "国内入库" || item_info$Defect[1] == "瑕疵") {
+      showNotification("该物品状态不符合出库要求！", type = "error")
+      renderItemInfo(output, item_info, placeholder_300px_path)
+      return()
+    }
+    
+    # 渲染物品信息
+    renderItemInfo(output, item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
+  })
+  
+  # 确认出库逻辑
+  observeEvent(input$confirm_outbound_btn, {
+    sku <- trimws(input$outbound_sku) # 清理空格
+    
+    if (is.null(sku) || sku == "") {
+      showNotification("请先扫描 SKU！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 查询符合条件的物品
+      sku_items <- dbGetQuery(con, "
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵'
+      LIMIT 1", 
+                              params = list(sku))
+      
+      if (nrow(sku_items) == 0) {
+        showNotification("无可出库的物品，或状态不符合要求！", type = "error")
+        return()
+      }
+      
+      # 更新状态为出库
+      update_status(con, sku_items$UniqueID[1], "国内出库",
+                    refresh_trigger = unique_items_data_refresh_trigger)
+      showNotification("物品成功出库！", type = "message")
+      updateTextInput(session, "outbound_sku", value = "")
+    }, error = function(e) {
+      showNotification(paste("出库失败：", e$message), type = "error")
+    })
+  })
+  
+  # 确认售出逻辑
+  observeEvent(input$confirm_sold_btn, {
+    sku <- trimws(input$sold_sku) # 清理空格
+    
+    if (is.null(sku) || sku == "") {
+      showNotification("请先扫描 SKU！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 查询符合条件的物品
+      sku_items <- dbGetQuery(con, "
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵'
+      LIMIT 1", 
+                              params = list(sku))
+      
+      if (nrow(sku_items) == 0) {
+        showNotification("无可售出的物品，或状态不符合要求！", type = "error")
+        return()
+      }
+      
+      # 更新状态为售出
+      update_status(con, sku_items$UniqueID[1], "国内售出",
+                    refresh_trigger = unique_items_data_refresh_trigger)
+      showNotification("物品成功售出！", type = "message")
+      updateTextInput(session, "sold_sku", value = "")
+    }, error = function(e) {
+      showNotification(paste("售出失败：", e$message), type = "error")
+    })
+  })
+  
+  # 监听选中行并更新出库 SKU
+  observeEvent(unique_items_table_outbound_selected_row(), {
+    if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "outbound_sku", value = selected_sku)
+    }
+  })
+  
+  ################################################################
+  ##                                                            ##
   ## 移库模块                                                   ##
   ##                                                            ##
   ################################################################
-  # 
-  # # 国内出库逻辑
-  # handleSKU(
-  #   con = con,
-  #   input = input,
-  #   session = session,
-  #   sku_input_id = "outbound_sku",
-  #   target_status = "国内出库",
-  #   valid_current_status = c("国内入库"),  # 仅限国内入库状态
-  #   undo_queue = undo_outbound_queue,
-  #   refresh_trigger = refresh_trigger,
-  #   inventory = inventory,
-  #   notification_success = "物品出库成功！",
-  #   notification_error = "出库操作失败：",
-  #   record_undo = TRUE
-  # )
-  # 
-  # undoLastAction(
-  #   con = con, input = input,
-  #   undo_btn = "undo_outbound_btn",
-  #   undo_queue = undo_outbound_queue,
-  #   refresh_trigger = refresh_trigger,
-  #   inventory = inventory,
-  #   notification_success = "撤回成功，物品状态已恢复！",
-  #   notification_error = "撤回操作失败："
-  # )
-  # 
-  # # 国内售出逻辑
-  # handleSKU(
-  #   input = input,
-  #   session = session,
-  #   sku_input_id = "sold_sku",
-  #   target_status = "国内售出",
-  #   valid_current_status = c("国内入库"),  # 仅限国内入库状态
-  #   undo_queue = undo_sold_queue,
-  #   con = con,
-  #   refresh_trigger = refresh_trigger,
-  #   inventory = inventory,
-  #   notification_success = "物品售出成功！",
-  #   notification_error = "售出操作失败：",
-  #   record_undo = TRUE
-  # )
-  # 
-  # undoLastAction(
-  #   con = con, input = input,
-  #   undo_btn = "undo_sold_btn",
-  #   undo_queue = undo_sold_queue,
-  #   refresh_trigger = refresh_trigger,
-  #   inventory = inventory,
-  #   notification_success = "撤回成功，物品状态已恢复！",
-  #   notification_error = "撤回操作失败："
-  # )
-  # 
+  
   # # 监听移库按钮点击
   # observeEvent(input$move_selected, {
   #   # 获取选中的行索引
