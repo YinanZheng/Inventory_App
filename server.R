@@ -166,8 +166,8 @@ server <- function(input, output, session) {
   })
   
   # 渲染物品追踪数据表
-  callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
-  callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
+  unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
+  unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
   
   ####################################################################################################################################
   
@@ -695,11 +695,10 @@ server <- function(input, output, session) {
     })
   })
   
-  # 点选状态表自动填写SKU
-  observeEvent(input$unique_items_table_inbound_rows_selected, {
-    selected_row <- input$unique_items_table_inbound_rows_selected
-    if (!is.null(selected_row)) {
-      selected_sku <- unique_items_data()[selected_row, "SKU"]
+  # 监听选中行并更新 SKU
+  observeEvent(unique_items_table_inbound_selected_row(), {
+    if (!is.null(unique_items_table_inbound_selected_row()) && length(unique_items_table_inbound_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_inbound_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "inbound_sku", value = selected_sku)
     }
   })
