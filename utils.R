@@ -321,24 +321,27 @@ get_inventory_overview <- function(con, sku) {
 
 # 提取公共方法：获取 SKU 数据
 fetchSkuData <- function(sku, con) {
-  dbGetQuery(con, "
+  # 查询 SKU 基本信息和状态相关数据
+  query <- "
     SELECT 
-      ItemImagePath, ItemName, Maker, MajorType, MinorType, 
-      SUM(CASE WHEN unique_items.Status = '采购' THEN 1 ELSE 0 END) as PendingQuantity
-    FROM 
-      unique_items
-    JOIN 
-      inventory 
-    ON 
-      unique_items.SKU = inventory.SKU
-    WHERE 
-      unique_items.SKU = ?
-    GROUP BY 
-      ItemImagePath, ItemName, Maker, MajorType, MinorType
-  ", params = list(sku))
+      ItemImagePath,
+      ItemName,
+      Maker,
+      MajorType,
+      MinorType,
+      SUM(CASE WHEN Status = '采购' THEN 1 ELSE 0 END) AS PendingQuantity,
+      SUM(CASE WHEN Status = '国内入库' AND Defect != '瑕疵' THEN 1 ELSE 0 END) AS AvailableForOutbound,
+      SUM(CASE WHEN Status = '国内入库' AND Defect != '瑕疵' THEN 1 ELSE 0 END) AS AvailableForSold
+    FROM unique_items
+    WHERE SKU = ?
+    GROUP BY ItemImagePath, ItemName, Maker, MajorType, MinorType
+  "
+  
+  # 执行查询并返回结果
+  dbGetQuery(con, query, params = list(sku))
 }
 
-renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_value_func = NULL) {
+renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_field = "PendingQuantity") {
   # 如果 item_info 为空或没有数据，构造一个默认空数据框
   if (is.null(item_info) || nrow(item_info) == 0) {
     item_info <- data.frame(
@@ -346,17 +349,15 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
       Maker = "",
       MajorType = "",
       MinorType = "",
-      PendingQuantity = 0,  # 假设默认为 0
+      PendingQuantity = 0,
+      AvailableForOutbound = 0,
+      AvailableForSold = 0,
       stringsAsFactors = FALSE
     )
   }
   
-  # 动态计算数量
-  count_value <- if (!is.null(count_value_func)) {
-    count_value_func(item_info)  # 使用提供的函数计算数量
-  } else {
-    item_info$PendingQuantity[1] # 默认使用 PendingQuantity
-  }
+  # 动态获取数量值
+  count_value <- item_info[[count_field]][1]
   
   # 动态渲染 UI
   output[[output_name]] <- renderUI({
@@ -412,4 +413,3 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
     )
   })
 }
-
