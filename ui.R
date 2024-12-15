@@ -343,7 +343,7 @@ ui <- navbarPage(
             )
           )
         ),
-        tags$hr(),
+        
         fluidRow(
           # 图表区域
           column(
