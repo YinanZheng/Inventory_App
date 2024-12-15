@@ -1100,8 +1100,8 @@ server <- function(input, output, session) {
           labels = ~Status,
           values = ~Count,
           type = "pie",
-          textinfo = "value",       # 图上只显示数量
-          hoverinfo = "label+percent+value", # 鼠标悬停时显示名称、百分比和数量
+          textinfo = "label+value",     
+          hoverinfo = "percent+value", 
           insidetextorientation = "horizontal",
           marker = list(colors = status_colors) # 映射固定颜色
         ) %>%
@@ -1149,8 +1149,8 @@ server <- function(input, output, session) {
           labels = ~Defect,
           values = ~Count,
           type = "pie",
-          textinfo = "value",       # 图上只显示数量
-          hoverinfo = "label+percent+value", # 鼠标悬停时显示名称、百分比和数量
+          textinfo = "label+value",     
+          hoverinfo = "percent+value", 
           insidetextorientation = "horizontal",
           marker = list(colors = defect_colors) # 映射固定颜色
         ) %>%
