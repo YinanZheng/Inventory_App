@@ -1036,13 +1036,13 @@ server <- function(input, output, session) {
     })
   })
   
-  # 监听选中行并更新出库 SKU
-  observeEvent(unique_items_table_outbound_selected_row(), {
-    if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "outbound_sku", value = selected_sku)
-    }
-  })
+  # # 监听选中行并更新出库 SKU
+  # observeEvent(unique_items_table_outbound_selected_row(), {
+  #   if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
+  #     selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
+  #     updateTextInput(session, "outbound_sku", value = selected_sku)
+  #   }
+  # })
   
   ################################################################
   ##                                                            ##
