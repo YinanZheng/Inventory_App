@@ -345,23 +345,24 @@ ui <- navbarPage(
         ),
         
         fluidRow(
-          # 图表区域
+          # 库存状态图表
           column(
             6,
             div(
               class = "card",
               style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
               tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; margin-bottom: 15px;"),
-              plotOutput("inventory_status_chart", height = "300px")
+              plotlyOutput("inventory_status_chart", height = "300px") # 使用 plotlyOutput
             )
           ),
+          # 瑕疵情况图表
           column(
             6,
             div(
               class = "card",
               style = "margin-bottom: 20px; padding: 20px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
               tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; margin-bottom: 15px;"),
-              plotOutput("defect_status_chart", height = "300px")
+              plotlyOutput("defect_status_chart", height = "300px") # 使用 plotlyOutput
             )
           )
         )
