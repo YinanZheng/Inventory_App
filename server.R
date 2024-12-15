@@ -634,8 +634,8 @@ server <- function(input, output, session) {
   })
   
   # 渲染 unique_items 数据表
-  callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = reactive(unique_items_data))
-  callModule(uniqueItemsTableServer, "unique_items_table_defect", data = reactive(unique_items_data))
+  callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
+  callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
   
   # output$unique_items_table <- renderDT({
   #   refresh_trigger()  # 触发器变化时重新加载数据
