@@ -1079,11 +1079,14 @@ server <- function(input, output, session) {
               type = "pie",
               textinfo = "label+value",       # 图上显示类别和数量
               hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
+              insidetextorientation = "auto", # 自动调整标签方向
+              textposition = "outside",       # 标签显示在图形外部
               marker = list(colors = status_colors) # 按固定颜色映射
             ) %>%
               layout(
                 showlegend = TRUE, # 显示图例
-                margin = list(t = 10) # 去除多余标题空间
+                margin = list(l = 20, r = 20, t = 50, b = 50), # 增加边距
+                uniformtext = list(minsize = 10, mode = "hide") # 统一文本大小
               )
           }
         }, error = function(e) {
@@ -1091,8 +1094,6 @@ server <- function(input, output, session) {
           output$inventory_status_chart <- renderPlotly({ NULL })
         })
       })
-      
-      
       
       # 渲染瑕疵情况图表
       output$defect_status_chart <- renderPlotly({
@@ -1132,11 +1133,14 @@ server <- function(input, output, session) {
               type = "pie",
               textinfo = "label+value",       # 图上显示类别和数量
               hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
+              insidetextorientation = "auto", # 自动调整标签方向
+              textposition = "outside",       # 标签显示在图形外部
               marker = list(colors = defect_colors) # 按固定颜色映射
             ) %>%
               layout(
                 showlegend = TRUE, # 显示图例
-                margin = list(t = 10) # 去除多余标题空间
+                margin = list(l = 20, r = 20, t = 50, b = 50), # 增加边距
+                uniformtext = list(minsize = 10, mode = "hide") # 统一文本大小
               )
           }
         }, error = function(e) {
