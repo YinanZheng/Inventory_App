@@ -1006,7 +1006,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 获取 SKU 数据
       sku_data <- fetchSkuData(sku, con)
-      if (nrow(sku_data) == 0) {
+      if (is.null(sku_data) || nrow(sku_data) == 0) {
         showNotification("未找到该 SKU 的商品信息！", type = "error")
         resetReportUI()
         return()
@@ -1025,7 +1025,7 @@ server <- function(input, output, session) {
       output$report_item_image <- renderUI({
         img_path <- ifelse(
           is.na(sku_data$ItemImagePath[1]),
-          placeholder_300px_path,
+          "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
         tags$img(
@@ -1086,7 +1086,7 @@ server <- function(input, output, session) {
     output$report_avg_shipping_cost <- renderText("")
     output$report_item_image <- renderUI({
       tags$img(
-        src = placeholder_300px_path,
+        src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
         height = "300px",
         style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
       )
@@ -1094,7 +1094,6 @@ server <- function(input, output, session) {
     output$inventory_status_plot <- renderPlotly({ NULL })
     output$defect_status_plot <- renderPlotly({ NULL })
   }
-}
 
   
   ################################################################
