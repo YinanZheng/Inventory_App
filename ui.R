@@ -39,8 +39,28 @@ ui <- navbarPage(
         
         fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
         
-        actionButton("add_btn", "添加/更新商品信息", icon = icon("pen"),
-                     style = "background-color: #006400; color: white;"),
+        fluidRow(
+          column(
+            6,  # 左边按钮占一半宽度
+            style = "text-align: left;",  # 左对齐
+            actionButton(
+              "add_btn", 
+              "添加/更新商品信息", 
+              icon = icon("pen"),
+              style = "background-color: #006400; color: white;"
+            )
+          ),
+          column(
+            6,  # 右边按钮占另一半宽度
+            style = "text-align: right;",  # 右对齐
+            actionButton(
+              "update_image_btn", 
+              "更新商品图片", 
+              icon = icon("pen"),
+              style = "background-color: #006400; color: white;"
+            )
+          )
+        ),
         
         tags$hr(), # 分隔线
         

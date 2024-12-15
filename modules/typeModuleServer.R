@@ -37,7 +37,7 @@ typeModuleServer <- function(id, con, item_type_data) {
     # 新增大类逻辑
     observeEvent(input$add_major_type_btn, {
       showModal(modalDialog(
-        title = "新增大类（批量）",
+        title = "批量新增大类",
         fluidRow(
           column(6, textAreaInput(ns("new_major_types"), "大类名称:", placeholder = "每行一个大类名称")),
           column(6, textAreaInput(ns("new_major_skus"), "大类SKU:", placeholder = "每行一个SKU，与左侧名称一一对应"))
