@@ -18,9 +18,6 @@ server <- function(input, output, session) {
   # 声明一个 reactiveVal 用于触发unique_items_data刷新
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
-  # Reactive value to store added items
-  added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
-  
   # 用于存储 PDF 文件路径
   single_pdf_file_path <- reactiveVal(NULL)
   batch_pdf_file_path <- reactiveVal(NULL)
@@ -33,7 +30,7 @@ server <- function(input, output, session) {
   undo_outbound_queue <- reactiveVal(list())  # 出库撤回队列
   undo_sold_queue <- reactiveVal(list()) # 售出撤回队列
   
-  ###############################################################################################################
+  ####################################################################################################################################
   
   # 应用启动时加载数据
   observe({
@@ -55,41 +52,9 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  ################################################################
-  ##                                                            ##
-  ## 供应商模块                                                 ##
-  ##                                                            ##
-  ################################################################
-
-  supplierModuleServer(input, output, session, con)
-
-  
-  
-  ################################################################
-  ##                                                            ##
-  ## 物品大小类模块                                             ##
-  ##                                                            ##
-  ################################################################
-
-  typeModuleServer("type_module", con, item_type_data)
-  
-  
-  
-  #########################################################################
-  
-  
-
-  observeEvent(input$new_item_image, {
-    if (!is.null(input$new_item_image)) {
-      # 记录新上传的文件
-      uploaded_file(input$new_item_image)
-      showNotification("文件已上传并记录！", type = "message")
-    }
-  })
-  
+  # 切换显示/隐藏
   observeEvent(input$toggle_inventory_table, {
-    shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
+    shinyjs::toggle("inventory_table_container")  
   })
   
   observeEvent(input$toggle_item_table_inbound, {
@@ -99,14 +64,41 @@ server <- function(input, output, session) {
   observeEvent(input$toggle_item_table_defect, {
     shinyjs::toggle("item_table_container_defect")
   })
-
-  
   
 
+  ####################################################################################################################################
+  ###################################################                              ###################################################
+  ###################################################             渲染             ###################################################
+  ###################################################                              ###################################################
+  ####################################################################################################################################
   
-  ## 库存表渲染模块
   
-  # Filter inventory based on major and minor type
+  # 采购商品添加表（临时）
+  added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
+  
+  # Render added items table
+  output$added_items_table <- renderDT({
+    column_mapping <- list(
+      SKU = "条形码",
+      ItemName = "商品名",
+      ItemImagePath = "商品图片",
+      Maker = "供应商",
+      MajorType = "大类",
+      MinorType = "小类",
+      Quantity = "入库数量",
+      ProductCost = "采购成本"
+    )
+    
+    render_table_with_images(
+      data = added_items(),
+      column_mapping = column_mapping,
+      image_column = "ItemImagePath"  # Specify the correct image column
+    )
+  })
+  
+  ####################################################################################################################################
+  
+  # 库存表 （过滤）
   filtered_inventory <- reactive({
     req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]])
     
@@ -144,6 +136,85 @@ server <- function(input, output, session) {
     )
   })
   
+  ####################################################################################################################################
+  
+  # 物品追踪表
+  unique_items_data <- reactive({
+    # 当 refresh_trigger 改变时触发更新
+    unique_items_data_refresh_trigger()
+    
+    dbGetQuery(con, "
+    SELECT 
+      unique_items.UniqueID, 
+      unique_items.SKU, 
+      unique_items.Status,
+      unique_items.Defect,
+      inventory.Maker,
+      inventory.MajorType,
+      inventory.MinorType,
+      inventory.ItemName,
+      inventory.ItemImagePath
+    FROM 
+      unique_items
+    JOIN 
+      inventory 
+    ON 
+      unique_items.SKU = inventory.SKU
+    ORDER BY 
+      unique_items.DomesticEntryTime DESC
+  ")
+  })
+  
+  # 渲染物品追踪数据表
+  callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
+  callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
+  
+  ####################################################################################################################################
+  
+  # Calculate total cost
+  output$total_cost <- renderText({
+    total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
+    paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
+           "（其中包含运费: ¥", input$new_shipping_cost, ")")
+  })
+  
+  ####################################################################################################################################
+
+  
+  ################################################################
+  ##                                                            ##
+  ## 供应商模块                                                 ##
+  ##                                                            ##
+  ################################################################
+
+  supplierModuleServer(input, output, session, con)
+
+  
+  
+  ################################################################
+  ##                                                            ##
+  ## 物品大小类模块                                             ##
+  ##                                                            ##
+  ################################################################
+
+  typeModuleServer("type_module", con, item_type_data)
+  
+  
+  
+  ####################################################################################################################################
+  ###################################################                              ###################################################
+  ###################################################             监听             ###################################################
+  ###################################################                              ###################################################
+  ####################################################################################################################################
+
+  observeEvent(input$new_item_image, {
+    if (!is.null(input$new_item_image)) {
+      # 记录新上传的文件
+      uploaded_file(input$new_item_image)
+      showNotification("文件已上传并记录！", type = "message")
+    }
+  })
+
   # Handle row selection in filtered inventory table
   observeEvent(input$filtered_inventory_table_rows_selected, {
     selected_row <- input$filtered_inventory_table_rows_selected
@@ -162,8 +233,6 @@ server <- function(input, output, session) {
       updateTextInput(session, "sku_inventory", value = selected_data$SKU)
     }
   })
-  
-  ## 入库表模块
   
   # Handle add item button click
   observeEvent(input$add_btn, {
@@ -353,31 +422,6 @@ server <- function(input, output, session) {
     uploaded_file(NULL)
   })
   
-  
-  
-  
-  ## 入库商品模块
-  
-  # Render added items table
-  output$added_items_table <- renderDT({
-    column_mapping <- list(
-      SKU = "条形码",
-      ItemName = "商品名",
-      ItemImagePath = "商品图片",
-      Maker = "供应商",
-      MajorType = "大类",
-      MinorType = "小类",
-      Quantity = "入库数量",
-      ProductCost = "采购成本"
-    )
-    
-    render_table_with_images(
-      data = added_items(),
-      column_mapping = column_mapping,
-      image_column = "ItemImagePath"  # Specify the correct image column
-    )
-  })
-  
   # Delete selected item
   observeEvent(input$delete_btn, {
     selected_row <- input$added_items_table_rows_selected
@@ -389,13 +433,6 @@ server <- function(input, output, session) {
     } else {
       showNotification("请选择要删除的记录", type = "error")
     }
-  })
-  
-  # Calculate total cost
-  output$total_cost <- renderText({
-    total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
-    paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
-           "（其中包含运费: ¥", input$new_shipping_cost, ")")
   })
   
   # Handle row selection in item table
@@ -413,9 +450,6 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
   })
-  
-  
-  ####################################################################
   
   # Confirm button: Update database and handle images
   observeEvent(input$confirm_btn, {
@@ -577,9 +611,6 @@ server <- function(input, output, session) {
   })
   
   
-  ####################################################################
-  
-  
   ################################################################
   ##                                                            ##
   ## 入库模块                                                   ##
@@ -665,39 +696,7 @@ server <- function(input, output, session) {
   })
   
   
-  ###########################################################################
   
-  
-  ## 物品追踪表
-  unique_items_data <- reactive({
-    # 当 refresh_trigger 改变时触发更新
-    unique_items_data_refresh_trigger()
-
-    dbGetQuery(con, "
-    SELECT 
-      unique_items.UniqueID, 
-      unique_items.SKU, 
-      unique_items.Status,
-      unique_items.Defect,
-      inventory.Maker,
-      inventory.MajorType,
-      inventory.MinorType,
-      inventory.ItemName,
-      inventory.ItemImagePath
-    FROM 
-      unique_items
-    JOIN 
-      inventory 
-    ON 
-      unique_items.SKU = inventory.SKU
-    ORDER BY 
-      unique_items.DomesticEntryTime DESC
-  ")
-  })
-  
-  # 渲染 unique_items 数据表
-  callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
-  callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
 
   ### SKU 模块
   
@@ -894,7 +893,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
   observeEvent(input$repair_register, {
     sku <- trimws(input$repair_sku)  # 清除空格
     quantity <- input$repair_quantity
@@ -934,9 +932,6 @@ server <- function(input, output, session) {
       showNotification(paste("修复登记失败：", e$message), type = "error")
     })
   })
-  
-  
-  
   
   ################################################################
   ##                                                            ##
