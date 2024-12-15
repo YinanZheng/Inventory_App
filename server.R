@@ -1066,19 +1066,32 @@ server <- function(input, output, session) {
     })
     
     output$inventory_status_chart <- renderPlotly({
+      # 去空格处理 SKU
+      sku <- trimws(input$query_sku)
+      
+      # 查询库存状态分布
       inventory_status_query <- "
     SELECT Status, COUNT(*) AS Count
     FROM unique_items
     WHERE SKU = ?
     GROUP BY Status"
-      inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(input$query_sku))
+      inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(sku))
       
-      # 明确类别顺序
+      # 定义状态顺序和对应颜色
       status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")
-      inventory_status_data$Status <- factor(inventory_status_data$Status, levels = status_levels)
+      status_colors <- c("lightgray", "#c7e89b", "#4B4B4B", "#46a80d", "#173b02", "#A9A9A9", "red")
+      
+      # 确保数据按照状态顺序排列，缺失状态用 0 填充
+      inventory_status_data <- merge(
+        data.frame(Status = status_levels),
+        inventory_status_data,
+        by = "Status",
+        all.x = TRUE
+      )
+      inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
       
       if (nrow(inventory_status_data) == 0) {
-        # 无数据时渲染默认饼图
+        # 无数据时渲染占位饼图
         plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+percent")
       } else {
         # 渲染库存状态饼图
@@ -1087,33 +1100,45 @@ server <- function(input, output, session) {
           labels = ~Status,
           values = ~Count,
           type = "pie",
-          textinfo = "label+percent",
-          insidetextorientation = "radial",
-          marker = list(
-            colors = c("lightgray", "#c7e89b", "black", "#46a80d", "#173b02", "darkgray", "red")
-          )
+          textinfo = "label+value+percent", # 显示名称、具体数量和百分比
+          insidetextorientation = "horizontal",
+          marker = list(colors = status_colors) # 映射固定颜色
         ) %>%
           layout(
-            title = "库存状态分布",
-            showlegend = TRUE
+            showlegend = TRUE, # 显示图例
+            margin = list(t = 10) # 去除多余标题空间
           )
       }
     })
     
+    
     output$defect_status_chart <- renderPlotly({
+      # 去空格处理 SKU
+      sku <- trimws(input$query_sku)
+      
+      # 查询瑕疵情况分布
       defect_status_query <- "
     SELECT Defect, COUNT(*) AS Count
     FROM unique_items
     WHERE SKU = ?
     GROUP BY Defect"
-      defect_status_data <- dbGetQuery(con, defect_status_query, params = list(input$query_sku))
+      defect_status_data <- dbGetQuery(con, defect_status_query, params = list(sku))
       
-      # 明确类别顺序
+      # 定义瑕疵类型顺序和对应颜色
       defect_levels <- c("未知", "无瑕", "瑕疵", "修复")
-      defect_status_data$Defect <- factor(defect_status_data$Defect, levels = defect_levels)
+      defect_colors <- c("darkgray", "green", "red", "orange")
+      
+      # 确保数据按照瑕疵类型顺序排列，缺失类型用 0 填充
+      defect_status_data <- merge(
+        data.frame(Defect = defect_levels),
+        defect_status_data,
+        by = "Defect",
+        all.x = TRUE
+      )
+      defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
       
       if (nrow(defect_status_data) == 0) {
-        # 无数据时渲染默认饼图
+        # 无数据时渲染占位饼图
         plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+percent")
       } else {
         # 渲染瑕疵情况饼图
@@ -1122,18 +1147,17 @@ server <- function(input, output, session) {
           labels = ~Defect,
           values = ~Count,
           type = "pie",
-          textinfo = "label+percent",
-          insidetextorientation = "radial",
-          marker = list(
-            colors = c("darkgray", "green", "red", "orange")
-          )
+          textinfo = "label+value+percent", # 显示名称、具体数量和百分比
+          insidetextorientation = "horizontal",
+          marker = list(colors = defect_colors) # 映射固定颜色
         ) %>%
           layout(
-            title = "瑕疵情况分布",
-            showlegend = TRUE
+            showlegend = TRUE, # 显示图例
+            margin = list(t = 10) # 去除多余标题空间
           )
       }
     })
+    
     
     
     # output$defect_status_chart <- renderPlotly({
