@@ -1080,7 +1080,7 @@ server <- function(input, output, session) {
               textinfo = "label+value",       # 图上显示类别和数量
               hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
               insidetextorientation = "auto", # 自动调整标签方向
-              textposition = "outside",       # 标签显示在图形外部
+              textposition = "inside",       # 标签显示在图形外部
               marker = list(colors = status_colors) # 按固定颜色映射
             ) %>%
               layout(
@@ -1134,7 +1134,7 @@ server <- function(input, output, session) {
               textinfo = "label+value",       # 图上显示类别和数量
               hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
               insidetextorientation = "auto", # 自动调整标签方向
-              textposition = "outside",       # 标签显示在图形外部
+              textposition = "inside",       # 标签显示在图形外部
               marker = list(colors = defect_colors) # 按固定颜色映射
             ) %>%
               layout(
