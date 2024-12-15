@@ -587,6 +587,7 @@ server <- function(input, output, session) {
     
     if (is.null(sku) || sku == "") {
       renderInboundItemInfo(output, NULL, img_path)
+      return()
     }
     
     # 查询 SKU 数据
@@ -595,8 +596,7 @@ server <- function(input, output, session) {
     # 检查是否有结果
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      output$inbound_item_info <- renderUI(NULL)
-      return()
+      renderInboundItemInfo(output, NULL, img_path)
     }
     
     img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
