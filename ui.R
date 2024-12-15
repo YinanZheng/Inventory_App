@@ -364,26 +364,6 @@ ui <- navbarPage(
               plotOutput("defect_status_chart", height = "300px")
             )
           )
-        ),
-        tags$hr(),
-        fluidRow(
-          # 可折叠的状态表
-          column(
-            12,
-            actionButton(
-              "toggle_item_table_query", 
-              "物品详细状态表（点击显示/隐藏）",
-              style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;"
-            )
-          ),
-          column(
-            12,
-            div(
-              id = "item_table_container_query", # 表格容器
-              style = "margin-top: 20px; margin-bottom: 100px; display: none;", # 默认隐藏
-              uniqueItemsTableUI("unique_items_table_query") # 自定义组件，用于渲染表格
-            )
-          )
         )
       )
     )
