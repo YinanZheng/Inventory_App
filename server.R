@@ -1012,8 +1012,6 @@ server <- function(input, output, session) {
       FROM inventory
       WHERE SKU = ?"
       sku_data <- dbGetQuery(con, sku_query, params = list(sku))
-      showNotification("查询到的 SKU 数据：", type = "message")
-      showNotification(as.character(head(sku_data)), type = "message")
       
       if (nrow(sku_data) == 0) {
         output$query_item_info <- renderUI({
