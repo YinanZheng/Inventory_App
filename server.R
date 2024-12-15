@@ -60,7 +60,7 @@ server <- function(input, output, session) {
     shinyjs::toggle("item_table_container_defect")
   })
   
-
+  
   ####################################################################################################################################
   ###################################################                              ###################################################
   ###################################################             渲染             ###################################################
@@ -187,9 +187,9 @@ server <- function(input, output, session) {
   ## 供应商模块                                                 ##
   ##                                                            ##
   ################################################################
-
+  
   supplierModuleServer(input, output, session, con)
-
+  
   
   
   ################################################################
@@ -197,7 +197,7 @@ server <- function(input, output, session) {
   ## 物品大小类模块                                             ##
   ##                                                            ##
   ################################################################
-
+  
   typeModuleServer("type_module", con, item_type_data)
   
   
@@ -210,7 +210,7 @@ server <- function(input, output, session) {
       showNotification("文件已上传并记录！", type = "message")
     }
   })
-
+  
   # 清空输入
   observeEvent(input$reset_btn, {
     tryCatch({
@@ -397,7 +397,7 @@ server <- function(input, output, session) {
             image_name = unique_image_name
           )
           showNotification(paste0(input$new_sku, "图片已成功更新并保存！"), type = "message")
-
+          
           # 更新库存数据
           dbExecute(con, "UPDATE inventory 
                       SET ItemImagePath = ? 
@@ -420,7 +420,7 @@ server <- function(input, output, session) {
     } else {
       showNotification("库存中无此SKU商品，无法更新图片！", type = "error")
     }
-
+    
     # 重置文件输入框
     shinyjs::reset("new_item_image")
     uploaded_file(NULL)
@@ -562,7 +562,7 @@ server <- function(input, output, session) {
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     params = list(sku, maker, major_type, minor_type, item_name, quantity, 
                                   round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
-
+          
           showNotification(paste("新商品创建成功! SKU:", sku, ", 商品名:", item_name), type = "message")
         }
       }
@@ -600,7 +600,7 @@ server <- function(input, output, session) {
       
       # Convert to data frame
       batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
-
+      
       # Insert into database
       dbBegin(con)
       tryCatch({
@@ -613,7 +613,7 @@ server <- function(input, output, session) {
         }
         dbCommit(con)  # Commit transaction
         showNotification("所有采购货物已成功登记！", type = "message")
-       
+        
         unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  #触发更新
         
       }, error = function(e) {
@@ -633,7 +633,7 @@ server <- function(input, output, session) {
     })
   })
   
-
+  
   ################################################################
   ##                                                            ##
   ## SKU BARCODE模块                                            ##
@@ -756,7 +756,7 @@ server <- function(input, output, session) {
     }
   )
   
-
+  
   ################################################################
   ##                                                            ##
   ## 入库模块                                                   ##
@@ -992,17 +992,17 @@ server <- function(input, output, session) {
   ## 报表模块                                                   ##
   ##                                                            ##
   ################################################################
-
+  
   observe({
     sku <- trimws(input$query_sku)
-
+    
     if (sku == "") {
       output$query_item_info <- renderUI({ div() })
       output$inventory_status_chart <- renderPlotly({ NULL })
       output$defect_status_chart <- renderPlotly({ NULL })
       return()
     }
-
+    
     tryCatch({
       # 查询 SKU 数据
       sku_query <- "
@@ -1014,14 +1014,14 @@ server <- function(input, output, session) {
       sku_data <- dbGetQuery(con, sku_query, params = list(sku))
       showNotification("查询到的 SKU 数据：", type = "message")
       showNotification(as.character(head(sku_data)), type = "message")
-
+      
       if (nrow(sku_data) == 0) {
         output$query_item_info <- renderUI({
           div(tags$p("未找到该 SKU 对应的商品信息！", style = "color: red; font-size: 16px;"))
         })
         return()
       }
-
+      
       output$query_item_info <- renderUI({
         img_path <- ifelse(
           is.na(sku_data$ItemImagePath[1]),
@@ -1042,7 +1042,7 @@ server <- function(input, output, session) {
           )
         )
       })
-
+      
       # 渲染库存状态图表
       output$inventory_status_chart <- renderPlotly({
         tryCatch({
@@ -1091,7 +1091,7 @@ server <- function(input, output, session) {
         })
       })
       
-
+      
       # 渲染瑕疵情况图表
       output$defect_status_chart <- renderPlotly({
         tryCatch({
@@ -1143,9 +1143,9 @@ server <- function(input, output, session) {
       showNotification(paste("发生错误：", e$message), type = "error")
     })
   })
-
   
-
+  
+  
   
   ################################################################
   ##                                                            ##
@@ -1192,7 +1192,7 @@ server <- function(input, output, session) {
   #   })
   # })
   
-
+  
   # Disconnect from the database on app stop
   onStop(function() {
     dbDisconnect(con)
