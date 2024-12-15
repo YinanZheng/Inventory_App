@@ -993,7 +993,89 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 监听 SKU 查询按钮
+  observeEvent(input$query_report_btn, {
+    sku <- trimws(input$report_sku) # 清理 SKU 输入
+    
+    # 校验 SKU 输入
+    if (is.null(sku) || sku == "") {
+      showNotification("请输入有效的条形码！", type = "error")
+      resetReportUI()
+      return()
+    }
+    
+    tryCatch({
+      # 从数据库中获取 SKU 数据
+      sku_data <- fetchSkuData(sku, con)
+      
+      # 校验是否找到数据
+      if (nrow(sku_data) == 0) {
+        showNotification("未找到该 SKU 的商品信息！", type = "error")
+        resetReportUI()
+        return()
+      }
+      
+      # 渲染商品基本信息
+      output$report_item_name <- renderText(sku_data$ItemName[1])
+      output$report_item_maker <- renderText(sku_data$Maker[1])
+      output$report_major_type <- renderText(sku_data$MajorType[1])
+      output$report_minor_type <- renderText(sku_data$MinorType[1])
+      output$report_total_quantity <- renderText(sku_data$TotalQuantity[1])
+      output$report_avg_cost <- renderText(sprintf("¥%.2f", sku_data$AverageCost[1]))
+      output$report_avg_shipping_cost <- renderText(sprintf("¥%.2f", sku_data$AverageShippingCost[1]))
+      
+      # 更新图片
+      img_path <- ifelse(
+        is.na(sku_data$ItemImagePath[1]),
+        "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
+        paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
+      )
+      session$sendCustomMessage("updateImage", list(id = "report_item_image", src = img_path))
+      
+      # 渲染库存状态汇总图
+      inventory_status_data <- fetchInventoryStatusData(sku, con)
+      output$inventory_status_plot <- renderPlot({
+        plotBarChart(
+          data = inventory_status_data,
+          x = "Status",
+          y = "Count",
+          x_label = "库存状态",
+          y_label = "数量",
+          colors = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red")
+        )
+      })
+      
+      # 渲染瑕疵情况汇总图
+      defect_status_data <- fetchDefectStatusData(sku, con)
+      output$defect_status_plot <- renderPlot({
+        plotPieChart(
+          data = defect_status_data,
+          labels = "Defect",
+          values = "Count",
+          colors = c("darkgray", "green", "red", "orange")
+        )
+      })
+      
+    }, error = function(e) {
+      showNotification(paste0("查询失败：", e$message), type = "error")
+      resetReportUI()
+    })
+  })
   
+  # 重置报表 UI
+  resetReportUI <- function() {
+    output$report_item_name <- renderText("")
+    output$report_item_maker <- renderText("")
+    output$report_major_type <- renderText("")
+    output$report_minor_type <- renderText("")
+    output$report_total_quantity <- renderText("")
+    output$report_avg_cost <- renderText("")
+    output$report_avg_shipping_cost <- renderText("")
+    session$sendCustomMessage("updateImage", list(id = "report_item_image", src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"))
+    output$inventory_status_plot <- renderPlot(NULL)
+    output$defect_status_plot <- renderPlot(NULL)
+  }
+
   
   ################################################################
   ##                                                            ##

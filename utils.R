@@ -261,66 +261,48 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL, refr
 }
 
 
+fetchSkuData <- function(sku, con) {
+  query <- "
+    SELECT 
+      ItemName,
+      Maker,
+      MajorType,
+      MinorType,
+      Quantity AS TotalQuantity,
+      ProductCost AS AverageCost,
+      ShippingCost AS AverageShippingCost,
+      ItemImagePath
+    FROM inventory
+    WHERE SKU = ?"
+  dbGetQuery(con, query, params = list(sku))
+}
 
-get_inventory_overview <- function(con, sku) {
+
+fetchInventoryStatusData <- function(sku, con) {
   query <- "
     SELECT 
       Status, 
-      Defect, 
-      COUNT(*) as Count
-    FROM 
-      unique_items
-    WHERE 
-      SKU = ?
-    GROUP BY 
-      Status, Defect"
-  
-  # 查询数据库
-  inventory_data <- dbGetQuery(con, query, params = list(sku))
-  
-  # 初始化结果结构
-  overview <- list(
-    domestic_instock = list(defect = 0, repaired = 0, pristine = 0),
-    in_transit = list(defect = 0, repaired = 0, pristine = 0),
-    us_instock = list(defect = 0, repaired = 0, pristine = 0)
-  )
-  
-  # 根据查询结果填充数据
-  for (i in seq_len(nrow(inventory_data))) {
-    row <- inventory_data[i, ]
-    
-    if (row$Status == "国内入库") {
-      if (row$Defect == "瑕疵") {
-        overview$domestic_instock$defect <- row$Count
-      } else if (row$Defect == "修复") {
-        overview$domestic_instock$repaired <- row$Count
-      } else {
-        overview$domestic_instock$pristine <- row$Count
-      }
-    } else if (row$Status %in% c("国内出库", "国内售出")) {
-      if (row$Defect == "瑕疵") {
-        overview$in_transit$defect <- overview$in_transit$defect + row$Count
-      } else if (row$Defect == "修复") {
-        overview$in_transit$repaired <- overview$in_transit$repaired + row$Count
-      } else {
-        overview$in_transit$pristine <- overview$in_transit$pristine + row$Count
-      }
-    } else if (row$Status == "美国入库") {
-      if (row$Defect == "瑕疵") {
-        overview$us_instock$defect <- row$Count
-      } else if (row$Defect == "修复") {
-        overview$us_instock$repaired <- row$Count
-      } else {
-        overview$us_instock$pristine <- row$Count
-      }
-    }
-  }
-  
-  return(overview)
+      COUNT(*) AS Count
+    FROM unique_items
+    WHERE SKU = ?
+    GROUP BY Status"
+  dbGetQuery(con, query, params = list(sku))
 }
 
-# 提取公共方法：获取 SKU 数据
-fetchSkuData <- function(sku, con) {
+
+fetchDefectStatusData <- function(sku, con) {
+  query <- "
+    SELECT 
+      Defect, 
+      COUNT(*) AS Count
+    FROM unique_items
+    WHERE SKU = ?
+    GROUP BY Defect"
+  dbGetQuery(con, query, params = list(sku))
+}
+
+
+fetchSkuOperationData <- function(sku, con) {
   # 查询 SKU 的基本信息和相关状态数据
   query <- "
     SELECT 
@@ -343,6 +325,29 @@ fetchSkuData <- function(sku, con) {
   # 执行查询并返回结果
   dbGetQuery(con, query, params = list(sku))
 }
+
+
+plotBarChart <- function(data, x, y, x_label, y_label, colors) {
+  barplot(
+    height = data[[y]],
+    names.arg = data[[x]],
+    col = colors,
+    xlab = x_label,
+    ylab = y_label,
+    main = "库存状态分布"
+  )
+}
+
+plotPieChart <- function(data, labels, values, colors) {
+  pie(
+    data[[values]],
+    labels = paste(data[[labels]], "(", data[[values]], ")", sep = ""),
+    col = colors,
+    main = "瑕疵情况分布"
+  )
+}
+
+
 
 
 renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_field = "PendingQuantity") {
@@ -438,7 +443,7 @@ handleSkuInput <- function(
   
   tryCatch({
     # 查询 SKU 数据
-    item_info <- fetchSkuData(sku, con)
+    item_info <- fetchSkuOperationData(sku, con)
     
     # 如果未找到记录
     if (nrow(item_info) == 0) {
@@ -522,7 +527,7 @@ handleOperation <- function(
     showNotification(paste0("物品成功", operation_name, "！"), type = "message")
     
     # 查询 SKU 数据并刷新 UI
-    item_info <- fetchSkuData(sku, con)
+    item_info <- fetchSkuOperationData(sku, con)
     
     renderItemInfo(
       output = output,
