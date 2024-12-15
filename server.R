@@ -856,7 +856,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 检查符合条件的无瑕商品数量
+    # 检查符合条件的无瑕商品数量 （可修改的物品必须是国内入库）
     available_items <- sku_data[sku_data$Status == "国内入库" & sku_data$Defect == "无瑕", ]
     available_quantity <- nrow(available_items)
     
@@ -897,8 +897,8 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 检查瑕疵品数量
-    defect_items <- sku_data[sku_data$Defect == "瑕疵", ]
+    # 检查瑕疵品数量 （可修改的物品必须是国内入库）
+    defect_items <- sku_data[sku_data$Status == "国内入库" & sku_data$Defect == "瑕疵", ]
     defect_quantity <- nrow(defect_items)
     
     if (quantity > defect_quantity) {
@@ -910,7 +910,7 @@ server <- function(input, output, session) {
     tryCatch({
       selected_ids <- defect_items$UniqueID[1:quantity]  # 获取所需数量的 UniqueID
       lapply(selected_ids, function(unique_id) {
-        update_status(con, unique_id, "修复", defect_status = "修复")
+        update_status(con, unique_id, "国内入库", defect_status = "修复")
       })
       showNotification("瑕疵品修复登记成功！", type = "message")
       refresh_trigger(!refresh_trigger())  # 刷新数据表
