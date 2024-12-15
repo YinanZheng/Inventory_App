@@ -319,14 +319,7 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("query_sku", NULL, placeholder = "请输入 SKU 或条形码"),
-          actionButton(
-            "search_report_btn", 
-            "查询", 
-            icon = icon("search"), 
-            class = "btn-primary", 
-            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
-          )
+          textInput("query_sku", NULL, placeholder = "请输入 SKU 或条形码", width = "100%")
         )
       ),
       # 右侧显示区域
