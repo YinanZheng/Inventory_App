@@ -945,7 +945,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$outbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, NULL, placeholder_300px_path)
+      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path)
       return()
     }
     
@@ -962,12 +962,12 @@ server <- function(input, output, session) {
     # 检查状态
     if (item_info$Status[1] != "国内入库" || item_info$Defect[1] == "瑕疵") {
       showNotification("该物品状态不符合出库要求！", type = "error")
-      renderItemInfo(output, item_info, placeholder_300px_path)
+      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path)
       return()
     }
     
     # 渲染物品信息
-    renderItemInfo(output, item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
+    renderItemInfo(output, "outbound_item_info", item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
   })
   
   # 确认出库逻辑
