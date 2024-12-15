@@ -311,12 +311,112 @@ ui <- navbarPage(
   ), # end of 出售 tab
   
   tabPanel(
-    "查询/报表",
+    "查询 / 报表",
     sidebarLayout(
+      # 左侧输入区域
       sidebarPanel(
+        div(
+          class = "card shadow-sm",
+          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+          
+          # 卡片标题
+          div(
+            style = "border-bottom: 2px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px;",
+            tags$h4("商品查询", style = "margin: 0; font-weight: bold; color: #333; text-align: center;")
+          ),
+          
+          # SKU 输入框
+          div(
+            style = "margin-bottom: 15px;",
+            textInput(
+              "report_sku", 
+              label = NULL, 
+              placeholder = "请扫描或输入条形码",
+              width = "100%"
+            )
+          ),
+          
+          # 查询按钮
+          actionButton(
+            "query_report_btn", 
+            "查询", 
+            icon = icon("search"), 
+            class = "btn-primary", 
+            style = "font-size: 16px; width: 100%; height: 42px;"
+          )
+        )
       ),
+      
+      # 右侧显示区域
       mainPanel(
+        fluidRow(
+          # 商品基本信息卡片
+          column(
+            12,
+            div(
+              class = "card shadow-sm",
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;",
+              
+              # 图片和商品信息
+              fluidRow(
+                column(
+                  4,
+                  div(
+                    style = "text-align: center;",
+                    img(
+                      src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
+                      id = "report_item_image",
+                      height = "300px",
+                      style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+                    )
+                  )
+                ),
+                column(
+                  8,
+                  div(
+                    style = "padding: 20px;",
+                    tags$h4("商品信息", style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
+                    tags$table(
+                      style = "width: 100%; font-size: 16px; color: #444;",
+                      tags$tr(tags$td("商品名:", style = "padding: 8px 10px;"), tags$td(textOutput("report_item_name"))),
+                      tags$tr(tags$td("供应商:", style = "padding: 8px 10px;"), tags$td(textOutput("report_item_maker"))),
+                      tags$tr(tags$td("大类:", style = "padding: 8px 10px;"), tags$td(textOutput("report_major_type"))),
+                      tags$tr(tags$td("小类:", style = "padding: 8px 10px;"), tags$td(textOutput("report_minor_type"))),
+                      tags$tr(tags$td("总库存:", style = "padding: 8px 10px;"), tags$td(textOutput("report_total_quantity"))),
+                      tags$tr(tags$td("平均成本:", style = "padding: 8px 10px;"), tags$td(textOutput("report_avg_cost"))),
+                      tags$tr(tags$td("平均运费:", style = "padding: 8px 10px;"), tags$td(textOutput("report_avg_shipping_cost")))
+                    )
+                  )
+                )
+              )
+            )
+          )
+        ),
+        
+        fluidRow(
+          # 库存状态汇总
+          column(
+            6,
+            div(
+              class = "card shadow-sm",
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;",
+              tags$h4("库存状态汇总", style = "margin: 0 0 15px 0; font-weight: bold; color: #333;"),
+              plotOutput("inventory_status_plot", height = "300px")
+            )
+          ),
+          
+          # 瑕疵情况汇总
+          column(
+            6,
+            div(
+              class = "card shadow-sm",
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9; margin-bottom: 20px;",
+              tags$h4("瑕疵情况汇总", style = "margin: 0 0 15px 0; font-weight: bold; color: #333;"),
+              plotOutput("defect_status_plot", height = "300px")
+            )
+          )
+        )
       )
     )
-  ) # end of 查询/报表 tab
+  )# end of 查询/报表 tab
 )
