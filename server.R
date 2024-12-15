@@ -1085,7 +1085,7 @@ server <- function(input, output, session) {
             ) %>%
               layout(
                 showlegend = TRUE, # 显示图例
-                margin = list(l = 20, r = 20, t = 100, b = 100), # 增加边距
+                margin = list(l = 20, r = 20, t = 30, b = 30), # 增加边距
                 uniformtext = list(minsize = 10, mode = "hide") # 统一文本大小
               )
           }
@@ -1139,7 +1139,7 @@ server <- function(input, output, session) {
             ) %>%
               layout(
                 showlegend = TRUE, # 显示图例
-                margin = list(l = 20, r = 20, t = 100, b = 100), # 增加边距
+                margin = list(l = 20, r = 20, t = 30, b = 30), # 增加边距
                 uniformtext = list(minsize = 10, mode = "hide") # 统一文本大小
               )
           }
