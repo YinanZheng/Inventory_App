@@ -1021,35 +1021,52 @@ server <- function(input, output, session) {
       output$report_avg_cost <- renderText(sprintf("¥%.2f", sku_data$AverageCost[1]))
       output$report_avg_shipping_cost <- renderText(sprintf("¥%.2f", sku_data$AverageShippingCost[1]))
       
-      img_path <- ifelse(
-        is.na(sku_data$ItemImagePath[1]),
-        "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
-        paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
-      )
-      session$sendCustomMessage("updateImage", list(id = "report_item_image", src = img_path))
-      
-      # 绘制库存状态图
-      inventory_status_data <- fetchInventoryStatusData(sku, con)
-      output$inventory_status_plot <- renderPlotly({
-        plotBarChart(
-          data = inventory_status_data,
-          x = "Status",
-          y = "Count",
-          x_label = "库存状态",
-          y_label = "数量",
-          colors = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red")
+      # 更新图片
+      output$report_item_image <- renderUI({
+        img_path <- ifelse(
+          is.na(sku_data$ItemImagePath[1]),
+          placeholder_300px_path,
+          paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
+        )
+        tags$img(
+          src = img_path,
+          height = "300px",
+          style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
         )
       })
       
+      # 绘制库存状态图
+      output$inventory_status_plot <- renderPlotly({
+        inventory_status_data <- fetchInventoryStatusData(sku, con)
+        if (nrow(inventory_status_data) == 0) {
+          plotly::plot_ly(type = "scatter", mode = "text") %>%
+            plotly::add_text(x = 0.5, y = 0.5, text = "无库存状态数据", textfont = list(size = 20, color = "red"))
+        } else {
+          plotBarChart(
+            data = inventory_status_data,
+            x = "Status",
+            y = "Count",
+            x_label = "库存状态",
+            y_label = "数量",
+            colors = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red")
+          )
+        }
+      })
+      
       # 绘制瑕疵情况图
-      defect_status_data <- fetchDefectStatusData(sku, con)
       output$defect_status_plot <- renderPlotly({
-        plotPieChart(
-          data = defect_status_data,
-          labels = "Defect",
-          values = "Count",
-          colors = c("darkgray", "green", "red", "orange")
-        )
+        defect_status_data <- fetchDefectStatusData(sku, con)
+        if (nrow(defect_status_data) == 0) {
+          plotly::plot_ly(type = "scatter", mode = "text") %>%
+            plotly::add_text(x = 0.5, y = 0.5, text = "无瑕疵情况数据", textfont = list(size = 20, color = "red"))
+        } else {
+          plotPieChart(
+            data = defect_status_data,
+            labels = "Defect",
+            values = "Count",
+            colors = c("darkgray", "green", "red", "orange")
+          )
+        }
       })
       
     }, error = function(e) {
@@ -1067,10 +1084,17 @@ server <- function(input, output, session) {
     output$report_total_quantity <- renderText("")
     output$report_avg_cost <- renderText("")
     output$report_avg_shipping_cost <- renderText("")
-    session$sendCustomMessage("updateImage", list(id = "report_item_image", src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"))
+    output$report_item_image <- renderUI({
+      tags$img(
+        src = placeholder_300px_path,
+        height = "300px",
+        style = "border: 2px solid #ddd; border-radius: 8px; box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);"
+      )
+    })
     output$inventory_status_plot <- renderPlotly({ NULL })
     output$defect_status_plot <- renderPlotly({ NULL })
   }
+}
 
   
   ################################################################
