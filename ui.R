@@ -96,19 +96,7 @@ ui <- navbarPage(
             style = "height: 300px; overflow-y: scroll;",  # 初始样式
             DTOutput("filtered_inventory_table")
           ))
-        ),
-        # 
-        # tags$hr(), # 分隔线
-        # 
-        # fluidRow(
-        #   column(12, actionButton("toggle_item_table", "物品状态表（点击显示/隐藏）",
-        #                           style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
-        #   column(12, div(
-        #     id = "item_table_container",  # 容器 ID
-        #     style = "margin-bottom: 100px;",
-        #     DTOutput("unique_items_table"),
-        #   ))
-        # )
+        )
       )
     )
   ), # end of 采购登记 tab
