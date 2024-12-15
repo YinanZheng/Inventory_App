@@ -94,9 +94,14 @@ server <- function(input, output, session) {
     shinyjs::toggle("inventory_table_container")  # 切换显示/隐藏
   })
   
-  observeEvent(input$toggle_item_table, {
-    shinyjs::toggle("item_table_container")  # 切换显示/隐藏
+  observeEvent(input$toggle_item_table_inbound, {
+    shinyjs::toggle("item_table_container_inbound")
   })
+  
+  observeEvent(input$toggle_item_table_defect, {
+    shinyjs::toggle("item_table_container_defect")
+  })
+
   
   
 
