@@ -790,7 +790,8 @@ server <- function(input, output, session) {
       con = con,
       output = output,
       refresh_trigger = unique_items_data_refresh_trigger,
-      session = session
+      session = session,
+      input = input # 传递 input 对象
     )
   })
   

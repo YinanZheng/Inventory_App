@@ -477,7 +477,8 @@ handleOperation <- function(
     con,                  # 数据库连接
     output,               # 输出对象
     refresh_trigger,      # 数据刷新触发器
-    session               # 当前会话对象
+    session,              # 当前会话对象
+    input = NULL          # 显式传递的 input 对象
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -503,7 +504,7 @@ handleOperation <- function(
     
     # 动态设置瑕疵状态
     defect_status <- NULL
-    if (operation_name == "入库") {
+    if (operation_name == "入库" && !is.null(input)) {
       is_defective <- input$defective_item
       defect_status <- ifelse(is.null(is_defective) || !is_defective, "无瑕", "瑕疵")
     }
