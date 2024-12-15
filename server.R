@@ -799,7 +799,8 @@ server <- function(input, output, session) {
       count_field = "PendingQuantity",
       con = con,
       output = output,
-      refresh_trigger = unique_items_data_refresh_trigger
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session
     )
   })
   
@@ -943,7 +944,8 @@ server <- function(input, output, session) {
       count_field = "AvailableForOutbound",
       con = con,
       output = output,
-      refresh_trigger = unique_items_data_refresh_trigger
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session
     )
   })
   
@@ -999,7 +1001,8 @@ server <- function(input, output, session) {
       count_field = "AvailableForSold",
       con = con,
       output = output,
-      refresh_trigger = unique_items_data_refresh_trigger
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session
     )
   })
   

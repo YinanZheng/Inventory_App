@@ -428,7 +428,8 @@ handleOperation <- function(
     count_field,    # 计数字段名称
     con,            # 数据库连接
     output,         # 输出对象
-    refresh_trigger # 数据刷新触发器
+    refresh_trigger, # 数据刷新触发器
+    session         # 当前会话对象
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -490,13 +491,14 @@ handleOperation <- function(
     }
     
     # 清空输入框
+    updateTextInput(session, paste0(operation_name, "_sku"), value = "")
     if (operation_name == "入库") {
       updateCheckboxInput(session, "defective_item", value = FALSE)
     }
-    updateTextInput(session, paste0(operation_name, "_sku"), value = "")
     
   }, error = function(e) {
     # 错误处理
     showNotification(paste0(operation_name, "失败：", e$message), type = "error")
   })
 }
+
