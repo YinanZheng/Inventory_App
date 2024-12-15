@@ -311,7 +311,7 @@ ui <- navbarPage(
   ), # end of 出售 tab
   
   tabPanel(
-    "查询 / 报表",
+    "查询",
     sidebarLayout(
       # 左侧输入区域
       sidebarPanel(
@@ -361,5 +361,17 @@ ui <- navbarPage(
         )
       )
     )
-  )# end of 查询/报表 tab
+  ), # end of 查询 tab
+  
+  tabPanel(
+    "报表下载",
+    sidebarLayout(
+      sidebarPanel(
+        
+      ),
+      mainPanel(
+        
+      )
+    )
+  )
 )
