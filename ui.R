@@ -133,7 +133,7 @@ ui <- navbarPage(
               
               # 卡片标题
               div(
-                style = "border-bottom: 2px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px;",
+                style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                 tags$h4("入库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
               ),
               
