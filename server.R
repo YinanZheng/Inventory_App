@@ -1064,6 +1064,51 @@ server <- function(input, output, session) {
         )
       )
     })
+    
+    tryCatch({
+      # 查询库存状态分布
+      inventory_status_query <- "
+        SELECT Status, COUNT(*) AS Count
+        FROM unique_items
+        WHERE SKU = ?
+        GROUP BY Status"
+      inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(sku))
+      
+      # 明确类别顺序
+      status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")
+      inventory_status_data$Status <- factor(inventory_status_data$Status, levels = status_levels)
+      
+      # 检查数据是否为空
+      if (nrow(inventory_status_data) == 0) {
+        showNotification("未找到该 SKU 的库存状态数据！", type = "error")
+        output$inventory_status_chart <- renderPlotly({
+          plotly::plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+percent")
+        })
+        return()
+      }
+      
+      # 渲染库存状态饼图
+      output$inventory_status_chart <- renderPlotly({
+        plotly::plot_ly(
+          data = inventory_status_data,
+          labels = ~Status,
+          values = ~Count,
+          type = "pie",
+          textinfo = "label+percent",
+          insidetextorientation = "radial",
+          marker = list(
+            colors = c("lightgray", "#c7e89b", "black", "#46a80d", "#173b02", "darkgray", "red")
+          )
+        ) %>%
+          layout(
+            title = "库存状态分布",
+            showlegend = TRUE
+          )
+      })
+    }, error = function(e) {
+      showNotification(paste("查询失败：", e$message), type = "error")
+      output$inventory_status_chart <- renderPlotly({ NULL })
+    })
   })
 
   
