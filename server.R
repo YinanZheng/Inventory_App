@@ -1107,43 +1107,43 @@ server <- function(input, output, session) {
       }
     })
     
-    output$defect_status_chart <- renderPlotly({
-      # 查询瑕疵情况分布
-      defect_status_query <- "
-    SELECT Defect, COUNT(*) AS Count
-    FROM unique_items
-    WHERE SKU = ?
-    GROUP BY Defect"
-      defect_status_data <- dbGetQuery(con, defect_status_query, params = list(input$query_sku))
-      
-      # 定义固定的瑕疵顺序和颜色
-      defect_levels <- c("未知", "无瑕", "瑕疵", "修复")
-      defect_colors <- c("darkgray", "green", "red", "orange")
-      
-      # 确保数据按照瑕疵顺序排列，缺失状态用 0 填充
-      defect_status_data <- merge(
-        data.frame(Defect = defect_levels),
-        defect_status_data,
-        by = "Defect",
-        all.x = TRUE
-      )
-      defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
-      
-      # 渲染瑕疵情况饼图
-      plot_ly(
-        data = defect_status_data,
-        labels = ~Defect,
-        values = ~Count,
-        type = "pie",
-        textinfo = "label+value+percent", # 显示瑕疵类型、数量和百分比
-        insidetextorientation = "horizontal",
-        marker = list(colors = defect_colors) # 使用固定颜色映射
-      ) %>%
-        layout(
-          showlegend = TRUE, # 显示图例
-          margin = list(t = 10) # 去除多余的标题空间
-        )
-    })
+    # output$defect_status_chart <- renderPlotly({
+    #   # 查询瑕疵情况分布
+    #   defect_status_query <- "
+    # SELECT Defect, COUNT(*) AS Count
+    # FROM unique_items
+    # WHERE SKU = ?
+    # GROUP BY Defect"
+    #   defect_status_data <- dbGetQuery(con, defect_status_query, params = list(input$query_sku))
+    #   
+    #   # 定义固定的瑕疵顺序和颜色
+    #   defect_levels <- c("未知", "无瑕", "瑕疵", "修复")
+    #   defect_colors <- c("darkgray", "green", "red", "orange")
+    #   
+    #   # 确保数据按照瑕疵顺序排列，缺失状态用 0 填充
+    #   defect_status_data <- merge(
+    #     data.frame(Defect = defect_levels),
+    #     defect_status_data,
+    #     by = "Defect",
+    #     all.x = TRUE
+    #   )
+    #   defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
+    #   
+    #   # 渲染瑕疵情况饼图
+    #   plot_ly(
+    #     data = defect_status_data,
+    #     labels = ~Defect,
+    #     values = ~Count,
+    #     type = "pie",
+    #     textinfo = "label+value+percent", # 显示瑕疵类型、数量和百分比
+    #     insidetextorientation = "horizontal",
+    #     marker = list(colors = defect_colors) # 使用固定颜色映射
+    #   ) %>%
+    #     layout(
+    #       showlegend = TRUE, # 显示图例
+    #       margin = list(t = 10) # 去除多余的标题空间
+    #     )
+    # })
     
   })
 
