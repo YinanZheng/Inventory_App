@@ -992,192 +992,159 @@ server <- function(input, output, session) {
   ## 报表模块                                                   ##
   ##                                                            ##
   ################################################################
-  # 
-  # observe({
-  #   sku <- trimws(input$query_sku)
-  #   
-  #   if (sku == "") {
-  #     output$query_item_info <- renderUI({ div() })
-  #     output$inventory_status_chart <- renderPlotly({ NULL })
-  #     output$defect_status_chart <- renderPlotly({ NULL })
-  #     return()
-  #   }
-  #   
-  #   tryCatch({
-  #     # 查询 SKU 数据
-  #     sku_query <- "
-  #     SELECT 
-  #       ItemName, Maker, MajorType, MinorType, Quantity, 
-  #       ProductCost, ShippingCost, ItemImagePath 
-  #     FROM inventory
-  #     WHERE SKU = ?"
-  #     sku_data <- dbGetQuery(con, sku_query, params = list(sku))
-  #     showNotification("查询到的 SKU 数据：", type = "message")
-  #     showNotification(as.character(head(sku_data)), type = "message")
-  #     
-  #     if (nrow(sku_data) == 0) {
-  #       output$query_item_info <- renderUI({
-  #         div(tags$p("未找到该 SKU 对应的商品信息！", style = "color: red; font-size: 16px;"))
-  #       })
-  #       return()
-  #     }
-  #     
-  #     output$query_item_info <- renderUI({
-  #       img_path <- ifelse(
-  #         is.na(sku_data$ItemImagePath[1]),
-  #         placeholder_300px_path,
-  #         paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
-  #       )
-  #       div(
-  #         style = "display: flex; align-items: center; padding: 10px;",
-  #         div(style = "flex: 1; text-align: center; margin-right: 20px;",
-  #             tags$img(src = img_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px;")),
-  #         div(style = "flex: 2; display: flex; flex-direction: column; justify-content: center;",
-  #             tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
-  #             tags$p(tags$b("供应商："), sku_data$Maker[1]),
-  #             tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
-  #             tags$p(tags$b("库存数量："), sku_data$Quantity[1]),
-  #             tags$p(tags$b("平均成本："), sprintf("¥%.2f", sku_data$ProductCost[1])),
-  #             tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
-  #         )
-  #       )
-  #     })
-  #     
-  #     # 渲染库存状态图表
-  #     tryCatch({
-  #       inventory_status_query <- "
-  #       SELECT Status, COUNT(*) AS Count
-  #       FROM unique_items
-  #       WHERE SKU = ?
-  #       GROUP BY Status"
-  #       inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(sku))
-  #       showNotification("查询到的库存状态数据：", type = "message")
-  #       showNotification(as.character(head(inventory_status_data)), type = "message")
-  #       
-  #       inventory_status_data <- merge(
-  #         data.frame(Status = c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")),
-  #         inventory_status_data,
-  #         by = "Status",
-  #         all.x = TRUE
-  #       )
-  #       inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
-  #       
-  #       if (sum(inventory_status_data$Count) == 0) {
-  #         output$inventory_status_chart <- renderPlotly({
-  #           plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
-  #         })
-  #       } else {
-  #         output$inventory_status_chart <- renderPlotly({
-  #           plot_ly(
-  #             data = inventory_status_data,
-  #             labels = ~Status,
-  #             values = ~Count,
-  #             type = "pie",
-  #             textinfo = "label+value",
-  #             hoverinfo = "label+percent+value"
-  #           )
-  #         })
-  #       }
-  #     }, error = function(e) {
-  #       showNotification(paste("库存状态图表生成错误：", e$message), type = "error")
-  #       output$inventory_status_chart <- renderPlotly({ NULL })
-  #     })
-  #     
-  #     # 渲染瑕疵情况图表
-  #     tryCatch({
-  #       defect_status_query <- "
-  #       SELECT Defect, COUNT(*) AS Count
-  #       FROM unique_items
-  #       WHERE SKU = ?
-  #       GROUP BY Defect"
-  #       defect_status_data <- dbGetQuery(con, defect_status_query, params = list(sku))
-  #       showNotification("查询到的瑕疵情况数据：", type = "message")
-  #       showNotification(as.character(head(defect_status_data)), type = "message")
-  #       
-  #       defect_status_data <- merge(
-  #         data.frame(Defect = c("未知", "无瑕", "瑕疵", "修复")),
-  #         defect_status_data,
-  #         by = "Defect",
-  #         all.x = TRUE
-  #       )
-  #       defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
-  #       
-  #       if (sum(defect_status_data$Count) == 0) {
-  #         output$defect_status_chart <- renderPlotly({
-  #           plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
-  #         })
-  #       } else {
-  #         output$defect_status_chart <- renderPlotly({
-  #           plot_ly(
-  #             data = defect_status_data,
-  #             labels = ~Defect,
-  #             values = ~Count,
-  #             type = "pie",
-  #             textinfo = "label+value",
-  #             hoverinfo = "label+percent+value"
-  #           )
-  #         })
-  #       }
-  #     }, error = function(e) {
-  #       showNotification(paste("瑕疵情况图表生成错误：", e$message), type = "error")
-  #       output$defect_status_chart <- renderPlotly({ NULL })
-  #     })
-  #     
-  #   }, error = function(e) {
-  #     showNotification(paste("发生错误：", e$message), type = "error")
-  #   })
-  # })
-  # 
-  
-  
-  
-  
-  
-  
-  
-    
-    
-    
-    
-    # output$defect_status_chart <- renderPlotly({
-    #   # 查询瑕疵情况分布
-    #   defect_status_query <- "
-    # SELECT Defect, COUNT(*) AS Count
-    # FROM unique_items
-    # WHERE SKU = ?
-    # GROUP BY Defect"
-    #   defect_status_data <- dbGetQuery(con, defect_status_query, params = list(input$query_sku))
-    #   
-    #   # 定义固定的瑕疵顺序和颜色
-    #   defect_levels <- c("未知", "无瑕", "瑕疵", "修复")
-    #   defect_colors <- c("darkgray", "green", "red", "orange")
-    #   
-    #   # 确保数据按照瑕疵顺序排列，缺失状态用 0 填充
-    #   defect_status_data <- merge(
-    #     data.frame(Defect = defect_levels),
-    #     defect_status_data,
-    #     by = "Defect",
-    #     all.x = TRUE
-    #   )
-    #   defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
-    #   
-    #   # 渲染瑕疵情况饼图
-    #   plot_ly(
-    #     data = defect_status_data,
-    #     labels = ~Defect,
-    #     values = ~Count,
-    #     type = "pie",
-    #     textinfo = "label+value+percent", # 显示瑕疵类型、数量和百分比
-    #     insidetextorientation = "horizontal",
-    #     marker = list(colors = defect_colors) # 使用固定颜色映射
-    #   ) %>%
-    #     layout(
-    #       showlegend = TRUE, # 显示图例
-    #       margin = list(t = 10) # 去除多余的标题空间
-    #     )
-    # })
-    
+
+  observe({
+    sku <- trimws(input$query_sku)
+
+    if (sku == "") {
+      output$query_item_info <- renderUI({ div() })
+      output$inventory_status_chart <- renderPlotly({ NULL })
+      output$defect_status_chart <- renderPlotly({ NULL })
+      return()
+    }
+
+    tryCatch({
+      # 查询 SKU 数据
+      sku_query <- "
+      SELECT
+        ItemName, Maker, MajorType, MinorType, Quantity,
+        ProductCost, ShippingCost, ItemImagePath
+      FROM inventory
+      WHERE SKU = ?"
+      sku_data <- dbGetQuery(con, sku_query, params = list(sku))
+      showNotification("查询到的 SKU 数据：", type = "message")
+      showNotification(as.character(head(sku_data)), type = "message")
+
+      if (nrow(sku_data) == 0) {
+        output$query_item_info <- renderUI({
+          div(tags$p("未找到该 SKU 对应的商品信息！", style = "color: red; font-size: 16px;"))
+        })
+        return()
+      }
+
+      output$query_item_info <- renderUI({
+        img_path <- ifelse(
+          is.na(sku_data$ItemImagePath[1]),
+          placeholder_300px_path,
+          paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
+        )
+        div(
+          style = "display: flex; align-items: center; padding: 10px;",
+          div(style = "flex: 1; text-align: center; margin-right: 20px;",
+              tags$img(src = img_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px;")),
+          div(style = "flex: 2; display: flex; flex-direction: column; justify-content: center;",
+              tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
+              tags$p(tags$b("供应商："), sku_data$Maker[1]),
+              tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
+              tags$p(tags$b("库存数量："), sku_data$Quantity[1]),
+              tags$p(tags$b("平均成本："), sprintf("¥%.2f", sku_data$ProductCost[1])),
+              tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
+          )
+        )
+      })
+
+      # 渲染库存状态图表
+      output$inventory_status_chart <- renderPlotly({
+        tryCatch({
+          inventory_status_query <- "
+      SELECT Status, COUNT(*) AS Count
+      FROM unique_items
+      WHERE SKU = ?
+      GROUP BY Status"
+          inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(trimws(input$query_sku)))
+          
+          # 定义固定类别顺序和颜色
+          status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")
+          status_colors <- c("lightgray", "#c7e89b", "#4B4B4B", "#46a80d", "#173b02", "#A9A9A9", "red")
+          
+          # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
+          inventory_status_data <- merge(
+            data.frame(Status = status_levels),
+            inventory_status_data,
+            by = "Status",
+            all.x = TRUE
+          )
+          inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
+          
+          if (sum(inventory_status_data$Count) == 0) {
+            # 如果没有数据，显示占位图
+            plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
+          } else {
+            # 渲染饼图
+            plot_ly(
+              data = inventory_status_data,
+              labels = ~Status,
+              values = ~Count,
+              type = "pie",
+              textinfo = "label+value",       # 图上显示类别和数量
+              hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
+              marker = list(colors = status_colors) # 按固定颜色映射
+            ) %>%
+              layout(
+                showlegend = TRUE, # 显示图例
+                margin = list(t = 10) # 去除多余标题空间
+              )
+          }
+        }, error = function(e) {
+          showNotification(paste("库存状态图表生成错误：", e$message), type = "error")
+          output$inventory_status_chart <- renderPlotly({ NULL })
+        })
+      })
+      
+
+      # 渲染瑕疵情况图表
+      output$defect_status_chart <- renderPlotly({
+        tryCatch({
+          defect_status_query <- "
+      SELECT Defect, COUNT(*) AS Count
+      FROM unique_items
+      WHERE SKU = ?
+      GROUP BY Defect"
+          defect_status_data <- dbGetQuery(con, defect_status_query, params = list(trimws(input$query_sku)))
+          
+          # 定义固定类别顺序和颜色
+          defect_levels <- c("未知", "无瑕", "瑕疵", "修复")
+          defect_colors <- c("darkgray", "green", "red", "orange")
+          
+          # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
+          defect_status_data <- merge(
+            data.frame(Defect = defect_levels),
+            defect_status_data,
+            by = "Defect",
+            all.x = TRUE
+          )
+          defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
+          
+          if (sum(defect_status_data$Count) == 0) {
+            # 如果没有数据，显示占位图
+            plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
+          } else {
+            # 渲染饼图
+            plot_ly(
+              data = defect_status_data,
+              labels = ~Defect,
+              values = ~Count,
+              type = "pie",
+              textinfo = "label+value",       # 图上显示类别和数量
+              hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
+              marker = list(colors = defect_colors) # 按固定颜色映射
+            ) %>%
+              layout(
+                showlegend = TRUE, # 显示图例
+                margin = list(t = 10) # 去除多余标题空间
+              )
+          }
+        }, error = function(e) {
+          showNotification(paste("瑕疵情况图表生成错误：", e$message), type = "error")
+          output$defect_status_chart <- renderPlotly({ NULL })
+        })
+      })
+    }, error = function(e) {
+      showNotification(paste("发生错误：", e$message), type = "error")
+    })
   })
+
+  
 
   
   ################################################################
