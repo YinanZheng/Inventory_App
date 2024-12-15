@@ -25,14 +25,9 @@ server <- function(input, output, session) {
   # 存储条形码是否已生成的状态
   barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
   
-  # 用于存储撤回记录的队列
-  undo_inbound_queue <- reactiveVal(list()) # 入库撤回队列
-  undo_outbound_queue <- reactiveVal(list())  # 出库撤回队列
-  undo_sold_queue <- reactiveVal(list()) # 售出撤回队列
-  
   ####################################################################################################################################
   
-  # 应用启动时加载数据
+  # 应用启动时加载数据: item_type_data
   observe({
     tryCatch({
       item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
@@ -42,7 +37,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # 应用启动时加载数据
+  # 应用启动时加载数据: inventory
   observe({
     tryCatch({
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))  # 存储到 reactiveVal
@@ -171,7 +166,7 @@ server <- function(input, output, session) {
   
   ####################################################################################################################################
   
-  # Calculate total cost
+  # 显示总采购开销（含运费）
   output$total_cost <- renderText({
     total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
     paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),

@@ -216,35 +216,43 @@ ui <- navbarPage(
   
   
   tabPanel(
-    "出库/出售",
+    "出库 / 售出",
     sidebarLayout(
       sidebarPanel(
         fluidRow(
-          column(8, textInput("outbound_sku", "出库:", placeholder = "请扫描条形码")),
-          column(4, actionButton(
-            "undo_outbound_btn", 
-            "撤回最近出库", 
-            icon = icon("undo"),
-            class = "btn-warning", 
-            style = "margin-top: 25px; height: 34px; width: 100%;"
-          ))
-        ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        fluidRow(
-          column(8, textInput("sold_sku", "售出:", placeholder = "请扫描条形码")),
-          column(4, actionButton(
-            "undo_sold_btn", 
-            "撤回最近售出", 
-            icon = icon("undo"),
-            class = "btn-warning", 
-            style = "margin-top: 25px; height: 34px; width: 100%;"
+          column(12, textInput("outbound_sku", "出库:", placeholder = "请扫描条形码")),
+          column(12, actionButton(
+            "confirm_outbound_btn", 
+            "确认出库", 
+            icon = icon("check"), 
+            class = "btn-primary", 
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 20px;"
+          )),
+          tags$hr(style = "margin: 20px 0;"), # 分隔线
+          column(12, textInput("sold_sku", "售出:", placeholder = "请扫描条形码")),
+          column(12, actionButton(
+            "confirm_sold_btn", 
+            "确认售出", 
+            icon = icon("check"), 
+            class = "btn-success", 
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 20px;"
           ))
         )
       ),
-      
       mainPanel(
+        fluidRow(
+          column(12, uiOutput("outbound_item_info"), style = "margin-bottom: 40px;"), # 动态渲染物品信息
+        ),
+        tags$hr(), # 分隔线
+        fluidRow(
+          column(12, actionButton("toggle_item_table_outbound", "物品状态表（点击显示/隐藏）",
+                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")), # 折叠按钮
+          column(12, div(
+            id = "item_table_container_outbound", # 容器 ID
+            style = "margin-bottom: 100px;",
+            uniqueItemsTableUI("unique_items_table_outbound")
+          ))
+        )
       )
     )
   ), # end of 出库/出售 tab

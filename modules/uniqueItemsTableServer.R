@@ -33,7 +33,7 @@ uniqueItemsTableServer <- function(input, output, session, data) {
         "库存状态",
         backgroundColor = styleEqual(
           c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),
-          c("white", "lightgreen", "darkgray", "green", "darkgreen", "darkgray", "red")
+          c("lightgray", "#c7e89b", "darkgray", "green", "darkgreen", "darkgray", "red")
         ),
         color = styleEqual(
           c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),
