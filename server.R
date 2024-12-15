@@ -338,6 +338,8 @@ server <- function(input, output, session) {
         }, error = function(e) {
           showNotification("图片更新失败！", type = "error")
         })
+      } else {
+        showNotification("请先上传图片！", type = "error")
       } 
       # SKU 不存在，添加新记录
     } else {
