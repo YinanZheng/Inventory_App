@@ -417,3 +417,86 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
     )
   })
 }
+
+handleOperation <- function(
+    operation_name, # 操作名称（入库、出库、售出）
+    sku_input,      # SKU 输入字段
+    output_name,    # 输出的 UI 名称
+    query_status,   # 查询的初始状态
+    update_status_value, # 更新后的状态
+    count_label,    # 显示的计数标签
+    count_field,    # 计数字段名称
+    con,            # 数据库连接
+    output,         # 输出对象
+    refresh_trigger # 数据刷新触发器
+) {
+  sku <- trimws(sku_input) # 清理空格
+  
+  if (is.null(sku) || sku == "") {
+    showNotification(paste0("请先扫描 SKU！"), type = "error")
+    renderItemInfo(output, output_name, NULL, placeholder_300px_path, count_label, count_field)
+    return()
+  }
+  
+  tryCatch({
+    # 查询符合条件的物品
+    sku_items <- dbGetQuery(con, paste0("
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '", query_status, "' AND Defect != '瑕疵'
+      LIMIT 1"), 
+                            params = list(sku))
+    
+    if (nrow(sku_items) == 0) {
+      showNotification(paste0("无可", operation_name, "的物品，所有该商品已完成 ", operation_name, "！"), type = "message")
+      return()
+    }
+    
+    # 更新状态
+    update_status(
+      con = con,
+      unique_id = sku_items$UniqueID[1],
+      new_status = update_status_value,
+      refresh_trigger = refresh_trigger
+    )
+    
+    # 成功提示
+    showNotification(paste0("物品成功", operation_name, "！"), type = "message")
+    
+    # 查询 SKU 数据并刷新 UI
+    item_info <- fetchSkuData(sku, con)
+    
+    renderItemInfo(
+      output = output,
+      output_name = output_name,
+      item_info = item_info,
+      img_path = ifelse(
+        is.na(item_info$ItemImagePath[1]),
+        placeholder_300px_path,
+        paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+      ),
+      count_label = count_label,
+      count_field = count_field
+    )
+    
+    # 如果计数字段为 0，显示模态弹窗
+    if (item_info[[count_field]][1] == 0) {
+      showModal(modalDialog(
+        title = paste0(operation_name, "完成"),
+        paste0("此 SKU 的商品已全部完成 ", operation_name, "！"),
+        easyClose = TRUE,
+        footer = modalButton("确定")
+      ))
+    }
+    
+    # 清空输入框
+    if (operation_name == "入库") {
+      updateCheckboxInput(session, "defective_item", value = FALSE)
+    }
+    updateTextInput(session, paste0(operation_name, "_sku"), value = "")
+    
+  }, error = function(e) {
+    # 错误处理
+    showNotification(paste0(operation_name, "失败：", e$message), type = "error")
+  })
+}
