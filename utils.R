@@ -421,6 +421,19 @@ fetchSkuData <- function(sku, con) {
 }
 
 renderInboundItemInfo <- function(output, item_info, img_path) {
+  # 如果 item_info 为空或没有数据，构造一个默认空数据框
+  if (is.null(item_info) || nrow(item_info) == 0) {
+    item_info <- data.frame(
+      ItemName = "",
+      Maker = "",
+      MajorType = "",
+      MinorType = "",
+      PendingQuantity = 0,  # 假设待入库数量为 0
+      stringsAsFactors = FALSE
+    )
+  }
+  
+  # 渲染商品信息表
   output$inbound_item_info <- renderUI({
     fluidRow(
       column(

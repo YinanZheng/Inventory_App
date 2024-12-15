@@ -331,7 +331,7 @@ server <- function(input, output, session) {
             output_dir = output_dir,
             image_name = unique_image_name
           )
-          showNotification("图片已成功更新并保存！", type = "message")
+          showNotification(paste0(input$new_sku, "图片已成功更新并保存！"), type = "message")
           # 覆盖更新记录
           existing_inventory_items[sku_index, "ItemImagePath"] <- final_image_path
           inventory(existing_inventory_items)
@@ -586,8 +586,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$inbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
-      output$inbound_item_info <- renderUI(NULL)
-      return()
+      renderInboundItemInfo(output, NULL, img_path)
     }
     
     # 查询 SKU 数据
@@ -693,53 +692,7 @@ server <- function(input, output, session) {
   # 渲染 unique_items 数据表
   callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
   callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
-  
-  # output$unique_items_table <- renderDT({
-  #   refresh_trigger()  # 触发器变化时重新加载数据
-  #   # Define column mapping for user-friendly display
-  #   column_mapping <- list(
-  #     SKU = "条形码",
-  #     ItemName = "商品名",
-  #     ItemImagePath = "商品图片",
-  #     Maker = "供应商",
-  #     MajorType = "大类",
-  #     MinorType = "小类",
-  #     Status = "库存状态",
-  #     Defect = "物品状态"
-  #   )
-  #   
-  #   # Render table with images
-  #   render_table_with_images(
-  #     data = unique_items_data(),     # Use the reactive data source
-  #     column_mapping = column_mapping, # Map columns to user-friendly names
-  #     image_column = "ItemImagePath"   # Specify the column for images
-  #   ) %>%
-  #     formatStyle(
-  #       "物品状态",  # 指定要设置样式的列
-  #       backgroundColor = styleEqual(
-  #         c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
-  #         c("darkgray","green", "red", "orange")  # 对应的背景色
-  #       ),
-  #       color = styleEqual(
-  #         c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
-  #         c("black","white", "white", "white")  # 对应的字体颜色
-  #       )
-  #     ) %>%
-  #     # 设置库存状态列的样式
-  #     formatStyle(
-  #       "库存状态",  # 指定列名
-  #       backgroundColor = styleEqual(
-  #         c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值 
-  #         c("lightblue", "blue", "purple", "darkblue", "yellow", "brown", "red")  # 对应的背景色
-  #       ),
-  #       color = styleEqual(
-  #         c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值
-  #         c("black", "white", "white", "white", "black", "white", "white")  # 对应的文字颜色
-  #       )
-  #     )
-  # })
-  
-  
+
   ### SKU 模块
   
   # Automatically generate SKU when relevant inputs change
