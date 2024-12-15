@@ -1064,6 +1064,9 @@ server <- function(input, output, session) {
           )
           inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
           
+          # 按 status_levels 排序，确保颜色对应
+          inventory_status_data <- inventory_status_data[match(status_levels, inventory_status_data$Status), ]
+          
           if (sum(inventory_status_data$Count) == 0) {
             # 如果没有数据，显示占位图
             plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+value")
@@ -1090,6 +1093,7 @@ server <- function(input, output, session) {
       })
       
       
+      
       # 渲染瑕疵情况图表
       output$defect_status_chart <- renderPlotly({
         tryCatch({
@@ -1112,6 +1116,9 @@ server <- function(input, output, session) {
             all.x = TRUE
           )
           defect_status_data$Count[is.na(defect_status_data$Count)] <- 0
+          
+          # 按 defect_levels 排序，确保颜色对应
+          defect_status_data <- defect_status_data[match(defect_levels, defect_status_data$Defect), ]
           
           if (sum(defect_status_data$Count) == 0) {
             # 如果没有数据，显示占位图
@@ -1137,6 +1144,7 @@ server <- function(input, output, session) {
           output$defect_status_chart <- renderPlotly({ NULL })
         })
       })
+      
     }, error = function(e) {
       showNotification(paste("发生错误：", e$message), type = "error")
     })
