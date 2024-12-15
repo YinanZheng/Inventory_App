@@ -161,7 +161,7 @@ ui <- navbarPage(
             "登记", 
             icon = icon("circle-exclamation"),
             class = "btn-warning", 
-            style = "margin-top: 25px; height: 34px; width: 100%;"
+            style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
           ))
         ),
         
@@ -174,8 +174,8 @@ ui <- navbarPage(
             "repair_register", 
             "登记", 
             icon = icon("hammer"),
-            class = "btn-warning", 
-            style = "margin-top: 25px; height: 34px; width: 100%;"
+            class = "btn-success", 
+            style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
           ))
         )
       ),

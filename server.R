@@ -867,10 +867,10 @@ server <- function(input, output, session) {
     
     # 更新选定数量为“瑕疵”
     tryCatch({
-      for (i in 1:quantity) {
-        unique_id <- available_items$UniqueID[i]
-        update_status(con, unique_id, "瑕疵")
-      }
+      selected_ids <- available_items$UniqueID[1:quantity]  # 获取所需数量的 UniqueID
+      lapply(selected_ids, function(unique_id) {
+        update_status(con, unique_id, "国内入库", defect_status = "瑕疵")
+      })
       showNotification("瑕疵品登记成功！", type = "message")
       refresh_trigger(!refresh_trigger())  # 刷新数据表
     }, error = function(e) {
@@ -897,8 +897,10 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 检查瑕疵数量
-    defect_quantity <- nrow(sku_data[sku_data$Defect == "瑕疵", ])
+    # 检查瑕疵品数量
+    defect_items <- sku_data[sku_data$Defect == "瑕疵", ]
+    defect_quantity <- nrow(defect_items)
+    
     if (quantity > defect_quantity) {
       showNotification("瑕疵品数量不足，无法修复！", type = "error")
       return()
@@ -906,16 +908,17 @@ server <- function(input, output, session) {
     
     # 更新选定数量为“修复”
     tryCatch({
-      for (i in 1:quantity) {
-        unique_id <- sku_data$UniqueID[sku_data$Defect == "瑕疵"][i]
-        update_status(con, unique_id, "修复")
-      }
+      selected_ids <- defect_items$UniqueID[1:quantity]  # 获取所需数量的 UniqueID
+      lapply(selected_ids, function(unique_id) {
+        update_status(con, unique_id, "修复", defect_status = "修复")
+      })
       showNotification("瑕疵品修复登记成功！", type = "message")
       refresh_trigger(!refresh_trigger())  # 刷新数据表
     }, error = function(e) {
       showNotification(paste("修复登记失败：", e$message), type = "error")
     })
   })
+  
   
   
   
