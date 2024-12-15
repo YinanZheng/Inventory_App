@@ -321,25 +321,29 @@ get_inventory_overview <- function(con, sku) {
 
 # 提取公共方法：获取 SKU 数据
 fetchSkuData <- function(sku, con) {
-  # 查询 SKU 基本信息和状态相关数据
+  # 查询 SKU 的基本信息和相关状态数据
   query <- "
     SELECT 
-      ItemImagePath,
-      ItemName,
-      Maker,
-      MajorType,
-      MinorType,
-      SUM(CASE WHEN Status = '采购' THEN 1 ELSE 0 END) AS PendingQuantity,
-      SUM(CASE WHEN Status = '国内入库' AND Defect != '瑕疵' THEN 1 ELSE 0 END) AS AvailableForOutbound,
-      SUM(CASE WHEN Status = '国内入库' AND Defect != '瑕疵' THEN 1 ELSE 0 END) AS AvailableForSold
-    FROM unique_items
-    WHERE SKU = ?
-    GROUP BY ItemImagePath, ItemName, Maker, MajorType, MinorType
+      inv.ItemImagePath,
+      inv.ItemName,
+      inv.Maker,
+      inv.MajorType,
+      inv.MinorType,
+      inv.Quantity AS TotalQuantity, -- 总库存数量
+      SUM(CASE WHEN u.Status = '采购' THEN 1 ELSE 0 END) AS PendingQuantity, -- 待入库数
+      SUM(CASE WHEN u.Status = '国内入库' AND u.Defect != '瑕疵' THEN 1 ELSE 0 END) AS AvailableForOutbound, -- 可出库数
+      SUM(CASE WHEN u.Status = '国内入库' AND u.Defect != '瑕疵' THEN 1 ELSE 0 END) AS AvailableForSold -- 可售出数
+    FROM inventory AS inv
+    LEFT JOIN unique_items AS u
+      ON inv.SKU = u.SKU
+    WHERE inv.SKU = ?
+    GROUP BY inv.ItemImagePath, inv.ItemName, inv.Maker, inv.MajorType, inv.MinorType, inv.Quantity
   "
   
   # 执行查询并返回结果
   dbGetQuery(con, query, params = list(sku))
 }
+
 
 renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_field = "PendingQuantity") {
   # 如果 item_info 为空或没有数据，构造一个默认空数据框
