@@ -768,8 +768,8 @@ server <- function(input, output, session) {
     handleSkuInput(
       sku_input = input$inbound_sku,
       output_name = "inbound_item_info",
-      operation = "PendingQuantity",
       count_label = "待入库数",
+      count_field = "PendingQuantity",
       con = con,
       output = output,
       placeholder_path = placeholder_300px_path,
@@ -903,8 +903,8 @@ server <- function(input, output, session) {
     handleSkuInput(
       sku_input = input$outbound_sku,
       output_name = "outbound_item_info",
-      operation = "AvailableForOutbound",
       count_label = "可出库数",
+      count_field = "AvailableForOutbound",
       con = con,
       output = output,
       placeholder_path = placeholder_300px_path,
@@ -950,8 +950,8 @@ server <- function(input, output, session) {
     handleSkuInput(
       sku_input = input$sold_sku,
       output_name = "sold_item_info",
-      operation = "AvailableForSold",
       count_label = "可售出数",
+      count_field = "AvailableForSold",
       con = con,
       output = output,
       placeholder_path = placeholder_300px_path,
@@ -991,8 +991,6 @@ server <- function(input, output, session) {
   ## 报表模块                                                   ##
   ##                                                            ##
   ################################################################
-  
-  
   
   
   
