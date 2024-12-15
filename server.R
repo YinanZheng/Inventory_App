@@ -629,50 +629,53 @@ server <- function(input, output, session) {
   })
   
   # 渲染 unique_items 数据表
-  output$unique_items_table <- renderDT({
-    refresh_trigger()  # 触发器变化时重新加载数据
-    # Define column mapping for user-friendly display
-    column_mapping <- list(
-      SKU = "条形码",
-      ItemName = "商品名",
-      ItemImagePath = "商品图片",
-      Maker = "供应商",
-      MajorType = "大类",
-      MinorType = "小类",
-      Status = "库存状态",
-      Defect = "物品状态"
-    )
-    
-    # Render table with images
-    render_table_with_images(
-      data = unique_items_data(),     # Use the reactive data source
-      column_mapping = column_mapping, # Map columns to user-friendly names
-      image_column = "ItemImagePath"   # Specify the column for images
-    ) %>%
-      formatStyle(
-        "物品状态",  # 指定要设置样式的列
-        backgroundColor = styleEqual(
-          c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
-          c("darkgray","green", "red", "orange")  # 对应的背景色
-        ),
-        color = styleEqual(
-          c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
-          c("black","white", "white", "white")  # 对应的字体颜色
-        )
-      ) %>%
-      # 设置库存状态列的样式
-      formatStyle(
-        "库存状态",  # 指定列名
-        backgroundColor = styleEqual(
-          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值 
-          c("lightblue", "blue", "purple", "darkblue", "yellow", "brown", "red")  # 对应的背景色
-        ),
-        color = styleEqual(
-          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值
-          c("black", "white", "white", "white", "black", "white", "white")  # 对应的文字颜色
-        )
-      )
-  })
+  callModule(uniqueItemsTable, "unique_items_table_inbound", data = reactive(unique_items_data))
+  callModule(uniqueItemsTable, "unique_items_table_defect", data = reactive(unique_items_data))
+  
+  # output$unique_items_table <- renderDT({
+  #   refresh_trigger()  # 触发器变化时重新加载数据
+  #   # Define column mapping for user-friendly display
+  #   column_mapping <- list(
+  #     SKU = "条形码",
+  #     ItemName = "商品名",
+  #     ItemImagePath = "商品图片",
+  #     Maker = "供应商",
+  #     MajorType = "大类",
+  #     MinorType = "小类",
+  #     Status = "库存状态",
+  #     Defect = "物品状态"
+  #   )
+  #   
+  #   # Render table with images
+  #   render_table_with_images(
+  #     data = unique_items_data(),     # Use the reactive data source
+  #     column_mapping = column_mapping, # Map columns to user-friendly names
+  #     image_column = "ItemImagePath"   # Specify the column for images
+  #   ) %>%
+  #     formatStyle(
+  #       "物品状态",  # 指定要设置样式的列
+  #       backgroundColor = styleEqual(
+  #         c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
+  #         c("darkgray","green", "red", "orange")  # 对应的背景色
+  #       ),
+  #       color = styleEqual(
+  #         c("未知", "无瑕", "瑕疵", "修复"),  # 状态值
+  #         c("black","white", "white", "white")  # 对应的字体颜色
+  #       )
+  #     ) %>%
+  #     # 设置库存状态列的样式
+  #     formatStyle(
+  #       "库存状态",  # 指定列名
+  #       backgroundColor = styleEqual(
+  #         c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值 
+  #         c("lightblue", "blue", "purple", "darkblue", "yellow", "brown", "red")  # 对应的背景色
+  #       ),
+  #       color = styleEqual(
+  #         c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),  # 状态值
+  #         c("black", "white", "white", "white", "black", "white", "white")  # 对应的文字颜色
+  #       )
+  #     )
+  # })
   
   
   ### SKU 模块

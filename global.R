@@ -20,7 +20,10 @@ library(rlang)
 # Source all modular functions
 source("./modules/supplierModuleServer.R")
 source("./modules/typeModuleServer.R")
+source("./modules/uniqueItemsTableServer.R")
+
 source("./modules/typeModuleUI.R")
+source("./modules/uniqueItemsTableUI.R")
 
 source("utils.R")
 
