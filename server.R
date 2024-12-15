@@ -1066,7 +1066,6 @@ server <- function(input, output, session) {
     })
     
     output$inventory_status_chart <- renderPlotly({
-      # 查询库存状态分布
       inventory_status_query <- "
     SELECT Status, COUNT(*) AS Count
     FROM unique_items
@@ -1087,20 +1086,25 @@ server <- function(input, output, session) {
       )
       inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
       
-      # 渲染库存状态饼图
-      plot_ly(
-        data = inventory_status_data,
-        labels = ~Status,
-        values = ~Count,
-        type = "pie",
-        textinfo = "label+value+percent", # 显示状态名称、数量和百分比
-        insidetextorientation = "horizontal",
-        marker = list(colors = status_colors) # 使用固定颜色映射
-      ) %>%
-        layout(
-          showlegend = TRUE, # 显示图例
-          margin = list(t = 10) # 去除多余的标题空间
-        )
+      if (nrow(inventory_status_data) == 0) {
+        # 渲染占位图
+        plot_ly(type = "pie", labels = c("无数据"), values = c(1), textinfo = "label+percent")
+      } else {
+        # 渲染库存状态饼图
+        plot_ly(
+          data = inventory_status_data,
+          labels = ~Status,
+          values = ~Count,
+          type = "pie",
+          textinfo = "label+value+percent",
+          insidetextorientation = "horizontal",
+          marker = list(colors = status_colors)
+        ) %>%
+          layout(
+            showlegend = TRUE,
+            margin = list(t = 10)
+          )
+      }
     })
     
     output$defect_status_chart <- renderPlotly({
