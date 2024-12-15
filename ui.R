@@ -53,12 +53,12 @@ ui <- navbarPage(
           # tags$h4("条形码生成"),
           tags$div(
             style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-            actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode")),
+            actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"), class = "btn-info"),
             downloadButton("download_single_pdf", "下载条形码")
           ),
           tags$div(
             style = "display: flex; justify-content: space-between; align-items: center;",
-            actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode")),
+            actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"), class = "btn-info"),
             downloadButton("download_batch_pdf", "下载批量条形码")
           )
         ),
