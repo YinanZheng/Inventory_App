@@ -696,8 +696,8 @@ server <- function(input, output, session) {
   })
   
   # 点选状态表自动填写SKU
-  observeEvent(input$unique_items_table_rows_selected, {
-    selected_row <- input$unique_items_table_rows_selected
+  observeEvent(input$unique_items_table_inbound_rows_selected, {
+    selected_row <- input$unique_items_table_inbound_rows_selected
     if (!is.null(selected_row)) {
       selected_sku <- unique_items_data()[selected_row, "SKU"]
       updateTextInput(session, "inbound_sku", value = selected_sku)

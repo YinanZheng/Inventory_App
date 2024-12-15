@@ -41,4 +41,9 @@ uniqueItemsTableServer <- function(input, output, session, data) {
         )
       )
   })
+  
+  # 返回选中行的索引
+  reactive({
+    input$unique_items_table_rows_selected
+  })
 }
