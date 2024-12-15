@@ -332,7 +332,10 @@ server <- function(input, output, session) {
                       SET ItemImagePath = ? 
                       WHERE SKU = ?",
                     params = list(final_image_path, input$new_sku))
-    
+          
+          #触发更新刷新unique_items_data
+          refresh_trigger(!refresh_trigger()) 
+          
         }, error = function(e) {
           showNotification("图片更新失败！", type = "error")
         })
