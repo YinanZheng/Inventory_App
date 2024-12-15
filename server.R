@@ -665,6 +665,7 @@ server <- function(input, output, session) {
   unique_items_data <- reactive({
     # 当 refresh_trigger 改变时触发更新
     refresh_trigger()
+    showNotification("unique_items_data触发更新", type = "message")
     
     dbGetQuery(con, "
     SELECT 
