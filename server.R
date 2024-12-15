@@ -796,10 +796,11 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 更新物品状态
+    # 判断是否为瑕疵品
     is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
     
     tryCatch({
+      # 查询符合条件的物品
       sku_items <- dbGetQuery(con, "
       SELECT UniqueID 
       FROM unique_items 
@@ -807,23 +808,43 @@ server <- function(input, output, session) {
       LIMIT 1", 
                               params = list(sku))
       
+      # 如果没有待入库物品
       if (nrow(sku_items) == 0) {
         showNotification("无待入库的物品，所有该商品已入库完毕！", type = "message")
         return()
       }
       
-      # 更新状态
-      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective,
-                    refresh_trigger = unique_items_data_refresh_trigger)
+      # 更新状态为 "国内入库"
+      update_status(
+        con = con,
+        unique_id = sku_items$UniqueID[1],
+        new_status = "国内入库",
+        defect_status = is_defective,
+        refresh_trigger = unique_items_data_refresh_trigger
+      )
       
-      # 刷新并渲染
+      # 成功提示
       showNotification("物品成功入库！", type = "message")
       
-      # 查询 SKU 数据
+      # 更新并刷新物品信息
       item_info <- fetchSkuData(sku, con)
       
-      # 如果剩余数量为 0，显示模态弹窗
-      if (item_info$PendingCount[1] == 0) {
+      # 渲染更新后的商品信息
+      renderItemInfo(
+        output = output,
+        output_name = "inbound_item_info",
+        item_info = item_info,
+        img_path = ifelse(
+          is.na(item_info$ItemImagePath[1]),
+          placeholder_300px_path,
+          paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+        ),
+        count_label = "待入库数",
+        count_field = "PendingQuantity"
+      )
+      
+      # 如果待入库数为 0，显示模态弹窗
+      if (item_info$PendingQuantity[1] == 0) {
         showModal(modalDialog(
           title = "入库完成",
           paste0("此 SKU 的商品已全部入库完毕！"),
@@ -832,13 +853,16 @@ server <- function(input, output, session) {
         ))
       }
       
+      # 清空输入框和瑕疵品选项
       updateTextInput(session, "inbound_sku", value = "")
       updateCheckboxInput(session, "defective_item", value = FALSE)
       
     }, error = function(e) {
+      # 错误处理
       showNotification(paste("入库失败：", e$message), type = "error")
     })
   })
+  
   
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_inbound_selected_row(), {
@@ -968,8 +992,9 @@ server <- function(input, output, session) {
     )
   })
   
+  # 确认出库逻辑
   observeEvent(input$confirm_outbound_btn, {
-    sku <- trimws(input$outbound_sku)
+    sku <- trimws(input$outbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
@@ -981,16 +1006,17 @@ server <- function(input, output, session) {
       sku_items <- dbGetQuery(con, "
       SELECT UniqueID 
       FROM unique_items 
-      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵'
+      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵' 
       LIMIT 1", 
                               params = list(sku))
       
+      # 如果没有可出库物品
       if (nrow(sku_items) == 0) {
-        showNotification("无可出库的物品，或状态不符合要求！", type = "error")
+        showNotification("无可出库的物品，所有该商品已出库完毕！", type = "message")
         return()
       }
       
-      # 调用 update_status 更新物品状态
+      # 更新状态为 "国内出库"
       update_status(
         con = con,
         unique_id = sku_items$UniqueID[1],
@@ -1001,12 +1027,41 @@ server <- function(input, output, session) {
       # 成功提示
       showNotification("物品成功出库！", type = "message")
       
+      # 更新并刷新物品信息
+      item_info <- fetchSkuData(sku, con)
+      
+      renderItemInfo(
+        output = output,
+        output_name = "outbound_item_info",
+        item_info = item_info,
+        img_path = ifelse(
+          is.na(item_info$ItemImagePath[1]),
+          placeholder_300px_path,
+          paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+        ),
+        count_label = "可出库数",
+        count_field = "AvailableForOutbound"
+      )
+      
+      # 如果可出库数为 0，显示模态弹窗
+      if (item_info$AvailableForOutbound[1] == 0) {
+        showModal(modalDialog(
+          title = "出库完成",
+          paste0("此 SKU 的商品已全部出库！"),
+          easyClose = TRUE,
+          footer = modalButton("确定")
+        ))
+      }
+      
       # 清空输入框
       updateTextInput(session, "outbound_sku", value = "")
+      
     }, error = function(e) {
+      # 错误处理
       showNotification(paste("出库失败：", e$message), type = "error")
     })
   })
+  
   
   
   
@@ -1034,8 +1089,9 @@ server <- function(input, output, session) {
     )
   })
   
+  # 确认售出逻辑
   observeEvent(input$confirm_sold_btn, {
-    sku <- trimws(input$sold_sku)
+    sku <- trimws(input$sold_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
       showNotification("请先扫描 SKU！", type = "error")
@@ -1047,16 +1103,17 @@ server <- function(input, output, session) {
       sku_items <- dbGetQuery(con, "
       SELECT UniqueID 
       FROM unique_items 
-      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵'
+      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵' 
       LIMIT 1", 
                               params = list(sku))
       
+      # 如果没有可售出物品
       if (nrow(sku_items) == 0) {
-        showNotification("无可售出的物品，或状态不符合要求！", type = "error")
+        showNotification("无可售出的物品，所有该商品已售出完毕！", type = "message")
         return()
       }
       
-      # 调用 update_status 更新物品状态
+      # 更新状态为 "国内售出"
       update_status(
         con = con,
         unique_id = sku_items$UniqueID[1],
@@ -1067,12 +1124,41 @@ server <- function(input, output, session) {
       # 成功提示
       showNotification("物品成功售出！", type = "message")
       
+      # 更新并刷新物品信息
+      item_info <- fetchSkuData(sku, con)
+      
+      renderItemInfo(
+        output = output,
+        output_name = "sold_item_info",
+        item_info = item_info,
+        img_path = ifelse(
+          is.na(item_info$ItemImagePath[1]),
+          placeholder_300px_path,
+          paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+        ),
+        count_label = "可售出数",
+        count_field = "AvailableForSold"
+      )
+      
+      # 如果可售出数为 0，显示模态弹窗
+      if (item_info$AvailableForSold[1] == 0) {
+        showModal(modalDialog(
+          title = "售出完成",
+          paste0("此 SKU 的商品已全部售出！"),
+          easyClose = TRUE,
+          footer = modalButton("确定")
+        ))
+      }
+      
       # 清空输入框
       updateTextInput(session, "sold_sku", value = "")
+      
     }, error = function(e) {
+      # 错误处理
       showNotification(paste("售出失败：", e$message), type = "error")
     })
   })
+  
   
   
   # 监听选中行并更新出库 SKU
