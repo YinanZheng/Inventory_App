@@ -228,8 +228,7 @@ render_table_with_images <- function(data,
 }
 
 
-update_status <- function(con, unique_id, new_status, defect_status = NULL) {
-
+update_status <- function(con, unique_id, new_status, defect_status = NULL, refresh_trigger = NULL) {
   if (!new_status %in% names(status_columns)) {
     stop("Invalid status provided")
   }
@@ -254,8 +253,12 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL) {
   
   # 执行 SQL 更新
   dbExecute(con, query, params = params)
+  
+  # 触发刷新
+  if (!is.null(refresh_trigger)) {
+    refresh_trigger(!refresh_trigger())
+  }
 }
-
 
 handleSKU <- function(input, session, sku_input_id, target_status, valid_current_status, undo_queue, con, refresh_trigger, inventory, notification_success, notification_error, record_undo = TRUE) {
   observeEvent(input[[sku_input_id]], {

@@ -15,8 +15,8 @@ server <- function(input, output, session) {
   # 用于保存用户上传的文件信息
   uploaded_file <- reactiveVal(NULL)
   
-  # 声明一个 reactiveVal 用于触发表格刷新
-  refresh_trigger <- reactiveVal(FALSE)
+  # 声明一个 reactiveVal 用于触发unique_items_data刷新
+  unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
   # Reactive value to store added items
   added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
@@ -38,22 +38,20 @@ server <- function(input, output, session) {
   # 应用启动时加载数据
   observe({
     tryCatch({
-      data <- dbGetQuery(con, "SELECT * FROM item_type_data")
-      item_type_data(data)
+      item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
     }, error = function(e) {
       item_type_data(NULL)  # 如果出错，设为空值
-      showNotification("Failed to load item type data.", type = "error")
+      showNotification("Initiation: Failed to load item type data.", type = "error")
     })
   })
   
   # 应用启动时加载数据
   observe({
     tryCatch({
-      data <- dbGetQuery(con, "SELECT * FROM inventory")
-      inventory(data)  # 存储到 reactiveVal
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))  # 存储到 reactiveVal
     }, error = function(e) {
       inventory(NULL)  # 如果失败，设为空
-      showNotification("Failed to load inventory data.", type = "error")
+      showNotification("Initiation: Failed to load inventory data.", type = "error")
     })
   })
   
@@ -333,8 +331,11 @@ server <- function(input, output, session) {
                       WHERE SKU = ?",
                     params = list(final_image_path, input$new_sku))
           
-          #触发更新刷新unique_items_data
-          refresh_trigger(!refresh_trigger()) 
+          # 更新inventory()，触发filtered_inventory_table更新
+          inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+          
+          # 触发更新刷新unique_items_data
+          unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) 
           
         }, error = function(e) {
           showNotification("图片更新失败！", type = "error")
@@ -504,13 +505,16 @@ server <- function(input, output, session) {
                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                     params = list(sku, maker, major_type, minor_type, item_name, quantity, 
                                   round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
-          
+
           showNotification(paste("新商品创建成功! SKU:", sku, ", 商品名:", item_name), type = "message")
         }
       }
       
-      # 刷新库存数据
-      inventory({dbGetQuery(con, "SELECT * FROM inventory")})
+      # 更新inventory()，触发filtered_inventory_table更新
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      
+      # 触发更新刷新unique_items_data
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) 
       
       ### 同时添加信息到 unique_items 表中
       # Prepare data for batch insertion
@@ -552,8 +556,9 @@ server <- function(input, output, session) {
         }
         dbCommit(con)  # Commit transaction
         showNotification("所有采购货物已成功登记！", type = "message")
-        # 切换触发器值，确保刷新
-        refresh_trigger(!refresh_trigger()) 
+       
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  #触发更新
+        
       }, error = function(e) {
         dbRollback(con)  # Rollback on error
         showNotification(paste("采购登记失败:", e$message), type = "error")
@@ -632,7 +637,8 @@ server <- function(input, output, session) {
       }
       
       # 更新状态
-      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective)
+      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective,
+                    refresh_trigger = unique_items_data_refresh_trigger)
       
       # 刷新并渲染
       showNotification("物品成功入库！", type = "message")
@@ -665,9 +671,8 @@ server <- function(input, output, session) {
   ## 物品追踪表
   unique_items_data <- reactive({
     # 当 refresh_trigger 改变时触发更新
-    refresh_trigger()
-    showNotification("unique_items_data触发更新", type = "message")
-    
+    unique_items_data_refresh_trigger()
+
     dbGetQuery(con, "
     SELECT 
       unique_items.UniqueID, 
@@ -880,10 +885,10 @@ server <- function(input, output, session) {
     tryCatch({
       selected_ids <- available_items$UniqueID[1:quantity]  # 获取所需数量的 UniqueID
       lapply(selected_ids, function(unique_id) {
-        update_status(con, unique_id, "国内入库", defect_status = "瑕疵")
+        update_status(con, unique_id, "国内入库", defect_status = "瑕疵",
+                      refresh_trigger = unique_items_data_refresh_trigger)
       })
       showNotification("瑕疵品登记成功！", type = "message")
-      refresh_trigger(!refresh_trigger())  # 刷新数据表
     }, error = function(e) {
       showNotification(paste("登记失败：", e$message), type = "error")
     })
@@ -921,10 +926,10 @@ server <- function(input, output, session) {
     tryCatch({
       selected_ids <- defect_items$UniqueID[1:quantity]  # 获取所需数量的 UniqueID
       lapply(selected_ids, function(unique_id) {
-        update_status(con, unique_id, "国内入库", defect_status = "修复")
+        update_status(con, unique_id, "国内入库", defect_status = "修复",
+                      refresh_trigger = unique_items_data_refresh_trigger)
       })
       showNotification("瑕疵品修复登记成功！", type = "message")
-      refresh_trigger(!refresh_trigger())  # 刷新数据表
     }, error = function(e) {
       showNotification(paste("修复登记失败：", e$message), type = "error")
     })
@@ -938,99 +943,97 @@ server <- function(input, output, session) {
   ## 移库模块                                                   ##
   ##                                                            ##
   ################################################################
-  
-  # 国内出库逻辑
-  handleSKU(
-    con = con,
-    input = input,
-    session = session,
-    sku_input_id = "outbound_sku",
-    target_status = "国内出库",
-    valid_current_status = c("国内入库"),  # 仅限国内入库状态
-    undo_queue = undo_outbound_queue,
-    refresh_trigger = refresh_trigger,
-    inventory = inventory,
-    notification_success = "物品出库成功！",
-    notification_error = "出库操作失败：",
-    record_undo = TRUE
-  )
-  
-  undoLastAction(
-    con = con, input = input,
-    undo_btn = "undo_outbound_btn",
-    undo_queue = undo_outbound_queue,
-    refresh_trigger = refresh_trigger,
-    inventory = inventory,
-    notification_success = "撤回成功，物品状态已恢复！",
-    notification_error = "撤回操作失败："
-  )
-  
-  # 国内售出逻辑
-  handleSKU(
-    input = input,
-    session = session,
-    sku_input_id = "sold_sku",
-    target_status = "国内售出",
-    valid_current_status = c("国内入库"),  # 仅限国内入库状态
-    undo_queue = undo_sold_queue,
-    con = con,
-    refresh_trigger = refresh_trigger,
-    inventory = inventory,
-    notification_success = "物品售出成功！",
-    notification_error = "售出操作失败：",
-    record_undo = TRUE
-  )
-  
-  undoLastAction(
-    con = con, input = input,
-    undo_btn = "undo_sold_btn",
-    undo_queue = undo_sold_queue,
-    refresh_trigger = refresh_trigger,
-    inventory = inventory,
-    notification_success = "撤回成功，物品状态已恢复！",
-    notification_error = "撤回操作失败："
-  )
-  
-  # 监听移库按钮点击
-  observeEvent(input$move_selected, {
-    # 获取选中的行索引
-    selected_row <- input$unique_items_table_rows_selected
-    
-    # 检查是否有选中行
-    if (is.null(selected_row) || length(selected_row) == 0) {
-      showNotification("请先在物品状态表中选择一行物品再执行移库操作！", type = "error")
-      return()
-    }
-    
-    # 检查是否选择了移库目标
-    target_status <- input$target_status
-    if (is.null(target_status) || target_status == "") {
-      showNotification("请选择一个移库目标！", type = "error")
-      return()
-    }
-    
-    # 获取选中行的数据
-    selected_data <- unique_items_data()[selected_row, ]
-    unique_id <- selected_data$UniqueID
-    current_status <- selected_data$Status
-    
-    # 如果当前状态已经是目标状态
-    if (current_status == target_status) {
-      showNotification("物品已经在目标状态，无需移库！", type = "message")
-      return()
-    }
-    
-    # 执行移库操作
-    tryCatch({
-      update_status(con, unique_id, target_status)
-      showNotification(paste("物品成功移至状态：", target_status), type = "message")
-      
-      # 刷新表格数据
-      refresh_trigger(!refresh_trigger())
-    }, error = function(e) {
-      showNotification(paste("移库操作失败：", e$message), type = "error")
-    })
-  })
+  # 
+  # # 国内出库逻辑
+  # handleSKU(
+  #   con = con,
+  #   input = input,
+  #   session = session,
+  #   sku_input_id = "outbound_sku",
+  #   target_status = "国内出库",
+  #   valid_current_status = c("国内入库"),  # 仅限国内入库状态
+  #   undo_queue = undo_outbound_queue,
+  #   refresh_trigger = refresh_trigger,
+  #   inventory = inventory,
+  #   notification_success = "物品出库成功！",
+  #   notification_error = "出库操作失败：",
+  #   record_undo = TRUE
+  # )
+  # 
+  # undoLastAction(
+  #   con = con, input = input,
+  #   undo_btn = "undo_outbound_btn",
+  #   undo_queue = undo_outbound_queue,
+  #   refresh_trigger = refresh_trigger,
+  #   inventory = inventory,
+  #   notification_success = "撤回成功，物品状态已恢复！",
+  #   notification_error = "撤回操作失败："
+  # )
+  # 
+  # # 国内售出逻辑
+  # handleSKU(
+  #   input = input,
+  #   session = session,
+  #   sku_input_id = "sold_sku",
+  #   target_status = "国内售出",
+  #   valid_current_status = c("国内入库"),  # 仅限国内入库状态
+  #   undo_queue = undo_sold_queue,
+  #   con = con,
+  #   refresh_trigger = refresh_trigger,
+  #   inventory = inventory,
+  #   notification_success = "物品售出成功！",
+  #   notification_error = "售出操作失败：",
+  #   record_undo = TRUE
+  # )
+  # 
+  # undoLastAction(
+  #   con = con, input = input,
+  #   undo_btn = "undo_sold_btn",
+  #   undo_queue = undo_sold_queue,
+  #   refresh_trigger = refresh_trigger,
+  #   inventory = inventory,
+  #   notification_success = "撤回成功，物品状态已恢复！",
+  #   notification_error = "撤回操作失败："
+  # )
+  # 
+  # # 监听移库按钮点击
+  # observeEvent(input$move_selected, {
+  #   # 获取选中的行索引
+  #   selected_row <- input$unique_items_table_rows_selected
+  #   
+  #   # 检查是否有选中行
+  #   if (is.null(selected_row) || length(selected_row) == 0) {
+  #     showNotification("请先在物品状态表中选择一行物品再执行移库操作！", type = "error")
+  #     return()
+  #   }
+  #   
+  #   # 检查是否选择了移库目标
+  #   target_status <- input$target_status
+  #   if (is.null(target_status) || target_status == "") {
+  #     showNotification("请选择一个移库目标！", type = "error")
+  #     return()
+  #   }
+  #   
+  #   # 获取选中行的数据
+  #   selected_data <- unique_items_data()[selected_row, ]
+  #   unique_id <- selected_data$UniqueID
+  #   current_status <- selected_data$Status
+  #   
+  #   # 如果当前状态已经是目标状态
+  #   if (current_status == target_status) {
+  #     showNotification("物品已经在目标状态，无需移库！", type = "message")
+  #     return()
+  #   }
+  #   
+  #   # 执行移库操作
+  #   tryCatch({
+  #     update_status(con, unique_id, target_status)
+  #     showNotification(paste("物品成功移至状态：", target_status), type = "message")
+  # 
+  #   }, error = function(e) {
+  #     showNotification(paste("移库操作失败：", e$message), type = "error")
+  #   })
+  # })
   
   
   
