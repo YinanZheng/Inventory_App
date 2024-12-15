@@ -186,7 +186,7 @@ server <- function(input, output, session) {
     }
     
     if (is.null(input$new_sku) || input$new_sku == "") {
-      showNotification("请确保SKU正常生成！", type = "error")
+      showNotification("请确保SKU正常显示！", type = "error")
       return()
     }
     
@@ -295,6 +295,61 @@ server <- function(input, output, session) {
     shinyjs::reset("new_item_image")
     uploaded_file(NULL)
   })
+  
+  
+  # Handle add item button click
+  observeEvent(input$update_image_btn, {
+    # 验证输入
+    if (is.null(input$new_sku) || input$new_sku == "") {
+      showNotification("请确保SKU正常显示！", type = "error")
+      return()
+    }
+    
+    # 检查SKU是否存在于库存表里
+    existing_inventory_items <- inventory()
+    existing_inventory_skus <- existing_inventory_items$SKU
+    
+    if (input$new_sku %in% existing_inventory_skus) {
+      # SKU 已存在，执行覆盖更新操作
+      sku_index <- which(existing_inventory_skus == input$new_sku)
+      
+      # 初始化图片路径
+      updated_image_path <- existing_inventory_items$ItemImagePath[sku_index]
+      
+      # 如果上传了图片，更新图片路径；否则保持原路径
+      if (!is.null(uploaded_file())) {
+        tryCatch({
+          file_data <- uploaded_file()
+          # 为图片生成唯一文件名
+          unique_image_name <- paste0(input$new_sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+          output_dir <- "/var/www/images"
+          final_image_path <- file.path(output_dir, unique_image_name)
+          
+          # 保存压缩后的图片
+          save_compressed_image(
+            file_path = file_data$datapath,
+            output_dir = output_dir,
+            image_name = unique_image_name
+          )
+          showNotification("图片已成功更新并保存！", type = "message")
+          # 覆盖更新记录
+          existing_inventory_items[sku_index, "ItemImagePath"] <- final_image_path
+          inventory(existing_inventory_items)
+        }, error = function(e) {
+          showNotification("图片更新失败！", type = "error")
+        })
+      } 
+      # SKU 不存在，添加新记录
+    } else {
+      showNotification("库存中无此SKU商品，无法更新图片！", type = "error")
+    }
+
+    # 重置文件输入框
+    shinyjs::reset("new_item_image")
+    uploaded_file(NULL)
+  })
+  
+  
   
   
   ## 入库商品模块
