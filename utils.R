@@ -420,7 +420,7 @@ fetchSkuData <- function(sku, con) {
   ", params = list(sku))
 }
 
-renderInboundItemInfo <- function(output, item_info, img_path) {
+renderItemInfo <- function(output, item_info, img_path) {
   # 如果 item_info 为空或没有数据，构造一个默认空数据框
   if (is.null(item_info) || nrow(item_info) == 0) {
     item_info <- data.frame(

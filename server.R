@@ -586,7 +586,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$inbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
-      renderInboundItemInfo(output, NULL, img_path)
+      renderItemInfo(output, NULL, placeholder_300px_path)
       return()
     }
     
@@ -596,14 +596,13 @@ server <- function(input, output, session) {
     # 检查是否有结果
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderInboundItemInfo(output, NULL, img_path)
+      renderItemInfo(output, NULL, img_path)
     }
     
-    img_path <- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
     if (!is.na(item_info$ItemImagePath[1])) img_path <- paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
     
     # 渲染物品信息
-    renderInboundItemInfo(output, item_info, img_path)
+    renderItemInfo(output, item_info, placeholder_300px_path)
   })
   
   # 确认入库逻辑
