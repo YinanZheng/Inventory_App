@@ -89,7 +89,7 @@ ui <- navbarPage(
           column(12, actionButton("confirm_btn", "登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
         )
       ),
-
+      
       mainPanel(
         fluidRow(
           column(12,   div(
@@ -380,8 +380,24 @@ ui <- navbarPage(
                       style = "width: 100%; font-size: 16px; color: #444;",
                       tags$tr(tags$td("商品名:", style = "padding: 8px 10px;"), tags$td(textOutput("report_item_name"))),
                       tags$tr(tags$td("供应商:", style = "padding: 8px 10px;"), tags$td(textOutput("report_item_maker"))),
-                      tags$tr(tags$td("大类:", style = "padding: 8px 10px;"), tags$td(textOutput("report_major_type"))),
-                      tags$tr(tags$td("小类:", style = "padding: 8px 10px;"), tags$td(textOutput("report_minor_type"))),
+                      tags$tr(
+                        tags$td(
+                          colspan = 2, 
+                          div(
+                            style = "display: flex; justify-content: space-between; padding: 8px 10px;",
+                            div(
+                              style = "flex: 1;",
+                              span("大类:", style = "font-weight: bold; margin-right: 10px;"),
+                              textOutput("report_major_type", inline = TRUE)
+                            ),
+                            div(
+                              style = "flex: 1;",
+                              span("小类:", style = "font-weight: bold; margin-right: 10px;"),
+                              textOutput("report_minor_type", inline = TRUE)
+                            )
+                          )
+                        )
+                      ),
                       tags$tr(tags$td("总库存:", style = "padding: 8px 10px;"), tags$td(textOutput("report_total_quantity"))),
                       tags$tr(tags$td("平均成本:", style = "padding: 8px 10px;"), tags$td(textOutput("report_avg_cost"))),
                       tags$tr(tags$td("平均运费:", style = "padding: 8px 10px;"), tags$td(textOutput("report_avg_shipping_cost")))
