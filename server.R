@@ -993,11 +993,10 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 监听 SKU 查询按钮
+  # 查询按钮逻辑
   observeEvent(input$query_report_btn, {
-    sku <- trimws(input$report_sku) # 清理 SKU 输入
+    sku <- trimws(input$report_sku)
     
-    # 校验 SKU 输入
     if (is.null(sku) || sku == "") {
       showNotification("请输入有效的条形码！", type = "error")
       resetReportUI()
@@ -1005,17 +1004,15 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      # 从数据库中获取 SKU 数据
+      # 获取 SKU 数据
       sku_data <- fetchSkuData(sku, con)
-      
-      # 校验是否找到数据
       if (nrow(sku_data) == 0) {
         showNotification("未找到该 SKU 的商品信息！", type = "error")
         resetReportUI()
         return()
       }
       
-      # 渲染商品基本信息
+      # 更新商品信息
       output$report_item_name <- renderText(sku_data$ItemName[1])
       output$report_item_maker <- renderText(sku_data$Maker[1])
       output$report_major_type <- renderText(sku_data$MajorType[1])
@@ -1024,7 +1021,6 @@ server <- function(input, output, session) {
       output$report_avg_cost <- renderText(sprintf("¥%.2f", sku_data$AverageCost[1]))
       output$report_avg_shipping_cost <- renderText(sprintf("¥%.2f", sku_data$AverageShippingCost[1]))
       
-      # 更新图片
       img_path <- ifelse(
         is.na(sku_data$ItemImagePath[1]),
         "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image",
@@ -1032,9 +1028,9 @@ server <- function(input, output, session) {
       )
       session$sendCustomMessage("updateImage", list(id = "report_item_image", src = img_path))
       
-      # 渲染库存状态汇总图
+      # 绘制库存状态图
       inventory_status_data <- fetchInventoryStatusData(sku, con)
-      output$inventory_status_plot <- renderPlot({
+      output$inventory_status_plot <- renderPlotly({
         plotBarChart(
           data = inventory_status_data,
           x = "Status",
@@ -1045,9 +1041,9 @@ server <- function(input, output, session) {
         )
       })
       
-      # 渲染瑕疵情况汇总图
+      # 绘制瑕疵情况图
       defect_status_data <- fetchDefectStatusData(sku, con)
-      output$defect_status_plot <- renderPlot({
+      output$defect_status_plot <- renderPlotly({
         plotPieChart(
           data = defect_status_data,
           labels = "Defect",
@@ -1072,8 +1068,8 @@ server <- function(input, output, session) {
     output$report_avg_cost <- renderText("")
     output$report_avg_shipping_cost <- renderText("")
     session$sendCustomMessage("updateImage", list(id = "report_item_image", src = "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"))
-    output$inventory_status_plot <- renderPlot(NULL)
-    output$defect_status_plot <- renderPlot(NULL)
+    output$inventory_status_plot <- renderPlotly({ NULL })
+    output$defect_status_plot <- renderPlotly({ NULL })
   }
 
   
