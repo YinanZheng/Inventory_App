@@ -768,8 +768,8 @@ server <- function(input, output, session) {
     handleSkuInput(
       sku_input = input$inbound_sku,
       output_name = "inbound_item_info",
+      operation = "PendingQuantity",
       count_label = "待入库数",
-      count_field = "PendingQuantity",
       con = con,
       output = output,
       placeholder_path = placeholder_300px_path,
@@ -903,8 +903,8 @@ server <- function(input, output, session) {
     handleSkuInput(
       sku_input = input$outbound_sku,
       output_name = "outbound_item_info",
+      operation = "AvailableForOutbound",
       count_label = "可出库数",
-      count_field = "AvailableForOutbound",
       con = con,
       output = output,
       placeholder_path = placeholder_300px_path,
@@ -950,8 +950,8 @@ server <- function(input, output, session) {
     handleSkuInput(
       sku_input = input$sold_sku,
       output_name = "sold_item_info",
+      operation = "AvailableForSold",
       count_label = "可售出数",
-      count_field = "AvailableForSold",
       con = con,
       output = output,
       placeholder_path = placeholder_300px_path,
@@ -992,71 +992,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  observeEvent(input$unique_items_table_rows_selected, {
-    selected_row <- input$unique_items_table_rows_selected
-    
-    if (!is.null(selected_row)) {
-      # 从 unique_items_data 中获取选中的 SKU
-      selected_sku <- unique_items_data()[selected_row, "SKU"]
-      
-      # 更新 SKU 输入框 (生成报表用)
-      updateTextInput(session, "sku_inventory", value = selected_sku)
-    }
-  })
   
-  # 监听 SKU 输入框的变化，更新 unique_item_for_report
-  observeEvent(input$sku_inventory, {
-    sku <- trimws(input$sku_inventory)  # 清除空格
-    
-    if (is.null(sku) || sku == "") {
-      # 清空数据和图表
-      unique_item_for_report(NULL)
-      output$inventory_overview_plot <- renderPlotly(NULL)
-      return()
-    }
-    
-    # 更新 unique_item_for_report
-    unique_item_for_report(get_inventory_overview(con, sku))
-  })
-  
-  # 监听 unique_item_for_report，更新图表
-  observe({
-    # 确保 unique_item_for_report 存在有效数据
-    req(unique_item_for_report())
-    
-    inventory_data <- unique_item_for_report()
-    
-    # 转换为数据框
-    data <- data.frame(
-      组别 = rep(c("国内库存", "在途运输", "美国库存"), each = 3),
-      状态 = rep(c("瑕疵", "修复", "无瑕"), 3),
-      数量 = c(
-        inventory_data$domestic_instock$defect %||% 0, 
-        inventory_data$domestic_instock$repaired %||% 0, 
-        inventory_data$domestic_instock$pristine %||% 0,
-        inventory_data$in_transit$defect %||% 0, 
-        inventory_data$in_transit$repaired %||% 0, 
-        inventory_data$in_transit$pristine %||% 0,
-        inventory_data$us_instock$defect %||% 0, 
-        inventory_data$us_instock$repaired %||% 0, 
-        inventory_data$us_instock$pristine %||% 0
-      )
-    )
-    
-    # 如果总数为 0，清空表格并通知
-    if (sum(data$数量) == 0) {
-      output$inventory_overview_table <- renderTable({
-        data.frame(组别 = character(0), 状态 = character(0), 数量 = numeric(0))
-      })
-      showNotification("未找到有效的库存数据！", type = "error")
-      return()
-    }
-    
-    # 渲染静态表格
-    output$inventory_overview_table <- renderTable({
-      data
-    }, striped = TRUE, bordered = TRUE, hover = TRUE)
-  })
   
   
   

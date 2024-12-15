@@ -419,14 +419,14 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
 }
 
 handleSkuInput <- function(
-    sku_input,        # SKU 输入值
-    output_name,      # 输出 UI 名称
-    count_label,      # 显示的计数标签
-    count_field,      # 数据字段名称
-    con,              # 数据库连接
-    output,           # 输出对象
-    placeholder_path, # 默认占位图片路径
-    host_url          # 图片主机 URL
+  sku_input,        # SKU 输入值
+  output_name,      # 输出 UI 名称
+  count_label,      # 显示的计数标签
+  count_field,      # 数据字段名称
+  con,              # 数据库连接
+  output,           # 输出对象
+  placeholder_path, # 默认占位图片路径
+  host_url          # 图片主机 URL
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -465,7 +465,6 @@ handleSkuInput <- function(
     showNotification(paste("处理 SKU 输入时发生错误：", e$message), type = "error")
   })
 }
-
 
 handleOperation <- function(
     operation_name, # 操作名称（入库、出库、售出）
