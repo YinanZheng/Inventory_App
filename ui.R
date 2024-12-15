@@ -134,7 +134,7 @@ ui <- navbarPage(
               # 卡片标题
               div(
                 style = "border-bottom: 2px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px;",
-                tags$h4("入库操作", style = "margin: 0; font-weight: bold; color: #333; text-align: center;")
+                tags$h4("入库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
               ),
               
               # SKU 输入框
