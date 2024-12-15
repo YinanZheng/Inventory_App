@@ -90,10 +90,9 @@ ui <- navbarPage(
         
         fluidRow(
           column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa;")),  # 折叠按钮
+                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
           column(12, div(
             id = "inventory_table_container",  # 容器 ID
-            style = "height: 300px; overflow-y: scroll;",  # 初始样式
             DTOutput("filtered_inventory_table")
           ))
         )
