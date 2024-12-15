@@ -765,25 +765,15 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
-    sku <- trimws(input$inbound_sku)
-    
-    if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, "待入库数", "PendingQuantity")
-      return()
-    }
-    
-    item_info <- fetchSkuData(sku, con)
-    
-    if (nrow(item_info) == 0) {
-      showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, "待入库数", "PendingQuantity")
-      return()
-    }
-    
-    renderItemInfo(
-      output, "inbound_item_info", item_info, 
-      paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])),
-      "待入库数", "PendingQuantity"
+    handleSkuInput(
+      sku_input = input$inbound_sku,
+      output_name = "inbound_item_info",
+      count_label = "待入库数",
+      count_field = "PendingQuantity",
+      con = con,
+      output = output,
+      placeholder_path = placeholder_300px_path,
+      host_url = host_url
     )
   })
   
@@ -910,25 +900,15 @@ server <- function(input, output, session) {
   
   # 监听出库 SKU 输入
   observeEvent(input$outbound_sku, {
-    sku <- trimws(input$outbound_sku)
-    
-    if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, "可出库数", "AvailableForOutbound")
-      return()
-    }
-    
-    item_info <- fetchSkuData(sku, con)
-    
-    if (nrow(item_info) == 0) {
-      showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, "可出库数", "AvailableForOutbound")
-      return()
-    }
-    
-    renderItemInfo(
-      output, "outbound_item_info", item_info, 
-      paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])),
-      "可出库数", "AvailableForOutbound"
+    handleSkuInput(
+      sku_input = input$outbound_sku,
+      output_name = "outbound_item_info",
+      count_label = "可出库数",
+      count_field = "AvailableForOutbound",
+      con = con,
+      output = output,
+      placeholder_path = placeholder_300px_path,
+      host_url = host_url
     )
   })
   
@@ -967,25 +947,15 @@ server <- function(input, output, session) {
   
   # 监听售出 SKU 输入
   observeEvent(input$sold_sku, {
-    sku <- trimws(input$sold_sku)
-    
-    if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, "可售出数", "AvailableForSold")
-      return()
-    }
-    
-    item_info <- fetchSkuData(sku, con)
-    
-    if (nrow(item_info) == 0) {
-      showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, "可售出数", "AvailableForSold")
-      return()
-    }
-    
-    renderItemInfo(
-      output, "sold_item_info", item_info, 
-      paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])),
-      "可售出数", "AvailableForSold"
+    handleSkuInput(
+      sku_input = input$sold_sku,
+      output_name = "sold_item_info",
+      count_label = "可售出数",
+      count_field = "AvailableForSold",
+      con = con,
+      output = output,
+      placeholder_path = placeholder_300px_path,
+      host_url = host_url
     )
   })
   

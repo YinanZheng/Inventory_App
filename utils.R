@@ -418,6 +418,55 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
   })
 }
 
+handleSkuInput <- function(
+    sku_input,        # SKU 输入值
+    output_name,      # 输出 UI 名称
+    count_label,      # 显示的计数标签
+    count_field,      # 数据字段名称
+    con,              # 数据库连接
+    output,           # 输出对象
+    placeholder_path, # 默认占位图片路径
+    host_url          # 图片主机 URL
+) {
+  sku <- trimws(sku_input) # 清理空格
+  
+  if (is.null(sku) || sku == "") {
+    # 如果 SKU 为空，渲染默认空的商品信息
+    renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
+    return()
+  }
+  
+  tryCatch({
+    # 查询 SKU 数据
+    item_info <- fetchSkuData(sku, con)
+    
+    # 如果未找到记录
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该条形码对应的物品！", type = "error")
+      renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
+      return()
+    }
+    
+    # 渲染商品信息
+    renderItemInfo(
+      output = output,
+      output_name = output_name,
+      item_info = item_info,
+      img_path = ifelse(
+        is.na(item_info$ItemImagePath[1]),
+        placeholder_path,
+        paste0(host_url, "/images/", basename(item_info$ItemImagePath[1]))
+      ),
+      count_label = count_label,
+      count_field = count_field
+    )
+  }, error = function(e) {
+    # 错误处理
+    showNotification(paste("处理 SKU 输入时发生错误：", e$message), type = "error")
+  })
+}
+
+
 handleOperation <- function(
     operation_name, # 操作名称（入库、出库、售出）
     sku_input,      # SKU 输入字段
