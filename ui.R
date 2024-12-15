@@ -377,7 +377,7 @@ ui <- navbarPage(
                     style = "padding: 20px;",
                     tags$h4("商品信息", style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"),
                     tags$table(
-                      style = "width: 100%; font-size: 16px; color: #444; border-spacing: 0 10px;", # 设置行间距
+                      style = "width: 100%; font-size: 16px; color: #444; border-spacing: 0 20px;", # 设置行间距
                       tags$tr(tags$td(span("商品名:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_name"))),
                       tags$tr(tags$td(span("供应商:", style = "padding: 8px 10px; font-weight: bold;")), tags$td(textOutput("report_item_maker"))),
                       tags$tr(
