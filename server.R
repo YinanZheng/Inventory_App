@@ -768,7 +768,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$inbound_sku) # 清理空格
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, count_label = "")
+      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, count_label = "待入库数")
       return()
     }
     
@@ -778,7 +778,7 @@ server <- function(input, output, session) {
     # 检查是否有结果
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, count_label = "")
+      renderItemInfo(output, "inbound_item_info", NULL, placeholder_300px_path, count_label = "待入库数")
     }
     
     if (!is.na(item_info$ItemImagePath[1])) 
@@ -954,7 +954,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$outbound_sku)
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, count_label = "")
+      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, count_label = "可出库数")
       return()
     }
     
@@ -962,7 +962,7 @@ server <- function(input, output, session) {
     
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, count_label = "")
+      renderItemInfo(output, "outbound_item_info", NULL, placeholder_300px_path, count_label = "可出库数")
       return()
     }
     
@@ -1025,7 +1025,7 @@ server <- function(input, output, session) {
     sku <- trimws(input$sold_sku)
     
     if (is.null(sku) || sku == "") {
-      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, count_label = "")
+      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, count_label = "可售出数")
       return()
     }
     
@@ -1033,7 +1033,7 @@ server <- function(input, output, session) {
     
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, count_label = "")
+      renderItemInfo(output, "sold_item_info", NULL, placeholder_300px_path, count_label = "可售出数")
       return()
     }
     
