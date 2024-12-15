@@ -178,8 +178,12 @@ server <- function(input, output, session) {
            "（其中包含运费: ¥", input$new_shipping_cost, ")")
   })
   
+  
   ####################################################################################################################################
-
+  ###################################################                              ###################################################
+  ###################################################             监听             ###################################################
+  ###################################################                              ###################################################
+  ####################################################################################################################################
   
   ################################################################
   ##                                                            ##
@@ -201,12 +205,7 @@ server <- function(input, output, session) {
   
   
   
-  ####################################################################################################################################
-  ###################################################                              ###################################################
-  ###################################################             监听             ###################################################
-  ###################################################                              ###################################################
-  ####################################################################################################################################
-
+  # 处理上传新图片
   observeEvent(input$new_item_image, {
     if (!is.null(input$new_item_image)) {
       # 记录新上传的文件
@@ -215,23 +214,32 @@ server <- function(input, output, session) {
     }
   })
 
-  # Handle row selection in filtered inventory table
-  observeEvent(input$filtered_inventory_table_rows_selected, {
-    selected_row <- input$filtered_inventory_table_rows_selected
-    if (length(selected_row) > 0) {
-      selected_data <- filtered_inventory()[selected_row, ]
+  # 清空输入
+  observeEvent(input$reset_btn, {
+    tryCatch({
+      # 清空输入控件
+      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
+      updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
+      updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
+      updateTextInput(session, "new_name", value = "")  # 清空商品名
+      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
+      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
+      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
+      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       
-      # Update input fields in the sidebar
-      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
-      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
-      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
-      updateNumericInput(session, "new_quantity", value = 0)
-      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
+      # 清空已添加的商品
+      added_items(create_empty_inventory())
       
-      # 更新 SKU 输入框(生成库存图表用)
-      updateTextInput(session, "sku_inventory", value = selected_data$SKU)
-    }
+      # 重置文件输入框
+      shinyjs::reset("new_item_image")
+      uploaded_file(NULL)
+      
+      # 通知用户
+      showNotification("输入已清空！", type = "message")
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification("清空输入时发生错误，请重试！", type = "error")
+    })
   })
   
   # Handle add item button click
@@ -363,7 +371,6 @@ server <- function(input, output, session) {
     uploaded_file(NULL)
   })
   
-  
   # Handle add item button click
   observeEvent(input$update_image_btn, {
     # 验证输入
@@ -432,6 +439,25 @@ server <- function(input, output, session) {
       showNotification("记录已成功删除", type = "message")
     } else {
       showNotification("请选择要删除的记录", type = "error")
+    }
+  })
+  
+  # Handle row selection in filtered inventory table
+  observeEvent(input$filtered_inventory_table_rows_selected, {
+    selected_row <- input$filtered_inventory_table_rows_selected
+    if (length(selected_row) > 0) {
+      selected_data <- filtered_inventory()[selected_row, ]
+      
+      # Update input fields in the sidebar
+      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
+      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateNumericInput(session, "new_quantity", value = 0)
+      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
+      
+      # 更新 SKU 输入框(生成库存图表用)
+      updateTextInput(session, "sku_inventory", value = selected_data$SKU)
     }
   })
   
@@ -610,99 +636,12 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  ################################################################
-  ##                                                            ##
-  ## 入库模块                                                   ##
-  ##                                                            ##
-  ################################################################
-  
-  
-  # 监听 SKU 输入
-  observeEvent(input$inbound_sku, {
-    sku <- trimws(input$inbound_sku) # 清理空格
-    
-    if (is.null(sku) || sku == "") {
-      renderItemInfo(output, NULL, placeholder_300px_path)
-      return()
-    }
-    
-    # 查询 SKU 数据
-    item_info <- fetchSkuData(sku, con)
-    
-    # 检查是否有结果
-    if (nrow(item_info) == 0) {
-      showNotification("未找到该条形码对应的物品！", type = "error")
-      renderItemInfo(output, NULL, placeholder_300px_path)
-    }
-    
-    if (!is.na(item_info$ItemImagePath[1])) 
-      renderItemInfo(output, item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
-  })
-  
-  # 确认入库逻辑
-  observeEvent(input$confirm_inbound_btn, {
-    sku <- trimws(input$inbound_sku) # 清理空格
-    
-    if (is.null(sku) || sku == "") {
-      showNotification("请先扫描 SKU！", type = "error")
-      return()
-    }
-    
-    # 更新物品状态
-    is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
-    
-    tryCatch({
-      sku_items <- dbGetQuery(con, "
-      SELECT UniqueID 
-      FROM unique_items 
-      WHERE SKU = ? AND Status = '采购' 
-      LIMIT 1", 
-                              params = list(sku))
-      
-      if (nrow(sku_items) == 0) {
-        showNotification("无待入库的物品，所有该商品已入库完毕！", type = "message")
-        return()
-      }
-      
-      # 更新状态
-      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective,
-                    refresh_trigger = unique_items_data_refresh_trigger)
-      
-      # 刷新并渲染
-      showNotification("物品成功入库！", type = "message")
-      
-      # 查询 SKU 数据
-      item_info <- fetchSkuData(sku, con)
-      
-      # 如果剩余数量为 0，显示模态弹窗
-      if (item_info$PendingCount[1] == 0) {
-        showModal(modalDialog(
-          title = "入库完成",
-          paste0("此 SKU 的商品已全部入库完毕！"),
-          easyClose = TRUE,
-          footer = modalButton("确定")
-        ))
-      }
-      
-      updateTextInput(session, "inbound_sku", value = "")
-      updateCheckboxInput(session, "defective_item", value = FALSE)
-      
-    }, error = function(e) {
-      showNotification(paste("入库失败：", e$message), type = "error")
-    })
-  })
-  
-  # 监听选中行并更新 SKU
-  observeEvent(unique_items_table_inbound_selected_row(), {
-    if (!is.null(unique_items_table_inbound_selected_row()) && length(unique_items_table_inbound_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_inbound_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "inbound_sku", value = selected_sku)
-    }
-  })
-  
 
-  ### SKU 模块
+  ################################################################
+  ##                                                            ##
+  ## SKU BARCODE模块                                            ##
+  ##                                                            ##
+  ################################################################
   
   # Automatically generate SKU when relevant inputs change
   observeEvent({
@@ -726,14 +665,12 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
-  
   ### Barcode PDF 模块
   session$onFlushed(function() {
     shinyjs::disable("download_single_pdf")
     shinyjs::disable("download_batch_pdf")
   })
   
-
   # 单个 SKU 条形码生成逻辑
   observeEvent(input$export_single_btn, {
     if (is.null(input$new_sku) || input$new_sku == "") {
@@ -822,33 +759,96 @@ server <- function(input, output, session) {
     }
   )
   
+
+  ################################################################
+  ##                                                            ##
+  ## 入库模块                                                   ##
+  ##                                                            ##
+  ################################################################
   
-  observeEvent(input$reset_btn, {
+  # 监听 SKU 输入
+  observeEvent(input$inbound_sku, {
+    sku <- trimws(input$inbound_sku) # 清理空格
+    
+    if (is.null(sku) || sku == "") {
+      renderItemInfo(output, NULL, placeholder_300px_path)
+      return()
+    }
+    
+    # 查询 SKU 数据
+    item_info <- fetchSkuData(sku, con)
+    
+    # 检查是否有结果
+    if (nrow(item_info) == 0) {
+      showNotification("未找到该条形码对应的物品！", type = "error")
+      renderItemInfo(output, NULL, placeholder_300px_path)
+    }
+    
+    if (!is.na(item_info$ItemImagePath[1])) 
+      renderItemInfo(output, item_info, paste0(host_url, "/images/", basename(item_info$ItemImagePath[1])))
+  })
+  
+  # 确认入库逻辑
+  observeEvent(input$confirm_inbound_btn, {
+    sku <- trimws(input$inbound_sku) # 清理空格
+    
+    if (is.null(sku) || sku == "") {
+      showNotification("请先扫描 SKU！", type = "error")
+      return()
+    }
+    
+    # 更新物品状态
+    is_defective <- ifelse(input$defective_item, "瑕疵", "无瑕")
+    
     tryCatch({
-      # 清空输入控件
-      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
-      updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
-      updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
-      updateTextInput(session, "new_name", value = "")  # 清空商品名
-      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
-      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
-      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
-      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
+      sku_items <- dbGetQuery(con, "
+      SELECT UniqueID 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '采购' 
+      LIMIT 1", 
+                              params = list(sku))
       
-      # 清空已添加的商品
-      added_items(create_empty_inventory())
+      if (nrow(sku_items) == 0) {
+        showNotification("无待入库的物品，所有该商品已入库完毕！", type = "message")
+        return()
+      }
       
-      # 重置文件输入框
-      shinyjs::reset("new_item_image")
-      uploaded_file(NULL)
+      # 更新状态
+      update_status(con, sku_items$UniqueID[1], "国内入库", defect_status = is_defective,
+                    refresh_trigger = unique_items_data_refresh_trigger)
       
-      # 通知用户
-      showNotification("输入已清空！", type = "message")
+      # 刷新并渲染
+      showNotification("物品成功入库！", type = "message")
+      
+      # 查询 SKU 数据
+      item_info <- fetchSkuData(sku, con)
+      
+      # 如果剩余数量为 0，显示模态弹窗
+      if (item_info$PendingCount[1] == 0) {
+        showModal(modalDialog(
+          title = "入库完成",
+          paste0("此 SKU 的商品已全部入库完毕！"),
+          easyClose = TRUE,
+          footer = modalButton("确定")
+        ))
+      }
+      
+      updateTextInput(session, "inbound_sku", value = "")
+      updateCheckboxInput(session, "defective_item", value = FALSE)
+      
     }, error = function(e) {
-      # 捕获错误并通知用户
-      showNotification("清空输入时发生错误，请重试！", type = "error")
+      showNotification(paste("入库失败：", e$message), type = "error")
     })
   })
+  
+  # 监听选中行并更新 SKU
+  observeEvent(unique_items_table_inbound_selected_row(), {
+    if (!is.null(unique_items_table_inbound_selected_row()) && length(unique_items_table_inbound_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_inbound_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "inbound_sku", value = selected_sku)
+    }
+  })
+  
   
   
   ################################################################
@@ -936,6 +936,8 @@ server <- function(input, output, session) {
       showNotification(paste("修复登记失败：", e$message), type = "error")
     })
   })
+  
+  
   
   ################################################################
   ##                                                            ##
