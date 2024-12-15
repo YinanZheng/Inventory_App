@@ -1062,11 +1062,14 @@ server <- function(input, output, session) {
       
       # 渲染库存状态图表
       output$inventory_status_chart <- renderPlot({
-        if (nrow(inventory_status_data) == 0) {
+        if (nrow(inventory_status_data) == 0 || is.null(inventory_status_data$Count) || all(is.na(inventory_status_data$Count))) {
+          # 如果数据为空或无效，显示默认提示
           plot.new()
           text(0.5, 0.5, "无库存状态数据", cex = 1.5, col = "red")
         } else {
-          barplot(inventory_status_data$Count,
+          # 确保 Count 是一个非空数值向量
+          counts <- inventory_status_data$Count
+          barplot(counts,
                   names.arg = inventory_status_data$Status,
                   col = c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red"),
                   main = "库存状态",
