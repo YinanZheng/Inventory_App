@@ -39,9 +39,9 @@ ui <- navbarPage(
         
         # 粘贴截图区域
         tags$div(
-          id = "paste_area", # 粘贴区域
-          style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px;",
-          "将截图粘贴到这里（Ctrl+V 或 Cmd+V）"
+          id = "pasted_image_section",
+          style = "margin-top: 20px;",
+          uiOutput("pasted_image_preview")
         ),
         
         fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
