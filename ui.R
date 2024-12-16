@@ -191,6 +191,48 @@ ui <- navbarPage(
     )
   ), # end of 入库 tab
   
+  tabPanel(
+    "物品管理",
+    sidebarLayout(
+      sidebarPanel(
+        fluidRow(
+          column(
+            12,
+            div(
+              class = "card shadow-sm", # 添加卡片样式
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+              
+              # 卡片标题
+              div(
+                style = "margin-bottom: 10px; padding-bottom: 8px;",
+                tags$h4("删除选中物品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+              ),
+              
+              # 确认删除按钮
+              actionButton(
+                "confirm_delete_btn", 
+                "确认删除", 
+                icon = icon("check"), 
+                class = "btn-primary", 
+                style = "font-size: 16px; width: 100%; height: 42px;"
+              )
+            )
+          )
+        )
+      ),
+      mainPanel(
+        fluidRow(
+          column(12, actionButton("toggle_item_table_manage", "物品状态表（点击显示/隐藏）",
+                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+          column(12, div(
+            id = "item_table_container_inbound",  # 容器 ID
+            style = "margin-bottom: 100px;",
+            uniqueItemsTableUI("unique_items_table_inbound")
+          ))
+        )
+      )
+    )
+  ), # end of 物品管理 tab
   
   tabPanel(
     "瑕疵品管理",
