@@ -1,4 +1,4 @@
-uniqueItemsTableServer <- function(input, output, session, data) {
+uniqueItemsTableServer <- function(input, output, session, selection = "single", data) {
   output$unique_items_table <- renderDT({
     # Define column mapping for user-friendly display
     column_mapping <- list(
@@ -16,6 +16,7 @@ uniqueItemsTableServer <- function(input, output, session, data) {
     render_table_with_images(
       data = data(),                 # 使用传递的 reactive 数据源
       column_mapping = column_mapping, # 映射用户友好的列名
+      selection = selection, 
       image_column = "ItemImagePath"
     ) %>%
       formatStyle(
