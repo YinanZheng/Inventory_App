@@ -77,6 +77,18 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
   })
 }
 
+# 将 Base64 编码的图片数据解码并保存为实际图片文件
+base64_decode_image <- function(base64_string, output_path) {
+  # 提取 Base64 数据部分（去掉头部信息，如 "data:image/png;base64,"）
+  base64_data <- gsub("^data:image/[^;]+;base64,", "", base64_string)
+  
+  # 解码 Base64 数据为二进制文件
+  decoded_image <- base64enc::base64decode(base64_data)
+  
+  # 写入文件
+  writeBin(decoded_image, output_path)
+}
+
 # 保存图片（文件上传或粘贴）
 process_image_upload <- function(sku, file_data = NULL, base64_data = NULL, inventory_path = NULL, output_dir = "/var/www/images") {
   if (is.null(file_data) && is.null(base64_data)) {
