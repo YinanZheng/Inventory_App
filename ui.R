@@ -201,7 +201,7 @@ ui <- navbarPage(
           column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(4, actionButton(
             "defect_register", 
-            "登记", 
+            "登记瑕疵品", 
             icon = icon("circle-exclamation"),
             class = "btn-warning", 
             style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
@@ -215,7 +215,7 @@ ui <- navbarPage(
           column(4, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(4, actionButton(
             "repair_register", 
-            "登记", 
+            "登记修复品", 
             icon = icon("hammer"),
             class = "btn-success", 
             style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
