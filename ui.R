@@ -40,11 +40,8 @@ ui <- navbarPage(
         # 商品图片区域
         tags$div(
           class = "card", # 添加卡片样式，方便布局
-          style = "padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
-          
-          # 共同标题
-          tags$h4("商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px; text-align: center;"),
-          
+          style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
+
           # 粘贴截图区域
           tags$div(
             id = "paste_area", # 粘贴区域
