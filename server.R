@@ -824,7 +824,7 @@ server <- function(input, output, session) {
   ################################################################
   
   observeEvent(input$confirm_delete_btn, {
-    selected_rows <- input$unique_items_table_manage_rows_selected
+    selected_rows <- unique_items_table_manage_selected_row()
     
     # 如果没有选中行，提示用户
     if (is.null(selected_rows) || length(selected_rows) == 0) {
