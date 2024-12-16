@@ -37,6 +37,13 @@ ui <- navbarPage(
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
         
+        # 粘贴截图区域
+        tags$div(
+          id = "paste_area", # 粘贴区域
+          style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px;",
+          "将截图粘贴到这里（Ctrl+V 或 Cmd+V）"
+        ),
+        
         fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
         
         fluidRow(
