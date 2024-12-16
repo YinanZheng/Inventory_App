@@ -37,23 +37,33 @@ ui <- navbarPage(
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
         
-        # 粘贴截图区域
+        # 商品图片区域
         tags$div(
-          id = "paste_area", # 粘贴区域
-          style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
+          class = "card", # 添加卡片样式，方便布局
+          style = "padding: 20px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
           
-          # 默认提示文字
-          div(
-            id = "paste_prompt",
-            "将截图粘贴到这里（Ctrl+V 或 Cmd+V）",
-            style = "color: #888; font-size: 16px; font-style: italic;"
+          # 共同标题
+          tags$h4("商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px; text-align: center;"),
+          
+          # 粘贴截图区域
+          tags$div(
+            id = "paste_area", # 粘贴区域
+            style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
+            
+            # 默认提示文字
+            div(
+              id = "paste_prompt",
+              "将截图粘贴到这里（Ctrl+V 或 Cmd+V）",
+              style = "color: #888; font-size: 16px; font-style: italic;"
+            ),
+            
+            # 动态图片预览区域
+            uiOutput("pasted_image_preview")
           ),
           
-          # 动态图片预览区域
-          uiOutput("pasted_image_preview")
+          # 文件上传区域
+          fileInput("new_item_image", "或拖拽/选择文件上传:", accept = c("image/png", "image/jpeg"))
         ),
-        
-        fileInput("new_item_image", "商品图片:", accept = c("image/png", "image/jpeg")),
         
         fluidRow(
           column(
