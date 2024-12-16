@@ -40,7 +40,7 @@ ui <- navbarPage(
         # 商品图片区域
         tags$div(
           class = "card", # 添加卡片样式，方便布局
-          style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
+          style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 5px;",
 
           # 粘贴截图区域
           tags$div(
@@ -50,7 +50,7 @@ ui <- navbarPage(
             # 默认提示文字
             div(
               id = "paste_prompt",
-              "将截图粘贴到这里（Ctrl+V 或 Cmd+V）",
+              "将商品截图粘贴到这里（Ctrl+V 或 Cmd+V）",
               style = "color: #888; font-size: 16px; font-style: italic;"
             ),
             
