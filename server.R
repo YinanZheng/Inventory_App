@@ -462,10 +462,13 @@ server <- function(input, output, session) {
   # Handle row selection in item table
   observeEvent(input$added_items_table_rows_selected, {
     selected_row <- input$added_items_table_rows_selected
+    
     if (length(selected_row) > 0) {
-      selected_data <- added_items()[selected_row, ]
+      # 仅处理最后一个选择的行
+      last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
+      selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
       
-      # Update input fields in the sidebar
+      # 更新侧边栏的输入字段
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
