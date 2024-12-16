@@ -117,7 +117,7 @@ ui <- navbarPage(
     });
   ")),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
           column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
