@@ -4,6 +4,26 @@ ui <- navbarPage(
   title = "库存管理系统（国内端）",
   theme = shinytheme("flatly"), # 可选主题
   
+  # 全局脚本插入位置
+  tags$head(
+    tags$script(HTML("
+    document.getElementById('paste_area').addEventListener('paste', function(event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            Shiny.setInputValue('pasted_image', evt.target.result, {priority: 'event'});
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    });
+  ")),
+  ),
+  
   tabPanel(
     "采购登记",
     sidebarLayout(
@@ -37,85 +57,35 @@ ui <- navbarPage(
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
         
-        # 商品图片区域
+        # 商品图片和粘贴区域
         tags$div(
-          class = "card", # 添加卡片样式，方便布局
-          style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 0px;",
-
-          # 粘贴截图区域
+          class = "card",
+          style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
+          tags$h5("商品图片上传", style = "margin-bottom: 15px; font-weight: bold; color: #007BFF;"),
           tags$div(
-            id = "paste_area", # 粘贴区域
+            id = "paste_area",
             style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
-            
-            # 默认提示文字
-            div(
-              id = "paste_prompt",
-              "将商品截图粘贴到这里（Ctrl+V 或 Cmd+V）",
-              style = "color: #888; font-size: 16px; font-style: italic;"
-            ),
-            
-            # 动态图片预览区域
+            div(id = "paste_prompt", "将商品截图粘贴到这里（Ctrl+V 或 Cmd+V）", style = "color: #888; font-size: 16px; font-style: italic;"),
             uiOutput("pasted_image_preview")
           ),
-          # 文件上传区域
           fileInput("new_item_image", "或拖拽/选择商品图片上传:", accept = c("image/png", "image/jpeg"))
         ),
         
-        # 进度条区域
+        # 进度条
         tags$div(
           id = "upload_progress",
-          style = "display: none; margin-top: 15px;", # 初始隐藏
+          style = "display: none; margin-top: 15px;",
           tags$div(
             class = "progress",
             style = "height: 20px;",
-            tags$div(
-              class = "progress-bar progress-bar-striped progress-bar-animated",
-              role = "progressbar",
-              style = "width: 0%;",
-              id = "progress_bar"
-            )
+            tags$div(class = "progress-bar progress-bar-striped progress-bar-animated", role = "progressbar", style = "width: 0%;", id = "progress_bar")
           )
         ),
         
         fluidRow(
-          column(
-            6,  # 左边按钮占一半宽度
-            style = "text-align: left;",  # 左对齐
-            actionButton(
-              "add_btn", 
-              "添加/更新商品信息", 
-              icon = icon("pen"),
-              style = "background-color: #006400; color: white;"
-            )
-          ),
-          column(
-            6,  # 右边按钮占另一半宽度
-            style = "text-align: right;",  # 右对齐
-            actionButton(
-              "update_image_btn", 
-              "更新商品图片", 
-              icon = icon("pen"),
-              style = "background-color: #006400; color: white;"
-            )
-          )
+          column(6, style = "text-align: left;", actionButton("add_btn", "添加/更新商品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+          column(6, style = "text-align: right;", actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;"))
         ),
-        
-        tags$script(HTML("
-    document.getElementById('paste_area').addEventListener('paste', function(event) {
-      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          const reader = new FileReader();
-          reader.onload = function(evt) {
-            Shiny.setInputValue('pasted_image', evt.target.result, {priority: 'event'});
-          };
-          reader.readAsDataURL(file);
-          break;
-        }
-      }
-    });
-  ")),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
@@ -470,5 +440,11 @@ ui <- navbarPage(
         
       )
     )
+  ),
+  
+  # 添加全局底部
+  footer = tags$div(
+    style = "padding: 10px; background-color: #f8f9fa; text-align: center;",
+    tags$span("版权所有 © 2024 Golden Bean LLC")
   )
 )

@@ -300,6 +300,7 @@ server <- function(input, output, session) {
   # 清除粘贴图片预览并恢复提示
   observeEvent(input$clear_pasted_image, {
     uploaded_file(NULL)  # 清空粘贴的图片数据
+    input$pasted_image <- NULL
     output$pasted_image_preview <- renderUI({ NULL })  # 移除图片预览
     
     # 恢复默认提示文字
