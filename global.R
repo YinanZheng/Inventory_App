@@ -18,14 +18,14 @@ library(plotly)
 library(rlang)
 
 # Source all modular functions
-source("./modules/supplierModuleServer.R")
-source("./modules/typeModuleServer.R")
-source("./modules/uniqueItemsTableServer.R")
+source("./modules/supplierModuleServer.R", local = TRUE)
+source("./modules/typeModuleServer.R", local = TRUE)
+source("./modules/uniqueItemsTableServer.R", local = TRUE)
 
-source("./modules/typeModuleUI.R")
-source("./modules/uniqueItemsTableUI.R")
+source("./modules/typeModuleUI.R", local = TRUE)
+source("./modules/uniqueItemsTableUI.R", local = TRUE)
 
-source("utils.R")
+source("utils.R", local = TRUE)
 
 # 定义轮询间隔（以毫秒为单位）
 poll_interval <<- 10000  # 每 10 秒检查一次
