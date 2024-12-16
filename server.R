@@ -15,6 +15,9 @@ server <- function(input, output, session) {
   # 用于保存用户上传的文件信息
   uploaded_file <- reactiveVal(NULL)
   
+  # 用于存储粘贴图片数据
+  pasted_file <- reactiveVal(NULL)  
+  
   # 声明一个 reactiveVal 用于触发unique_items_data刷新
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
@@ -240,6 +243,8 @@ server <- function(input, output, session) {
   observeEvent(input$pasted_image, {
     if (!is.null(input$pasted_image)) {
       tryCatch({
+        pasted_file(input$pasted_image)  # 保存到 reactiveVal
+        
         # 显示进度条
         shinyjs::show("upload_progress")
         update_progress(0)  # 初始化进度为 0%
@@ -299,8 +304,8 @@ server <- function(input, output, session) {
   
   # 清除粘贴图片预览并恢复提示
   observeEvent(input$clear_pasted_image, {
-    uploaded_file(NULL)  # 清空粘贴的图片数据
-    input$pasted_image <- NULL
+    uploaded_file(NULL)
+    pasted_file(NULL)
     output$pasted_image_preview <- renderUI({ NULL })  # 移除图片预览
     
     # 恢复默认提示文字
@@ -343,7 +348,7 @@ server <- function(input, output, session) {
     new_image_path <- process_image_upload(
       sku = input$new_sku,
       file_data = uploaded_file(),
-      base64_data = input$pasted_image,
+      base64_data = pasted_file(),
       inventory_path = existing_inventory_path
     )
     
@@ -409,7 +414,7 @@ server <- function(input, output, session) {
       updated_image_path <- process_image_upload(
         sku = input$new_sku,
         file_data = uploaded_file(),
-        base64_data = input$pasted_image,
+        base64_data = pasted_file(),
         inventory_path = existing_image_path
       )
       
