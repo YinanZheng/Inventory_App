@@ -39,8 +39,17 @@ ui <- navbarPage(
         
         # 粘贴截图区域
         tags$div(
-          id = "pasted_image_section",
-          style = "margin-top: 20px;",
+          id = "paste_area", # 粘贴区域
+          style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
+          
+          # 默认提示文字
+          div(
+            id = "paste_prompt",
+            "将截图粘贴到这里（Ctrl+V 或 Cmd+V）",
+            style = "color: #888; font-size: 16px; font-style: italic;"
+          ),
+          
+          # 动态图片预览区域
           uiOutput("pasted_image_preview")
         ),
         

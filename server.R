@@ -234,32 +234,52 @@ server <- function(input, output, session) {
     }
   })
   
-  # 清空输入
-  observeEvent(input$reset_btn, {
-    tryCatch({
-      # 清空输入控件
-      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
-      updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
-      updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
-      updateTextInput(session, "new_name", value = "")  # 清空商品名
-      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
-      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
-      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
-      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
-      
-      # 清空已添加的商品
-      added_items(create_empty_inventory())
-      
-      # 重置文件输入框
-      shinyjs::reset("new_item_image")
-      uploaded_file(NULL)
-      
-      # 通知用户
-      showNotification("输入已清空！", type = "message")
-    }, error = function(e) {
-      # 捕获错误并通知用户
-      showNotification("清空输入时发生错误，请重试！", type = "error")
-    })
+  # 处理粘贴图片显示预览和基础信息
+  observeEvent(input$pasted_image, {
+    if (!is.null(input$pasted_image)) {
+      tryCatch({
+        # 保存粘贴的图片到临时路径
+        temp_path <- tempfile(fileext = ".jpg")
+        base64_decode_image(input$pasted_image, temp_path)
+        
+        # 获取图片信息
+        img <- magick::image_read(temp_path)
+        img_info <- magick::image_info(img)
+        
+        # 显示图片预览
+        output$pasted_image_preview <- renderUI({
+          div(
+            tags$img(src = input$pasted_image, height = "200px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
+            tags$p(
+              style = "color: #007BFF; font-size: 14px;",
+              paste0("已粘贴图片: ", img_info$width, "x", img_info$height, " 分辨率, 文件大小 ~", format(file.size(temp_path) / 1024, digits = 2), " KB")
+            ),
+            actionButton("clear_pasted_image", "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
+          )
+        })
+        
+        # 隐藏默认提示文字
+        shinyjs::hide("paste_prompt")
+        
+        # 暂存到 uploaded_file()
+        uploaded_file(list(datapath = temp_path, name = "pasted_image.jpg"))
+        
+        showNotification("图片粘贴成功！", type = "message")
+      }, error = function(e) {
+        showNotification(paste("图片粘贴失败:", e$message), type = "error")
+      })
+    }
+  })
+  
+  # 清除粘贴图片预览并恢复提示
+  observeEvent(input$clear_pasted_image, {
+    uploaded_file(NULL)  # 清空粘贴的图片数据
+    output$pasted_image_preview <- renderUI({ NULL })  # 移除图片预览
+    
+    # 恢复默认提示文字
+    shinyjs::show("paste_prompt")
+    
+    showNotification("已清除粘贴的图片！", type = "message")
   })
   
   # Handle add item button click
@@ -396,19 +416,6 @@ server <- function(input, output, session) {
     # 重置文件输入框
     shinyjs::reset("new_item_image")
     uploaded_file(NULL)
-  })
-  
-  # Delete selected item
-  observeEvent(input$delete_btn, {
-    selected_row <- input$added_items_table_rows_selected
-    if (length(selected_row) > 0) {
-      current_items <- added_items()
-      updated_items <- current_items[-selected_row, ]  # Remove selected row
-      added_items(updated_items)  # Update reactive value
-      showNotification("记录已成功删除", type = "message")
-    } else {
-      showNotification("请选择要删除的记录", type = "error")
-    }
   })
   
   # Confirm button: Update database and handle images
@@ -560,6 +567,47 @@ server <- function(input, output, session) {
     }
   })
   
+  # Delete selected item
+  observeEvent(input$delete_btn, {
+    selected_row <- input$added_items_table_rows_selected
+    if (length(selected_row) > 0) {
+      current_items <- added_items()
+      updated_items <- current_items[-selected_row, ]  # Remove selected row
+      added_items(updated_items)  # Update reactive value
+      showNotification("记录已成功删除", type = "message")
+    } else {
+      showNotification("请选择要删除的记录", type = "error")
+    }
+  })
+  
+  # 清空输入
+  observeEvent(input$reset_btn, {
+    tryCatch({
+      # 清空输入控件
+      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
+      updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
+      updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
+      updateTextInput(session, "new_name", value = "")  # 清空商品名
+      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
+      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
+      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
+      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
+      
+      # 清空已添加的商品
+      added_items(create_empty_inventory())
+      
+      # 重置文件输入框
+      shinyjs::reset("new_item_image")
+      uploaded_file(NULL)
+      output$pasted_image_preview <- renderUI({ NULL })
+      
+      # 通知用户
+      showNotification("输入已清空！", type = "message")
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification("清空输入时发生错误，请重试！", type = "error")
+    })
+  })
   
   
   ################################################################
