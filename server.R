@@ -214,9 +214,23 @@ server <- function(input, output, session) {
   # 处理上传新图片
   observeEvent(input$new_item_image, {
     if (!is.null(input$new_item_image)) {
-      # 记录新上传的文件
-      uploaded_file(input$new_item_image)
-      showNotification("文件已上传并记录！", type = "message")
+      tryCatch({
+        # 记录上传的文件
+        uploaded_file(input$new_item_image)
+        file_name <- input$new_item_image$name
+        file_type <- input$new_item_image$type
+        
+        # 校验文件格式
+        if (!(file_type %in% c("image/png", "image/jpeg"))) {
+          uploaded_file(NULL)
+          showNotification("仅支持上传 PNG 或 JPEG 图片！", type = "error")
+          return()
+        }
+        
+        showNotification(paste("文件已上传:", file_name), type = "message")
+      }, error = function(e) {
+        showNotification(paste("文件上传处理失败:", e$message), type = "error")
+      })
     }
   })
   
@@ -255,56 +269,43 @@ server <- function(input, output, session) {
       showNotification("请填写正确商品名称！", type = "error")
       return()
     }
-    
     if (is.null(input$new_quantity) || input$new_quantity <= 0) {
       showNotification("请填写正确商品数量！", type = "error")
       return()
     }
-    
     if (is.null(input$new_product_cost) || input$new_product_cost < 0 || input$new_product_cost > 999) {
       showNotification("请填写正确商品成本！", type = "error")
       return()
     }
-    
     if (is.null(input$new_sku) || input$new_sku == "") {
       showNotification("请确保SKU正常显示！", type = "error")
       return()
     }
     
-    # 检查是否存在重复的 SKU
+    # 检查是否存在该 SKU 的库存记录
+    inventory_item <- tryCatch({
+      dbGetQuery(con, "SELECT ItemImagePath FROM inventory WHERE SKU = ?", params = list(input$new_sku))
+    }, error = function(e) {
+      showNotification("检查库存时发生错误！", type = "error")
+      return(data.frame())
+    })
+    
+    existing_inventory_path <- if (nrow(inventory_item) > 0) inventory_item$ItemImagePath[1] else NULL
+    
+    # 上传或粘贴图片处理
+    new_image_path <- process_image_upload(
+      sku = input$new_sku,
+      file_data = uploaded_file(),
+      base64_data = input$pasted_image,
+      inventory_path = existing_inventory_path
+    )
+    
+    # 添加或更新记录
     existing_items <- added_items()
     existing_skus <- existing_items$SKU
-    
     if (input$new_sku %in% existing_skus) {
-      # SKU 已存在，执行覆盖更新操作
+      # 更新逻辑
       sku_index <- which(existing_skus == input$new_sku)
-      
-      # 初始化图片路径
-      updated_image_path <- existing_items$ItemImagePath[sku_index]
-      
-      # 如果上传了图片，更新图片路径；否则保持原路径
-      if (!is.null(uploaded_file())) {
-        tryCatch({
-          file_data <- uploaded_file()
-          # 为图片生成唯一文件名
-          unique_image_name <- paste0(input$new_sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-          output_dir <- "/var/www/images"
-          final_image_path <- file.path(output_dir, unique_image_name)
-          
-          # 保存压缩后的图片
-          save_compressed_image(
-            file_path = file_data$datapath,
-            output_dir = output_dir,
-            image_name = unique_image_name
-          )
-          updated_image_path <- final_image_path
-          showNotification("图片已成功更新并保存！", type = "message")
-        }, error = function(e) {
-          showNotification("图片更新失败！", type = "error")
-        })
-      } 
-      
-      # 覆盖更新记录
       existing_items[sku_index, ] <- data.frame(
         SKU = input$new_sku,
         Maker = input$new_maker,
@@ -313,49 +314,13 @@ server <- function(input, output, session) {
         ItemName = input$new_name,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
-        ItemImagePath = updated_image_path,
+        ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
-      
       added_items(existing_items)
-      
       showNotification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
-      # SKU 不存在，添加新记录
-      new_image_path <- NA
-      if (!is.null(uploaded_file())) {
-        tryCatch({
-          file_data <- uploaded_file()
-          unique_image_name <- paste0(input$new_sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-          output_dir <- "/var/www/images"
-          final_image_path <- file.path(output_dir, unique_image_name)
-          
-          save_compressed_image(
-            file_path = file_data$datapath,
-            output_dir = output_dir,
-            image_name = unique_image_name
-          )
-          new_image_path <- final_image_path
-          showNotification("图片已成功处理并保存！", type = "message")
-        }, error = function(e) {
-          showNotification("图片处理失败！", type = "error")
-        })
-      } else {
-        # 用户未上传图片，检查 inventory 中是否有对应 SKU
-        tryCatch({
-          inventory_item <- dbGetQuery(con, "SELECT ItemImagePath FROM inventory WHERE SKU = ?", params = list(input$new_sku))
-          
-          if (nrow(inventory_item) > 0) {
-            new_image_path <- inventory_item$ItemImagePath[1]  # 使用 inventory 中的图片路径
-            showNotification("使用库存中 SKU 对应的图片路径！", type = "message")
-          } else {
-            showNotification("未找到库存中对应 SKU 的图片路径。", type = "warning")
-          }
-        }, error = function(e) {
-          showNotification("检查库存时发生错误！", type = "error")
-        })
-      }
-      
+      # 添加新记录
       new_item <- data.frame(
         SKU = input$new_sku,
         Maker = input$new_maker,
@@ -367,17 +332,16 @@ server <- function(input, output, session) {
         ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
-      
       added_items(bind_rows(existing_items, new_item))
       showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
-    # 重置文件输入框
+    # 重置输入框
     shinyjs::reset("new_item_image")
     uploaded_file(NULL)
   })
   
-  # Handle add item button click
+  # Handle image update button click
   observeEvent(input$update_image_btn, {
     # 验证输入
     if (is.null(input$new_sku) || input$new_sku == "") {
@@ -385,49 +349,48 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 检查SKU是否存在于库存表里
+    # 检查 SKU 是否存在于库存表里
     existing_inventory_items <- inventory()
     existing_inventory_skus <- existing_inventory_items$SKU
     
     if (input$new_sku %in% existing_inventory_skus) {
-      # 如果上传了图片，更新图片路径
-      if (!is.null(uploaded_file())) {
+      # 获取当前 SKU 对应的图片路径
+      existing_item <- existing_inventory_items[existing_inventory_items$SKU == input$new_sku, ]
+      existing_image_path <- existing_item$ItemImagePath[1]
+      
+      # 处理图片上传或粘贴
+      updated_image_path <- process_image_upload(
+        sku = input$new_sku,
+        file_data = uploaded_file(),
+        base64_data = input$pasted_image,
+        inventory_path = existing_image_path
+      )
+      
+      # 检查处理结果
+      if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
         tryCatch({
-          file_data <- uploaded_file()
-          # 为图片生成唯一文件名
-          unique_image_name <- paste0(input$new_sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-          output_dir <- "/var/www/images"
-          final_image_path <- file.path(output_dir, unique_image_name)
-          
-          # 保存压缩后的图片
-          save_compressed_image(
-            file_path = file_data$datapath,
-            output_dir = output_dir,
-            image_name = unique_image_name
-          )
-          showNotification(paste0(input$new_sku, "图片已成功更新并保存！"), type = "message")
-          
           # 更新库存数据
           dbExecute(con, "UPDATE inventory 
-                      SET ItemImagePath = ? 
-                      WHERE SKU = ?",
-                    params = list(final_image_path, input$new_sku))
+                        SET ItemImagePath = ? 
+                        WHERE SKU = ?",
+                    params = list(updated_image_path, input$new_sku))
           
-          # 更新inventory()，触发filtered_inventory_table更新
+          # 更新 `inventory()`，触发 `filtered_inventory_table` 更新
           inventory(dbGetQuery(con, "SELECT * FROM inventory"))
           
-          # 触发更新刷新unique_items_data
-          unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) 
+          # 触发刷新 `unique_items_data`
+          unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
           
+          showNotification(paste0(input$new_sku, " 图片已成功更新！"), type = "message")
         }, error = function(e) {
-          showNotification("图片更新失败！", type = "error")
+          showNotification("图片路径更新失败！", type = "error")
         })
       } else {
-        showNotification("请先上传图片！", type = "error")
-      } 
-      # SKU 不存在，添加新记录
+        showNotification("未检测到有效的图片数据！", type = "error")
+      }
     } else {
-      showNotification("库存中无此SKU商品，无法更新图片！", type = "error")
+      # SKU 不存在
+      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
     }
     
     # 重置文件输入框
@@ -446,6 +409,117 @@ server <- function(input, output, session) {
     } else {
       showNotification("请选择要删除的记录", type = "error")
     }
+  })
+  
+  # Confirm button: Update database and handle images
+  observeEvent(input$confirm_btn, {
+    tryCatch({
+      if (nrow(added_items()) == 0) {
+        showNotification("请先录入至少一个商品!", type = "error")
+        return()
+      }
+      
+      added_items_df <- added_items()
+      
+      # Retrieve total package shipping cost from the UI
+      total_shipping_cost <- input$new_shipping_cost
+      if (is.null(total_shipping_cost) || total_shipping_cost <= 0) {
+        total_shipping_cost <- 0  # Default to 0 if invalid
+      }
+      
+      unit_shipping_cost <- total_shipping_cost / sum(added_items_df$Quantity)
+      
+      for (i in 1:nrow(added_items_df)) {
+        sku <- added_items_df$SKU[i]
+        maker <- added_items_df$Maker[i]
+        major_type <- added_items_df$MajorType[i]
+        minor_type <- added_items_df$MinorType[i]
+        item_name <- added_items_df$ItemName[i]
+        quantity <- added_items_df$Quantity[i]
+        product_cost <- added_items_df$ProductCost[i]
+        image_path <- added_items_df$ItemImagePath[i]  # 已经处理好的图片路径
+        
+        # 检查 SKU 是否已存在
+        existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
+        
+        if (nrow(existing_item) > 0) {
+          # SKU 已存在，更新库存
+          new_quantity <- existing_item$Quantity + quantity
+          new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + (product_cost * quantity)) / new_quantity
+          new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + (unit_shipping_cost * quantity)) / new_quantity
+          
+          dbExecute(con, "UPDATE inventory 
+                        SET Quantity = ?, ProductCost = ?, ShippingCost = ? 
+                        WHERE SKU = ?",
+                    params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), sku))
+          
+          showNotification(paste("库存数据更新成功! SKU:", sku, ", 商品名:", item_name), type = "message")
+        } else {
+          # SKU 不存在，插入新商品
+          dbExecute(con, "INSERT INTO inventory 
+                        (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                    params = list(sku, maker, major_type, minor_type, item_name, quantity, 
+                                  round(product_cost, 2), round(unit_shipping_cost, 2), image_path))
+          
+          showNotification(paste("新商品成功加入库存数据! SKU:", sku, ", 商品名:", item_name), type = "message")
+        }
+      }
+      
+      # 更新 inventory 数据并触发 UI 刷新
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+      ### 同时添加信息到 unique_items 表中
+      # Prepare data for batch insertion
+      batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
+        sku <- added_items_df$SKU[i]
+        quantity <- added_items_df$Quantity[i]
+        product_cost <- added_items_df$ProductCost[i]
+        
+        # Create rows for each quantity
+        t(replicate(quantity, c(
+          UUIDgenerate(),
+          as.character(sku),
+          as.numeric(product_cost),
+          as.numeric(unit_shipping_cost),
+          "采购",
+          "未知",
+          format(Sys.time(), "%Y-%m-%d", tz = "Asia/Shanghai")
+        )))
+      }))
+      
+      # Validate data
+      if (is.null(batch_data) || nrow(batch_data) == 0) {
+        showNotification("采购数据无效，请检查输入！", type = "error")
+        return()
+      }
+      
+      # Convert to data frame
+      batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
+      
+      # Insert into database
+      dbBegin(con)
+      tryCatch({
+        for (i in 1:nrow(batch_data)) {
+          dbExecute(con, "INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, PurchaseTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    unname(as.vector(batch_data[i, ])))
+        }
+        dbCommit(con)
+        showNotification("所有采购货物已成功登记！", type = "message")
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      }, error = function(e) {
+        dbRollback(con)
+        showNotification(paste("采购登记失败:", e$message), type = "error")
+      })
+      
+      # Clear added items and reset input fields
+      added_items(create_empty_inventory())
+      shinyjs::reset("new_item_image")
+      uploaded_file(NULL)
+    }, error = function(e) {
+      showNotification(paste("发生错误:", e$message), type = "error")
+    })
   })
   
   # Handle row selection in filtered inventory table
@@ -486,164 +560,6 @@ server <- function(input, output, session) {
     }
   })
   
-  # Confirm button: Update database and handle images
-  observeEvent(input$confirm_btn, {
-    tryCatch({
-      
-      if (nrow(added_items()) == 0) {
-        showNotification("请先录入至少一个商品!", type = "error")
-        return()
-      }
-      
-      added_items_df <- added_items()
-      
-      # Retrieve total package shipping cost from the UI
-      total_shipping_cost <- input$new_shipping_cost
-      if (is.null(total_shipping_cost) || total_shipping_cost <= 0) {
-        total_shipping_cost <- 0  # Default to 0 if invalid
-      }
-      
-      unit_shipping_cost <- total_shipping_cost / sum(added_items_df$Quantity)
-      
-      for (i in 1:nrow(added_items_df)) {
-        sku <- added_items_df$SKU[i]
-        maker <- added_items_df$Maker[i]
-        major_type <- added_items_df$MajorType[i]
-        minor_type <- added_items_df$MinorType[i]
-        item_name <- added_items_df$ItemName[i]
-        quantity <- added_items_df$Quantity[i]
-        product_cost <- added_items_df$ProductCost[i]
-        new_image_path <- added_items_df$ItemImagePath[i]
-        
-        # 检查 SKU 是否已存在
-        existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
-        
-        # 如果 SKU 已存在，检查图片路径
-        if (nrow(existing_item) > 0) {
-          new_quantity <- existing_item$Quantity + quantity
-          new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + (product_cost * quantity)) / new_quantity
-          new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + (unit_shipping_cost * quantity)) / new_quantity
-          
-          # 如果有新图片上传，为图片生成唯一路径
-          if (!is.na(new_image_path) && new_image_path != "") {
-            unique_image_name <- paste0(sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-            final_image_path <- file.path("/var/www/images", unique_image_name)
-            
-            tryCatch({
-              # 保存新图片
-              file.rename(new_image_path, final_image_path)
-              new_image_path <- final_image_path
-            }, error = function(e) {
-              showNotification(paste("商品新图片保存失败! SKU:", sku), type = "error")
-              new_image_path <- existing_item$ItemImagePath  # 回退为原始路径
-            })
-          } else {
-            # 未上传新图片，保留现有图片路径
-            new_image_path <- existing_item$ItemImagePath
-          }
-          
-          # 更新库存数据
-          dbExecute(con, "UPDATE inventory 
-                      SET Quantity = ?, ProductCost = ?, ShippingCost = ?, ItemImagePath = ? 
-                      WHERE SKU = ?",
-                    params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), new_image_path, sku))
-          
-          showNotification(paste("商品更新成功! SKU:", sku, ", 商品名:", item_name), type = "message")
-        } else {
-          # 如果 SKU 不存在，插入新商品
-          unique_image_name <- if (!is.na(new_image_path) && new_image_path != "") {
-            paste0(sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-          } else {
-            NA
-          }
-          
-          if (!is.na(unique_image_name)) {
-            final_image_path <- file.path("/var/www/images", unique_image_name)
-            
-            tryCatch({
-              # 保存新图片
-              file.rename(new_image_path, final_image_path)
-              new_image_path <- final_image_path
-            }, error = function(e) {
-              showNotification(paste("新商品图片保存失败! SKU:", sku), type = "error")
-            })
-          }
-          
-          dbExecute(con, "INSERT INTO inventory 
-                      (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    params = list(sku, maker, major_type, minor_type, item_name, quantity, 
-                                  round(product_cost, 2), round(unit_shipping_cost, 2), new_image_path))
-          
-          showNotification(paste("新商品创建成功! SKU:", sku, ", 商品名:", item_name), type = "message")
-        }
-      }
-      
-      # 更新inventory()，触发filtered_inventory_table更新
-      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      
-      # 触发更新刷新unique_items_data
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) 
-      
-      ### 同时添加信息到 unique_items 表中
-      # Prepare data for batch insertion
-      batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
-        sku <- added_items_df$SKU[i]
-        quantity <- added_items_df$Quantity[i]
-        product_cost <- added_items_df$ProductCost[i]
-        
-        # Create rows for each quantity
-        t(replicate(quantity, c(
-          UUIDgenerate(),
-          as.character(sku),
-          as.numeric(product_cost),
-          as.numeric(unit_shipping_cost),
-          "采购",
-          "未知",
-          format(Sys.time(), "%Y-%m-%d", tz = "Asia/Shanghai")
-        )))
-      }))
-      
-      # Validate data
-      if (is.null(batch_data) || nrow(batch_data) == 0) {
-        showNotification("采购数据无效，请检查输入！", type = "error")
-        return()
-      }
-      
-      # Convert to data frame
-      batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
-      
-      # Insert into database
-      dbBegin(con)
-      tryCatch({
-        # Insert rows one by one
-        for (i in 1:nrow(batch_data)) {
-          # Ensure the parameters are passed as an unnamed vector
-          dbExecute(con, "INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, PurchaseTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    unname(as.vector(batch_data[i, ]))  # Use `unname` to avoid named parameters
-          )
-        }
-        dbCommit(con)  # Commit transaction
-        showNotification("所有采购货物已成功登记！", type = "message")
-        
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  #触发更新
-        
-      }, error = function(e) {
-        dbRollback(con)  # Rollback on error
-        showNotification(paste("采购登记失败:", e$message), type = "error")
-      })
-      
-      # Clear added items and reset input fields
-      added_items(create_empty_inventory())
-      
-      # 重置文件输入框
-      shinyjs::reset("new_item_image")
-      uploaded_file(NULL)
-    }, error = function(e) {
-      # Catch and display errors
-      showNotification(paste("发生错误:", e$message), type = "error")
-    })
-  })
   
   
   ################################################################

@@ -40,8 +40,8 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
 }
 
 # Save compressed image to the server
-save_compressed_image <- function(file_path, output_dir, image_name, quality = 75) {
-  # Validate inputs
+save_compressed_image <- function(file_path, output_dir, image_name, quality = 75, max_width = 500) {
+  # 验证输入
   if (is.null(file_path) || !file.exists(file_path)) {
     stop("Invalid input file path.")
   }
@@ -50,26 +50,87 @@ save_compressed_image <- function(file_path, output_dir, image_name, quality = 7
     stop("Output directory does not exist.")
   }
   
-  print(paste("Saving image to:", output_dir))
-  
   tryCatch({
-    # Load the image
+    # 加载图片
     img <- magick::image_read(file_path)
     
-    # Compress the image
-    compressed_img <- magick::image_scale(img, "500x")  # Resize
-    compressed_img <- magick::image_convert(compressed_img, format = "jpeg")
+    # 获取原始宽度
+    img_info <- magick::image_info(img)
+    original_width <- img_info$width
     
-    # Save the compressed image
+    # 判断是否需要缩放
+    if (original_width > max_width) {
+      img <- magick::image_scale(img, paste0(max_width, "x"))  # 缩放图片
+    }
+    
+    # 转为 JPEG 格式
+    img <- magick::image_convert(img, format = "jpeg")
+    
+    # 保存图片
     output_path <- file.path(output_dir, image_name)
-    magick::image_write(compressed_img, path = output_path, quality = quality)
+    magick::image_write(img, path = output_path, quality = quality)
     
-    return(output_path)  # Return the saved image path
+    return(output_path)
   }, error = function(e) {
+    showNotification(paste("图片压缩失败:", e$message), type = "error")
     return(NULL)
   })
 }
 
+# 保存图片（文件上传或粘贴）
+process_image_upload <- function(sku, file_data = NULL, base64_data = NULL, inventory_path = NULL, output_dir = "/var/www/images") {
+  if (is.null(file_data) && is.null(base64_data)) {
+    # 没有上传图片，返回库存路径或 NULL
+    if (!is.null(inventory_path)) {
+      showNotification("使用库存中现有图片路径。", type = "message")
+      return(inventory_path)
+    } else {
+      showNotification("未上传图片，且库存中没有对应图片路径。", type = "warning")
+      return(NA)
+    }
+  }
+  
+  # 生成唯一文件名
+  unique_image_name <- paste0(sku, "_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+  final_image_path <- file.path(output_dir, unique_image_name)
+  
+  tryCatch({
+    if (!is.null(file_data)) {
+      # 文件上传逻辑
+      compressed_path <- save_compressed_image(
+        file_path = file_data$datapath,
+        output_dir = output_dir,
+        image_name = unique_image_name
+      )
+    } else if (!is.null(base64_data)) {
+      # 粘贴截图逻辑
+      img_data <- gsub("^data:image/[a-z]+;base64,", "", base64_data)
+      img_bin <- base64enc::base64decode(img_data)
+      
+      # 临时保存图片
+      temp_file <- tempfile(fileext = ".png")
+      writeBin(img_bin, temp_file)
+      
+      # 压缩并保存
+      compressed_path <- save_compressed_image(
+        file_path = temp_file,
+        output_dir = output_dir,
+        image_name = unique_image_name
+      )
+    }
+    
+    if (!is.null(compressed_path)) {
+      showNotification("图片已成功保存并压缩！", type = "message")
+      return(compressed_path)
+    } else {
+      showNotification("图片保存失败！", type = "error")
+      return(NA)
+    }
+  }, error = function(e) {
+    showNotification("图片保存时发生错误！", type = "error")
+    return(NA)
+  })
+}
 
 # Generate unique code
 generate_unique_code <- function(input, length = 4) {
@@ -373,9 +434,6 @@ plotPieChart <- function(data, labels, values, colors) {
       showlegend = TRUE
     )
 }
-
-
-
 
 
 renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_field = "PendingQuantity") {

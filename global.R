@@ -7,8 +7,6 @@ library(shinyWidgets)
 library(shinythemes)
 library(dplyr)
 library(DT)
-library(digest) # For has value
-library(magick) # For compression
 library(stringi)
 library(baRcodeR)
 library(DBI)
