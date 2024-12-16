@@ -143,8 +143,17 @@ server <- function(input, output, session) {
     SELECT 
       unique_items.UniqueID, 
       unique_items.SKU, 
+      unique_items.ProductCost,
+      unique_items.DomesticShippingCost,
       unique_items.Status,
       unique_items.Defect,
+      unique_items.PurchaseTime,
+      unique_items.DomesticEntryTime,
+      unique_items.DomesticExitTime,
+      unique_items.DomesticSoldTime,
+      unique_items.UsEntryTime,
+      unique_items.UsSoldTime,
+      unique_items.ReturnTime,
       inventory.Maker,
       inventory.MajorType,
       inventory.MinorType,
@@ -156,8 +165,6 @@ server <- function(input, output, session) {
       inventory 
     ON 
       unique_items.SKU = inventory.SKU
-    ORDER BY 
-      unique_items.DomesticEntryTime DESC
   ")
   })
   
@@ -806,6 +813,84 @@ server <- function(input, output, session) {
       updateTextInput(session, "inbound_sku", value = selected_sku)
     }
   })
+  
+  
+  
+  ################################################################
+  ##                                                            ##
+  ## 物品编辑模块                                               ##
+  ##                                                            ##
+  ################################################################
+  
+  observeEvent(input$confirm_delete_btn, {
+    selected_rows <- input$unique_items_table_manage_rows_selected
+    
+    # 如果没有选中行，提示用户
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选择要删除的物品！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 获取选中物品的 UniqueID 和 SKU
+      selected_items <- unique_items()[selected_rows, ]
+      
+      dbBegin(con) # 开启事务
+      
+      for (i in seq_len(nrow(selected_items))) {
+        # 删除 unique_items 中对应的记录
+        dbExecute(con, "
+        DELETE FROM unique_items
+        WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
+        
+        # 重新计算平均 ProductCost 和 ShippingCost
+        sku <- selected_items$SKU[i]
+        
+        remaining_items <- dbGetQuery(con, "
+        SELECT AVG(ProductCost) AS AvgProductCost, 
+               AVG(DomesticShippingCost) AS AvgShippingCost,
+               COUNT(*) AS RemainingCount
+        FROM unique_items
+        WHERE SKU = ?", params = list(sku))
+        
+        if (remaining_items$RemainingCount[1] > 0) {
+          # 更新 inventory 表的平均成本和库存数量
+          dbExecute(con, "
+          UPDATE inventory
+          SET Quantity = ?, 
+              ProductCost = ?, 
+              ShippingCost = ?
+          WHERE SKU = ?", 
+                    params = list(
+                      remaining_items$RemainingCount[1],
+                      remaining_items$AvgProductCost[1],
+                      remaining_items$AvgShippingCost[1],
+                      sku
+                    ))
+        } else {
+          # 如果没有剩余记录，删除 inventory 表中的该 SKU
+          dbExecute(con, "
+          DELETE FROM inventory
+          WHERE SKU = ?", params = list(sku))
+        }
+      }
+      
+      dbCommit(con) # 提交事务
+      
+      showNotification("物品删除成功！", type = "message")
+      
+      # 更新inventory()，触发filtered_inventory_table更新
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      
+      # 触发更新刷新unique_items_data
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) 
+      
+    }, error = function(e) {
+      dbRollback(con) # 回滚事务
+      showNotification(paste("删除物品时发生错误：", e$message), type = "error")
+    })
+  })
+  
   
   
   
