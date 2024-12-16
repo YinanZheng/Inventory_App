@@ -57,7 +57,21 @@ ui <- navbarPage(
             # 动态图片预览区域
             uiOutput("pasted_image_preview")
           ),
-          
+          # 进度条区域
+          tags$div(
+            id = "upload_progress",
+            style = "display: none; margin-top: 15px;", # 初始隐藏
+            tags$div(
+              class = "progress",
+              style = "height: 20px;",
+              tags$div(
+                class = "progress-bar progress-bar-striped progress-bar-animated",
+                role = "progressbar",
+                style = "width: 0%;",
+                id = "progress_bar"
+              )
+            )
+          ),
           # 文件上传区域
           fileInput("new_item_image", "或拖拽/选择文件上传:", accept = c("image/png", "image/jpeg"))
         ),
