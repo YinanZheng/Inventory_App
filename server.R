@@ -235,8 +235,6 @@ server <- function(input, output, session) {
   })
   
   # 处理粘贴图片显示预览和基础信息
-  library(shinyjs)
-  
   observeEvent(input$pasted_image, {
     if (!is.null(input$pasted_image)) {
       tryCatch({
@@ -245,40 +243,57 @@ server <- function(input, output, session) {
         update_progress(0)  # 初始化进度为 0%
         
         # 保存粘贴的图片到临时路径
-        temp_image_path <<- tempfile(fileext = ".jpg")
+        temp_path <- tempfile(fileext = ".jpg")
+        update_progress(20)  # 更新进度为 20%
         
-        update_progress(25)  # 更新进度为 25%
-        base64_decode_image(input$pasted_image, temp_image_path)
+        base64_decode_image(input$pasted_image, temp_path)
+        update_progress(40)  # 更新进度为 40%
         
-        update_progress(50)  # 更新进度为 50%
-        img <- magick::image_read(temp_image_path)
+        # 获取图片信息
+        img <- magick::image_read(temp_path)
+        update_progress(60)  # 更新进度为 60%
         
-        update_progress(75)  # 更新进度为 75%
-        uploaded_file(list(datapath = temp_image_path, name = "pasted_image.jpg"))
+        img_info <- magick::image_info(img)
         
-        # 更新预览
+        # 检查文件大小（如果图片文件过大，给出警告并中止处理）
+        file_size_kb <- file.size(temp_path) / 1024
+        if (file_size_kb > 5000) { # 假设最大允许 5 MB
+          shinyjs::hide("upload_progress")
+          showNotification("图片过大，请粘贴小于 5 MB 的图片。", type = "error")
+          return()
+        }
+        update_progress(80)  # 更新进度为 80%
+        
+        # 显示图片预览
         output$pasted_image_preview <- renderUI({
           div(
             tags$img(src = input$pasted_image, height = "200px", style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
+            tags$p(
+              style = "color: #007BFF; font-size: 14px;",
+              paste0("已粘贴图片: ", img_info$width, "x", img_info$height, " 分辨率, 文件大小 ~", format(file_size_kb, digits = 2), " KB")
+            ),
             actionButton("clear_pasted_image", "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
           )
         })
         
-        # 完成上传
         update_progress(100)  # 更新进度为 100%
+        
+        # 隐藏默认提示文字
         shinyjs::hide("paste_prompt")
-        showNotification("图片粘贴成功！", type = "message")
+        
+        # 暂存到 uploaded_file()
+        uploaded_file(list(datapath = temp_path, name = "pasted_image.jpg"))
         
         # 隐藏进度条（延迟 1 秒，给用户反馈）
         shinyjs::delay(1000, shinyjs::hide("upload_progress"))
+        showNotification("图片粘贴成功！", type = "message")
       }, error = function(e) {
         # 隐藏进度条并提示错误
         shinyjs::hide("upload_progress")
-        showNotification(paste("图片粘贴处理失败:", e$message), type = "error")
+        showNotification(paste("图片粘贴失败:", e$message), type = "error")
       })
     }
   })
-  
   
   # 清除粘贴图片预览并恢复提示
   observeEvent(input$clear_pasted_image, {
