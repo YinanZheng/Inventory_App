@@ -170,6 +170,7 @@ server <- function(input, output, session) {
   
   # 渲染物品追踪数据表
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
+  unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage", data = unique_items_data)
   unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", data = unique_items_data)
   unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold", data = unique_items_data)
