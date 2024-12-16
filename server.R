@@ -834,7 +834,7 @@ server <- function(input, output, session) {
     
     tryCatch({
       # 获取选中物品的 UniqueID 和 SKU
-      selected_items <- unique_items()[selected_rows, ]
+      selected_items <- unique_items_data()[selected_rows, ]
       
       dbBegin(con) # 开启事务
       
