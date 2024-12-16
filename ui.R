@@ -69,6 +69,23 @@ ui <- navbarPage(
           )
         ),
         
+        tags$script(HTML("
+    document.getElementById('paste_area').addEventListener('paste', function(event) {
+      const items = (event.clipboardData || event.originalEvent.clipboardData).items;
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.indexOf('image') !== -1) {
+          const file = items[i].getAsFile();
+          const reader = new FileReader();
+          reader.onload = function(evt) {
+            Shiny.setInputValue('pasted_image', evt.target.result, {priority: 'event'});
+          };
+          reader.readAsDataURL(file);
+          break;
+        }
+      }
+    });
+  ")),
+        
         tags$hr(), # 分隔线
         
         fluidRow(
