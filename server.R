@@ -96,12 +96,14 @@ server <- function(input, output, session) {
   
   # 库存表 （过滤）
   filtered_inventory <- reactive({
-    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]])
+    # req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]])
     
     # Filter the inventory data
-    result <- inventory() %>%
-      filter(MajorType == input[["type_module-new_major_type"]], MinorType == input[["type_module-new_minor_type"]]) %>%
-      select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath)  # Ensure Maker is included
+    # result <- inventory() %>%
+    #   filter(MajorType == input[["type_module-new_major_type"]], MinorType == input[["type_module-new_minor_type"]]) %>%
+    #   select(SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath)  # Ensure Maker is included
+    
+    result <- inventory()
     
     # Return empty inventory if no results
     if (nrow(result) == 0) {

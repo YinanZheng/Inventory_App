@@ -58,7 +58,7 @@ ui <- navbarPage(
             uiOutput("pasted_image_preview")
           ),
           # 文件上传区域
-          fileInput("new_item_image", "或拖拽/选择文件上传:", accept = c("image/png", "image/jpeg"))
+          fileInput("new_item_image", "或拖拽/选择商品图片上传:", accept = c("image/png", "image/jpeg"))
         ),
         
         # 进度条区域
