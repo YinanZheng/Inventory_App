@@ -97,6 +97,8 @@ imageModuleServer <- function(id) {
           )
         })
         
+        shinyjs::hide(ns("paste_prompt"))
+        
         uploaded_file(file_data)
         update_progress(100)
         shinyjs::delay(500, shinyjs::hide(ns("upload_progress")))
