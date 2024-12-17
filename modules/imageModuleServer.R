@@ -75,9 +75,8 @@ imageModuleServer <- function(id) {
                      style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
             tags$p(
               style = "color: #007BFF; font-size: 14px;",
-              paste0("图片: ", file_data$name, ", 大小: ", round(file_data$size / 1024, 2), " KB")
-            ),
-            # actionButton("clear_pasted_image", "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
+              paste0("文件: ", file_data$name, ", 大小: ", round(file_data$size / 1024, 2), " KB")
+            )
           )
         })
         
@@ -90,11 +89,6 @@ imageModuleServer <- function(id) {
       })
     })
 
-    # # 清除粘贴图片预览并恢复提示
-    # observeEvent(input$clear_pasted_image, {
-    #   reset()
-    #   showNotification("已清除粘贴的图片！", type = "message")
-    # })
     
     # 定义一个重置函数
     reset <- function() {
@@ -104,8 +98,6 @@ imageModuleServer <- function(id) {
       output$pasted_image_preview <- renderUI({ NULL })  # 清空图片预览
       shinyjs::show(ns("paste_prompt"))  # 显示粘贴提示
     }
-    
-    showNotification(uploaded_file)
     
     return(list(
       uploaded_file = uploaded_file,
