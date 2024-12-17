@@ -11,14 +11,14 @@ imageModuleServer <- function(id) {
     }
     
     # 处理粘贴图片
-    observeEvent(input$pasted_image, {
-      if (!is.null(input$pasted_image)) {
+    observeEvent(input[[ns("paste_area_pasted_image")]], {
+      if (!is.null(input[[ns("paste_area_pasted_image")]])) {
         shinyjs::show(ns("upload_progress"))
         update_progress(10)
         
         tryCatch({
           temp_path <- tempfile(fileext = ".jpg")
-          base64_decode_image(input$pasted_image, temp_path)
+          base64enc::dataURI(input[[ns("paste_area_pasted_image")]], output = temp_path)
           update_progress(50)
           
           img <- magick::image_read(temp_path)
@@ -27,7 +27,7 @@ imageModuleServer <- function(id) {
           # 图片预览
           output$pasted_image_preview <- renderUI({
             div(
-              tags$img(src = input$pasted_image, height = "200px", 
+              tags$img(src = input[[ns("paste_area_pasted_image")]], height = "200px", 
                        style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
               tags$p(
                 style = "color: #007BFF; font-size: 14px;",
@@ -36,6 +36,7 @@ imageModuleServer <- function(id) {
               )
             )
           })
+          
           pasted_file(list(datapath = temp_path, name = "pasted_image.jpg"))
           update_progress(100)
           shinyjs::delay(500, shinyjs::hide(ns("upload_progress")))
@@ -60,8 +61,9 @@ imageModuleServer <- function(id) {
           
           # 预览图片
           output$pasted_image_preview <- renderUI({
+            img_data <- base64enc::dataURI(file_data$datapath, mime = "image/png")
             div(
-              tags$img(src = file_data$datapath, height = "200px", 
+              tags$img(src = img_data, height = "200px", 
                        style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
               tags$p(
                 style = "color: #007BFF; font-size: 14px;",
@@ -69,6 +71,7 @@ imageModuleServer <- function(id) {
               )
             )
           })
+          
           update_progress(100)
           shinyjs::delay(500, shinyjs::hide(ns("upload_progress")))
           showNotification("图片上传成功！", type = "message")

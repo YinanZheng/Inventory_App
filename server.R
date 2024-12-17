@@ -432,7 +432,7 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
-  image_pucahse <- imageModuleServer("image_pucahse")
+  image_pucahse <- callModule(imageModuleServer, "image_pucahse")
 
   # Handle add item button click
   observeEvent(input$add_btn, {
