@@ -700,11 +700,9 @@ server <- function(input, output, session) {
       # 清空已添加的商品
       added_items(create_empty_inventory())
       
-      # 重置文件输入框
-      shinyjs::reset("new_item_image")
-      uploaded_file(NULL)
-      output$pasted_image_preview <- renderUI({ NULL })
-      
+      # 重置图片控件
+      image_purchase$reset()
+
       # 通知用户
       showNotification("输入已清空！", type = "message")
     }, error = function(e) {
