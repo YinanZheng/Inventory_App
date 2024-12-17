@@ -63,11 +63,10 @@ ui <- navbarPage(
         imageModuleUI("image_purchase", "图片上传"),
         
         fluidRow(
-          column(6, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-          column(6, style = "text-align: right;", actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;"))
+          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
         ),
         
-        tags$hr(style = "margin: 5px 0; border: none;"),
+        tags$hr(),
         
         fluidRow(
           column(12, actionButton("confirm_btn", "登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
