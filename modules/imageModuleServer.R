@@ -5,6 +5,12 @@ imageModuleServer <- function(id) {
     uploaded_file <- reactiveVal(NULL)
     pasted_file <- reactiveVal(NULL)
     
+    # 初始显示提示文本
+    output$paste_prompt <- renderUI({
+      div("将图片粘贴到这里（Ctrl+V 或 Cmd+V）", 
+          style = "color: #888; font-size: 16px; font-style: italic;")
+    })
+    
     # 处理粘贴图片
     observeEvent(input$paste_area_pasted_image, {
       req(input$paste_area_pasted_image)  # 输入不能为空
@@ -14,6 +20,9 @@ imageModuleServer <- function(id) {
         
         # 解码并保存截图到临时文件夹
         base64_decode_image(input$paste_area_pasted_image, temp_path)
+        
+        # 隐藏提示文本
+        output$paste_prompt <- renderUI({ NULL })
         
         # 读取图片信息
         img <- magick::image_read(temp_path)
@@ -26,8 +35,7 @@ imageModuleServer <- function(id) {
           img_info = img_info,
           ns = ns
         )
-        shinyjs::hide(ns("paste_prompt"))
-        
+
         pasted_file(list(datapath = temp_path, name = "pasted_image.jpg"))
         
         showNotification("图片粘贴成功！", type = "message", duration = 3)
@@ -62,6 +70,8 @@ imageModuleServer <- function(id) {
         file_content <- readBin(file_data$datapath, "raw", file.info(file_data$datapath)$size)
         img_data <- paste0("data:", mime_type, ";base64,", base64enc::base64encode(file_content))
         
+        output$paste_prompt <- renderUI({ NULL })
+        
         # 读取图片信息
         img <- magick::image_read(file_data$datapath)
         img_info <- magick::image_info(img)
@@ -73,8 +83,8 @@ imageModuleServer <- function(id) {
           img_info = img_info,
           ns = ns
         )
-        shinyjs::hide(ns("paste_prompt"))
-        showNotification("图片上传成功！", type = "message", duration = 3)
+
+                showNotification("图片上传成功！", type = "message", duration = 3)
       }, error = function(e) {
         showNotification(paste("上传图片失败！错误:", e$message), type = "error", duration = 5)
       })
@@ -92,7 +102,11 @@ imageModuleServer <- function(id) {
       uploaded_file(NULL)  # 清空上传的文件
       pasted_file(NULL)    # 清空粘贴的文件
       output$pasted_image_preview <- renderUI({ NULL })  # 清空图片预览
-      shinyjs::show(ns("paste_prompt"))  # 显示粘贴提示
+      # 重新显示提示文本
+      output$paste_prompt <- renderUI({
+        div("将图片粘贴到这里（Ctrl+V 或 Cmd+V）",
+            style = "color: #888; font-size: 16px; font-style: italic;")
+      })
     }
     
     return(list(

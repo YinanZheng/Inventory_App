@@ -12,8 +12,7 @@ imageModuleUI <- function(id, label = "图片上传") {
       tags$div(
         id = ns("paste_area"), # 使用模块命名空间
         style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
-        div(id = ns("paste_prompt"), "将图片粘贴到这里（Ctrl+V 或 Cmd+V）", 
-            style = "color: #888; font-size: 16px; font-style: italic;"),
+        uiOutput(ns("paste_prompt")),  # 动态渲染提示文本
         uiOutput(ns("pasted_image_preview")) # 图片预览区域
       ),
       
