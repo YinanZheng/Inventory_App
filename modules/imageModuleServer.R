@@ -77,7 +77,7 @@ imageModuleServer <- function(id) {
               style = "color: #007BFF; font-size: 14px;",
               paste0("图片: ", file_data$name, ", 大小: ", round(file_data$size / 1024, 2), " KB")
             ),
-            actionButton("clear_pasted_image", "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
+            # actionButton("clear_pasted_image", "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
           )
         })
         
@@ -90,11 +90,11 @@ imageModuleServer <- function(id) {
       })
     })
 
-    # 清除粘贴图片预览并恢复提示
-    observeEvent(input$clear_pasted_image, {
-      reset()
-      showNotification("已清除粘贴的图片！", type = "message")
-    })
+    # # 清除粘贴图片预览并恢复提示
+    # observeEvent(input$clear_pasted_image, {
+    #   reset()
+    #   showNotification("已清除粘贴的图片！", type = "message")
+    # })
     
     # 定义一个重置函数
     reset <- function() {
