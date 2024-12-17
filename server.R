@@ -49,6 +49,11 @@ server <- function(input, output, session) {
     })
   })
   
+  # PDF下载按钮默认禁用
+  session$onFlushed(function() {
+    shinyjs::disable("download_select_pdf")
+  })
+  
   # 切换显示/隐藏
   observeEvent(input$toggle_item_table_purchase, {
     shinyjs::toggle("item_table_container_purchase")
@@ -293,6 +298,8 @@ server <- function(input, output, session) {
     paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
            "（其中包含运费: ¥", input$new_shipping_cost, ")")
   })
+  
+  ####################################################################################################################################
   
   
 
@@ -759,6 +766,54 @@ server <- function(input, output, session) {
     }
   })
   
+  # 生成选中商品条形码 PDF
+  observeEvent(input$export_select_btn, {
+    # 获取选中行
+    selected_rows <- unique_items_table_inbound_selected_row()  # 从 DT 表选中行
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选中至少一个商品！", type = "error")
+      return()
+    }
+    
+    # 获取选中物品的数据
+    selected_items <- unique_items_data()[selected_rows, ]
+    if (nrow(selected_items) == 0) {
+      showNotification("选中数据无效，请重新选择！", type = "error")
+      return()
+    }
+    
+    skus <- selected_items$SKU
+    
+    # 调用现有函数生成条形码 PDF
+    tryCatch({
+      pdf_file <- export_barcode_pdf(
+        sku = skus,
+        page_width = page_width,  # 全局变量
+        page_height = page_height,
+        unit = size_unit
+      )
+      select_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+      
+      showNotification("选中商品条形码已生成！", type = "message")
+      shinyjs::enable("download_select_pdf")  # 启用下载按钮
+    }, error = function(e) {
+      showNotification(paste("生成条形码失败：", e$message), type = "error")
+      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+    })
+  })
+  
+  # 下载选中商品条形码 PDF
+  output$download_select_pdf <- downloadHandler(
+    filename = function() {
+      basename(select_pdf_file_path())  # 生成文件名
+    },
+    content = function(file) {
+      file.copy(select_pdf_file_path(), file, overwrite = TRUE)
+      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+      select_pdf_file_path(NULL)  # 清空路径
+    }
+  )
+  
   
   
   ################################################################
@@ -836,63 +891,7 @@ server <- function(input, output, session) {
       showNotification(paste("删除物品时发生错误：", e$message), type = "error")
     })
   })
-  
-  # Barcode PDF 模块
-  session$onFlushed(function() {
-    shinyjs::disable("download_select_pdf")
-  })
-  
-  # 生成选中商品条形码 PDF
-  observeEvent(input$export_select_btn, {
-    # 获取选中行
-    selected_rows <- unique_items_table_inbound_selected_row()  # 从 DT 表选中行
-    if (is.null(selected_rows) || length(selected_rows) == 0) {
-      showNotification("请先选中至少一个商品！", type = "error")
-      return()
-    }
-    
-    # 获取选中物品的数据
-    selected_items <- unique_items_data()[selected_rows, ]
-    if (nrow(selected_items) == 0) {
-      showNotification("选中数据无效，请重新选择！", type = "error")
-      return()
-    }
-    
-    skus <- selected_items$SKU
-    
-    # 调用现有函数生成条形码 PDF
-    tryCatch({
-      pdf_file <- export_barcode_pdf(
-        sku = skus,
-        page_width = page_width,  # 全局变量
-        page_height = page_height,
-        unit = size_unit
-      )
-      select_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-      
-      showNotification("选中商品条形码已生成！", type = "message")
-      shinyjs::enable("download_select_pdf")  # 启用下载按钮
-    }, error = function(e) {
-      showNotification(paste("生成条形码失败：", e$message), type = "error")
-      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
-    })
-  })
-  
-  # 下载选中商品条形码 PDF
-  output$download_select_pdf <- downloadHandler(
-    filename = function() {
-      basename(select_pdf_file_path())  # 生成文件名
-    },
-    content = function(file) {
-      file.copy(select_pdf_file_path(), file, overwrite = TRUE)
-      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
-      select_pdf_file_path(NULL)  # 清空路径
-    }
-  )
-  
-  
-  
-  ##### TODO
+
   # Handle image update button click
   observeEvent(input$update_image_btn, {
     # 验证输入
@@ -954,10 +953,6 @@ server <- function(input, output, session) {
   })
   
 
-  
-  
-
-  
   
   ################################################################
   ##                                                            ##
@@ -1053,6 +1048,8 @@ server <- function(input, output, session) {
       updateTextInput(session, "repair_sku", value = selected_sku)
     }
   })
+  
+  
   
   ################################################################
   ##                                                            ##
