@@ -5,24 +5,22 @@ ui <- navbarPage(
   theme = shinytheme("flatly"), # 可选主题
   
   # 全局脚本插入位置
-  tags$head(
-    tags$script(HTML("
-    $(document).on('paste', '#paste_area', function(event) {
+  tags$head(tags$script(HTML("
+    $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
       const items = (event.originalEvent.clipboardData || event.clipboardData).items;
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           const reader = new FileReader();
           reader.onload = function(evt) {
-            Shiny.setInputValue('pasted_image', evt.target.result, {priority: 'event'});
+            Shiny.setInputValue($(event.target).attr('id') + '_pasted_image', evt.target.result, {priority: 'event'});
           };
           reader.readAsDataURL(file);
           break;
         }
       }
     });
-  "))
-  ),
+  "))),
   
   tabPanel(
     "采购登记",

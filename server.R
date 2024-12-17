@@ -12,11 +12,11 @@ server <- function(input, output, session) {
   # ReactiveVal 用于存储 unique item 数据
   unique_item_for_report <- reactiveVal()
   
-  # 用于保存用户上传的文件信息
-  uploaded_file <- reactiveVal(NULL)
-  
-  # 用于存储粘贴图片数据
-  pasted_file <- reactiveVal(NULL)  
+  # # 用于保存用户上传的文件信息
+  # uploaded_file <- reactiveVal(NULL)
+  # 
+  # # 用于存储粘贴图片数据
+  # pasted_file <- reactiveVal(NULL)  
   
   # 声明一个 reactiveVal 用于触发unique_items_data刷新
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
@@ -410,9 +410,6 @@ server <- function(input, output, session) {
   #   showNotification("已清除粘贴的图片！", type = "message")
   # })
   
-  
-  
-  
   # Automatically generate SKU when relevant inputs change
   observeEvent({
     input[["type_module-new_major_type"]]
@@ -435,6 +432,8 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
+  image_pucahse <- imageModuleServer("image_pucahse")
+
   # Handle add item button click
   observeEvent(input$add_btn, {
     # 验证输入
@@ -468,8 +467,8 @@ server <- function(input, output, session) {
     # 上传或粘贴图片处理
     new_image_path <- process_image_upload(
       sku = input$new_sku,
-      file_data = uploaded_file(),
-      base64_data = pasted_file(),
+      file_data = image_pucahse$uploaded_file(),
+      base64_data = image_pucahse$pasted_file(),
       inventory_path = existing_inventory_path
     )
     
@@ -915,8 +914,8 @@ server <- function(input, output, session) {
       # 处理图片上传或粘贴
       updated_image_path <- process_image_upload(
         sku = input$new_sku,
-        file_data = uploaded_file(),
-        base64_data = pasted_file(),
+        file_data = image_pucahse$uploaded_file(),
+        base64_data = image_pucahse$pasted_file(),
         inventory_path = existing_image_path
       )
       
