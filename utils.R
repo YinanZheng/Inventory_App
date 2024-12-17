@@ -602,6 +602,7 @@ handleOperation <- function(
       SELECT UniqueID 
       FROM unique_items 
       WHERE SKU = ? AND Status = '", query_status, "' AND Defect != '瑕疵'
+      ORDER BY ProductCost ASC
       LIMIT 1"), 
                             params = list(sku))
     
