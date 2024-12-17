@@ -388,10 +388,7 @@ server <- function(input, output, session) {
     uploaded_file(NULL)
     pasted_file(NULL)
     output$pasted_image_preview <- renderUI({ NULL })  # 移除图片预览
-    
-    # 恢复默认提示文字
     shinyjs::show("paste_prompt")
-    
     showNotification("已清除粘贴的图片！", type = "message")
   })
   
@@ -479,6 +476,7 @@ server <- function(input, output, session) {
     uploaded_file(NULL)
     pasted_file(NULL)
     output$pasted_image_preview <- renderUI({ NULL })
+    shinyjs::show("paste_prompt")
   })
   
   # Handle image update button click
@@ -538,6 +536,7 @@ server <- function(input, output, session) {
     uploaded_file(NULL)
     pasted_file(NULL)
     output$pasted_image_preview <- renderUI({ NULL })
+    shinyjs::show("paste_prompt")
   })
   
   # Confirm button: Update database and handle images
@@ -648,6 +647,7 @@ server <- function(input, output, session) {
       uploaded_file(NULL)
       pasted_file(NULL)
       output$pasted_image_preview <- renderUI({ NULL })
+      shinyjs::show("paste_prompt")
     }, error = function(e) {
       showNotification(paste("发生错误:", e$message), type = "error")
     })
