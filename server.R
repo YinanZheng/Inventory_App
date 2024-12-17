@@ -692,8 +692,8 @@ server <- function(input, output, session) {
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
       # 等待 major_type 渲染完成后，再更新 new_minor_type
       observeEvent(input[["type_module-new_major_type"]], {
-        if (input[["type_module-new_major_type"]] == selected_major) {
-          updateSelectInput(session, "type_module-new_minor_type", selected = selected_minor)
+        if (input[["type_module-new_major_type"]] == selected_data$MajorType) {
+          updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
         }
       }, once = TRUE)  # 只触发一次，避免重复监听
       updateTextInput(session, "new_name", value = selected_data$ItemName)
