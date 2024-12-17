@@ -22,8 +22,9 @@ server <- function(input, output, session) {
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
   # 用于存储 PDF 文件路径
-  single_pdf_file_path <- reactiveVal(NULL)
-  batch_pdf_file_path <- reactiveVal(NULL)
+  # single_pdf_file_path <- reactiveVal(NULL)
+  # batch_pdf_file_path <- reactiveVal(NULL)
+  select_pdf_file_path <- reactiveVal(NULL)
   
   # 存储条形码是否已生成的状态
   barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
@@ -217,7 +218,7 @@ server <- function(input, output, session) {
                                                           DomesticEntryTime = "国内入库日期",
                                                           Status = "库存状态",
                                                           Defect = "物品状态"
-                                                        ), data = unique_items_data)
+                                                        ), selection = "multiple", data = unique_items_data)
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
                                                        column_mapping <- list(
@@ -416,6 +417,28 @@ server <- function(input, output, session) {
     output$pasted_image_preview <- renderUI({ NULL })  # 移除图片预览
     shinyjs::show("paste_prompt")
     showNotification("已清除粘贴的图片！", type = "message")
+  })
+  
+  # Automatically generate SKU when relevant inputs change
+  observeEvent({
+    input[["type_module-new_major_type"]]
+    input[["type_module-new_minor_type"]]
+    input$new_name
+    input$new_maker
+  }, {
+    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name, input$new_maker)
+    
+    # Dynamically generate SKU
+    sku <- generate_sku(
+      item_type_data = item_type_data(),
+      major_type = input[["type_module-new_major_type"]],
+      minor_type = input[["type_module-new_minor_type"]],
+      item_name = input$new_name,
+      maker = input$new_maker
+    )
+    
+    # Update the SKU input field
+    updateTextInput(session, "new_sku", value = sku)
   })
   
   # Handle add item button click
@@ -778,121 +801,150 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # Automatically generate SKU when relevant inputs change
-  observeEvent({
-    input[["type_module-new_major_type"]]
-    input[["type_module-new_minor_type"]]
-    input$new_name
-    input$new_maker
-  }, {
-    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name, input$new_maker)
-    
-    # Dynamically generate SKU
-    sku <- generate_sku(
-      item_type_data = item_type_data(),
-      major_type = input[["type_module-new_major_type"]],
-      minor_type = input[["type_module-new_minor_type"]],
-      item_name = input$new_name,
-      maker = input$new_maker
-    )
-    
-    # Update the SKU input field
-    updateTextInput(session, "new_sku", value = sku)
-  })
-  
   ### Barcode PDF 模块
   session$onFlushed(function() {
-    shinyjs::disable("download_single_pdf")
-    shinyjs::disable("download_batch_pdf")
+    # shinyjs::disable("download_single_pdf")
+    # shinyjs::disable("download_batch_pdf")
+    shinyjs::disable("download_select_pdf")
   })
   
-  # 单个 SKU 条形码生成逻辑
-  observeEvent(input$export_single_btn, {
-    if (is.null(input$new_sku) || input$new_sku == "") {
-      showNotification("没有SKU生成！", type = "error")
+  
+  # 生成选中商品条形码 PDF
+  observeEvent(input$export_select_btn, {
+    # 获取选中行
+    selected_rows <- unique_items_table_inbound_selected_row()  # 从 DT 表选中行
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选中至少一个商品！", type = "error")
       return()
     }
     
-    # 如果勾选了重复条形码，检查数量是否为空或为 0
-    if (input$repeat_barcode) {
-      if (is.null(input$new_quantity) || input$new_quantity <= 0) {
-        showNotification("数量不能为空且必须大于 0!", type = "error")
-        return()
-      }
-    }
-    
-    # 判断是否需要重复打印
-    quantity <- if (input$repeat_barcode) input$new_quantity else 1
-    
-    # 重复 SKU 以匹配数量
-    skus <- rep(input$new_sku, quantity)
-    
-    # 调用生成条形码 PDF 的函数
-    pdf_file <- export_barcode_pdf(
-      sku = skus, 
-      page_width, page_height, # 全局变量
-      unit = size_unit
-    )
-    single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-    
-    showNotification("条形码已生成为 PDF!")
-    shinyjs::enable("download_single_pdf")
-  })
-  
-  # 批量 SKU 条形码生成逻辑
-  observeEvent(input$export_batch_btn, {
-    items <- added_items()
-    
-    if (nrow(added_items()) == 0) {
-      showNotification("没有添加商品！", type = "error")
+    # 获取选中物品的数据
+    selected_items <- unique_items_data()[selected_rows, ]
+    if (nrow(selected_items) == 0) {
+      showNotification("选中数据无效，请重新选择！", type = "error")
       return()
     }
     
-    # 判断是否需要重复打印
-    if (input$repeat_barcode) {
-      skus <- unlist(mapply(function(sku, qty) rep(sku, qty), items$SKU, items$Quantity, SIMPLIFY = FALSE))
-    } else {
-      skus <- items$SKU
-    }
+    skus <- selected_items$SKU
     
-    # 调用生成条形码 PDF 的函数
-    pdf_file <- export_barcode_pdf(
-      sku = skus, 
-      page_width = page_width,  # 全局变量
-      page_height = page_height, 
-      unit = size_unit
-    )
-    batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-    
-    showNotification("条形码已生成为 PDF!")
-    shinyjs::enable("download_batch_pdf")
-    barcode_generated(FALSE) #每新生成条形码PDF，就标记未下载
+    # 调用现有函数生成条形码 PDF
+    tryCatch({
+      pdf_file <- export_barcode_pdf(
+        sku = skus,
+        page_width = page_width,  # 全局变量
+        page_height = page_height,
+        unit = size_unit
+      )
+      select_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+      
+      showNotification("选中商品条形码已生成！", type = "message")
+      shinyjs::enable("download_select_pdf")  # 启用下载按钮
+    }, error = function(e) {
+      showNotification(paste("生成条形码失败：", e$message), type = "error")
+      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+    })
   })
   
-  # 单张条形码下载逻辑
-  output$download_single_pdf <- downloadHandler(
+  # 下载选中商品条形码 PDF
+  output$download_select_pdf <- downloadHandler(
     filename = function() {
-      basename(single_pdf_file_path())
+      basename(select_pdf_file_path())  # 生成文件名
     },
     content = function(file) {
-      file.copy(single_pdf_file_path(), file, overwrite = TRUE)
-      single_pdf_file_path(NULL)
-      shinyjs::disable("download_single_pdf")
+      file.copy(select_pdf_file_path(), file, overwrite = TRUE)
+      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+      select_pdf_file_path(NULL)  # 清空路径
     }
   )
   
-  # 批量条形码下载逻辑
-  output$download_batch_pdf <- downloadHandler(
-    filename = function() {
-      basename(batch_pdf_file_path())
-    },
-    content = function(file) {
-      file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
-      batch_pdf_file_path(NULL)
-      shinyjs::disable("download_batch_pdf")
-      barcode_generated(TRUE) #下载完成标记
-    }
-  )
+  
+  # # 单个 SKU 条形码生成逻辑
+  # observeEvent(input$export_single_btn, {
+  #   if (is.null(input$new_sku) || input$new_sku == "") {
+  #     showNotification("没有SKU生成！", type = "error")
+  #     return()
+  #   }
+  #   
+  #   # 如果勾选了重复条形码，检查数量是否为空或为 0
+  #   if (input$repeat_barcode) {
+  #     if (is.null(input$new_quantity) || input$new_quantity <= 0) {
+  #       showNotification("数量不能为空且必须大于 0!", type = "error")
+  #       return()
+  #     }
+  #   }
+  #   
+  #   # 判断是否需要重复打印
+  #   quantity <- if (input$repeat_barcode) input$new_quantity else 1
+  #   
+  #   # 重复 SKU 以匹配数量
+  #   skus <- rep(input$new_sku, quantity)
+  #   
+  #   # 调用生成条形码 PDF 的函数
+  #   pdf_file <- export_barcode_pdf(
+  #     sku = skus, 
+  #     page_width, page_height, # 全局变量
+  #     unit = size_unit
+  #   )
+  #   single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+  #   
+  #   showNotification("条形码已生成为 PDF!")
+  #   shinyjs::enable("download_single_pdf")
+  # })
+  # 
+  # # 批量 SKU 条形码生成逻辑
+  # observeEvent(input$export_batch_btn, {
+  #   items <- added_items()
+  #   
+  #   if (nrow(added_items()) == 0) {
+  #     showNotification("没有添加商品！", type = "error")
+  #     return()
+  #   }
+  #   
+  #   # 判断是否需要重复打印
+  #   if (input$repeat_barcode) {
+  #     skus <- unlist(mapply(function(sku, qty) rep(sku, qty), items$SKU, items$Quantity, SIMPLIFY = FALSE))
+  #   } else {
+  #     skus <- items$SKU
+  #   }
+  #   
+  #   # 调用生成条形码 PDF 的函数
+  #   pdf_file <- export_barcode_pdf(
+  #     sku = skus, 
+  #     page_width = page_width,  # 全局变量
+  #     page_height = page_height, 
+  #     unit = size_unit
+  #   )
+  #   batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+  #   
+  #   showNotification("条形码已生成为 PDF!")
+  #   shinyjs::enable("download_batch_pdf")
+  #   barcode_generated(FALSE) #每新生成条形码PDF，就标记未下载
+  # })
+  # 
+  # # 单张条形码下载逻辑
+  # output$download_single_pdf <- downloadHandler(
+  #   filename = function() {
+  #     basename(single_pdf_file_path())
+  #   },
+  #   content = function(file) {
+  #     file.copy(single_pdf_file_path(), file, overwrite = TRUE)
+  #     single_pdf_file_path(NULL)
+  #     shinyjs::disable("download_single_pdf")
+  #   }
+  # )
+  # 
+  # # 批量条形码下载逻辑
+  # output$download_batch_pdf <- downloadHandler(
+  #   filename = function() {
+  #     basename(batch_pdf_file_path())
+  #   },
+  #   content = function(file) {
+  #     file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
+  #     batch_pdf_file_path(NULL)
+  #     shinyjs::disable("download_batch_pdf")
+  #     barcode_generated(TRUE) #下载完成标记
+  #   }
+  # )
   
   
   ################################################################

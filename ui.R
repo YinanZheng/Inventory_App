@@ -175,14 +175,15 @@ ui <- navbarPage(
               
               tags$hr(style = "margin: 5px 0; border: none;"),
               
+              # 条形码生成下载按钮
               tags$div(
                 class = "card",
                 style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
                 
                 tags$div(
                   style = "display: flex; justify-content: space-between; align-items: center;",
-                  actionButton("export_batch_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
-                  downloadButton("download_batch_pdf", "下载条形码")
+                  actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
+                  downloadButton("download_select_pdf", "下载条形码")
                 )
                 
                 # tags$div(
