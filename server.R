@@ -439,6 +439,13 @@ server <- function(input, output, session) {
     if (input$new_sku %in% existing_skus) {
       # 更新逻辑
       sku_index <- which(existing_skus == input$new_sku)
+      current_image_path <- existing_items$ItemImagePath[sku_index]
+      final_image_path <- if (!is.null(new_image_path) && new_image_path != "") {
+        new_image_path
+      } else {
+        current_image_path
+      }
+      
       existing_items[sku_index, ] <- data.frame(
         SKU = input$new_sku,
         Maker = input$new_maker,
@@ -447,7 +454,7 @@ server <- function(input, output, session) {
         ItemName = input$new_name,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
-        ItemImagePath = new_image_path,
+        ItemImagePath = final_image_path,
         stringsAsFactors = FALSE
       )
       added_items(existing_items)
