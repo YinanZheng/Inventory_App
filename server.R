@@ -680,22 +680,29 @@ server <- function(input, output, session) {
     })
   })
   
-  # Handle row selection in filtered inventory table
-  observeEvent(input$filtered_inventory_table_rows_selected, {
-    selected_row <- input$filtered_inventory_table_rows_selected
-    if (length(selected_row) > 0) {
-      selected_data <- filtered_inventory()[selected_row, ]
-      
+  # 监听选中items_table并更新信息
+  observeEvent(unique_items_table_purchase_selected_row(), {
+    if (!is.null(unique_items_table_purchase_selected_row()) && length(unique_items_table_purchase_selected_row()) > 0) {
+      selected_data <- unique_items_data()[unique_items_table_purchase_selected_row(), ]
       # Update input fields in the sidebar
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
-      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
-      
+      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
+      updateNumericInput(session, "new_shipping_cost", value = 0)    
+      updateTextInput(session, "new_sku", value = selected_data$SKU)
+    }
+  })
+  
+  # Handle row selection in filtered inventory table (for SKU query and chart summary)
+  observeEvent(input$filtered_inventory_table_rows_selected, {
+    selected_row <- input$filtered_inventory_table_rows_selected
+    if (length(selected_row) > 0) {
+      selected_data <- filtered_inventory()[selected_row, ]
       # 更新 SKU 输入框(生成库存图表用)
-      updateTextInput(session, "sku_inventory", value = selected_data$SKU)
+      updateTextInput(session, "query_sku", value = selected_data$SKU)
     }
   })
   
