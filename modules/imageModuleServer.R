@@ -5,17 +5,9 @@ imageModuleServer <- function(id) {
     uploaded_file <- reactiveVal(NULL)
     pasted_file <- reactiveVal(NULL)
     
-    # 更新进度条
-    update_progress <- function(progress) {
-      shinyjs::runjs(sprintf("$('#%s').css('width', '%d%%');", ns("progress_bar"), progress))
-    }
-    
     # 处理粘贴图片
     observeEvent(input$paste_area_pasted_image, {
       req(input$paste_area_pasted_image)  # 输入不能为空
-
-      shinyjs::show(ns("upload_progress"))
-      update_progress(10)
 
       tryCatch({
         temp_path <- tempfile(fileext = ".jpg")
@@ -26,7 +18,6 @@ imageModuleServer <- function(id) {
 
         # 写入临时文件
         writeBin(decoded_data, temp_path)
-        update_progress(50)
 
         # 读取图片信息
         img <- magick::image_read(temp_path)
@@ -46,11 +37,8 @@ imageModuleServer <- function(id) {
         })
 
         pasted_file(list(datapath = temp_path, name = "pasted_image.jpg"))
-        update_progress(100)
-        shinyjs::delay(500, shinyjs::hide(ns("upload_progress")))
         showNotification("图片粘贴成功！", type = "message", duration = 3)
       }, error = function(e) {
-        shinyjs::hide(ns("upload_progress"))
         output$pasted_image_preview <- renderUI({ NULL })
         showNotification(paste("粘贴图片失败！错误:", e$message), type = "error", duration = 5)
       })
@@ -60,9 +48,6 @@ imageModuleServer <- function(id) {
     # 处理文件上传
     observeEvent(input$file_input, {
       req(input$file_input)  # 确保输入存在
-      
-      shinyjs::show(ns("upload_progress"))
-      update_progress(10)
       
       tryCatch({
         file_data <- input$file_input
@@ -83,8 +68,6 @@ imageModuleServer <- function(id) {
         file_content <- readBin(file_data$datapath, "raw", file.info(file_data$datapath)$size)
         img_data <- paste0("data:", mime_type, ";base64,", base64enc::base64encode(file_content))
         
-        update_progress(50)
-        
         # 渲染图片预览
         output$pasted_image_preview <- renderUI({
           div(
@@ -100,11 +83,8 @@ imageModuleServer <- function(id) {
         shinyjs::hide(ns("paste_prompt"))
         
         uploaded_file(file_data)
-        update_progress(100)
-        shinyjs::delay(500, shinyjs::hide(ns("upload_progress")))
         showNotification("图片上传成功！", type = "message", duration = 3)
       }, error = function(e) {
-        shinyjs::hide(ns("upload_progress"))
         showNotification(paste("上传图片失败！错误:", e$message), type = "error", duration = 5)
       })
     })

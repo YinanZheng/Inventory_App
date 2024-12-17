@@ -19,18 +19,6 @@ imageModuleUI <- function(id, label = "图片上传区域") {
       
       # 文件上传区域
       fileInput(ns("file_input"), "或选择图片上传:", accept = c("image/png", "image/jpeg")),
-      
-      # 进度条
-      tags$div(
-        id = ns("upload_progress"),
-        style = "display: none; margin-top: 15px;",
-        tags$div(
-          class = "progress",
-          style = "height: 20px;",
-          tags$div(class = "progress-bar progress-bar-striped progress-bar-animated", 
-                   role = "progressbar", style = "width: 0%;", id = ns("progress_bar"))
-        )
-      )
     )
   )
 }

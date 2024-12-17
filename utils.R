@@ -89,11 +89,6 @@ base64_decode_image <- function(base64_string, output_path) {
   writeBin(decoded_image, output_path)
 }
 
-# 进度条的动态更新
-update_progress <- function(percentage) {
-  shinyjs::runjs(sprintf('$("#progress_bar").css("width", "%s%%").attr("aria-valuenow", "%s");', percentage, percentage))
-}
-
 # 保存图片（文件上传或粘贴）
 process_image_upload <- function(sku, file_data = NULL, base64_data = NULL, inventory_path = NULL, output_dir = "/var/www/images") {
   if (is.null(file_data) && is.null(base64_data)) {
