@@ -514,11 +514,7 @@ server <- function(input, output, session) {
     }
     
     # 重置
-    shinyjs::reset("new_item_image")
-    uploaded_file(NULL)
-    pasted_file(NULL)
-    output$pasted_image_preview <- renderUI({ NULL })
-    shinyjs::show("paste_prompt")
+    image_pucahse$reset()
   })
   
   # Confirm button: Update database and handle images

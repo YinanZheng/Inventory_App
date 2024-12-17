@@ -83,9 +83,19 @@ imageModuleServer <- function(id) {
       }
     })
     
+    # 定义一个重置函数
+    reset <- function() {
+      shinyjs::reset(ns("file_input"))  # 使用命名空间重置 fileInput
+      uploaded_file(NULL)  # 清空上传的文件
+      pasted_file(NULL)    # 清空粘贴的文件
+      output$pasted_image_preview <- renderUI({ NULL })  # 清空图片预览
+      shinyjs::show(ns("paste_prompt"))  # 显示粘贴提示
+    }
+    
     return(list(
       uploaded_file = uploaded_file,
-      pasted_file = pasted_file
+      pasted_file = pasted_file,
+      reset = reset  # 返回重置函数
     ))
   })
 }
