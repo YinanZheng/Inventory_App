@@ -89,7 +89,7 @@ base64_decode_image <- function(base64_string, output_path) {
   writeBin(decoded_image, output_path)
 }
 
-render_image_preview <- function(img_src, img_info) {
+render_image_preview <- function(img_src, img_info, ns) {
   renderUI({
     div(
       tags$img(src = img_src, height = "200px",
@@ -100,7 +100,6 @@ render_image_preview <- function(img_src, img_info) {
                ", 文件大小: ", round(img_info$filesize / 1024, 2), " KB")
       ),
       actionButton(ns("clear_image_preview"), "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
-      
     )
   })
 }

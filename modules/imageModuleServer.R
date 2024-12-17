@@ -23,7 +23,8 @@ imageModuleServer <- function(id) {
         # 渲染图片预览
         output$pasted_image_preview <- render_image_preview(
           img_src = input$paste_area_pasted_image,
-          img_info = img_info
+          img_info = img_info,
+          ns = ns
         )
         shinyjs::hide(ns("paste_prompt"))
         
@@ -69,7 +70,8 @@ imageModuleServer <- function(id) {
         # 渲染图片预览
         output$pasted_image_preview <- render_image_preview(
           img_src = img_data,
-          img_info = img_info
+          img_info = img_info,
+          ns = ns
         )
         shinyjs::hide(ns("paste_prompt"))
         showNotification("图片上传成功！", type = "message", duration = 3)
