@@ -11,8 +11,8 @@ imageModuleServer <- function(id) {
     }
     
     # 处理粘贴图片
-    observeEvent(input[[ns("paste_area_pasted_image")]], {
-      if (!is.null(input[[ns("paste_area_pasted_image")]])) {
+    observeEvent(input$paste_area_pasted_image, {
+      if (!is.null(input$paste_area_pasted_image)) {
         shinyjs::show(ns("upload_progress"))
         update_progress(10)
         
