@@ -7,8 +7,6 @@ ui <- navbarPage(
     shinyjs::useShinyjs(),  # 启用 shinyjs
     tags$head(tags$script(HTML("
     $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
-      console.log('粘贴事件触发！');  // 调试信息
-      
       const items = (event.originalEvent.clipboardData || event.clipboardData).items;
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
@@ -18,7 +16,6 @@ ui <- navbarPage(
           reader.onload = function(evt) {
             // 使用 currentTarget 确保获取的是父级元素的 id
             const inputId = event.currentTarget.id + '_pasted_image';
-            console.log('Input ID:', inputId);  // 调试生成的 Input ID
             Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
           };
 
@@ -62,31 +59,6 @@ ui <- navbarPage(
           column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
-        
-        # # 商品图片和粘贴区域
-        # tags$div(
-        #   class = "card",
-        #   style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
-        #   tags$h5("商品图片上传", style = "margin-bottom: 15px; font-weight: bold; color: #007BFF;"),
-        #   tags$div(
-        #     id = "paste_area",
-        #     style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
-        #     div(id = "paste_prompt", "将商品截图粘贴到这里（Ctrl+V 或 Cmd+V）", style = "color: #888; font-size: 16px; font-style: italic;"),
-        #     uiOutput("pasted_image_preview")
-        #   ),
-        #   fileInput("new_item_image", "或拖拽/选择商品图片上传:", accept = c("image/png", "image/jpeg"))
-        # ),
-        # 
-        # # 进度条
-        # tags$div(
-        #   id = "upload_progress",
-        #   style = "display: none; margin-top: 15px;",
-        #   tags$div(
-        #     class = "progress",
-        #     style = "height: 20px;",
-        #     tags$div(class = "progress-bar progress-bar-striped progress-bar-animated", role = "progressbar", style = "width: 0%;", id = "progress_bar")
-        #   )
-        # ),
         
         imageModuleUI("image_purchase", "图片上传"),
         
