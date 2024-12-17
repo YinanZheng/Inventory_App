@@ -1,4 +1,4 @@
-imageModuleUI <- function(id, label = "图片上传区域") {
+imageModuleUI <- function(id, label = "图片上传") {
   ns <- NS(id)
   
   tagList(

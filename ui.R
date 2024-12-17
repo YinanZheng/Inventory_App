@@ -1,26 +1,34 @@
 # Define UI
 ui <- navbarPage(
-  useShinyjs(),
   title = "库存管理系统（国内端）",
   theme = shinytheme("flatly"), # 可选主题
   
-  # 全局脚本插入位置
-  tags$head(tags$script(HTML("
+  header = tagList(
+    shinyjs::useShinyjs(),  # 启用 shinyjs
+    tags$head(tags$script(HTML("
     $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
+      console.log('粘贴事件触发！');  // 调试信息
+      
       const items = (event.originalEvent.clipboardData || event.clipboardData).items;
       for (let i = 0; i < items.length; i++) {
         if (items[i].type.indexOf('image') !== -1) {
           const file = items[i].getAsFile();
           const reader = new FileReader();
+
           reader.onload = function(evt) {
-            Shiny.setInputValue($(event.target).attr('id') + '_pasted_image', evt.target.result, {priority: 'event'});
+            // 使用 currentTarget 确保获取的是父级元素的 id
+            const inputId = event.currentTarget.id + '_pasted_image';
+            console.log('Input ID:', inputId);  // 调试生成的 Input ID
+            Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
           };
+
           reader.readAsDataURL(file);
           break;
         }
       }
     });
-  "))),
+  ")))
+  ),
   
   tabPanel(
     "采购登记",
