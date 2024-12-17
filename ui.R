@@ -173,7 +173,7 @@ ui <- navbarPage(
                 style = "font-size: 16px; width: 100%; height: 42px;"
               ),
               
-              tags$hr(style = "margin: 5px 0; border: none;"),
+              tags$hr(),
               
               # 条形码生成下载按钮
               tags$div(
@@ -183,7 +183,7 @@ ui <- navbarPage(
                 tags$div(
                   style = "display: flex; justify-content: space-between; align-items: center;",
                   actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
-                  downloadButton("download_select_pdf", "下载条形码")
+                  downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
                 )
                 
                 # tags$div(
