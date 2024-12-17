@@ -98,7 +98,9 @@ render_image_preview <- function(img_src, img_info) {
         style = "color: #007BFF; font-size: 14px;",
         paste0("分辨率: ", img_info$width, "x", img_info$height,
                ", 文件大小: ", round(img_info$filesize / 1024, 2), " KB")
-      )
+      ),
+      actionButton(ns("clear_image_preview"), "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
+      
     )
   })
 }

@@ -25,7 +25,8 @@ imageModuleServer <- function(id) {
           img_src = input$paste_area_pasted_image,
           img_info = img_info
         )
-
+        shinyjs::hide(ns("paste_prompt"))
+        
         pasted_file(list(datapath = temp_path, name = "pasted_image.jpg"))
         
         showNotification("图片粘贴成功！", type = "message", duration = 3)
@@ -70,12 +71,18 @@ imageModuleServer <- function(id) {
           img_src = img_data,
           img_info = img_info
         )
+        shinyjs::hide(ns("paste_prompt"))
         showNotification("图片上传成功！", type = "message", duration = 3)
       }, error = function(e) {
         showNotification(paste("上传图片失败！错误:", e$message), type = "error", duration = 5)
       })
     })
 
+    # 清除图片预览和状态
+    observeEvent(input$clear_image_preview, {
+      reset()
+      showNotification("图片已清除", type = "message")
+    })
     
     # 定义一个重置函数
     reset <- function() {
