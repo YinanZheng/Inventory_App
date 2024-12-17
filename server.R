@@ -468,7 +468,7 @@ server <- function(input, output, session) {
     new_image_path <- process_image_upload(
       sku = input$new_sku,
       file_data = image_purchase$uploaded_file(),
-      base64_data = image_purchase$pasted_file(),
+      pasted_data = image_purchase$pasted_file(),
       inventory_path = existing_inventory_path
     )
     
@@ -909,7 +909,7 @@ server <- function(input, output, session) {
       updated_image_path <- process_image_upload(
         sku = input$new_sku,
         file_data = image_purchase$uploaded_file(),
-        base64_data = image_purchase$pasted_file(),
+        pasted_data = image_purchase$pasted_file(),
         inventory_path = existing_image_path
       )
       
