@@ -57,33 +57,35 @@ ui <- navbarPage(
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
         
-        # 商品图片和粘贴区域
-        tags$div(
-          class = "card",
-          style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
-          tags$h5("商品图片上传", style = "margin-bottom: 15px; font-weight: bold; color: #007BFF;"),
-          tags$div(
-            id = "paste_area",
-            style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
-            div(id = "paste_prompt", "将商品截图粘贴到这里（Ctrl+V 或 Cmd+V）", style = "color: #888; font-size: 16px; font-style: italic;"),
-            uiOutput("pasted_image_preview")
-          ),
-          fileInput("new_item_image", "或拖拽/选择商品图片上传:", accept = c("image/png", "image/jpeg"))
-        ),
+        # # 商品图片和粘贴区域
+        # tags$div(
+        #   class = "card",
+        #   style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
+        #   tags$h5("商品图片上传", style = "margin-bottom: 15px; font-weight: bold; color: #007BFF;"),
+        #   tags$div(
+        #     id = "paste_area",
+        #     style = "border: 2px dashed #ccc; padding: 20px; text-align: center; margin-bottom: 15px; position: relative;",
+        #     div(id = "paste_prompt", "将商品截图粘贴到这里（Ctrl+V 或 Cmd+V）", style = "color: #888; font-size: 16px; font-style: italic;"),
+        #     uiOutput("pasted_image_preview")
+        #   ),
+        #   fileInput("new_item_image", "或拖拽/选择商品图片上传:", accept = c("image/png", "image/jpeg"))
+        # ),
+        # 
+        # # 进度条
+        # tags$div(
+        #   id = "upload_progress",
+        #   style = "display: none; margin-top: 15px;",
+        #   tags$div(
+        #     class = "progress",
+        #     style = "height: 20px;",
+        #     tags$div(class = "progress-bar progress-bar-striped progress-bar-animated", role = "progressbar", style = "width: 0%;", id = "progress_bar")
+        #   )
+        # ),
         
-        # 进度条
-        tags$div(
-          id = "upload_progress",
-          style = "display: none; margin-top: 15px;",
-          tags$div(
-            class = "progress",
-            style = "height: 20px;",
-            tags$div(class = "progress-bar progress-bar-striped progress-bar-animated", role = "progressbar", style = "width: 0%;", id = "progress_bar")
-          )
-        ),
+        imageModuleUI("image_purchase", "图片上传"),
         
         fluidRow(
-          column(6, style = "text-align: left;", actionButton("add_btn", "添加/更新商品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+          column(6, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
           column(6, style = "text-align: right;", actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;"))
         ),
         
@@ -185,18 +187,7 @@ ui <- navbarPage(
                   actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
                   downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
                 )
-                
-                # tags$div(
-                #   style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-                #   actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"), class = "btn-info"),
-                #   downloadButton("download_single_pdf", "下载条形码")
-                # ),
-                # tags$div(
-                #   style = "display: flex; justify-content: space-between; align-items: center;",
-                #   actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"), class = "btn-info"),
-                #   downloadButton("download_batch_pdf", "下载批量条形码")
-                # )
-              ),
+              )
             )
           )
         )
