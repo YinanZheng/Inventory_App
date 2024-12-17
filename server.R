@@ -159,6 +159,7 @@ server <- function(input, output, session) {
       unique_items.UsEntryTime,
       unique_items.UsSoldTime,
       unique_items.ReturnTime,
+      unique_items.updated_at,
       inventory.Maker,
       inventory.MajorType,
       inventory.MinorType,
@@ -170,6 +171,8 @@ server <- function(input, output, session) {
       inventory 
     ON 
       unique_items.SKU = inventory.SKU
+    ORDER BY 
+      unique_items.updated_at DESC
   ")
   })
   
