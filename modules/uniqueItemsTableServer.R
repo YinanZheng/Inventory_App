@@ -1,17 +1,5 @@
-uniqueItemsTableServer <- function(input, output, session, selection = "single", data) {
+uniqueItemsTableServer <- function(input, output, session, column_mapping, selection = "single", data) {
   output$unique_items_table <- renderDT({
-    # Define column mapping for user-friendly display
-    column_mapping <- list(
-      SKU = "条形码",
-      ItemName = "商品名",
-      ItemImagePath = "商品图片",
-      Maker = "供应商",
-      MajorType = "大类",
-      MinorType = "小类",
-      Status = "库存状态",
-      Defect = "物品状态"
-    )
-    
     # Render table with images
     render_table_with_images(
       data = data(),                 # 使用传递的 reactive 数据源

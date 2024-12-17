@@ -174,11 +174,89 @@ server <- function(input, output, session) {
   })
   
   # 渲染物品追踪数据表
-  unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound", data = unique_items_data)
-  unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage", selection = "multiple", data = unique_items_data)
-  unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect", data = unique_items_data)
-  unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", data = unique_items_data)
-  unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold", data = unique_items_data)
+  unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
+                                                        column_mapping <- list(
+                                                          SKU = "条形码",
+                                                          ItemName = "商品名",
+                                                          ItemImagePath = "商品图片",
+                                                          Maker = "供应商",
+                                                          MajorType = "大类",
+                                                          MinorType = "小类",
+                                                          ProductCost = "成本",
+                                                          DomesticShippingCost = "平摊运费",
+                                                          PurchaseTime = "采购日期",
+                                                          DomesticEntryTime = "国内入库日期",
+                                                          Status = "库存状态",
+                                                          Defect = "物品状态"
+                                                        ), data = unique_items_data)
+  
+  unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
+                                                       column_mapping <- list(
+                                                         SKU = "条形码",
+                                                         ItemName = "商品名",
+                                                         ItemImagePath = "商品图片",
+                                                         Maker = "供应商",
+                                                         MajorType = "大类",
+                                                         MinorType = "小类",
+                                                         ProductCost = "成本",
+                                                         DomesticShippingCost = "平摊运费",
+                                                         PurchaseTime = "采购日期",
+                                                         DomesticEntryTime = "国内入库日期",
+                                                         DomesticExitTime = "国内出库日期",
+                                                         DomesticSoldTime = "国内售出日期",
+                                                         Status = "库存状态",
+                                                         Defect = "物品状态"
+                                                       ), selection = "multiple", data = unique_items_data)
+  
+  unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect",
+                                                       column_mapping <- list(
+                                                         SKU = "条形码",
+                                                         ItemName = "商品名",
+                                                         ItemImagePath = "商品图片",
+                                                         Maker = "供应商",
+                                                         MajorType = "大类",
+                                                         MinorType = "小类",
+                                                         ProductCost = "成本",
+                                                         DomesticShippingCost = "平摊运费",
+                                                         PurchaseTime = "采购日期",
+                                                         DomesticEntryTime = "国内入库日期",
+                                                         Status = "库存状态",
+                                                         Defect = "物品状态"
+                                                       ), data = unique_items_data)
+  
+  unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
+                                                         column_mapping <- list(
+                                                           SKU = "条形码",
+                                                           ItemName = "商品名",
+                                                           ItemImagePath = "商品图片",
+                                                           Maker = "供应商",
+                                                           MajorType = "大类",
+                                                           MinorType = "小类",
+                                                           ProductCost = "成本",
+                                                           DomesticShippingCost = "平摊运费",
+                                                           PurchaseTime = "采购日期",
+                                                           DomesticEntryTime = "国内入库日期",
+                                                           DomesticExitTime = "国内出库日期",
+                                                           Status = "库存状态",
+                                                           Defect = "物品状态"
+                                                         ), data = unique_items_data)
+  
+  unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
+                                                     column_mapping <- list(
+                                                       SKU = "条形码",
+                                                       ItemName = "商品名",
+                                                       ItemImagePath = "商品图片",
+                                                       Maker = "供应商",
+                                                       MajorType = "大类",
+                                                       MinorType = "小类",
+                                                       ProductCost = "成本",
+                                                       DomesticShippingCost = "平摊运费",
+                                                       PurchaseTime = "采购日期",
+                                                       DomesticEntryTime = "国内入库日期",
+                                                       DomesticSoldTime = "国内售出日期",
+                                                       Status = "库存状态",
+                                                       Defect = "物品状态"
+                                                     ), data = unique_items_data)
   
   ####################################################################################################################################
   
