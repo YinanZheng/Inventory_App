@@ -51,8 +51,8 @@ server <- function(input, output, session) {
   })
   
   # 切换显示/隐藏
-  observeEvent(input$toggle_inventory_table, {
-    shinyjs::toggle("inventory_table_container")  
+  observeEvent(input$toggle_item_table_inbound, {
+    shinyjs::toggle("item_table_container_purchase")
   })
   
   observeEvent(input$toggle_item_table_inbound, {
@@ -63,6 +63,17 @@ server <- function(input, output, session) {
     shinyjs::toggle("item_table_container_defect")
   })
   
+  observeEvent(input$toggle_item_table_inbound, {
+    shinyjs::toggle("item_table_container_outbound")
+  })
+  
+  observeEvent(input$toggle_item_table_inbound, {
+    shinyjs::toggle("item_table_container_sold")
+  })
+  
+  observeEvent(input$toggle_inventory_table, {
+    shinyjs::toggle("inventory_table_container")  
+  })
   
   ####################################################################################################################################
   ###################################################                              ###################################################
@@ -177,6 +188,22 @@ server <- function(input, output, session) {
   })
   
   # 渲染物品追踪数据表
+  unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
+                                                        column_mapping <- list(
+                                                          SKU = "条形码",
+                                                          ItemName = "商品名",
+                                                          ItemImagePath = "商品图片",
+                                                          Maker = "供应商",
+                                                          MajorType = "大类",
+                                                          MinorType = "小类",
+                                                          ProductCost = "成本",
+                                                          DomesticShippingCost = "平摊运费",
+                                                          PurchaseTime = "采购日期",
+                                                          DomesticEntryTime = "国内入库日期",
+                                                          Status = "库存状态",
+                                                          Defect = "物品状态"
+                                                        ), data = unique_items_data)
+  
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
                                                         column_mapping <- list(
                                                           SKU = "条形码",

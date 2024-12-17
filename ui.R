@@ -134,11 +134,12 @@ ui <- navbarPage(
         tags$hr(), # 分隔线
         
         fluidRow(
-          column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
+          column(12, actionButton("toggle_item_table_purchase", "物品状态表（点击显示/隐藏）",
                                   style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
           column(12, div(
-            id = "inventory_table_container",  # 容器 ID
-            DTOutput("filtered_inventory_table")
+            id = "item_table_container_purchase",  # 容器 ID
+            style = "margin-bottom: 100px;",
+            uniqueItemsTableUI("unique_items_table_purchase")
           ))
         )
       )
@@ -425,6 +426,15 @@ ui <- navbarPage(
               plotlyOutput("defect_status_chart", height = "510px") # 使用 plotlyOutput
             )
           )
+        ),
+        
+        fluidRow(
+          column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
+                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+          column(12, div(
+            id = "inventory_table_container",  # 容器 ID
+            DTOutput("filtered_inventory_table")
+          ))
         )
       )
     )
