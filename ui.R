@@ -218,6 +218,8 @@ ui <- navbarPage(
           )
         ),
         
+        tags$hr(), # 分隔线
+        
         imageModuleUI("image_manage"),
         
         actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")

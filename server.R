@@ -846,7 +846,9 @@ server <- function(input, output, session) {
     # image_purchase$reset()
   })
   
-
+  # 采购商品图片处理模块
+  image_manage <- imageModuleServer("image_manage")
+  
   
   ################################################################
   ##                                                            ##
