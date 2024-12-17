@@ -1283,12 +1283,19 @@ server <- function(input, output, session) {
       # 渲染瑕疵情况图表
       output$defect_status_chart <- renderPlotly({
         tryCatch({
-          defect_status_query <- "
-      SELECT Defect, COUNT(*) AS Count
-      FROM unique_items
-      WHERE SKU = ?
-      GROUP BY Defect"
-          defect_status_data <- dbGetQuery(con, defect_status_query, params = list(trimws(input$query_sku)))
+          # 使用 unique_items_data() 替代数据库查询
+          data <- unique_items_data()
+          
+          # 确保输入的 SKU 非空
+          if (is.null(input$query_sku) || trimws(input$query_sku) == "") {
+            return(NULL)
+          }
+          
+          # 筛选符合条件的数据
+          inventory_status_data <- data %>%
+            filter(SKU == trimws(input$query_sku)) %>%
+            group_by(Status) %>%
+            summarise(Count = n(), .groups = "drop")
           
           # 定义固定类别顺序和颜色
           defect_levels <- c("未知", "无瑕", "瑕疵", "修复")
