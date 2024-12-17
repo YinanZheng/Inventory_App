@@ -1229,12 +1229,17 @@ server <- function(input, output, session) {
       # 渲染库存状态图表
       output$inventory_status_chart <- renderPlotly({
         tryCatch({
-          inventory_status_query <- "
-      SELECT Status, COUNT(*) AS Count
-      FROM unique_items
-      WHERE SKU = ?
-      GROUP BY Status"
-          inventory_status_data <- dbGetQuery(con, inventory_status_query, params = list(trimws(input$query_sku)))
+          data <- unique_items_data()
+          
+          if (is.null(input$query_sku) || trimws(input$query_sku) == "") {
+            return(NULL)
+          }
+          
+          # 筛选符合条件的数据
+          inventory_status_data <- data %>%
+            filter(SKU == trimws(input$query_sku)) %>%
+            group_by(Status) %>%
+            summarise(Count = n(), .groups = "drop")
           
           # 定义固定类别顺序和颜色
           status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")
@@ -1283,18 +1288,16 @@ server <- function(input, output, session) {
       # 渲染瑕疵情况图表
       output$defect_status_chart <- renderPlotly({
         tryCatch({
-          # 使用 unique_items_data() 替代数据库查询
           data <- unique_items_data()
           
-          # 确保输入的 SKU 非空
           if (is.null(input$query_sku) || trimws(input$query_sku) == "") {
             return(NULL)
           }
           
           # 筛选符合条件的数据
-          inventory_status_data <- data %>%
+          defect_status_data <- data %>%
             filter(SKU == trimws(input$query_sku)) %>%
-            group_by(Status) %>%
+            group_by(Defect) %>%
             summarise(Count = n(), .groups = "drop")
           
           # 定义固定类别顺序和颜色
