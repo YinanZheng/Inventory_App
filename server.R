@@ -432,7 +432,7 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
-  image_purchase <- callModule(imageModuleServer, "image_purchase")
+  image_purchase <- imageModuleServer("image_purchase")
 
   # Handle add item button click
   observeEvent(input$add_btn, {
