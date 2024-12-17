@@ -51,7 +51,7 @@ server <- function(input, output, session) {
   })
   
   # 切换显示/隐藏
-  observeEvent(input$toggle_item_table_inbound, {
+  observeEvent(input$toggle_item_table_purchase, {
     shinyjs::toggle("item_table_container_purchase")
   })
   
@@ -63,11 +63,11 @@ server <- function(input, output, session) {
     shinyjs::toggle("item_table_container_defect")
   })
   
-  observeEvent(input$toggle_item_table_inbound, {
+  observeEvent(input$toggle_item_table_outbound, {
     shinyjs::toggle("item_table_container_outbound")
   })
   
-  observeEvent(input$toggle_item_table_inbound, {
+  observeEvent(input$toggle_item_table_sold, {
     shinyjs::toggle("item_table_container_sold")
   })
   
@@ -199,7 +199,6 @@ server <- function(input, output, session) {
                                                           ProductCost = "成本",
                                                           DomesticShippingCost = "平摊运费",
                                                           PurchaseTime = "采购日期",
-                                                          DomesticEntryTime = "国内入库日期",
                                                           Status = "库存状态",
                                                           Defect = "物品状态"
                                                         ), data = unique_items_data)
