@@ -220,7 +220,7 @@ ui <- navbarPage(
         
         imageModuleUI("image_manage"),
         
-        column(6, style = "text-align: right;", actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;"))
+        actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
         
       ),
       mainPanel(
