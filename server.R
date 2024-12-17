@@ -474,9 +474,11 @@ server <- function(input, output, session) {
       showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
-    # 重置输入框
+    # 重置
     shinyjs::reset("new_item_image")
     uploaded_file(NULL)
+    pasted_file(NULL)
+    output$pasted_image_preview <- renderUI({ NULL })
   })
   
   # Handle image update button click
@@ -531,9 +533,11 @@ server <- function(input, output, session) {
       showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
     }
     
-    # 重置文件输入框
+    # 重置
     shinyjs::reset("new_item_image")
     uploaded_file(NULL)
+    pasted_file(NULL)
+    output$pasted_image_preview <- renderUI({ NULL })
   })
   
   # Confirm button: Update database and handle images
@@ -642,6 +646,8 @@ server <- function(input, output, session) {
       added_items(create_empty_inventory())
       shinyjs::reset("new_item_image")
       uploaded_file(NULL)
+      pasted_file(NULL)
+      output$pasted_image_preview <- renderUI({ NULL })
     }, error = function(e) {
       showNotification(paste("发生错误:", e$message), type = "error")
     })
