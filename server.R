@@ -437,15 +437,13 @@ server <- function(input, output, session) {
     existing_items <- added_items()
     existing_skus <- existing_items$SKU
     if (input$new_sku %in% existing_skus) {
-      # 更新逻辑
       sku_index <- which(existing_skus == input$new_sku)
       current_image_path <- existing_items$ItemImagePath[sku_index]
-      final_image_path <- if (!is.null(new_image_path) && new_image_path != "") {
+      final_image_path <- if (!is.na(new_image_path) && new_image_path != "") {
         new_image_path
       } else {
         current_image_path
       }
-      
       existing_items[sku_index, ] <- data.frame(
         SKU = input$new_sku,
         Maker = input$new_maker,
