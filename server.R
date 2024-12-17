@@ -690,7 +690,12 @@ server <- function(input, output, session) {
       # Update input fields in the sidebar
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
-      updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
+      # 等待 major_type 渲染完成后，再更新 new_minor_type
+      observeEvent(input[["type_module-new_major_type"]], {
+        if (input[["type_module-new_major_type"]] == selected_major) {
+          updateSelectInput(session, "type_module-new_minor_type", selected = selected_minor)
+        }
+      }, once = TRUE)  # 只触发一次，避免重复监听
       updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
