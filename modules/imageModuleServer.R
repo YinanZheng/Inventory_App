@@ -11,35 +11,25 @@ imageModuleServer <- function(id) {
 
       tryCatch({
         temp_path <- tempfile(fileext = ".jpg")
-
-        # 清理 base64 数据
-        img_data <- gsub("^data:image/[^;]+;base64,", "", input$paste_area_pasted_image)
-        decoded_data <- base64enc::base64decode(img_data)  # 解码为 raw 数据
-
-        # 写入临时文件
-        writeBin(decoded_data, temp_path)
-
+        
+        # 解码并保存截图到临时文件夹
+        base64_decode_image(input$paste_area_pasted_image, temp_path)
+        
         # 读取图片信息
         img <- magick::image_read(temp_path)
         img_info <- magick::image_info(img)
-
+        img_info$filesize <- file.size(temp_path)
+        
         # 渲染图片预览
-        output$pasted_image_preview <- renderUI({
-          div(
-            tags$img(src = input$paste_area_pasted_image, height = "200px",
-                     style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
-            tags$p(
-              style = "color: #007BFF; font-size: 14px;",
-              paste0("分辨率: ", img_info$width, "x", img_info$height,
-                     ", 文件大小: ", round(file.size(temp_path) / 1024, 2), " KB")
-            )
-          )
-        })
+        output$pasted_image_preview <- render_image_preview(
+          img_src = input$paste_area_pasted_image,
+          img_info = img_info
+        )
 
         pasted_file(list(datapath = temp_path, name = "pasted_image.jpg"))
+        
         showNotification("图片粘贴成功！", type = "message", duration = 3)
       }, error = function(e) {
-        output$pasted_image_preview <- renderUI({ NULL })
         showNotification(paste("粘贴图片失败！错误:", e$message), type = "error", duration = 5)
       })
     })
@@ -64,25 +54,22 @@ imageModuleServer <- function(id) {
           showNotification("不支持的文件格式!", type = "error")
         )
         
+        uploaded_file(file_data)
+        
         # 读取文件并手动生成 Base64 数据
         file_content <- readBin(file_data$datapath, "raw", file.info(file_data$datapath)$size)
         img_data <- paste0("data:", mime_type, ";base64,", base64enc::base64encode(file_content))
         
+        # 读取图片信息
+        img <- magick::image_read(file_data$datapath)
+        img_info <- magick::image_info(img)
+        img_info$filesize <- file.size(file_data$datapath)
+        
         # 渲染图片预览
-        output$pasted_image_preview <- renderUI({
-          div(
-            tags$img(src = img_data, height = "200px",
-                     style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
-            tags$p(
-              style = "color: #007BFF; font-size: 14px;",
-              paste0("文件: ", file_data$name, ", 大小: ", round(file_data$size / 1024, 2), " KB")
-            )
-          )
-        })
-        
-        shinyjs::hide(ns("paste_prompt"))
-        
-        uploaded_file(file_data)
+        output$pasted_image_preview <- render_image_preview(
+          img_src = img_data,
+          img_info = img_info
+        )
         showNotification("图片上传成功！", type = "message", duration = 3)
       }, error = function(e) {
         showNotification(paste("上传图片失败！错误:", e$message), type = "error", duration = 5)

@@ -89,6 +89,20 @@ base64_decode_image <- function(base64_string, output_path) {
   writeBin(decoded_image, output_path)
 }
 
+render_image_preview <- function(img_src, img_info) {
+  renderUI({
+    div(
+      tags$img(src = img_src, height = "200px",
+               style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
+      tags$p(
+        style = "color: #007BFF; font-size: 14px;",
+        paste0("分辨率: ", img_info$width, "x", img_info$height,
+               ", 文件大小: ", round(img_info$filesize / 1024, 2), " KB")
+      )
+    )
+  })
+}
+
 # 保存图片（文件上传或粘贴）
 process_image_upload <- function(sku, file_data = NULL, base64_data = NULL, inventory_path = NULL, output_dir = "/var/www/images") {
   if (is.null(file_data) && is.null(base64_data)) {
