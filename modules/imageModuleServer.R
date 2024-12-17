@@ -53,7 +53,7 @@ imageModuleServer <- function(id) {
         file_data <- input$file_input
         
         # 确保文件路径存在
-        if (!file.exists(file_data$datapath)) stop("文件路径无效")
+        if (!file.exists(file_data$datapath)) showNotification("文件路径无效", type = "error")
         
         # 获取 MIME 类型
         mime_type <- switch(
@@ -61,7 +61,7 @@ imageModuleServer <- function(id) {
           "png" = "image/png",
           "jpeg" = "image/jpeg",
           "jpg" = "image/jpeg",
-          stop("不支持的文件格式!")
+          showNotification("不支持的文件格式!", type = "error")
         )
         
         # 读取文件并手动生成 Base64 数据
@@ -75,8 +75,9 @@ imageModuleServer <- function(id) {
                      style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
             tags$p(
               style = "color: #007BFF; font-size: 14px;",
-              paste0("文件: ", file_data$name, ", 大小: ", round(file_data$size / 1024, 2), " KB")
-            )
+              paste0("图片: ", file_data$name, ", 大小: ", round(file_data$size / 1024, 2), " KB")
+            ),
+            actionButton("clear_pasted_image", "清除图片", icon = icon("trash"), class = "btn-danger", style = "margin-top: 10px;")
           )
         })
         
@@ -88,9 +89,12 @@ imageModuleServer <- function(id) {
         showNotification(paste("上传图片失败！错误:", e$message), type = "error", duration = 5)
       })
     })
-    
-    
-    
+
+    # 清除粘贴图片预览并恢复提示
+    observeEvent(input$clear_pasted_image, {
+      reset()
+      showNotification("已清除粘贴的图片！", type = "message")
+    })
     
     # 定义一个重置函数
     reset <- function() {
@@ -100,6 +104,8 @@ imageModuleServer <- function(id) {
       output$pasted_image_preview <- renderUI({ NULL })  # 清空图片预览
       shinyjs::show(ns("paste_prompt"))  # 显示粘贴提示
     }
+    
+    showNotification(uploaded_file)
     
     return(list(
       uploaded_file = uploaded_file,

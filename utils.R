@@ -255,13 +255,9 @@ map_column_names <- function(data, column_mapping) {
 
 # Function to render the image column (local images with public URL prefix)
 render_image_column <- function(image_column_data, 
-                                host_url,  # 不使用默认值，确保明确传入
-                                placeholder = "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image") {
-  # 验证输入参数是否正确
-  if (missing(host_url) || is.null(host_url)) {
-    stop("Error: 'host_url' must be provided and cannot be NULL.")
-  }
-  
+                                host_url = host_url, 
+                                placeholder = placeholder_50px_path) {
+
   sapply(image_column_data, function(img) {
     if (is.na(img) || img == "") {
       # 返回占位符图片
@@ -304,7 +300,7 @@ render_table_with_images <- function(data,
 
 update_status <- function(con, unique_id, new_status, defect_status = NULL, refresh_trigger = NULL) {
   if (!new_status %in% names(status_columns)) {
-    stop("Invalid status provided")
+    showNotification("Invalid status provided", type = "error")
   }
   
   # 获取时间戳列
