@@ -684,8 +684,8 @@ server <- function(input, output, session) {
     if (!is.null(unique_items_table_purchase_selected_row()) && length(unique_items_table_purchase_selected_row()) > 0) {
       selected_data <- unique_items_data()[unique_items_table_purchase_selected_row(), ]
       
-      showNotification(paste("Selected MajorType:", selected_data$MajorType))
-      showNotification(paste("Selected MinorType:", selected_data$MinorType))
+      # showNotification(paste("Selected MajorType:", selected_data$MajorType))
+      # showNotification(paste("Selected MinorType:", selected_data$MinorType))
       
       # Update input fields in the sidebar
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)

@@ -92,21 +92,6 @@ ui <- navbarPage(
         fluidRow(
           column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
         ),
-        tags$div(
-          class = "card",
-          style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
-          # tags$h4("条形码生成"),
-          tags$div(
-            style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
-            actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"), class = "btn-info"),
-            downloadButton("download_single_pdf", "下载条形码")
-          ),
-          tags$div(
-            style = "display: flex; justify-content: space-between; align-items: center;",
-            actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"), class = "btn-info"),
-            downloadButton("download_batch_pdf", "下载批量条形码")
-          )
-        ),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
@@ -192,7 +177,23 @@ ui <- navbarPage(
                 icon = icon("check"), 
                 class = "btn-primary", 
                 style = "font-size: 16px; width: 100%; height: 42px;"
-              )
+              ),
+              
+              tags$div(
+                class = "card",
+                style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
+                # tags$h4("条形码生成"),
+                tags$div(
+                  style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
+                  actionButton("export_single_btn", "生成当前SKU条形码", icon = icon("barcode"), class = "btn-info"),
+                  downloadButton("download_single_pdf", "下载条形码")
+                ),
+                tags$div(
+                  style = "display: flex; justify-content: space-between; align-items: center;",
+                  actionButton("export_batch_btn", "批量生成已添加商品条形码", icon = icon("barcode"), class = "btn-info"),
+                  downloadButton("download_batch_pdf", "下载批量条形码")
+                )
+              ),
             )
           )
         )
