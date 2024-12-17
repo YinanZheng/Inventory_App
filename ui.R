@@ -90,12 +90,6 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
-          column(12, checkboxInput("repeat_barcode", "重复条形码 (按商品数量)", value = TRUE))
-        ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        fluidRow(
           column(12, actionButton("confirm_btn", "登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
         )
       ),
@@ -178,6 +172,8 @@ ui <- navbarPage(
                 class = "btn-primary", 
                 style = "font-size: 16px; width: 100%; height: 42px;"
               ),
+              
+              tags$hr(style = "margin: 5px 0; border: none;"),
               
               tags$div(
                 class = "card",
