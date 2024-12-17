@@ -22,8 +22,6 @@ server <- function(input, output, session) {
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
   # 用于存储 PDF 文件路径
-  # single_pdf_file_path <- reactiveVal(NULL)
-  # batch_pdf_file_path <- reactiveVal(NULL)
   select_pdf_file_path <- reactiveVal(NULL)
   
   # 存储条形码是否已生成的状态
@@ -81,7 +79,6 @@ server <- function(input, output, session) {
   ###################################################             渲染             ###################################################
   ###################################################                              ###################################################
   ####################################################################################################################################
-  
   
   # 采购商品添加表（临时）
   added_items <- reactiveVal(create_empty_inventory() %>% select(-ShippingCost))
@@ -298,31 +295,18 @@ server <- function(input, output, session) {
   })
   
   
-  ####################################################################################################################################
-  ###################################################                              ###################################################
-  ###################################################             监听             ###################################################
-  ###################################################                              ###################################################
-  ####################################################################################################################################
-  
+
   ################################################################
   ##                                                            ##
-  ## 供应商模块                                                 ##
+  ## 采购分页                                                   ##
   ##                                                            ##
   ################################################################
   
+  # 供应商模块
   supplierModuleServer(input, output, session, con)
   
-  
-  
-  ################################################################
-  ##                                                            ##
-  ## 物品大小类模块                                             ##
-  ##                                                            ##
-  ################################################################
-  
+  # 物品大小类模块
   typeModuleServer("type_module", con, item_type_data)
-  
-  
   
   # 处理上传新图片
   observeEvent(input$new_item_image, {
@@ -528,66 +512,6 @@ server <- function(input, output, session) {
     shinyjs::show("paste_prompt")
   })
   
-  # Handle image update button click
-  observeEvent(input$update_image_btn, {
-    # 验证输入
-    if (is.null(input$new_sku) || input$new_sku == "") {
-      showNotification("请确保SKU正常显示！", type = "error")
-      return()
-    }
-    
-    # 检查 SKU 是否存在于库存表里
-    existing_inventory_items <- inventory()
-    existing_inventory_skus <- existing_inventory_items$SKU
-    
-    if (input$new_sku %in% existing_inventory_skus) {
-      # 获取当前 SKU 对应的图片路径
-      existing_item <- existing_inventory_items[existing_inventory_items$SKU == input$new_sku, ]
-      existing_image_path <- existing_item$ItemImagePath[1]
-      
-      # 处理图片上传或粘贴
-      updated_image_path <- process_image_upload(
-        sku = input$new_sku,
-        file_data = uploaded_file(),
-        base64_data = pasted_file(),
-        inventory_path = existing_image_path
-      )
-      
-      # 检查处理结果
-      if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
-        tryCatch({
-          # 更新库存数据
-          dbExecute(con, "UPDATE inventory 
-                        SET ItemImagePath = ? 
-                        WHERE SKU = ?",
-                    params = list(updated_image_path, input$new_sku))
-          
-          # 更新 `inventory()`，触发 `filtered_inventory_table` 更新
-          inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-          
-          # 触发刷新 `unique_items_data`
-          unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-          
-          showNotification(paste0(input$new_sku, " 图片已成功更新！"), type = "message")
-        }, error = function(e) {
-          showNotification("图片路径更新失败！", type = "error")
-        })
-      } else {
-        showNotification("未检测到有效的图片数据！", type = "error")
-      }
-    } else {
-      # SKU 不存在
-      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
-    }
-    
-    # 重置
-    shinyjs::reset("new_item_image")
-    uploaded_file(NULL)
-    pasted_file(NULL)
-    output$pasted_image_preview <- renderUI({ NULL })
-    shinyjs::show("paste_prompt")
-  })
-  
   # Confirm button: Update database and handle images
   observeEvent(input$confirm_btn, {
     tryCatch({
@@ -702,7 +626,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # 监听选中items_table并更新信息
+  # 监听采购页选中items_table
   observeEvent(unique_items_table_purchase_selected_row(), {
     if (!is.null(unique_items_table_purchase_selected_row()) && length(unique_items_table_purchase_selected_row()) > 0) {
       selected_data <- unique_items_data()[unique_items_table_purchase_selected_row(), ]
@@ -723,17 +647,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # Handle row selection in filtered inventory table (for SKU query and chart summary)
-  observeEvent(input$filtered_inventory_table_rows_selected, {
-    selected_row <- input$filtered_inventory_table_rows_selected
-    if (length(selected_row) > 0) {
-      selected_data <- filtered_inventory()[selected_row, ]
-      # 更新 SKU 输入框(生成库存图表用)
-      updateTextInput(session, "query_sku", value = selected_data$SKU)
-    }
-  })
-  
-  # Handle row selection in item table
+  # 监听采购页选中added_items_table
   observeEvent(input$added_items_table_rows_selected, {
     selected_row <- input$added_items_table_rows_selected
     
@@ -795,161 +709,10 @@ server <- function(input, output, session) {
   })
   
   
+    
   ################################################################
   ##                                                            ##
-  ## SKU BARCODE模块                                            ##
-  ##                                                            ##
-  ################################################################
-  
-  ### Barcode PDF 模块
-  session$onFlushed(function() {
-    # shinyjs::disable("download_single_pdf")
-    # shinyjs::disable("download_batch_pdf")
-    shinyjs::disable("download_select_pdf")
-  })
-  
-  
-  # 生成选中商品条形码 PDF
-  observeEvent(input$export_select_btn, {
-    # 获取选中行
-    selected_rows <- unique_items_table_inbound_selected_row()  # 从 DT 表选中行
-    if (is.null(selected_rows) || length(selected_rows) == 0) {
-      showNotification("请先选中至少一个商品！", type = "error")
-      return()
-    }
-    
-    # 获取选中物品的数据
-    selected_items <- unique_items_data()[selected_rows, ]
-    if (nrow(selected_items) == 0) {
-      showNotification("选中数据无效，请重新选择！", type = "error")
-      return()
-    }
-    
-    skus <- selected_items$SKU
-    
-    # 调用现有函数生成条形码 PDF
-    tryCatch({
-      pdf_file <- export_barcode_pdf(
-        sku = skus,
-        page_width = page_width,  # 全局变量
-        page_height = page_height,
-        unit = size_unit
-      )
-      select_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-      
-      showNotification("选中商品条形码已生成！", type = "message")
-      shinyjs::enable("download_select_pdf")  # 启用下载按钮
-    }, error = function(e) {
-      showNotification(paste("生成条形码失败：", e$message), type = "error")
-      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
-    })
-  })
-  
-  # 下载选中商品条形码 PDF
-  output$download_select_pdf <- downloadHandler(
-    filename = function() {
-      basename(select_pdf_file_path())  # 生成文件名
-    },
-    content = function(file) {
-      file.copy(select_pdf_file_path(), file, overwrite = TRUE)
-      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
-      select_pdf_file_path(NULL)  # 清空路径
-    }
-  )
-  
-  
-  # # 单个 SKU 条形码生成逻辑
-  # observeEvent(input$export_single_btn, {
-  #   if (is.null(input$new_sku) || input$new_sku == "") {
-  #     showNotification("没有SKU生成！", type = "error")
-  #     return()
-  #   }
-  #   
-  #   # 如果勾选了重复条形码，检查数量是否为空或为 0
-  #   if (input$repeat_barcode) {
-  #     if (is.null(input$new_quantity) || input$new_quantity <= 0) {
-  #       showNotification("数量不能为空且必须大于 0!", type = "error")
-  #       return()
-  #     }
-  #   }
-  #   
-  #   # 判断是否需要重复打印
-  #   quantity <- if (input$repeat_barcode) input$new_quantity else 1
-  #   
-  #   # 重复 SKU 以匹配数量
-  #   skus <- rep(input$new_sku, quantity)
-  #   
-  #   # 调用生成条形码 PDF 的函数
-  #   pdf_file <- export_barcode_pdf(
-  #     sku = skus, 
-  #     page_width, page_height, # 全局变量
-  #     unit = size_unit
-  #   )
-  #   single_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-  #   
-  #   showNotification("条形码已生成为 PDF!")
-  #   shinyjs::enable("download_single_pdf")
-  # })
-  # 
-  # # 批量 SKU 条形码生成逻辑
-  # observeEvent(input$export_batch_btn, {
-  #   items <- added_items()
-  #   
-  #   if (nrow(added_items()) == 0) {
-  #     showNotification("没有添加商品！", type = "error")
-  #     return()
-  #   }
-  #   
-  #   # 判断是否需要重复打印
-  #   if (input$repeat_barcode) {
-  #     skus <- unlist(mapply(function(sku, qty) rep(sku, qty), items$SKU, items$Quantity, SIMPLIFY = FALSE))
-  #   } else {
-  #     skus <- items$SKU
-  #   }
-  #   
-  #   # 调用生成条形码 PDF 的函数
-  #   pdf_file <- export_barcode_pdf(
-  #     sku = skus, 
-  #     page_width = page_width,  # 全局变量
-  #     page_height = page_height, 
-  #     unit = size_unit
-  #   )
-  #   batch_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-  #   
-  #   showNotification("条形码已生成为 PDF!")
-  #   shinyjs::enable("download_batch_pdf")
-  #   barcode_generated(FALSE) #每新生成条形码PDF，就标记未下载
-  # })
-  # 
-  # # 单张条形码下载逻辑
-  # output$download_single_pdf <- downloadHandler(
-  #   filename = function() {
-  #     basename(single_pdf_file_path())
-  #   },
-  #   content = function(file) {
-  #     file.copy(single_pdf_file_path(), file, overwrite = TRUE)
-  #     single_pdf_file_path(NULL)
-  #     shinyjs::disable("download_single_pdf")
-  #   }
-  # )
-  # 
-  # # 批量条形码下载逻辑
-  # output$download_batch_pdf <- downloadHandler(
-  #   filename = function() {
-  #     basename(batch_pdf_file_path())
-  #   },
-  #   content = function(file) {
-  #     file.copy(batch_pdf_file_path(), file, overwrite = TRUE)
-  #     batch_pdf_file_path(NULL)
-  #     shinyjs::disable("download_batch_pdf")
-  #     barcode_generated(TRUE) #下载完成标记
-  #   }
-  # )
-  
-  
-  ################################################################
-  ##                                                            ##
-  ## 入库模块                                                   ##
+  ## 入库分页                                                   ##
   ##                                                            ##
   ################################################################
   
@@ -987,8 +750,11 @@ server <- function(input, output, session) {
   
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_inbound_selected_row(), {
-    if (!is.null(unique_items_table_inbound_selected_row()) && length(unique_items_table_inbound_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_inbound_selected_row(), "SKU", drop = TRUE]
+    selected_row <- unique_items_table_inbound_selected_row()
+    if (length(selected_row) > 0) {
+      # 仅处理最后一个选择的行
+      last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
+      selected_sku <- unique_items_data()[last_selected, "SKU", drop = TRUE]
       updateTextInput(session, "inbound_sku", value = selected_sku)
     }
   })
@@ -997,10 +763,11 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
-  ## 物品编辑模块                                               ##
+  ## 物品管理分页                                               ##
   ##                                                            ##
   ################################################################
   
+  # 删除选定物品
   observeEvent(input$confirm_delete_btn, {
     selected_rows <- unique_items_table_manage_selected_row()
     
@@ -1070,12 +837,131 @@ server <- function(input, output, session) {
     })
   })
   
+  # Barcode PDF 模块
+  session$onFlushed(function() {
+    shinyjs::disable("download_select_pdf")
+  })
   
+  # 生成选中商品条形码 PDF
+  observeEvent(input$export_select_btn, {
+    # 获取选中行
+    selected_rows <- unique_items_table_inbound_selected_row()  # 从 DT 表选中行
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选中至少一个商品！", type = "error")
+      return()
+    }
+    
+    # 获取选中物品的数据
+    selected_items <- unique_items_data()[selected_rows, ]
+    if (nrow(selected_items) == 0) {
+      showNotification("选中数据无效，请重新选择！", type = "error")
+      return()
+    }
+    
+    skus <- selected_items$SKU
+    
+    # 调用现有函数生成条形码 PDF
+    tryCatch({
+      pdf_file <- export_barcode_pdf(
+        sku = skus,
+        page_width = page_width,  # 全局变量
+        page_height = page_height,
+        unit = size_unit
+      )
+      select_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+      
+      showNotification("选中商品条形码已生成！", type = "message")
+      shinyjs::enable("download_select_pdf")  # 启用下载按钮
+    }, error = function(e) {
+      showNotification(paste("生成条形码失败：", e$message), type = "error")
+      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+    })
+  })
+  
+  # 下载选中商品条形码 PDF
+  output$download_select_pdf <- downloadHandler(
+    filename = function() {
+      basename(select_pdf_file_path())  # 生成文件名
+    },
+    content = function(file) {
+      file.copy(select_pdf_file_path(), file, overwrite = TRUE)
+      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+      select_pdf_file_path(NULL)  # 清空路径
+    }
+  )
+  
+  
+  
+  ##### TODO
+  # Handle image update button click
+  observeEvent(input$update_image_btn, {
+    # 验证输入
+    if (is.null(input$new_sku) || input$new_sku == "") {
+      showNotification("请确保SKU正常显示！", type = "error")
+      return()
+    }
+    
+    # 检查 SKU 是否存在于库存表里
+    existing_inventory_items <- inventory()
+    existing_inventory_skus <- existing_inventory_items$SKU
+    
+    if (input$new_sku %in% existing_inventory_skus) {
+      # 获取当前 SKU 对应的图片路径
+      existing_item <- existing_inventory_items[existing_inventory_items$SKU == input$new_sku, ]
+      existing_image_path <- existing_item$ItemImagePath[1]
+      
+      # 处理图片上传或粘贴
+      updated_image_path <- process_image_upload(
+        sku = input$new_sku,
+        file_data = uploaded_file(),
+        base64_data = pasted_file(),
+        inventory_path = existing_image_path
+      )
+      
+      # 检查处理结果
+      if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
+        tryCatch({
+          # 更新库存数据
+          dbExecute(con, "UPDATE inventory 
+                        SET ItemImagePath = ? 
+                        WHERE SKU = ?",
+                    params = list(updated_image_path, input$new_sku))
+          
+          # 更新 `inventory()`，触发 `filtered_inventory_table` 更新
+          inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+          
+          # 触发刷新 `unique_items_data`
+          unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+          
+          showNotification(paste0(input$new_sku, " 图片已成功更新！"), type = "message")
+        }, error = function(e) {
+          showNotification("图片路径更新失败！", type = "error")
+        })
+      } else {
+        showNotification("未检测到有效的图片数据！", type = "error")
+      }
+    } else {
+      # SKU 不存在
+      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
+    }
+    
+    # 重置
+    shinyjs::reset("new_item_image")
+    uploaded_file(NULL)
+    pasted_file(NULL)
+    output$pasted_image_preview <- renderUI({ NULL })
+    shinyjs::show("paste_prompt")
+  })
+  
+
+  
+  
+
   
   
   ################################################################
   ##                                                            ##
-  ## 瑕疵商品模块                                               ##
+  ## 瑕疵商品分页                                               ##
   ##                                                            ##
   ################################################################
   
@@ -1170,7 +1056,7 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
-  ## 出库商品模块                                               ##
+  ## 出库分页                                                   ##
   ##                                                            ##
   ################################################################
   
@@ -1217,7 +1103,7 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
-  ## 售出商品模块                                               ##
+  ## 售出分页                                                   ##
   ##                                                            ##
   ################################################################
   
@@ -1264,10 +1150,11 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
-  ## 报表模块                                                   ##
+  ## 查询分页                                                   ##
   ##                                                            ##
   ################################################################
   
+  # 根据SKU产生图表
   observe({
     sku <- trimws(input$query_sku)
     
@@ -1438,6 +1325,18 @@ server <- function(input, output, session) {
       showNotification(paste("发生错误：", e$message), type = "error")
     })
   })
+  
+  # 监听查询页选中inventory table (for SKU query and chart summary)
+  observeEvent(input$filtered_inventory_table_rows_selected, {
+    selected_row <- input$filtered_inventory_table_rows_selected
+    if (length(selected_row) > 0) {
+      selected_data <- filtered_inventory()[selected_row, ]
+      # 更新 SKU 输入框(生成库存图表用)
+      updateTextInput(session, "query_sku", value = selected_data$SKU)
+    }
+  })
+  
+  
   
   
   
