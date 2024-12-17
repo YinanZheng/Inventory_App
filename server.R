@@ -790,65 +790,77 @@ server <- function(input, output, session) {
     })
   })
 
-  # Handle image update button click
-  observeEvent(input$update_image_btn, {
-    # 验证输入
-    if (is.null(input$new_sku) || input$new_sku == "") {
-      showNotification("请确保SKU正常显示！", type = "error")
-      return()
-    }
-    
-    # 检查 SKU 是否存在于库存表里
-    existing_inventory_items <- inventory()
-    existing_inventory_skus <- existing_inventory_items$SKU
-    
-    if (input$new_sku %in% existing_inventory_skus) {
-      # 获取当前 SKU 对应的图片路径
-      existing_item <- existing_inventory_items[existing_inventory_items$SKU == input$new_sku, ]
-      existing_image_path <- existing_item$ItemImagePath[1]
-      
-      # 处理图片上传或粘贴
-      updated_image_path <- process_image_upload(
-        sku = input$new_sku,
-        file_data = image_purchase$uploaded_file(),
-        pasted_data = image_purchase$pasted_file(),
-        inventory_path = existing_image_path
-      )
-      
-      # 检查处理结果
-      if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
-        tryCatch({
-          # 更新库存数据
-          dbExecute(con, "UPDATE inventory 
-                        SET ItemImagePath = ? 
-                        WHERE SKU = ?",
-                    params = list(updated_image_path, input$new_sku))
-          
-          # 更新 `inventory()`，触发 `filtered_inventory_table` 更新
-          inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-          
-          # 触发刷新 `unique_items_data`
-          unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-          
-          showNotification(paste0(input$new_sku, " 图片已成功更新！"), type = "message")
-        }, error = function(e) {
-          showNotification("图片路径更新失败！", type = "error")
-        })
-      } else {
-        showNotification("未检测到有效的图片数据！", type = "error")
-      }
-    } else {
-      # SKU 不存在
-      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
-    }
-    
-    # 重置
-    # image_purchase$reset()
-  })
-  
   # 采购商品图片处理模块
   image_manage <- imageModuleServer("image_manage")
   
+  
+  # Handle image update button click
+  # Handle image update button click
+  observeEvent(input$update_image_btn, {
+    # 1. 确保用户选中了单行
+    selected_rows <- unique_items_table_manage_selected_row()
+    if (length(selected_rows) != 1) {
+      showNotification("请确保只选中一行！", type = "error")
+      return()
+    }
+    
+    # 从选中的行获取 SKU
+    selected_item <- unique_items_data()[selected_rows, ]
+    selected_sku <- selected_item$SKU
+    
+    if (is.null(selected_sku) || selected_sku == "") {
+      showNotification("无法获取所选行的 SKU，请检查！", type = "error")
+      return()
+    }
+    
+    # 检查 SKU 是否存在于库存表
+    existing_inventory_items <- inventory()
+    if (!selected_sku %in% existing_inventory_items$SKU) {
+      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
+      return()
+    }
+    
+    # 获取当前 SKU 的图片路径
+    existing_item <- existing_inventory_items[existing_inventory_items$SKU == selected_sku, ]
+    existing_image_path <- existing_item$ItemImagePath[1]
+    
+    # 处理图片上传或粘贴
+    updated_image_path <- process_image_upload(
+      sku = selected_sku,
+      file_data = image_manage$uploaded_file(),
+      pasted_data = image_manage$pasted_file(),
+      inventory_path = existing_image_path
+    )
+    
+    # 检查处理结果并更新数据库
+    if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
+      tryCatch({
+        # 更新数据库中 SKU 对应的图片路径
+        dbExecute(con, "UPDATE inventory 
+                    SET ItemImagePath = ? 
+                    WHERE SKU = ?",
+                  params = list(updated_image_path, selected_sku))
+        
+        # 更新 `inventory()`，触发表格重新渲染
+        inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+        
+        # 触发刷新 `unique_items_data`
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+        
+        # 显示成功通知
+        showNotification(paste0("SKU ", selected_sku, " 的图片已成功更新！"), type = "message")
+      }, error = function(e) {
+        # 数据库操作失败时提示错误
+        showNotification("图片路径更新失败，请重试！", type = "error")
+      })
+    } else {
+      # 未检测到有效图片数据
+      showNotification("未检测到有效的图片数据，请上传或粘贴图片！", type = "error")
+    }
+    
+    # 重置图片上传状态
+    image_manage$reset()
+  })
   
   ################################################################
   ##                                                            ##
