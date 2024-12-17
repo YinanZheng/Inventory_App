@@ -18,7 +18,8 @@ imageModuleServer <- function(id) {
         
         tryCatch({
           temp_path <- tempfile(fileext = ".jpg")
-          base64enc::dataURI(input[[ns("paste_area_pasted_image")]], output = temp_path)
+          img_data <- gsub("^data:image/[^;]+;base64,", "", input$paste_area_pasted_image)
+          writeBin(base64enc::base64decode(img_data), temp_path)
           update_progress(50)
           
           img <- magick::image_read(temp_path)
@@ -27,11 +28,11 @@ imageModuleServer <- function(id) {
           # 图片预览
           output$pasted_image_preview <- renderUI({
             div(
-              tags$img(src = input[[ns("paste_area_pasted_image")]], height = "200px", 
+              tags$img(src = input$paste_area_pasted_image, height = "200px",
                        style = "border: 1px solid #ddd; border-radius: 8px; margin-bottom: 10px;"),
               tags$p(
                 style = "color: #007BFF; font-size: 14px;",
-                paste0("分辨率: ", img_info$width, "x", img_info$height, 
+                paste0("分辨率: ", img_info$width, "x", img_info$height,
                        ", 文件大小: ", round(file.size(temp_path) / 1024, 2), " KB")
               )
             )
@@ -41,7 +42,6 @@ imageModuleServer <- function(id) {
           update_progress(100)
           shinyjs::delay(500, shinyjs::hide(ns("upload_progress")))
           showNotification("图片粘贴成功！", type = "message")
-          
         }, error = function(e) {
           shinyjs::hide(ns("upload_progress"))
           showNotification("粘贴图片失败！", type = "error")

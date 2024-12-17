@@ -432,7 +432,7 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
-  image_pucahse <- callModule(imageModuleServer, "image_purcahse")
+  image_purcahse <- callModule(imageModuleServer, "image_purcahse")
 
   # Handle add item button click
   observeEvent(input$add_btn, {
@@ -467,8 +467,8 @@ server <- function(input, output, session) {
     # 上传或粘贴图片处理
     new_image_path <- process_image_upload(
       sku = input$new_sku,
-      file_data = image_pucahse$uploaded_file(),
-      base64_data = image_pucahse$pasted_file(),
+      file_data = image_purcahse$uploaded_file(),
+      base64_data = image_purcahse$pasted_file(),
       inventory_path = existing_inventory_path
     )
     
@@ -514,7 +514,7 @@ server <- function(input, output, session) {
     }
     
     # 重置
-    image_pucahse$reset()
+    image_purcahse$reset()
   })
   
   # Confirm button: Update database and handle images
@@ -910,8 +910,8 @@ server <- function(input, output, session) {
       # 处理图片上传或粘贴
       updated_image_path <- process_image_upload(
         sku = input$new_sku,
-        file_data = image_pucahse$uploaded_file(),
-        base64_data = image_pucahse$pasted_file(),
+        file_data = image_purcahse$uploaded_file(),
+        base64_data = image_purcahse$pasted_file(),
         inventory_path = existing_image_path
       )
       
