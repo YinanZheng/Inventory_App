@@ -104,9 +104,16 @@ render_image_preview <- function(img_src, img_info, ns) {
   })
 }
 
+render_paste_prompt <- function() {
+  renderUI({
+    div("将图片粘贴到这里（Ctrl+V 或 Cmd+V）",
+        style = "color: #888; font-size: 16px; font-style: italic;")
+  })
+}
+
 # 保存图片（文件上传或粘贴）
-process_image_upload <- function(sku, file_data = NULL, base64_data = NULL, inventory_path = NULL, output_dir = "/var/www/images") {
-  if (is.null(file_data) && is.null(base64_data)) {
+process_image_upload <- function(sku, file_data = NULL, pasted_data = NULL, inventory_path = NULL, output_dir = "/var/www/images") {
+  if (is.null(file_data) && is.null(pasted_data)) {
     # 没有上传图片，返回库存路径或 NULL
     if (!is.null(inventory_path)) {
       showNotification("使用库存中现有图片路径。", type = "message")
@@ -123,38 +130,28 @@ process_image_upload <- function(sku, file_data = NULL, base64_data = NULL, inve
   
   tryCatch({
     if (!is.null(file_data)) {
-      # 文件上传逻辑
       compressed_path <- save_compressed_image(
         file_path = file_data$datapath,
         output_dir = output_dir,
         image_name = unique_image_name
       )
-    } else if (!is.null(base64_data)) {
-      # 粘贴截图逻辑
-      img_data <- gsub("^data:image/[a-z]+;base64,", "", base64_data)
-      img_bin <- base64enc::base64decode(img_data)
-      
-      # 临时保存图片
-      temp_file <- tempfile(fileext = ".png")
-      writeBin(img_bin, temp_file)
-      
-      # 压缩并保存
+    } else if (!is.null(pasted_data)) {
       compressed_path <- save_compressed_image(
-        file_path = temp_file,
+        file_path = pasted_data$datapath,
         output_dir = output_dir,
         image_name = unique_image_name
       )
     }
     
     if (!is.null(compressed_path)) {
-      showNotification("图片已成功保存并压缩！", type = "message")
+      showNotification("图片已成功压缩并存入数据库！", type = "message")
       return(compressed_path)
     } else {
-      showNotification("图片保存失败！", type = "error")
+      showNotification("图片压缩存储处理失败！", type = "error")
       return(NA)
     }
   }, error = function(e) {
-    showNotification("图片保存时发生错误！", type = "error")
+    showNotification("图片上传时发生错误！", type = "error")
     return(NA)
   })
 }

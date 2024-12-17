@@ -6,15 +6,12 @@ imageModuleServer <- function(id) {
     pasted_file <- reactiveVal(NULL)
     
     # 初始显示提示文本
-    output$paste_prompt <- renderUI({
-      div("将图片粘贴到这里（Ctrl+V 或 Cmd+V）", 
-          style = "color: #888; font-size: 16px; font-style: italic;")
-    })
+    output$paste_prompt <- render_paste_prompt()
     
     # 处理粘贴图片
     observeEvent(input$paste_area_pasted_image, {
-      req(input$paste_area_pasted_image)  # 输入不能为空
-
+      req(input$paste_area_pasted_image)
+      
       tryCatch({
         temp_path <- tempfile(fileext = ".jpg")
         
@@ -35,19 +32,19 @@ imageModuleServer <- function(id) {
           img_info = img_info,
           ns = ns
         )
-
+        
         pasted_file(list(datapath = temp_path, name = "pasted_image.jpg"))
         
-        showNotification("图片粘贴成功！", type = "message", duration = 3)
+        showNotification("图片粘贴成功！", type = "message")
       }, error = function(e) {
-        showNotification(paste("粘贴图片失败！错误:", e$message), type = "error", duration = 5)
+        showNotification(paste("粘贴图片失败！错误:", e$message), type = "error")
       })
     })
     
     
     # 处理文件上传
     observeEvent(input$file_input, {
-      req(input$file_input)  # 确保输入存在
+      req(input$file_input)
       
       tryCatch({
         file_data <- input$file_input
@@ -83,13 +80,12 @@ imageModuleServer <- function(id) {
           img_info = img_info,
           ns = ns
         )
-
-                showNotification("图片上传成功！", type = "message", duration = 3)
+        showNotification("图片上传成功！", type = "message")
       }, error = function(e) {
-        showNotification(paste("上传图片失败！错误:", e$message), type = "error", duration = 5)
+        showNotification(paste("上传图片失败！错误:", e$message), type = "error")
       })
     })
-
+    
     # 清除图片预览和状态
     observeEvent(input$clear_image_preview, {
       reset()
@@ -102,11 +98,7 @@ imageModuleServer <- function(id) {
       uploaded_file(NULL)  # 清空上传的文件
       pasted_file(NULL)    # 清空粘贴的文件
       output$pasted_image_preview <- renderUI({ NULL })  # 清空图片预览
-      # 重新显示提示文本
-      output$paste_prompt <- renderUI({
-        div("将图片粘贴到这里（Ctrl+V 或 Cmd+V）",
-            style = "color: #888; font-size: 16px; font-style: italic;")
-      })
+      output$paste_prompt <- render_paste_prompt() # 重新显示提示文本
     }
     
     return(list(
