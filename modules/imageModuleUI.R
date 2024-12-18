@@ -17,7 +17,7 @@ imageModuleUI <- function(id, label = "商品图片上传") {
       ),
       
       # 文件上传区域
-      fileInput(ns("file_input"), "或拖拽/选择图片上传:", accept = c("image/png", "image/jpeg")),
+      fileInput(ns("file_input"), "或拖拽/选择图片上传:", accept = c("image/png", "image/jpeg"), width = "100%"),
     )
   )
 }
