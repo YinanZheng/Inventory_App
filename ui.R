@@ -5,11 +5,25 @@ ui <- navbarPage(
   position = "fixed-top",
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
+    
     tags$head(
       tags$style(HTML("
         body { padding-top: 70px; } /* 为导航栏腾出空间 */
         .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
       "))
+    ),
+    
+    tags$head(
+      tags$style(HTML("
+        .sticky-sidebar {
+          position: sticky;
+          top: 70px;
+          z-index: 900;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 20px;
+          background-color: #f9f9f9;
+        }"))
     ),
     
     tags$head(tags$script(HTML("
@@ -38,6 +52,7 @@ ui <- navbarPage(
     "采购登记",
     sidebarLayout(
       sidebarPanel(
+        class = "sticky-sidebar",  # 引用全局样式
         fluidRow(
           column(10, 
                  selectizeInput("new_maker", "供应商:", choices = NULL, 
