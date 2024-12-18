@@ -11,6 +11,7 @@ ui <- navbarPage(
         body { padding-top: 70px; } /* 为导航栏腾出空间 */
         .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
       ")),
+    ),
     
     tags$style(HTML("
       /* Sticky Sidebar */
