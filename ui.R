@@ -75,82 +75,82 @@ ui <- navbarPage(
   
   tabPanel(
     "采购登记",
-    sidebarLayout(
+    div(
+      style = "display: flex; flex-wrap: nowrap;",  # 使用 flexbox 布局
       
       div(
         class = "sticky-sidebar",  # 引用全局样式
-  
-          fluidRow(
-            column(10, 
-                   selectizeInput("new_maker", "供应商:", choices = NULL, 
-                                  options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
-            ),
-            column(2, 
-                   div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
-                       actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
-                                    style = "font-size: 14px; width: 100%; height: 32px; padding: 0px; margin-top: 27px;")
-                   )
-            )
-          ),
-          
-          typeModuleUI("type_module"),
-          
-          fluidRow(
-            column(12, textInput("new_name", "商品名:"))
-          ),
-          fluidRow(
-            column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
-            column(4, numericInput("new_product_cost", "成本:", value = 0, min = 0)),
-            column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
-          ),
-          fluidRow(
-            column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
-            column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
-                                  style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
-          ),
-          
-          imageModuleUI("image_purchase"),
-          
-          fluidRow(
-            column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-          ),
-          
-          tags$hr(),
-          
-          fluidRow(
-            column(12, actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
-        )
-      ) ,
-     
-      
-      mainPanel(
-        class = "main-panel",
+        
         fluidRow(
-          column(12,   div(
-            "已添加商品",
-            style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
+          column(10, 
+                 selectizeInput("new_maker", "供应商:", choices = NULL, 
+                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+          ),
+          column(2, 
+                 div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
+                     actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
+                                  style = "font-size: 14px; width: 100%; height: 32px; padding: 0px; margin-top: 27px;")
+                 )
+          )
+        ),
+        
+        typeModuleUI("type_module"),
+        
+        fluidRow(
+          column(12, textInput("new_name", "商品名:"))
+        ),
+        fluidRow(
+          column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
+          column(4, numericInput("new_product_cost", "成本:", value = 0, min = 0)),
+          column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
+        ),
+        fluidRow(
+          column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
+          column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
+                                style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
+        ),
+        
+        imageModuleUI("image_purchase"),
+        
+        fluidRow(
+          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+        ),
+        
+        tags$hr(),
+        
+        fluidRow(
+          column(12, actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
+        )
+      )
+    ),
+    
+    div(
+      class = "main-panel",
+      fluidRow(
+        column(12,   div(
+          "已添加商品",
+          style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
              padding: 10px; text-align: center; border-radius: 4px;"
-          )),
-          column(12, DTOutput("added_items_table")),
-          column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
-        ),
-        tags$hr(), # 分隔线
-        div(
-          textOutput("total_cost"),
-          style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-        ),
-        
-        tags$hr(), # 分隔线
-        
-        fluidRow(
-          column(12, actionButton("toggle_item_table_purchase", "物品状态表（点击显示/隐藏）",
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-          column(12, div(
-            id = "item_table_container_purchase",  # 容器 ID
-            style = "margin-bottom: 100px;",
-            uniqueItemsTableUI("unique_items_table_purchase")
-          ))
-        )
+        )),
+        column(12, DTOutput("added_items_table")),
+        column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
+      ),
+      tags$hr(), # 分隔线
+      div(
+        textOutput("total_cost"),
+        style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+      ),
+      
+      tags$hr(), # 分隔线
+      
+      fluidRow(
+        column(12, actionButton("toggle_item_table_purchase", "物品状态表（点击显示/隐藏）",
+                                style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+        column(12, div(
+          id = "item_table_container_purchase",  # 容器 ID
+          style = "margin-bottom: 100px;",
+          uniqueItemsTableUI("unique_items_table_purchase")
+        ))
       )
     )
   ), # end of 采购登记 tab
