@@ -196,6 +196,8 @@ server <- function(input, output, session) {
   ")
   })
   
+  filtered_unique_items_data <- reactive({unique_items_data()})
+  
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                         column_mapping <- list(
@@ -1274,6 +1276,7 @@ server <- function(input, output, session) {
   ################################################################
   
   # 初始化筛选选项
+  updateSelectInput(session, "maker", choices = unique(unique_items_data()$Maker), selected = unique(unique_items_data()$Maker))
   updateSelectInput(session, "unique_status", choices = unique(unique_items_data()$Status), selected = unique(unique_items_data()$Status))
   updateSelectInput(session, "unique_defect", choices = unique(unique_items_data()$Defect), selected = unique(unique_items_data()$Defect))
   updateSelectInput(session, "major_type", choices = unique(unique_items_data()$MajorType), selected = unique(unique_items_data()$MajorType))
@@ -1282,6 +1285,11 @@ server <- function(input, output, session) {
   # 筛选逻辑
   filtered_unique_items_data <- reactive({
     data <- unique_items_data()
+    
+    # 供应商筛选
+    if (!is.null(input$maker)) {
+      data <- data[data$Maker %in% input$maker, ]
+    }
     
     # 大类筛选
     if (!is.null(input$major_type)) {

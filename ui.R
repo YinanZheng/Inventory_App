@@ -527,6 +527,7 @@ ui <- navbarPage(
         class = "sticky-sidebar",  # sticky 侧边栏
         
         h4("筛选选项"),
+        selectInput("maker", "选择供应商:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("major_type", "选择大类:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("minor_type", "选择小类:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("unique_status", "选择状态:", choices = NULL, selected = NULL, multiple = TRUE),
