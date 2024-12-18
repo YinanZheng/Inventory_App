@@ -1314,9 +1314,9 @@ server <- function(input, output, session) {
   data <- filtered_unique_items_data()
   
   # 供应商筛选
-  if (!is.null(input$maker)) {
-    data <- data[data$Maker %in% input$maker, ]
-  }
+  # if (!is.null(input$maker)) {
+  #   data <- data[data$Maker %in% input$maker, ]
+  # }
   # 
   # # 大类筛选
   # if (!is.null(input$major_type)) {
