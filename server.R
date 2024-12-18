@@ -1358,7 +1358,7 @@ server <- function(input, output, session) {
   #   data <- data[data$DomesticSoldTime >= input$sold_time_range[1] & data$DomesticSoldTime <= input$sold_time_range[2], ]
   # }
   
-  filtered_unique_items_data(data)
+  # filtered_unique_items_data(data)
   
   # 
   # # 重置筛选
