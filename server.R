@@ -1377,6 +1377,8 @@ server <- function(input, output, session) {
         Defect = "物品状态"
       ))
       
+      n_col <- ncol(data)
+      
       # 写入数据到 Excel
       writeData(wb, "物品明细表", data, startCol = 1, startRow = 1)
       
@@ -1415,7 +1417,7 @@ server <- function(input, output, session) {
           )
           
           # 清空路径数据
-          writeData(wb, "物品明细表", "", startCol = 19, startRow = i + 1)
+          writeData(wb, "物品明细表", "", startCol = col_to_insert, startRow = i + 1)
           
           # 调整行高和列宽
           setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
@@ -1426,10 +1428,10 @@ server <- function(input, output, session) {
       }
 
       # 最终设置列宽，保证所有图片适配最大宽度
-      setColWidths(wb, "物品明细表", cols = 19, widths = image_width_max * 16)
+      setColWidths(wb, "物品明细表", cols = col_to_insert, widths = image_width_max * 16)
       
       # 自动调整其他列的宽度
-      setColWidths(wb, "物品明细表", cols = 1:18, widths = "auto")
+      setColWidths(wb, "物品明细表", cols = seq_len(n_col)[-col_to_insert], widths = "auto")
       
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
