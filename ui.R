@@ -414,8 +414,8 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         fluidRow(
-          column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描或输入SKU")),
-          column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
+          column(6, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描或输入SKU")),
+          column(2, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(4, actionButton(
             "defect_register", 
             "登记瑕疵品", 
@@ -428,8 +428,8 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
-          column(4, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描或输入SKU")),
-          column(4, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
+          column(6, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描或输入SKU")),
+          column(2, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(4, actionButton(
             "repair_register", 
             "登记修复品", 
