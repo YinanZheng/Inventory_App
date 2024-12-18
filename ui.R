@@ -10,7 +10,7 @@ ui <- navbarPage(
     tags$head(
       tags$style(HTML("
       body {
-        padding-top: 70px; /* 为导航栏腾出空间 */
+        padding-top: 50px; /* 为导航栏腾出空间 */
       }
       
       /* Flexbox 容器 */
