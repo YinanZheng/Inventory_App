@@ -23,6 +23,7 @@ ui <- navbarPage(
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
+        width: 800px; /* 固定宽度 */
       }
 
       /* 主面板为侧边栏留出空间 */
