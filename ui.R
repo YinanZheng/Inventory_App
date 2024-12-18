@@ -25,7 +25,7 @@ ui <- navbarPage(
         position: sticky; /* 保持固定 */
         top: 70px; /* 与导航栏对齐 */
         z-index: 900;
-        width: 500px; /* 固定宽度 */
+        width: 450px; /* 固定宽度 */
         height: calc(100vh - 70px); /* 自动计算高度 */
         overflow-y: auto; /* 滚动支持 */
         border: 1px solid #e0e0e0;
@@ -128,7 +128,7 @@ ui <- navbarPage(
           column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
         ),
         fluidRow(
-          column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
+          column(9,textInput("new_sku", "SKU(自动生成):", value = ""), width = "100%"),
           column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
