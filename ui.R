@@ -19,11 +19,9 @@ ui <- navbarPage(
         position: sticky;
         top: 70px; /* 导航栏的高度 */
         z-index: 900;
-        border: 1px solid #e0e0e0;
-        border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
-        width: 1200px; /* 固定宽度 */
+        width: 1500px; /* 固定宽度 */
       }
 
       /* 主面板为侧边栏留出空间 */
@@ -81,8 +79,7 @@ ui <- navbarPage(
       
       div(
         class = "sticky-sidebar",  # 引用全局样式
-        sidebarPanel(
-          
+  
           fluidRow(
             column(10, 
                    selectizeInput("new_maker", "供应商:", choices = NULL, 
@@ -122,7 +119,6 @@ ui <- navbarPage(
           
           fluidRow(
             column(12, actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
-          )
         )
       ) ,
      
