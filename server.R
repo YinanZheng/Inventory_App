@@ -1364,21 +1364,21 @@ server <- function(input, output, session) {
       writeData(wb, "物品明细表", filtered_unique_items_data(), startCol = 1, startRow = 1)
 
       # # 插入图片到 Excel
-      for (i in seq_len(nrow(filtered_unique_items_data()))) {
-        image_path <- filtered_unique_items_data()$ItemImagePath[i]
-        if (!is.na(image_path) && file.exists(image_path)) {
-          addImage(wb,
-                   sheet = "物品明细表",
-                   file = normalizePath(image_path),  # 使用绝对路径
-                   startCol = 20,  # 插入图片列
-                   startRow = i + 1,  # 考虑表头
-                   width = 2,  # 图片宽度（英寸）
-                   height = 1.5,  # 图片高度（英寸）
-                   units = "in")
-        } else {
-          showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
-        }
-      }
+      # for (i in seq_len(nrow(filtered_unique_items_data()))) {
+      #   image_path <- filtered_unique_items_data()$ItemImagePath[i]
+      #   if (!is.na(image_path) && file.exists(image_path)) {
+      #     addImage(wb,
+      #              sheet = "物品明细表",
+      #              file = normalizePath(image_path),  # 使用绝对路径
+      #              startCol = 20,  # 插入图片列
+      #              startRow = i + 1,  # 考虑表头
+      #              width = 2,  # 图片宽度（英寸）
+      #              height = 1.5,  # 图片高度（英寸）
+      #              units = "in")
+      #   } else {
+      #     showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
+      #   }
+      # }
 
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
