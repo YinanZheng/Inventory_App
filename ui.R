@@ -14,36 +14,49 @@ ui <- navbarPage(
     # ),
     
     tags$head(
-      tags$style(HTML("
+      tags$head(
+        tags$style(HTML("
       /* Sticky Sidebar */
       .sticky-sidebar {
         position: sticky;
-        top: 70px; /* 与导航栏对齐 */
+        top: 70px; /* 距离顶部的偏移，与导航栏对齐 */
         z-index: 900;
-        width: 300px; /* 固定宽度 */
-        height: calc(100vh - 70px); /* 确保高度为视口高度减去导航栏 */
+        width: 500px; /* 固定宽度 */
+        height: calc(100vh - 70px); /* 占据视口高度，减去导航栏高度 */
         overflow-y: auto; /* 滚动支持 */
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
+        flex-shrink: 0; /* 防止被压缩 */
       }
 
       /* 主面板 */
       .main-panel {
-        margin-left: 320px; /* 为侧边栏留出空间 */
+        flex-grow: 1; /* 自动扩展以占据剩余空间 */
         padding: 20px;
+        background-color: #ffffff;
       }
 
-      /* 响应式布局：窄屏时侧边栏变为静态 */
+      /* Flexbox 容器 */
+      .layout-container {
+        display: flex; /* 使用 Flexbox 布局 */
+        flex-wrap: nowrap; /* 禁止换行 */
+        height: calc(100vh - 70px); /* 确保容器与视口高度一致 */
+      }
+
+      /* 响应式布局：窄屏处理 */
       @media (max-width: 768px) {
         .sticky-sidebar {
           position: static; /* 不再固定 */
-          width: 100%;
-          height: auto;
+          width: 100%; /* 占据全宽 */
+          height: auto; /* 高度自适应 */
+        }
+        .layout-container {
+          flex-direction: column; /* 改为垂直排列 */
         }
         .main-panel {
-          margin-left: 0;
+          margin-left: 0; /* 无偏移 */
         }
       }
     ")),
@@ -73,6 +86,8 @@ ui <- navbarPage(
   tabPanel(
     "采购登记",
     div(
+      class = "layout-container",  # Flexbox 容器
+      
       div(
         class = "sticky-sidebar",  # 引用全局样式
         
