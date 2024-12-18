@@ -1311,56 +1311,55 @@ server <- function(input, output, session) {
   
 
   # 筛选逻辑
-  filtered_unique_items_data <- reactive({
-    data <- unique_items_data()
-
-    # 供应商筛选
-    if (!is.null(input$maker)) {
-      data <- data[data$Maker %in% input$maker, ]
-    }
-    # 
-    # # 大类筛选
-    # if (!is.null(input$major_type)) {
-    #   data <- data[data$MajorType %in% input$major_type, ]
-    # }
-    # 
-    # # 小类筛选
-    # if (!is.null(input$minor_type)) {
-    #   data <- data[data$MinorType %in% input$minor_type, ]
-    # }
-    # 
-    # # 状态筛选
-    # if (!is.null(input$unique_status)) {
-    #   data <- data[data$Status %in% input$unique_status, ]
-    # }
-    # 
-    # # 瑕疵状态筛选
-    # if (!is.null(input$unique_defect)) {
-    #   data <- data[data$Defect %in% input$unique_defect, ]
-    # }
-    # 
-    # # 采购时间筛选
-    # if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
-    #   data <- data[data$PurchaseTime >= input$purchase_time_range[1] & data$PurchaseTime <= input$purchase_time_range[2], ]
-    # }
-    # 
-    # # 国内入库时间筛选
-    # if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
-    #   data <- data[data$DomesticEntryTime >= input$entry_time_range[1] & data$DomesticEntryTime <= input$entry_time_range[2], ]
-    # }
-    # 
-    # # 国内出库时间筛选
-    # if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
-    #   data <- data[data$DomesticExitTime >= input$exit_time_range[1] & data$DomesticExitTime <= input$exit_time_range[2], ]
-    # }
-    # 
-    # # 国内售出时间筛选
-    # if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
-    #   data <- data[data$DomesticSoldTime >= input$sold_time_range[1] & data$DomesticSoldTime <= input$sold_time_range[2], ]
-    # }
-
-    data
-  })
+  data <- filtered_unique_items_data()
+  
+  # 供应商筛选
+  if (!is.null(input$maker)) {
+    data <- data[data$Maker %in% input$maker, ]
+  }
+  # 
+  # # 大类筛选
+  # if (!is.null(input$major_type)) {
+  #   data <- data[data$MajorType %in% input$major_type, ]
+  # }
+  # 
+  # # 小类筛选
+  # if (!is.null(input$minor_type)) {
+  #   data <- data[data$MinorType %in% input$minor_type, ]
+  # }
+  # 
+  # # 状态筛选
+  # if (!is.null(input$unique_status)) {
+  #   data <- data[data$Status %in% input$unique_status, ]
+  # }
+  # 
+  # # 瑕疵状态筛选
+  # if (!is.null(input$unique_defect)) {
+  #   data <- data[data$Defect %in% input$unique_defect, ]
+  # }
+  # 
+  # # 采购时间筛选
+  # if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
+  #   data <- data[data$PurchaseTime >= input$purchase_time_range[1] & data$PurchaseTime <= input$purchase_time_range[2], ]
+  # }
+  # 
+  # # 国内入库时间筛选
+  # if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
+  #   data <- data[data$DomesticEntryTime >= input$entry_time_range[1] & data$DomesticEntryTime <= input$entry_time_range[2], ]
+  # }
+  # 
+  # # 国内出库时间筛选
+  # if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
+  #   data <- data[data$DomesticExitTime >= input$exit_time_range[1] & data$DomesticExitTime <= input$exit_time_range[2], ]
+  # }
+  # 
+  # # 国内售出时间筛选
+  # if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
+  #   data <- data[data$DomesticSoldTime >= input$sold_time_range[1] & data$DomesticSoldTime <= input$sold_time_range[2], ]
+  # }
+  
+  filtered_unique_items_data(data)
+  
   # 
   # # 重置筛选
   # observeEvent(input$reset_filters, {
