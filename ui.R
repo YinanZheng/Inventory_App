@@ -6,12 +6,12 @@ ui <- navbarPage(
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
     
-    tags$head(
-      tags$style(HTML("
-        body { padding-top: 70px; } /* 为导航栏腾出空间 */
-        .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
-      ")),
-    ),
+    # tags$head(
+    #   tags$style(HTML("
+    #     body { padding-top: 70px; } /* 为导航栏腾出空间 */
+    #     .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
+    #   ")),
+    # ),
     
     tags$style(HTML("
       /* Sticky Sidebar */
@@ -69,50 +69,54 @@ ui <- navbarPage(
   tabPanel(
     "采购登记",
     sidebarLayout(
-      sidebarPanel(
+      
+      div(
         class = "sticky-sidebar",  # 引用全局样式
-        
-        fluidRow(
-          column(10, 
-                 selectizeInput("new_maker", "供应商:", choices = NULL, 
-                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+        sidebarPanel(
+          
+          fluidRow(
+            column(10, 
+                   selectizeInput("new_maker", "供应商:", choices = NULL, 
+                                  options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+            ),
+            column(2, 
+                   div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
+                       actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
+                                    style = "font-size: 14px; width: 100%; height: 32px; padding: 0px; margin-top: 27px;")
+                   )
+            )
           ),
-          column(2, 
-                 div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
-                     actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
-                                  style = "font-size: 14px; width: 100%; height: 32px; padding: 0px; margin-top: 27px;")
-                 )
+          
+          typeModuleUI("type_module"),
+          
+          fluidRow(
+            column(12, textInput("new_name", "商品名:"))
+          ),
+          fluidRow(
+            column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
+            column(4, numericInput("new_product_cost", "成本:", value = 0, min = 0)),
+            column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
+          ),
+          fluidRow(
+            column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
+            column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
+                                  style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
+          ),
+          
+          imageModuleUI("image_purchase"),
+          
+          fluidRow(
+            column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+          ),
+          
+          tags$hr(),
+          
+          fluidRow(
+            column(12, actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
           )
-        ),
-        
-        typeModuleUI("type_module"),
-        
-        fluidRow(
-          column(12, textInput("new_name", "商品名:"))
-        ),
-        fluidRow(
-          column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
-          column(4, numericInput("new_product_cost", "成本:", value = 0, min = 0)),
-          column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
-        ),
-        fluidRow(
-          column(9,textInput("new_sku", "SKU(自动生成):", value = "")),
-          column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
-                                style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
-        ),
-        
-        imageModuleUI("image_purchase"),
-        
-        fluidRow(
-          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-        ),
-        
-        tags$hr(),
-        
-        fluidRow(
-          column(12, actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
         )
-      ),
+      ) ,
+     
       
       mainPanel(
         class = "main-panel",
