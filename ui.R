@@ -136,7 +136,7 @@ ui <- navbarPage(
         imageModuleUI("image_purchase"),
         
         fluidRow(
-          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
         ),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
