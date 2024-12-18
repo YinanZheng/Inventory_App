@@ -1385,8 +1385,8 @@ server <- function(input, output, session) {
           )
           
           # 调整行高和列宽
-          setRowHeights(wb, "Sheet1", rows = row_to_insert, heights = image_height * 14)
-          setColWidths(wb, "Sheet1", cols = col_to_insert, widths = image_width * 7)
+          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 14)
+          setColWidths(wb, "物品明细表", cols = col_to_insert, widths = image_width * 7)
           
         } else {
           showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
