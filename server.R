@@ -1275,13 +1275,13 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   # 
-  # # 初始化筛选选项
-  # updateSelectInput(session, "maker", choices = unique(unique_items_data()$Maker), selected = unique(unique_items_data()$Maker))
-  # updateSelectInput(session, "unique_status", choices = unique(unique_items_data()$Status), selected = unique(unique_items_data()$Status))
-  # updateSelectInput(session, "unique_defect", choices = unique(unique_items_data()$Defect), selected = unique(unique_items_data()$Defect))
-  # updateSelectInput(session, "major_type", choices = unique(unique_items_data()$MajorType), selected = unique(unique_items_data()$MajorType))
-  # updateSelectInput(session, "minor_type", choices = unique(unique_items_data()$MinorType), selected = unique(unique_items_data()$MinorType))
-  # 
+  # 初始化筛选选项
+  updateSelectInput(session, "maker", choices = unique(unique_items_data()$Maker), selected = unique(unique_items_data()$Maker))
+  updateSelectInput(session, "unique_status", choices = unique(unique_items_data()$Status), selected = unique(unique_items_data()$Status))
+  updateSelectInput(session, "unique_defect", choices = unique(unique_items_data()$Defect), selected = unique(unique_items_data()$Defect))
+  updateSelectInput(session, "major_type", choices = unique(unique_items_data()$MajorType), selected = unique(unique_items_data()$MajorType))
+  updateSelectInput(session, "minor_type", choices = unique(unique_items_data()$MinorType), selected = unique(unique_items_data()$MinorType))
+
   # # 筛选逻辑
   # filtered_unique_items_data <- reactive({
   #   data <- unique_items_data()
