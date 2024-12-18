@@ -23,12 +23,12 @@ ui <- navbarPage(
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
-        width: 300px; /* 设置宽度 */
+        width: 500px; /* 设置宽度 */
       }
 
       /* 主面板为侧边栏留出空间 */
       .main-panel {
-        margin-left: 320px; /* 侧边栏宽度 + 间距 */
+        margin-left: 520px; /* 侧边栏宽度 + 间距 */
         padding: 20px;
       }
 
