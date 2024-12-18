@@ -1311,7 +1311,7 @@ server <- function(input, output, session) {
   
 
   # 筛选逻辑
-  data <- filtered_unique_items_data()
+  # data <- filtered_unique_items_data()
   
   # 供应商筛选
   # if (!is.null(input$maker)) {
