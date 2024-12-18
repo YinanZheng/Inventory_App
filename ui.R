@@ -507,13 +507,16 @@ ui <- navbarPage(
           )
         ),
         
-        fluidRow(
-          column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-          column(12, div(
-            id = "inventory_table_container",  # 容器 ID
-            DTOutput("filtered_inventory_table")
-          ))
+        div(
+          style = "margin-top: 20px;", # 确保与 sticky-info 有足够的间距
+          fluidRow(
+            column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
+                                    style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+            column(12, div(
+              id = "inventory_table_container",  # 容器 ID
+              DTOutput("filtered_inventory_table")
+            ))
+          )
         )
       )
     )
