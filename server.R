@@ -1348,7 +1348,7 @@ server <- function(input, output, session) {
   
   output$download_unique_items_xlsx <- downloadHandler(
     filename = function() {
-      paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
+      paste("unique_items-", Sys.Date(), ".csv", sep = "")
     },
     content = function(file) {
       showNotification("下载逻辑已触发", type = "message", duration = 5)
