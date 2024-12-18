@@ -14,7 +14,7 @@ ui <- navbarPage(
       
       tags$style(HTML("
         .sticky-sidebar {
-          position: sticky;
+          position: fixed;
           top: 70px; /* 导航栏的高度 */
           z-index: 900;
           border: 1px solid #e0e0e0;
