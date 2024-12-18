@@ -1346,37 +1346,44 @@ server <- function(input, output, session) {
     updateFilters(session, unique_items_data)
   })
   
-
   output$download_unique_items_xlsx <- downloadHandler(
-    showNotification("开始生成文件...", type = "message", duration = 5)
-    
     filename = function() {
       paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
     },
     content = function(file) {
-      showNotification("开始生成文件...", type = "message", duration = 5)
-      
-      # 创建 Workbook
-      wb <- createWorkbook()
-      addWorksheet(wb, "Unique Items")
-      
-      # 获取数据
-      data <- filtered_unique_items_data()
-      if (is.null(data) || nrow(data) == 0) {
-        showNotification("数据为空，无法生成文件", type = "error", duration = 5)
-        return()
-      }
-      
-      showNotification("数据已成功加载", type = "message", duration = 5)
-      
-      # 写入数据
-      writeData(wb, "Unique Items", data, startCol = 1, startRow = 1)
-      
-      # 保存文件
-      saveWorkbook(wb, file, overwrite = TRUE)
-      showNotification("Excel 文件已成功保存", type = "message", duration = 5)
+      showNotification("下载逻辑已触发", type = "message", duration = 5)
+      write.csv(data.frame(Test = 1:10), file)  # 简单测试写入文件
     }
   )
+  
+  # output$download_unique_items_xlsx <- downloadHandler(
+  #   filename = function() {
+  #     paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
+  #   },
+  #   content = function(file) {
+  #     showNotification("开始生成文件...", type = "message", duration = 5)
+  #     
+  #     # 创建 Workbook
+  #     wb <- createWorkbook()
+  #     addWorksheet(wb, "Unique Items")
+  #     
+  #     # 获取数据
+  #     data <- filtered_unique_items_data()
+  #     if (is.null(data) || nrow(data) == 0) {
+  #       showNotification("数据为空，无法生成文件", type = "error", duration = 5)
+  #       return()
+  #     }
+  #     
+  #     showNotification("数据已成功加载", type = "message", duration = 5)
+  #     
+  #     # 写入数据
+  #     writeData(wb, "Unique Items", data, startCol = 1, startRow = 1)
+  #     
+  #     # 保存文件
+  #     saveWorkbook(wb, file, overwrite = TRUE)
+  #     showNotification("Excel 文件已成功保存", type = "message", duration = 5)
+  #   }
+  # )
   
   
   # 
