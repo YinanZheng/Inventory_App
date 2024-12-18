@@ -526,14 +526,12 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        h4("筛选选项"),
         selectInput("maker", "选择供应商:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("major_type", "选择大类:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("minor_type", "选择小类:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("unique_status", "选择状态:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("unique_defect", "选择瑕疵状态:", choices = NULL, selected = NULL, multiple = TRUE),
         
-        tags$h5("选择时间范围:"),
         dateRangeInput("purchase_time_range", "采购时间:", start = NULL, end = NULL),
         dateRangeInput("entry_time_range", "国内入库时间:", start = NULL, end = NULL),
         dateRangeInput("exit_time_range", "国内出库时间:", start = NULL, end = NULL),
