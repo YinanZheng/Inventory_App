@@ -1370,10 +1370,13 @@ server <- function(input, output, session) {
                          end = max(sold_time, na.rm = TRUE))
   })
 
-  showNotification(input$purchase_time_range[1])
-  # showNotification(input$entry_time_range)
-  # showNotification(input$exit_time_range)
-  # showNotification(input$sold_time_range)
+  observe({
+    if (!is.null(input$purchase_time_range) && !is.na(input$purchase_time_range[1])) {
+      showNotification(input$purchase_time_range[1])
+    } else {
+      showNotification("采购时间未选择", type = "warning")
+    }
+  })
   
   # 筛选逻辑
   filtered_unique_items_data <- reactive({
