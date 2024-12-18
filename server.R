@@ -1370,6 +1370,11 @@ server <- function(input, output, session) {
                          end = max(sold_time, na.rm = TRUE))
   })
 
+  showNotification(input$purchase_time_range)
+  showNotification(input$entry_time_range)
+  showNotification(input$exit_time_range)
+  showNotification(input$sold_time_range)
+  
   # 筛选逻辑
   filtered_unique_items_data <- reactive({
     req(unique_items_data())

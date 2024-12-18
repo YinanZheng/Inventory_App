@@ -129,7 +129,7 @@ ui <- navbarPage(
         ),
         fluidRow(
           column(9,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%")),
-          column(3,actionButton("reset_btn", "清空输入", icon = icon("snowplow"), class = "btn-danger", 
+          column(3,actionButton("reset_btn", "清空", icon = icon("snowplow"), class = "btn-danger", 
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
         
