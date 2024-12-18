@@ -23,7 +23,7 @@ ui <- navbarPage(
       /* Sticky Sidebar */
       .sticky-sidebar {
         position: sticky; /* 保持固定 */
-        top: 90px; /* 与导航栏对齐 */
+        top: 70px; /* 与导航栏对齐 */
         z-index: 900;
         width: 500px; /* 固定宽度 */
         height: calc(100vh - 70px); /* 自动计算高度 */
