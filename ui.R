@@ -23,12 +23,19 @@ ui <- navbarPage(
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
+        width: 300px; /* 固定宽度 */
       }
 
       /* 主面板为侧边栏留出空间 */
       .main-panel {
-        margin-left: 600px; /* 侧边栏宽度 + 间距 */
+        flex-grow: 1; /* 占据剩余空间 */
         padding: 20px;
+      }
+
+      /* 父容器使用 Flexbox */
+      .layout-container {
+        display: flex;
+        flex-wrap: nowrap; /* 不换行 */
       }
 
       /* 响应式调整：窄屏时侧边栏不固定，主面板占满宽度 */
@@ -36,6 +43,9 @@ ui <- navbarPage(
         .sticky-sidebar {
           position: static;
           width: 100%;
+        }
+        .layout-container {
+          flex-direction: column; /* 窄屏时改为垂直布局 */
         }
         .main-panel {
           margin-left: 0;
