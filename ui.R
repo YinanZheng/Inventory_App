@@ -139,7 +139,7 @@ ui <- navbarPage(
           column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", icon = icon("pen"), style = "background-color: #006400; color: white;")),
         ),
         
-        tags$hr(),
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
           column(12, actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))
