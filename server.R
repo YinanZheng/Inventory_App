@@ -1352,8 +1352,7 @@ server <- function(input, output, session) {
       paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
     },
     content = function(file) {
-      # 使用 showNotification 显示临时文件路径
-      showNotification(paste("临时文件路径:", file), type = "message", duration = 5)
+      showNotification("开始生成文件...", type = "message", duration = 5)
       
       # 创建 Workbook
       wb <- createWorkbook()
@@ -1366,19 +1365,17 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 显示数据加载成功的通知
       showNotification("数据已成功加载", type = "message", duration = 5)
       
       # 写入数据
       writeData(wb, "Unique Items", data, startCol = 1, startRow = 1)
       
-      # 保存到临时文件
+      # 保存文件
       saveWorkbook(wb, file, overwrite = TRUE)
-      
-      # 显示文件保存成功的通知
-      showNotification("Excel 文件已成功保存到临时文件夹", type = "message", duration = 5)
+      showNotification("Excel 文件已成功保存", type = "message", duration = 5)
     }
   )
+  
   
   # 
   # # 下载物品表为 Excel
