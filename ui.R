@@ -50,9 +50,10 @@ ui <- navbarPage(
   tabPanel(
     "采购登记",
     sidebarLayout(
-      sidebarPanel(
-        div(
-          class = "sticky-sidebar",  # 引用全局样式
+      div(
+        class = "sticky-sidebar",  # 引用全局样式
+        sidebarPanel(
+          
           fluidRow(
             column(10, 
                    selectizeInput("new_maker", "供应商:", choices = NULL, 
