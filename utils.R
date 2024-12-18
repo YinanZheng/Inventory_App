@@ -718,21 +718,31 @@ updateFilters <- function(session, unique_items_data, input, reset = FALSE) {
     need("MajorType" %in% names(unique_items_data()), "数据中缺少 MajorType 列"),
     need("MinorType" %in% names(unique_items_data()), "数据中缺少 MinorType 列"),
     need("Status" %in% names(unique_items_data()), "数据中缺少 Status 列"),
-    need("Defect" %in% names(unique_items_data()), "数据中缺少 Defect 列")
+    need("Defect" %in% names(unique_items_data()), "数据中缺少 Defect 列"),
+    need("PurchaseTime" %in% names(unique_items_data()), "数据中缺少 PurchaseTime 列")
   )
   
-  # 内部辅助函数，用于更新 selectInput
+  # 内部辅助函数，用于更新 selectInput 和 dateRangeInput
   updateSelect <- function(input_id, choices, selected = NULL) {
     updateSelectInput(session, input_id, choices = choices, selected = selected %||% choices)
   }
   
-  # 重置逻辑
+  updateDateRange <- function(input_id, dates) {
+    updateDateRangeInput(session, input_id,
+                         start = min(dates, na.rm = TRUE),
+                         end = max(dates, na.rm = TRUE))
+  }
+  
   if (reset) {
+    # 重置所有选项
     updateSelect("maker", unique(unique_items_data()$Maker))
     updateSelect("major_type", unique(unique_items_data()$MajorType))
     updateSelect("minor_type", unique(unique_items_data()$MinorType))
     updateSelect("unique_status", unique(unique_items_data()$Status))
     updateSelect("unique_defect", unique(unique_items_data()$Defect))
+    
+    # 重置采购时间
+    updateDateRange("purchase_time_range", unique_items_data()$PurchaseTime)
     return()
   }
   
@@ -759,6 +769,10 @@ updateFilters <- function(session, unique_items_data, input, reset = FALSE) {
   # 更新状态和瑕疵状态
   updateSelect("unique_status", unique(unique_items_data()$Status), input$unique_status)
   updateSelect("unique_defect", unique(unique_items_data()$Defect), input$unique_defect)
+  
+  # 更新采购时间范围
+  updateDateRange("purchase_time_range", unique_items_data()$PurchaseTime)
 }
+
 
 
