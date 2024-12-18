@@ -17,7 +17,7 @@ ui <- navbarPage(
           position: fixed;
           top: 70px; /* 与导航栏对齐 */
           left: 10px; /* 距离窗口左侧 10px */
-          width: 300px; /* 设置侧边栏宽度 */
+          width: 600px; /* 设置侧边栏宽度 */
           z-index: 900;
           background-color: #f9f9f9;
           border: 1px solid #ccc;
