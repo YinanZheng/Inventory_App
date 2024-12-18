@@ -127,7 +127,7 @@ ui <- navbarPage(
                 textInput(
                   "inbound_sku", 
                   label = NULL, 
-                  placeholder = "请扫描或输入条形码",
+                  placeholder = "请扫描或输入SKU",
                   width = "100%"
                 )
               ),
@@ -197,7 +197,7 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("outbound_sku", NULL, placeholder = "请扫描或输入条形码"),
+          textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU"),
           actionButton(
             "confirm_outbound_btn", 
             "确认出库", 
@@ -233,7 +233,7 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("售出操作", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
-          textInput("sold_sku", NULL, placeholder = "请扫描或输入条形码"),
+          textInput("sold_sku", NULL, placeholder = "请扫描或输入SKU"),
           actionButton(
             "confirm_sold_btn", 
             "确认售出", 
@@ -320,7 +320,7 @@ ui <- navbarPage(
     sidebarLayout(
       sidebarPanel(
         fluidRow(
-          column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描条形码")),
+          column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描或输入SKU")),
           column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(4, actionButton(
             "defect_register", 
@@ -334,7 +334,7 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
-          column(4, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描条形码")),
+          column(4, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描或输入SKU")),
           column(4, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(4, actionButton(
             "repair_register", 
@@ -369,7 +369,7 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("query_sku", NULL, placeholder = "请输入 SKU 或条形码", width = "100%")
+          textInput("query_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%")
         ),
         
         fluidRow(
