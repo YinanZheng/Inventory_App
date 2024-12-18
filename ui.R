@@ -148,7 +148,8 @@ ui <- navbarPage(
       
       div(
         class = "main-panel",
-        fluidRow(
+        div(
+          class = "sticky-info",
           column(12,   div(
             "已添加商品",
             style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
