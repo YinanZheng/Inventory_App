@@ -243,6 +243,7 @@ ui <- navbarPage(
       padding: 10px; 
       border-bottom: 1px solid #ddd; 
       margin-bottom: 40px; 
+      max-width: 100%;
       max-height: 400px; 
       overflow-y: auto; 
       box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加阴影以确保视觉分隔 */",
