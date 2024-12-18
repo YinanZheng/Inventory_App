@@ -793,8 +793,6 @@ server <- function(input, output, session) {
   # 采购商品图片处理模块
   image_manage <- imageModuleServer("image_manage")
   
-  
-  # Handle image update button click
   # Handle image update button click
   observeEvent(input$update_image_btn, {
     # 1. 确保用户选中了单行
@@ -861,6 +859,8 @@ server <- function(input, output, session) {
     # 重置图片上传状态
     image_manage$reset()
   })
+  
+  
   
   ################################################################
   ##                                                            ##
