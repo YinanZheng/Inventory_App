@@ -34,7 +34,23 @@ ui <- navbarPage(
         background-color: #f9f9f9;
         flex-shrink: 0; /* 防止压缩 */
       }
-
+      
+     /* Sticky info area */
+      .sticky-info {
+        position: sticky; 
+        top: 70px; 
+        z-index: 105;
+        background-color: white; 
+        padding: 10px; 
+        border-bottom: 1px solid #ddd; 
+        margin-bottom: 40px; 
+        max-width: 100%;
+        max-height: 400px; 
+        overflow-x: hidden; /* 防止水平滚动 */
+        overflow-y: auto; /* 垂直滚动 */
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加阴影以确保视觉分隔 */
+      }
+    
       /* 主面板 */
       .main-panel {
         flex-grow: 1; /* 占据剩余空间 */
@@ -234,19 +250,7 @@ ui <- navbarPage(
         class = "main-panel",
         
         div(
-          id = "sticky-info",  # 给 sticky 区域设置唯一 ID
-          style = "
-      position: sticky; 
-      top: 70px; 
-      z-index: 105;
-      background-color: white; 
-      padding: 10px; 
-      border-bottom: 1px solid #ddd; 
-      margin-bottom: 40px; 
-      max-width: 100%;
-      max-height: 400px; 
-      overflow-x: hidden; /* 防止水平滚动 */
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加阴影以确保视觉分隔 */",
+          class = "sticky-info",  
           uiOutput("inbound_item_info")
         ), # 动态渲染物品信息
         
