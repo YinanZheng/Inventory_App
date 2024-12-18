@@ -251,8 +251,8 @@ ui <- navbarPage(
         
         div(
           class = "sticky-info",  
-          uiOutput("inbound_item_info")
-        ), # 动态渲染物品信息
+          column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
+        ), 
         
         tags$hr(), # 分隔线
         
@@ -331,7 +331,8 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-        fluidRow(
+        div(
+          class = "sticky-info",
           column(12, uiOutput("sold_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
         ),
         tags$hr(),
@@ -481,7 +482,8 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-        fluidRow(
+        div(
+          class = "sticky-info",
           # 库存状态图表
           column(
             6,
