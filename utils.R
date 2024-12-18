@@ -710,75 +710,69 @@ clean_untracked_images <- function() {
   dbDisconnect(con)
 }
 
-updateFilters <- function(session, unique_items_data, input) {
+updateFilters <- function(session, unique_items_data, input, reset = FALSE) {
   req(unique_items_data())
   
   validate(
     need("Maker" %in% names(unique_items_data()), "数据中缺少 Maker 列"),
-    need("Status" %in% names(unique_items_data()), "数据中缺少 Status 列"),
-    need("Defect" %in% names(unique_items_data()), "数据中缺少 Defect 列"),
     need("MajorType" %in% names(unique_items_data()), "数据中缺少 MajorType 列"),
     need("MinorType" %in% names(unique_items_data()), "数据中缺少 MinorType 列")
   )
   
-  # 更新 Maker
-  updateSelectInput(
-    session,
-    "maker",
-    choices = unique(unique_items_data()$Maker),
-    selected = if (is.null(input$maker)) unique(unique_items_data()$Maker) else input$maker
-  )
-  
-  # 筛选数据根据 Maker
-  filtered_data_maker <- unique_items_data()
-  if (!is.null(input$maker)) {
-    filtered_data_maker <- filtered_data_maker[filtered_data_maker$Maker %in% input$maker, ]
+  if (reset) {
+    # 重置所有选项
+    updateSelectInput(
+      session, 
+      "maker", 
+      choices = unique(unique_items_data()$Maker),
+      selected = unique(unique_items_data()$Maker)
+    )
+    
+    updateSelectInput(
+      session, 
+      "major_type", 
+      choices = unique(unique_items_data()$MajorType),
+      selected = unique(unique_items_data()$MajorType)
+    )
+    
+    updateSelectInput(
+      session, 
+      "minor_type", 
+      choices = unique(unique_items_data()$MinorType),
+      selected = unique(unique_items_data()$MinorType)
+    )
+  } else {
+    # 更新 MajorType 选项（依赖 Maker）
+    observeEvent(input$maker, {
+      filtered_data_maker <- unique_items_data()
+      if (!is.null(input$maker)) {
+        filtered_data_maker <- filtered_data_maker[filtered_data_maker$Maker %in% input$maker, ]
+      }
+      
+      updateSelectInput(
+        session, 
+        "major_type", 
+        choices = unique(filtered_data_maker$MajorType),
+        selected = unique(filtered_data_maker$MajorType)
+      )
+    })
+    
+    # 更新 MinorType 选项（依赖 Maker 和 MajorType）
+    observeEvent(input$major_type, {
+      filtered_data_major <- unique_items_data()
+      if (!is.null(input$maker)) {
+        filtered_data_major <- filtered_data_major[filtered_data_major$Maker %in% input$maker, ]
+      }
+      if (!is.null(input$major_type)) {
+        filtered_data_major <- filtered_data_major[filtered_data_major$MajorType %in% input$major_type, ]
+      }
+      
+      updateSelectInput(
+        session, 
+        "minor_type", 
+        choices = unique(filtered_data_major$MinorType),
+        selected = unique(filtered_data_major$MinorType)
+      )
+    })
   }
-  
-  # 更新 MajorType，依赖 Maker
-  updateSelectInput(
-    session,
-    "major_type",
-    choices = unique(filtered_data_maker$MajorType),
-    selected = if (is.null(input$major_type)) unique(filtered_data_maker$MajorType) else input$major_type
-  )
-  
-  # 筛选数据根据 MajorType
-  filtered_data_major <- filtered_data_maker
-  if (!is.null(input$major_type)) {
-    filtered_data_major <- filtered_data_major[filtered_data_major$MajorType %in% input$major_type, ]
-  }
-  
-  # 更新 MinorType，依赖 Maker 和 MajorType
-  updateSelectInput(
-    session,
-    "minor_type",
-    choices = unique(filtered_data_major$MinorType),
-    selected = if (is.null(input$minor_type)) unique(filtered_data_major$MinorType) else input$minor_type
-  )
-  
-  # 更新 Status 和 Defect（独立于 Maker/MajorType/MinorType）
-  updateSelectInput(
-    session,
-    "unique_status",
-    choices = unique(unique_items_data()$Status),
-    selected = unique(unique_items_data()$Status)
-  )
-  
-  updateSelectInput(
-    session,
-    "unique_defect",
-    choices = unique(unique_items_data()$Defect),
-    selected = unique(unique_items_data()$Defect)
-  )
-  
-  # 更新采购时间范围
-  purchase_time <- unique_items_data()$PurchaseTime
-  updateDateRangeInput(
-    session,
-    "purchase_time_range",
-    start = min(purchase_time, na.rm = TRUE),
-    end = max(purchase_time, na.rm = TRUE)
-  )
 }
-

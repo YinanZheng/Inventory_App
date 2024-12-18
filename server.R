@@ -1277,7 +1277,7 @@ server <- function(input, output, session) {
   # 
   # 初始化筛选选项
   observe({
-    updateFilters(session, unique_items_data, input)
+    updateFilters(session, unique_items_data, input = input)
   })
   
   # 筛选逻辑
@@ -1343,7 +1343,7 @@ server <- function(input, output, session) {
 
   # 重置按钮调用
   observeEvent(input$reset_filters, {
-    updateFilters(session, unique_items_data, input)
+    updateFilters(session, unique_items_data, input = input, reset = TRUE)
   })
   
   # 下载物品表为 Excel
