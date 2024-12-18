@@ -117,6 +117,8 @@ ui <- navbarPage(
       ),
       
       mainPanel(
+        class = "main-panel",
+        
         fluidRow(
           column(12,   div(
             "已添加商品",
