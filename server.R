@@ -1394,8 +1394,11 @@ server <- function(input, output, session) {
             units = "in"
           )
           
+          # 清空路径数据
+          writeData(wb, "物品明细表", "", startCol = 19, startRow = i + 1)
+          
           # 调整行高和列宽
-          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 70)
+          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 72)
 
         } else {
           showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
@@ -1403,7 +1406,7 @@ server <- function(input, output, session) {
       }
 
       # 最终设置列宽，保证所有图片适配最大宽度
-      setColWidths(wb, "物品明细表", cols = 19, widths = image_width_max)
+      setColWidths(wb, "物品明细表", cols = 19, widths = image_width_max * 12)
       
       # 自动调整其他列的宽度
       setColWidths(wb, "物品明细表", cols = 1:18, widths = "auto")
