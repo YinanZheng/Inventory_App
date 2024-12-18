@@ -1360,12 +1360,29 @@ server <- function(input, output, session) {
       data <- filtered_unique_items_data()
       req(!is.null(data) && nrow(data) > 0)  # 确保数据非空
       
+      data <- map_column_names(data, column_mapping = list(
+        SKU = "条形码",
+        ItemName = "商品名",
+        ItemImagePath = "商品图片",
+        Maker = "供应商",
+        MajorType = "大类",
+        MinorType = "小类",
+        ProductCost = "成本",
+        DomesticShippingCost = "平摊运费",
+        PurchaseTime = "采购日期",
+        DomesticEntryTime = "国内入库日期",
+        DomesticExitTime = "国内出库日期",
+        DomesticSoldTime = "国内售出日期",
+        Status = "库存状态",
+        Defect = "物品状态"
+      ))
+      
       # 写入数据到 Excel
-      writeData(wb, "物品明细表", filtered_unique_items_data(), startCol = 1, startRow = 1)
+      writeData(wb, "物品明细表", data, startCol = 1, startRow = 1)
 
       # 插入图片到 Excel
-      for (i in seq_len(nrow(filtered_unique_items_data()))) {
-        image_path <- filtered_unique_items_data()$ItemImagePath[i]
+      for (i in seq_len(nrow(data))) {
+        image_path <- data$ItemImagePath[i]
         image_width_max <- 1
         if (!is.na(image_path) && file.exists(image_path)) {
           
@@ -1374,7 +1391,7 @@ server <- function(input, output, session) {
           width_ratio <- dims$width / dims$height  # 宽高比
           
           row_to_insert <- i + 1  # 对应数据的行号
-          col_to_insert <- 19      # 图片插入的列号
+          col_to_insert <- 3      # 图片插入的列号
           
           # 设置固定高度 1 inch，计算动态宽度
           image_height <- 1  # 固定高度（英寸）
