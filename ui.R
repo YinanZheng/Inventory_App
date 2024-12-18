@@ -489,8 +489,8 @@ ui <- navbarPage(
             6,
             div(
               class = "card",
-              style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-              tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; margin-bottom: 5px; margin-top: 5px;"),
+              style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+              tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold;"),
               plotlyOutput("inventory_status_chart", height = "300px") # 使用 plotlyOutput
             )
           ),
