@@ -55,8 +55,8 @@ ui <- navbarPage(
         }
       }
     ")),
-    
-    tags$script(HTML("
+      
+      tags$script(HTML("
         $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
           const items = (event.originalEvent.clipboardData || event.clipboardData).items;
           for (let i = 0; i < items.length; i++) {
@@ -75,7 +75,7 @@ ui <- navbarPage(
             }
           }
         });"))
-    
+    )
   ),
   
   tabPanel(
