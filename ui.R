@@ -232,13 +232,12 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-        fluidRow(
-          column(12, div(
-            id = "sticky-info",  # 给 sticky 区域设置唯一 ID
-            style = "position: sticky; top: 70px; z-index: 100; background-color: white; padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 40px;",
-            uiOutput("inbound_item_info")
-          )), # 动态渲染物品信息
-        ),
+        
+        div(
+          id = "sticky-info",  # 给 sticky 区域设置唯一 ID
+          style = "position: sticky; top: 70px; z-index: 100; background-color: white; padding: 10px; border-bottom: 1px solid #ddd; margin-bottom: 40px;",
+          uiOutput("inbound_item_info")
+        ), # 动态渲染物品信息
         
         tags$hr(), # 分隔线
         
