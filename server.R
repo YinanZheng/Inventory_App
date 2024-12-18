@@ -147,6 +147,7 @@ server <- function(input, output, session) {
     
     render_table_with_images(
       data = filtered_inventory(),
+      options = list(fixedHeader = TRUE),
       column_mapping = column_mapping,
       image_column = "ItemImagePath"  # Specify the image column
     )
