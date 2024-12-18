@@ -7,13 +7,13 @@ typeModuleServer <- function(id, con, item_type_data) {
       type_data <- item_type_data()
       
       if (is.null(type_data) || nrow(type_data) == 0) {
-        selectInput(ns("new_major_type"), "大类:", choices = c("暂无数据" = ""), selected = NULL)
+        selectInput(ns("new_major_type"), "大类:", width = "100%", choices = c("暂无数据" = ""), selected = NULL)
       } else {
         choices <- setNames(
           unique(type_data$MajorType), 
           paste0(unique(type_data$MajorType), "（", unique(type_data$MajorTypeSKU), "）")
         )
-        selectInput(ns("new_major_type"), "大类:", choices = choices, selected = NULL)
+        selectInput(ns("new_major_type"), "大类:", width = "100%", choices = choices, selected = NULL)
       }
     })
     
@@ -23,14 +23,14 @@ typeModuleServer <- function(id, con, item_type_data) {
       selected_major <- if (!is.null(input$new_major_type)) gsub("（.*）", "", input$new_major_type) else NULL
       
       if (is.null(type_data) || nrow(type_data) == 0 || is.null(selected_major)) {
-        selectInput(ns("new_minor_type"), "小类:", choices = c("暂无数据" = ""), selected = NULL)
+        selectInput(ns("new_minor_type"), "小类:", width = "100%", choices = c("暂无数据" = ""), selected = NULL)
       } else {
         filtered_data <- type_data[type_data$MajorType == selected_major, ]
         choices <- setNames(
           filtered_data$MinorType, 
           paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
         )
-        selectInput(ns("new_minor_type"), "小类:", choices = choices, selected = NULL)
+        selectInput(ns("new_minor_type"), "小类:", width = "100%", choices = choices, selected = NULL)
       }
     })
     

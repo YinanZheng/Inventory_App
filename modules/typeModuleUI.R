@@ -2,7 +2,7 @@ typeModuleUI <- function(id) {
   ns <- NS(id)  # 为模块创建命名空间
   tagList(
     fluidRow(
-      column(10, uiOutput(ns("major_type_ui"), width = "100%")),  # 大类下拉框
+      column(10, uiOutput(ns("major_type_ui"))),  # 大类下拉框
       column(2, 
              div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                  actionButton(ns("add_major_type_btn"), label = NULL, icon = icon("plus"),
