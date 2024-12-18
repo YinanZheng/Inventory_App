@@ -105,6 +105,7 @@ server <- function(input, output, session) {
       data = added_items(),
       column_mapping = column_mapping,
       selection = "multiple",
+      options = list(fixedHeader = TRUE),
       image_column = "ItemImagePath"  # Specify the correct image column
     )
   })
