@@ -14,6 +14,7 @@ library(RMariaDB)
 library(uuid)
 library(plotly)
 library(rlang)
+library(openxlsx)
 
 # Source all modular functions
 source("./modules/typeModuleUI.R", local = TRUE)

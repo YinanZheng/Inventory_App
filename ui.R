@@ -520,19 +520,36 @@ ui <- navbarPage(
   ), # end of 查询 tab
   
   tabPanel(
-    "报表下载",
+    "数据下载",
     div(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
+        h4("筛选选项"),
+        selectInput("major_type", "选择大类:", choices = NULL, selected = NULL, multiple = TRUE),
+        selectInput("minor_type", "选择小类:", choices = NULL, selected = NULL, multiple = TRUE),
+        selectInput("unique_status", "选择状态:", choices = NULL, selected = NULL, multiple = TRUE),
+        selectInput("unique_defect", "选择瑕疵状态:", choices = NULL, selected = NULL, multiple = TRUE),
+        
+        tags$h5("选择时间范围:"),
+        dateRangeInput("purchase_time_range", "采购时间:", start = NULL, end = NULL),
+        dateRangeInput("entry_time_range", "国内入库时间:", start = NULL, end = NULL),
+        dateRangeInput("exit_time_range", "国内出库时间:", start = NULL, end = NULL),
+        dateRangeInput("sold_time_range", "国内售出时间:", start = NULL, end = NULL),
+        
+        actionButton("reset_filters", "重置筛选", class = "btn-secondary"),
+        
+        tags$hr(),
+        
+        actionButton("download_unique_items_xlsx", "下载物品表 (Excel)", class = "btn-primary", style = "width: 100%;")
       ),
       div(
         class = "main-panel",
-        
+        uniqueItemsTableUI("unique_items_table_download")
       )
     )
-  ),
+  ) # End of 数据下载 tab
   
   # # 添加全局底部
   # footer = tags$div(

@@ -296,6 +296,24 @@ server <- function(input, output, session) {
                                                        Defect = "物品状态"
                                                      ), data = unique_items_data)
   
+  unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
+                                                         column_mapping <- list(
+                                                           SKU = "条形码",
+                                                           ItemName = "商品名",
+                                                           ItemImagePath = "商品图片",
+                                                           Maker = "供应商",
+                                                           MajorType = "大类",
+                                                           MinorType = "小类",
+                                                           ProductCost = "成本",
+                                                           DomesticShippingCost = "平摊运费",
+                                                           PurchaseTime = "采购日期",
+                                                           DomesticEntryTime = "国内入库日期",
+                                                           DomesticExitTime = "国内出库日期",
+                                                           DomesticSoldTime = "国内售出日期",
+                                                           Status = "库存状态",
+                                                           Defect = "物品状态"
+                                                         ), data = filtered_unique_items_data)
+  
   ####################################################################################################################################
   
   # 显示总采购开销（含运费）
@@ -1249,8 +1267,107 @@ server <- function(input, output, session) {
   
   
   
+  ################################################################
+  ##                                                            ##
+  ## 数据下载分页                                               ##
+  ##                                                            ##
+  ################################################################
   
+  # 初始化筛选选项
+  updateSelectInput(session, "unique_status", choices = unique(unique_items_data()$Status), selected = unique(unique_items_data()$Status))
+  updateSelectInput(session, "unique_defect", choices = unique(unique_items_data()$Defect), selected = unique(unique_items_data()$Defect))
+  updateSelectInput(session, "major_type", choices = unique(unique_items_data()$MajorType), selected = unique(unique_items_data()$MajorType))
+  updateSelectInput(session, "minor_type", choices = unique(unique_items_data()$MinorType), selected = unique(unique_items_data()$MinorType))
   
+  # 筛选逻辑
+  filtered_unique_items_data <- reactive({
+    data <- unique_items_data()
+    
+    # 大类筛选
+    if (!is.null(input$major_type)) {
+      data <- data[data$MajorType %in% input$major_type, ]
+    }
+    
+    # 小类筛选
+    if (!is.null(input$minor_type)) {
+      data <- data[data$MinorType %in% input$minor_type, ]
+    }
+    
+    # 状态筛选
+    if (!is.null(input$unique_status)) {
+      data <- data[data$Status %in% input$unique_status, ]
+    }
+    
+    # 瑕疵状态筛选
+    if (!is.null(input$unique_defect)) {
+      data <- data[data$Defect %in% input$unique_defect, ]
+    }
+    
+    # 采购时间筛选
+    if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
+      data <- data[data$PurchaseTime >= input$purchase_time_range[1] & data$PurchaseTime <= input$purchase_time_range[2], ]
+    }
+    
+    # 国内入库时间筛选
+    if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
+      data <- data[data$DomesticEntryTime >= input$entry_time_range[1] & data$DomesticEntryTime <= input$entry_time_range[2], ]
+    }
+    
+    # 国内出库时间筛选
+    if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
+      data <- data[data$DomesticExitTime >= input$exit_time_range[1] & data$DomesticExitTime <= input$exit_time_range[2], ]
+    }
+    
+    # 国内售出时间筛选
+    if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
+      data <- data[data$DomesticSoldTime >= input$sold_time_range[1] & data$DomesticSoldTime <= input$sold_time_range[2], ]
+    }
+    
+    data
+  })
+  
+  # 重置筛选
+  observeEvent(input$reset_filters, {
+    updateSelectInput(session, "unique_status", selected = unique(unique_items_data()$Status))
+    updateSelectInput(session, "unique_defect", selected = unique(unique_items_data()$Defect))
+    updateDateRangeInput(session, "purchase_time_range", start = NULL, end = NULL)
+    updateDateRangeInput(session, "entry_time_range", start = NULL, end = NULL)
+    updateDateRangeInput(session, "exit_time_range", start = NULL, end = NULL)
+    updateDateRangeInput(session, "sold_time_range", start = NULL, end = NULL)
+  })
+  
+  # 下载物品表为 Excel
+  output$download_unique_items_xlsx <- downloadHandler(
+    filename = function() {
+      paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
+    },
+    content = function(file) {
+      # 创建 Excel 文件
+      wb <- createWorkbook()
+      addWorksheet(wb, "Unique Items")
+      
+      # 写入数据到 Excel
+      writeData(wb, "Unique Items", filtered_unique_items_data(), startCol = 1, startRow = 1)
+      
+      # 插入图片到 Excel
+      for (i in seq_len(nrow(filtered_unique_items_data()))) {
+        image_path <- filtered_unique_items_data()$ItemImagePath[i]
+        if (file.exists(image_path)) {  # 检查图片是否存在
+          addImage(wb, 
+                   sheet = "Unique Items", 
+                   file = image_path, 
+                   startCol = 15,  # 图片插入到 "ItemImagePath" 列
+                   startRow = i + 1,  # 行号加 1，考虑表头
+                   width = 2, 
+                   height = 1.5,
+                   units = "in")
+        }
+      }
+      
+      # 保存 Excel 文件
+      saveWorkbook(wb, file, overwrite = TRUE)
+    }
+  )
   
   ################################################################
   ##                                                            ##
