@@ -1348,6 +1348,8 @@ server <- function(input, output, session) {
   
 
   output$download_unique_items_xlsx <- downloadHandler(
+    showNotification("开始生成文件...", type = "message", duration = 5)
+    
     filename = function() {
       paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
     },
