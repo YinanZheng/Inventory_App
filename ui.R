@@ -157,14 +157,14 @@ ui <- navbarPage(
           ),
           column(12, DTOutput("added_items_table")),
           column(12, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
+          
+          tags$hr(), # 分隔线
+          
+          div(
+            textOutput("total_cost"),
+            style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+          )
         ),
-        tags$hr(), # 分隔线
-        div(
-          textOutput("total_cost"),
-          style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-        ),
-        
-        tags$hr(), # 分隔线
         
         fluidRow(
           column(12, actionButton("toggle_item_table_purchase", "物品状态表（点击显示/隐藏）",
