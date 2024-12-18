@@ -6,25 +6,44 @@ ui <- navbarPage(
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
     
-    tags$head(
-      tags$style(HTML("
-        body { padding-top: 70px; } /* 为导航栏腾出空间 */
-        .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
-      ")),
-      
-      tags$style(HTML("
+    # tags$head(
+    #   tags$style(HTML("
+    #     body { padding-top: 70px; } /* 为导航栏腾出空间 */
+    #     .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
+    #   ")),
+    
+    tags$style(HTML("
+      /* Sticky Sidebar */
+      .sticky-sidebar {
+        position: sticky;
+        top: 70px; /* 导航栏的高度 */
+        z-index: 900;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 20px;
+        background-color: #f9f9f9;
+        width: 300px; /* 设置宽度 */
+      }
+
+      /* 主面板为侧边栏留出空间 */
+      .main-panel {
+        margin-left: 320px; /* 侧边栏宽度 + 间距 */
+        padding: 20px;
+      }
+
+      /* 响应式调整：窄屏时侧边栏不固定，主面板占满宽度 */
+      @media (max-width: 768px) {
         .sticky-sidebar {
-          position: sticky;
-          top: 70px; /* 导航栏的高度 */
-          z-index: 900;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 20px;
-          background-color: #f9f9f9;
+          position: static;
+          width: 100%;
         }
-      ")),
-      
-      tags$script(HTML("
+        .main-panel {
+          margin-left: 0;
+        }
+      }
+    ")),
+    
+    tags$script(HTML("
         $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
           const items = (event.originalEvent.clipboardData || event.clipboardData).items;
           for (let i = 0; i < items.length; i++) {
@@ -43,8 +62,7 @@ ui <- navbarPage(
             }
           }
         });"))
-      
-    )
+    
   ),
   
   tabPanel(
@@ -212,7 +230,7 @@ ui <- navbarPage(
       )
     )
   ), # end of 入库 tab
-
+  
   tabPanel(
     "出库",
     sidebarLayout(
