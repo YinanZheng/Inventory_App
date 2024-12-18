@@ -10,43 +10,41 @@ ui <- navbarPage(
       tags$style(HTML("
         body { padding-top: 70px; } /* 为导航栏腾出空间 */
         .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
-      "))
-    ),
-    
-    tags$head(
+      ")),
+      
       tags$style(HTML("
-    .sticky-sidebar {
-      position: sticky;
-      top: 70px; /* 导航栏的高度 */
-      z-index: 900;
-      border: 1px solid #e0e0e0;
-      border-radius: 8px;
-      padding: 20px;
-      background-color: #f9f9f9;
-    }
-  "))
-    ),
-    
-    tags$head(tags$script(HTML("
-    $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
-      const items = (event.originalEvent.clipboardData || event.clipboardData).items;
-      for (let i = 0; i < items.length; i++) {
-        if (items[i].type.indexOf('image') !== -1) {
-          const file = items[i].getAsFile();
-          const reader = new FileReader();
-
-          reader.onload = function(evt) {
-            // 使用 currentTarget 确保获取的是父级元素的 id
-            const inputId = event.currentTarget.id + '_pasted_image';
-            Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
-          };
-
-          reader.readAsDataURL(file);
-          break;
+        .sticky-sidebar {
+          position: sticky;
+          top: 70px; /* 导航栏的高度 */
+          z-index: 900;
+          border: 1px solid #e0e0e0;
+          border-radius: 8px;
+          padding: 20px;
+          background-color: #f9f9f9;
         }
-      }
-    });
-  ")))
+      ")),
+      
+      tags$script(HTML("
+        $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
+          const items = (event.originalEvent.clipboardData || event.clipboardData).items;
+          for (let i = 0; i < items.length; i++) {
+            if (items[i].type.indexOf('image') !== -1) {
+              const file = items[i].getAsFile();
+              const reader = new FileReader();
+    
+              reader.onload = function(evt) {
+                // 使用 currentTarget 确保获取的是父级元素的 id
+                const inputId = event.currentTarget.id + '_pasted_image';
+                Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
+              };
+    
+              reader.readAsDataURL(file);
+              break;
+            }
+          }
+        });"))
+      
+    )
   ),
   
   tabPanel(
