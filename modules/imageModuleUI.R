@@ -5,7 +5,7 @@ imageModuleUI <- function(id, label = "商品图片上传") {
     # 模块的主要 UI
     tags$div(
       class = "card",
-      style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
+      style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 5px;",
       tags$h5(label, style = "margin-bottom: 15px; font-weight: bold; color: #007BFF;"),
       
       # 粘贴区域
