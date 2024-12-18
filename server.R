@@ -1334,41 +1334,41 @@ server <- function(input, output, session) {
     )
   })
   
-  # 动态更新采购时间范围
-  observe({
-    req(unique_items_data())
-    purchase_time <- unique_items_data()$PurchaseTime
-    updateDateRangeInput(session, "purchase_time_range",
-                         start = min(purchase_time, na.rm = TRUE),
-                         end = max(purchase_time, na.rm = TRUE))
-  })
-  
-  # 动态更新国内入库时间范围
-  observe({
-    req(unique_items_data())
-    entry_time <- unique_items_data()$DomesticEntryTime
-    updateDateRangeInput(session, "entry_time_range",
-                         start = min(entry_time, na.rm = TRUE),
-                         end = max(entry_time, na.rm = TRUE))
-  })
-  
-  # 动态更新国内出库时间范围
-  observe({
-    req(unique_items_data())
-    exit_time <- unique_items_data()$DomesticExitTime
-    updateDateRangeInput(session, "exit_time_range",
-                         start = min(exit_time, na.rm = TRUE),
-                         end = max(exit_time, na.rm = TRUE))
-  })
-  
-  # 动态更新国内售出时间范围
-  observe({
-    req(unique_items_data())
-    sold_time <- unique_items_data()$DomesticSoldTime
-    updateDateRangeInput(session, "sold_time_range",
-                         start = min(sold_time, na.rm = TRUE),
-                         end = max(sold_time, na.rm = TRUE))
-  })
+  # # 动态更新采购时间范围
+  # observe({
+  #   req(unique_items_data())
+  #   purchase_time <- unique_items_data()$PurchaseTime
+  #   updateDateRangeInput(session, "purchase_time_range",
+  #                        start = min(purchase_time, na.rm = TRUE),
+  #                        end = max(purchase_time, na.rm = TRUE))
+  # })
+  # 
+  # # 动态更新国内入库时间范围
+  # observe({
+  #   req(unique_items_data())
+  #   entry_time <- unique_items_data()$DomesticEntryTime
+  #   updateDateRangeInput(session, "entry_time_range",
+  #                        start = min(entry_time, na.rm = TRUE),
+  #                        end = max(entry_time, na.rm = TRUE))
+  # })
+  # 
+  # # 动态更新国内出库时间范围
+  # observe({
+  #   req(unique_items_data())
+  #   exit_time <- unique_items_data()$DomesticExitTime
+  #   updateDateRangeInput(session, "exit_time_range",
+  #                        start = min(exit_time, na.rm = TRUE),
+  #                        end = max(exit_time, na.rm = TRUE))
+  # })
+  # 
+  # # 动态更新国内售出时间范围
+  # observe({
+  #   req(unique_items_data())
+  #   sold_time <- unique_items_data()$DomesticSoldTime
+  #   updateDateRangeInput(session, "sold_time_range",
+  #                        start = min(sold_time, na.rm = TRUE),
+  #                        end = max(sold_time, na.rm = TRUE))
+  # })
 
   # 筛选逻辑
   filtered_unique_items_data <- reactive({
@@ -1422,9 +1422,7 @@ server <- function(input, output, session) {
     data
   })
 
-  
 
-  # 
   # # 重置筛选
   # observeEvent(input$reset_filters, {
   #   updateSelectInput(session, "unique_status", selected = unique(unique_items_data()$Status))
@@ -1434,6 +1432,7 @@ server <- function(input, output, session) {
   #   updateDateRangeInput(session, "exit_time_range", start = NULL, end = NULL)
   #   updateDateRangeInput(session, "sold_time_range", start = NULL, end = NULL)
   # })
+  
   # 
   # # 下载物品表为 Excel
   # output$download_unique_items_xlsx <- downloadHandler(
