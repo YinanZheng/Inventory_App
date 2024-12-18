@@ -1359,20 +1359,20 @@ server <- function(input, output, session) {
       # 写入数据到 Excel
       writeData(wb, "Unique Items", filtered_unique_items_data(), startCol = 1, startRow = 1)
 
-      # 插入图片到 Excel
-      for (i in seq_len(nrow(filtered_unique_items_data()))) {
-        image_path <- filtered_unique_items_data()$ItemImagePath[i]
-        if (file.exists(image_path)) {  # 检查图片是否存在
-          addImage(wb,
-                   sheet = "Unique Items",
-                   file = image_path,
-                   startCol = 15,  # 图片插入到 "ItemImagePath" 列
-                   startRow = i + 1,  # 行号加 1，考虑表头
-                   width = 2,
-                   height = 1.5,
-                   units = "in")
-        }
-      }
+      # # 插入图片到 Excel
+      # for (i in seq_len(nrow(filtered_unique_items_data()))) {
+      #   image_path <- filtered_unique_items_data()$ItemImagePath[i]
+      #   if (file.exists(image_path)) {  # 检查图片是否存在
+      #     addImage(wb,
+      #              sheet = "Unique Items",
+      #              file = image_path,
+      #              startCol = 15,  # 图片插入到 "ItemImagePath" 列
+      #              startRow = i + 1,  # 行号加 1，考虑表头
+      #              width = 2,
+      #              height = 1.5,
+      #              units = "in")
+      #   }
+      # }
 
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
