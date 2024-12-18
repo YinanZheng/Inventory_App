@@ -106,7 +106,7 @@ ui <- navbarPage(
         
         fluidRow(
           column(10, 
-                 selectizeInput("new_maker", "供应商:", choices = NULL, 
+                 selectizeInput("new_maker", "供应商:", choices = NULL, width = "100%",
                                 options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
           ),
           column(2, 
