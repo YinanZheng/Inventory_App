@@ -27,7 +27,7 @@ ui <- navbarPage(
 
       /* 主面板为侧边栏留出空间 */
       .main-panel {
-        margin-left: 520px; /* 侧边栏宽度 + 间距 */
+        margin-left: 600px; /* 侧边栏宽度 + 间距 */
         padding: 20px;
       }
 
