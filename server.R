@@ -1314,10 +1314,10 @@ server <- function(input, output, session) {
   filtered_unique_items_data <- reactive({
     data <- unique_items_data()
 
-    # # 供应商筛选
-    # if (!is.null(input$maker)) {
-    #   data <- data[data$Maker %in% input$maker, ]
-    # }
+    # 供应商筛选
+    if (!is.null(input$maker)) {
+      data <- data[data$Maker %in% input$maker, ]
+    }
     # 
     # # 大类筛选
     # if (!is.null(input$major_type)) {
