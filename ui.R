@@ -238,7 +238,7 @@ ui <- navbarPage(
           style = "
       position: sticky; 
       top: 70px; 
-      z-index: 105
+      z-index: 105;
       background-color: white; 
       padding: 10px; 
       border-bottom: 1px solid #ddd; 
