@@ -162,12 +162,12 @@ generate_unique_code <- function(input, length = 4) {
   if (is.null(input) || input == "") {
     return(NULL)  
   }
-    
+  
   # Validate length parameter
   if (!is.numeric(length) || length <= 0) {
     stop("Length must be a positive integer.")
   }
-
+  
   # Generate a hash value
   hash_value <- digest::digest(enc2utf8(input), algo = "sha512")
   
@@ -269,7 +269,7 @@ map_column_names <- function(data, column_mapping) {
 render_image_column <- function(image_column_data, 
                                 host_url = host_url, 
                                 placeholder = placeholder_50px_path) {
-
+  
   sapply(image_column_data, function(img) {
     if (is.na(img) || img == "") {
       # 返回占位符图片
@@ -530,14 +530,14 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
 }
 
 handleSkuInput <- function(
-  sku_input,        # SKU 输入值
-  output_name,      # 输出 UI 名称
-  count_label,      # 显示的计数标签
-  count_field,      # 数据字段名称
-  con,              # 数据库连接
-  output,           # 输出对象
-  placeholder_path, # 默认占位图片路径
-  host_url          # 图片主机 URL
+    sku_input,        # SKU 输入值
+    output_name,      # 输出 UI 名称
+    count_label,      # 显示的计数标签
+    count_field,      # 数据字段名称
+    con,              # 数据库连接
+    output,           # 输出对象
+    placeholder_path, # 默认占位图片路径
+    host_url          # 图片主机 URL
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -701,4 +701,56 @@ clean_untracked_images <- function() {
   
   # 断开数据库连接
   dbDisconnect(con)
+}
+
+updateFilters <- function(session, unique_items_data) {
+  req(unique_items_data())
+  
+  validate(
+    need("Maker" %in% names(unique_items_data()), "数据中缺少 Maker 列"),
+    need("Status" %in% names(unique_items_data()), "数据中缺少 Status 列"),
+    need("Defect" %in% names(unique_items_data()), "数据中缺少 Defect 列"),
+    need("MajorType" %in% names(unique_items_data()), "数据中缺少 MajorType 列"),
+    need("MinorType" %in% names(unique_items_data()), "数据中缺少 MinorType 列")
+  )
+  
+  updateSelectInput(session, "maker", 
+                    choices = unique(unique_items_data()$Maker), 
+                    selected = unique(unique_items_data()$Maker))
+  
+  updateSelectInput(session, "major_type", 
+                    choices = unique(unique_items_data()$MajorType), 
+                    selected = unique(unique_items_data()$MajorType))
+  
+  updateSelectInput(session, "minor_type", 
+                    choices = unique(unique_items_data()$MinorType), 
+                    selected = unique(unique_items_data()$MinorType))
+  
+  updateSelectInput(session, "unique_status", 
+                    choices = unique(unique_items_data()$Status), 
+                    selected = unique(unique_items_data()$Status))
+  
+  updateSelectInput(session, "unique_defect", 
+                    choices = unique(unique_items_data()$Defect), 
+                    selected = unique(unique_items_data()$Defect))
+  
+  purchase_time <- unique_items_data()$PurchaseTime
+  updateDateRangeInput(session, "purchase_time_range",
+                       start = min(purchase_time, na.rm = TRUE),
+                       end = max(purchase_time, na.rm = TRUE))
+  
+  # entry_time <- unique_items_data()$DomesticEntryTime
+  # updateDateRangeInput(session, "entry_time_range",
+  #                      start = min(entry_time, na.rm = TRUE),
+  #                      end = max(entry_time, na.rm = TRUE))
+  # 
+  # exit_time <- unique_items_data()$DomesticExitTime
+  # updateDateRangeInput(session, "exit_time_range",
+  #                      start = min(exit_time, na.rm = TRUE),
+  #                      end = max(exit_time, na.rm = TRUE))
+  # 
+  # sold_time <- unique_items_data()$DomesticSoldTime
+  # updateDateRangeInput(session, "sold_time_range",
+  #                      start = min(sold_time, na.rm = TRUE),
+  #                      end = max(sold_time, na.rm = TRUE))
 }
