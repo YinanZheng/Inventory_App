@@ -1400,25 +1400,26 @@ server <- function(input, output, session) {
       data <- data[data$Defect %in% input$unique_defect, ]
     }
 
-    # 采购时间筛选
-    if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
-      data <- data[data$PurchaseTime >= input$purchase_time_range[1] & data$PurchaseTime <= input$purchase_time_range[2], ]
-    }
-
-    # 国内入库时间筛选
-    if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
-      data <- data[data$DomesticEntryTime >= input$entry_time_range[1] & data$DomesticEntryTime <= input$entry_time_range[2], ]
-    }
-
-    # 国内出库时间筛选
-    if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
-      data <- data[data$DomesticExitTime >= input$exit_time_range[1] & data$DomesticExitTime <= input$exit_time_range[2], ]
-    }
-
-    # 国内售出时间筛选
-    if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
-      data <- data[data$DomesticSoldTime >= input$sold_time_range[1] & data$DomesticSoldTime <= input$sold_time_range[2], ]
-    }
+    # # 采购时间筛选
+    # if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
+    #   data <- data[data$PurchaseTime >= input$purchase_time_range[1] & data$PurchaseTime <= input$purchase_time_range[2], ]
+    # }
+    # 
+    # # 国内入库时间筛选
+    # if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
+    #   data <- data[data$DomesticEntryTime >= input$entry_time_range[1] & data$DomesticEntryTime <= input$entry_time_range[2], ]
+    # }
+    # 
+    # # 国内出库时间筛选
+    # if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
+    #   data <- data[data$DomesticExitTime >= input$exit_time_range[1] & data$DomesticExitTime <= input$exit_time_range[2], ]
+    # }
+    # 
+    # # 国内售出时间筛选
+    # if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
+    #   data <- data[data$DomesticSoldTime >= input$sold_time_range[1] & data$DomesticSoldTime <= input$sold_time_range[2], ]
+    # }
+    
     data
   })
 
