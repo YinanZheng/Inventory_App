@@ -1090,13 +1090,13 @@ server <- function(input, output, session) {
       output$query_item_info <- renderUI({
         img_path <- ifelse(
           is.na(sku_data$ItemImagePath[1]),
-          placeholder_300px_path,
+          placeholder_150px_path,
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
         div(
           style = "display: flex; align-items: center; padding: 10px;",
           div(style = "flex: 1; text-align: center; margin-right: 20px;",
-              tags$img(src = img_path, height = "300px", style = "border: 1px solid #ddd; border-radius: 8px;")),
+              tags$img(src = img_path, height = "150px", style = "border: 1px solid #ddd; border-radius: 8px;")),
           div(style = "flex: 2; display: flex; flex-direction: column; justify-content: center;",
               tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
               tags$p(tags$b("供应商："), sku_data$Maker[1]),

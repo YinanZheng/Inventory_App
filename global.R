@@ -33,6 +33,7 @@ poll_interval <<- 10000  # 每 10 秒检查一次
 host_url <<- "http://54.254.120.88/"
 
 placeholder_300px_path <<- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
+placeholder_150px_path <<- "https://dummyimage.com/150x150/cccccc/000000.png&text=No+Image"
 placeholder_50px_path <<- "https://dummyimage.com/50x50/cccccc/000000.png&text=No+Image"
 
 # Size of barcode paper (in cm)
