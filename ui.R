@@ -21,7 +21,7 @@ ui <- navbarPage(
         position: sticky; /* 保持固定 */
         top: 70px; /* 与导航栏对齐 */
         z-index: 900;
-        width: 300px; /* 固定宽度 */
+        width: 700px; /* 固定宽度 */
         height: calc(100vh - 70px); /* 自动计算高度 */
         overflow-y: auto; /* 滚动支持 */
         border: 1px solid #e0e0e0;
