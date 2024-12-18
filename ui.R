@@ -533,9 +533,9 @@ ui <- navbarPage(
         selectInput("unique_defect", "选择瑕疵状态:", choices = NULL, selected = NULL, multiple = TRUE),
         
         dateRangeInput("purchase_time_range", "采购时间:", start = NULL, end = NULL),
-        dateRangeInput("entry_time_range", "国内入库时间:", start = NULL, end = NULL),
-        dateRangeInput("exit_time_range", "国内出库时间:", start = NULL, end = NULL),
-        dateRangeInput("sold_time_range", "国内售出时间:", start = NULL, end = NULL),
+        # dateRangeInput("entry_time_range", "国内入库时间:", start = NULL, end = NULL),
+        # dateRangeInput("exit_time_range", "国内出库时间:", start = NULL, end = NULL),
+        # dateRangeInput("sold_time_range", "国内售出时间:", start = NULL, end = NULL),
         
         actionButton("reset_filters", "重置筛选", class = "btn-secondary"),
         
