@@ -1276,7 +1276,17 @@ server <- function(input, output, session) {
   ################################################################
   # 
   # 初始化筛选选项
-  if (!is.null(unique_items_data())) {
+  observe({
+    req(unique_items_data())  # 确保数据不为空
+    validate(
+      need("Maker" %in% names(unique_items_data()), "数据中缺少 Maker 列"),
+      need("Status" %in% names(unique_items_data()), "数据中缺少 Status 列"),
+      need("Defect" %in% names(unique_items_data()), "数据中缺少 Defect 列"),
+      need("MajorType" %in% names(unique_items_data()), "数据中缺少 MajorType 列"),
+      need("MinorType" %in% names(unique_items_data()), "数据中缺少 MinorType 列")
+    )
+    
+    # 更新下拉菜单选项
     updateSelectInput(session, "maker", 
                       choices = unique(unique_items_data()$Maker), 
                       selected = unique(unique_items_data()$Maker)
@@ -1297,7 +1307,8 @@ server <- function(input, output, session) {
                       choices = unique(unique_items_data()$MinorType), 
                       selected = unique(unique_items_data()$MinorType)
     )
-  }
+  })
+  
   
   # # 筛选逻辑
   # filtered_unique_items_data <- reactive({
