@@ -541,7 +541,8 @@ ui <- navbarPage(
         
         tags$hr(),
         
-        actionButton("download_unique_items_xlsx", "下载当前筛选结果 (Excel)", class = "btn-primary", style = "width: 100%;")
+        downloadButton("download_unique_items_xlsx", "下载当前筛选结果 (Excel)", 
+                       class = "btn-primary", style = "width: 100%;")      
       ),
       div(
         class = "main-panel",
