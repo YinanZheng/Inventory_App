@@ -1370,13 +1370,13 @@ server <- function(input, output, session) {
                          end = max(sold_time, na.rm = TRUE))
   })
 
-  observe({
-    if (!is.null(input$purchase_time_range) && !is.na(input$purchase_time_range[1])) {
-      showNotification(input$purchase_time_range[1])
-    } else {
-      showNotification("采购时间未选择", type = "warning")
-    }
-  })
+  # observe({
+  #   if (!is.null(input$purchase_time_range) && !is.na(input$purchase_time_range[1])) {
+  #     showNotification(input$purchase_time_range[1])
+  #   } else {
+  #     showNotification("采购时间未选择", type = "warning")
+  #   }
+  # })
   
   # 筛选逻辑
   filtered_unique_items_data <- reactive({
@@ -1415,26 +1415,26 @@ server <- function(input, output, session) {
                      data$PurchaseTime <= as.Date(input$purchase_time_range[2]), ]
     }
     
-    # 国内入库时间筛选
-    if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
-      data <- data[!is.na(data$DomesticEntryTime) & 
-                     data$DomesticEntryTime >= as.Date(input$entry_time_range[1]) & 
-                     data$DomesticEntryTime <= as.Date(input$entry_time_range[2]), ]
-    }
-    
-    # 国内出库时间筛选
-    if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
-      data <- data[!is.na(data$DomesticExitTime) & 
-                     data$DomesticExitTime >= as.Date(input$exit_time_range[1]) & 
-                     data$DomesticExitTime <= as.Date(input$exit_time_range[2]), ]
-    }
-    
-    # 国内售出时间筛选
-    if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
-      data <- data[!is.na(data$DomesticSoldTime) & 
-                     data$DomesticSoldTime >= as.Date(input$sold_time_range[1]) & 
-                     data$DomesticSoldTime <= as.Date(input$sold_time_range[2]), ]
-    }
+    # # 国内入库时间筛选
+    # if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
+    #   data <- data[!is.na(data$DomesticEntryTime) & 
+    #                  data$DomesticEntryTime >= as.Date(input$entry_time_range[1]) & 
+    #                  data$DomesticEntryTime <= as.Date(input$entry_time_range[2]), ]
+    # }
+    # 
+    # # 国内出库时间筛选
+    # if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
+    #   data <- data[!is.na(data$DomesticExitTime) & 
+    #                  data$DomesticExitTime >= as.Date(input$exit_time_range[1]) & 
+    #                  data$DomesticExitTime <= as.Date(input$exit_time_range[2]), ]
+    # }
+    # 
+    # # 国内售出时间筛选
+    # if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
+    #   data <- data[!is.na(data$DomesticSoldTime) & 
+    #                  data$DomesticSoldTime >= as.Date(input$sold_time_range[1]) & 
+    #                  data$DomesticSoldTime <= as.Date(input$sold_time_range[2]), ]
+    # }
     
     data
   })
