@@ -45,7 +45,7 @@ ui <- navbarPage(
         border-bottom: 1px solid #ddd; 
         margin-bottom: 40px; 
         max-width: 100%;
-        max-height: 400px; 
+        max-height: 450px; 
         overflow-x: hidden; /* 防止水平滚动 */
         overflow-y: auto; /* 垂直滚动 */
         box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加阴影以确保视觉分隔 */
@@ -490,7 +490,7 @@ ui <- navbarPage(
             div(
               class = "card",
               style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-              tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold;"),
+              tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px"),
               plotlyOutput("inventory_status_chart", height = "300px") # 使用 plotlyOutput
             )
           ),
