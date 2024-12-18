@@ -245,7 +245,7 @@ ui <- navbarPage(
       margin-bottom: 40px; 
       max-width: 100%;
       max-height: 400px; 
-      overflow-y: auto; 
+      overflow-x: hidden; /* 防止水平滚动 */
       box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加阴影以确保视觉分隔 */",
           uiOutput("inbound_item_info")
         ), # 动态渲染物品信息
