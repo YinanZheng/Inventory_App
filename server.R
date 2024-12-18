@@ -196,7 +196,7 @@ server <- function(input, output, session) {
   ")
   })
   
-  filtered_unique_items_data <- reactive({unique_items_data()})
+  # filtered_unique_items_data <- reactive({unique_items_data()})
   
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
@@ -1311,13 +1311,16 @@ server <- function(input, output, session) {
   
 
   # 筛选逻辑
-  # data <- filtered_unique_items_data()
-  
-  # 供应商筛选
-  # if (!is.null(input$maker)) {
-  #   data <- data[data$Maker %in% input$maker, ]
-  # }
-  # 
+  filtered_unique_items_data <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    if (!is.null(input$maker)) {
+      data <- data[data$Maker %in% input$maker, ]
+    }
+    data
+  })
+
   # # 大类筛选
   # if (!is.null(input$major_type)) {
   #   data <- data[data$MajorType %in% input$major_type, ]
