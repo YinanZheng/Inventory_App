@@ -15,13 +15,15 @@ ui <- navbarPage(
       tags$style(HTML("
         .sticky-sidebar {
           position: fixed;
-          top: 70px; /* 导航栏的高度 */
+          top: 70px; /* 与导航栏对齐 */
+          left: 10px; /* 距离窗口左侧 10px */
+          width: 300px; /* 设置侧边栏宽度 */
           z-index: 900;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 20px;
           background-color: #f9f9f9;
+          border: 1px solid #ccc;
+          padding: 20px;
         }
+        body { padding-top: 70px; } /* 为导航栏预留空间 */
       ")),
       
       tags$script(HTML("
