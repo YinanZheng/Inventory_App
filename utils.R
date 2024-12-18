@@ -703,7 +703,7 @@ clean_untracked_images <- function() {
   dbDisconnect(con)
 }
 
-updateFilters <- function(session, unique_items_data) {
+updateFilters <- function(session, unique_items_data, input) {
   req(unique_items_data())
   
   validate(
@@ -714,43 +714,64 @@ updateFilters <- function(session, unique_items_data) {
     need("MinorType" %in% names(unique_items_data()), "数据中缺少 MinorType 列")
   )
   
-  updateSelectInput(session, "maker", 
-                    choices = unique(unique_items_data()$Maker), 
-                    selected = unique(unique_items_data()$Maker))
+  # 更新 Maker
+  updateSelectInput(
+    session,
+    "maker",
+    choices = unique(unique_items_data()$Maker),
+    selected = if (is.null(input$maker)) unique(unique_items_data()$Maker) else input$maker
+  )
   
-  updateSelectInput(session, "major_type", 
-                    choices = unique(unique_items_data()$MajorType), 
-                    selected = unique(unique_items_data()$MajorType))
+  # 筛选数据根据 Maker
+  filtered_data_maker <- unique_items_data()
+  if (!is.null(input$maker)) {
+    filtered_data_maker <- filtered_data_maker[filtered_data_maker$Maker %in% input$maker, ]
+  }
   
-  updateSelectInput(session, "minor_type", 
-                    choices = unique(unique_items_data()$MinorType), 
-                    selected = unique(unique_items_data()$MinorType))
+  # 更新 MajorType，依赖 Maker
+  updateSelectInput(
+    session,
+    "major_type",
+    choices = unique(filtered_data_maker$MajorType),
+    selected = if (is.null(input$major_type)) unique(filtered_data_maker$MajorType) else input$major_type
+  )
   
-  updateSelectInput(session, "unique_status", 
-                    choices = unique(unique_items_data()$Status), 
-                    selected = unique(unique_items_data()$Status))
+  # 筛选数据根据 MajorType
+  filtered_data_major <- filtered_data_maker
+  if (!is.null(input$major_type)) {
+    filtered_data_major <- filtered_data_major[filtered_data_major$MajorType %in% input$major_type, ]
+  }
   
-  updateSelectInput(session, "unique_defect", 
-                    choices = unique(unique_items_data()$Defect), 
-                    selected = unique(unique_items_data()$Defect))
+  # 更新 MinorType，依赖 Maker 和 MajorType
+  updateSelectInput(
+    session,
+    "minor_type",
+    choices = unique(filtered_data_major$MinorType),
+    selected = if (is.null(input$minor_type)) unique(filtered_data_major$MinorType) else input$minor_type
+  )
   
+  # 更新 Status 和 Defect（独立于 Maker/MajorType/MinorType）
+  updateSelectInput(
+    session,
+    "unique_status",
+    choices = unique(unique_items_data()$Status),
+    selected = unique(unique_items_data()$Status)
+  )
+  
+  updateSelectInput(
+    session,
+    "unique_defect",
+    choices = unique(unique_items_data()$Defect),
+    selected = unique(unique_items_data()$Defect)
+  )
+  
+  # 更新采购时间范围
   purchase_time <- unique_items_data()$PurchaseTime
-  updateDateRangeInput(session, "purchase_time_range",
-                       start = min(purchase_time, na.rm = TRUE),
-                       end = max(purchase_time, na.rm = TRUE))
-  
-  # entry_time <- unique_items_data()$DomesticEntryTime
-  # updateDateRangeInput(session, "entry_time_range",
-  #                      start = min(entry_time, na.rm = TRUE),
-  #                      end = max(entry_time, na.rm = TRUE))
-  # 
-  # exit_time <- unique_items_data()$DomesticExitTime
-  # updateDateRangeInput(session, "exit_time_range",
-  #                      start = min(exit_time, na.rm = TRUE),
-  #                      end = max(exit_time, na.rm = TRUE))
-  # 
-  # sold_time <- unique_items_data()$DomesticSoldTime
-  # updateDateRangeInput(session, "sold_time_range",
-  #                      start = min(sold_time, na.rm = TRUE),
-  #                      end = max(sold_time, na.rm = TRUE))
+  updateDateRangeInput(
+    session,
+    "purchase_time_range",
+    start = min(purchase_time, na.rm = TRUE),
+    end = max(purchase_time, na.rm = TRUE)
+  )
 }
+
