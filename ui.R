@@ -3,16 +3,10 @@ ui <- navbarPage(
   title = "库存管理系统（国内端）",
   theme = shinytheme("flatly"), # 可选主题
   position = "fixed-top",
+  
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
-    
-    # tags$head(
-    #   tags$style(HTML("
-    #     body { padding-top: 70px; } /* 为导航栏腾出空间 */
-    #     .navbar { z-index: 1000; }  /* 确保导航栏在最顶层 */
-    #   ")),
-    # ),
-    
+
     tags$head(
       tags$head(
         tags$style(HTML("
@@ -60,8 +54,8 @@ ui <- navbarPage(
         }
       }
     ")),
-      
-      tags$script(HTML("
+        
+        tags$script(HTML("
         $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
           const items = (event.originalEvent.clipboardData || event.clipboardData).items;
           for (let i = 0; i < items.length; i++) {
@@ -80,6 +74,7 @@ ui <- navbarPage(
             }
           }
         });"))
+      )
     )
   ),
   
