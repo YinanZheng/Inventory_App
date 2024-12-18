@@ -1346,39 +1346,39 @@ server <- function(input, output, session) {
     updateFilters(session, unique_items_data)
   })
   
-  # 
-  # # 下载物品表为 Excel
-  # output$download_unique_items_xlsx <- downloadHandler(
-  #   filename = function() {
-  #     paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
-  #   },
-  #   content = function(file) {
-  #     # 创建 Excel 文件
-  #     wb <- createWorkbook()
-  #     addWorksheet(wb, "Unique Items")
-  #     
-  #     # 写入数据到 Excel
-  #     writeData(wb, "Unique Items", filtered_unique_items_data(), startCol = 1, startRow = 1)
-  #     
-  #     # 插入图片到 Excel
-  #     for (i in seq_len(nrow(filtered_unique_items_data()))) {
-  #       image_path <- filtered_unique_items_data()$ItemImagePath[i]
-  #       if (file.exists(image_path)) {  # 检查图片是否存在
-  #         addImage(wb, 
-  #                  sheet = "Unique Items", 
-  #                  file = image_path, 
-  #                  startCol = 15,  # 图片插入到 "ItemImagePath" 列
-  #                  startRow = i + 1,  # 行号加 1，考虑表头
-  #                  width = 2, 
-  #                  height = 1.5,
-  #                  units = "in")
-  #       }
-  #     }
-  #     
-  #     # 保存 Excel 文件
-  #     saveWorkbook(wb, file, overwrite = TRUE)
-  #   }
-  # )
+
+  # 下载物品表为 Excel
+  output$download_unique_items_xlsx <- downloadHandler(
+    filename = function() {
+      paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
+    },
+    content = function(file) {
+      # 创建 Excel 文件
+      wb <- createWorkbook()
+      addWorksheet(wb, "Unique Items")
+
+      # 写入数据到 Excel
+      writeData(wb, "Unique Items", filtered_unique_items_data(), startCol = 1, startRow = 1)
+
+      # 插入图片到 Excel
+      for (i in seq_len(nrow(filtered_unique_items_data()))) {
+        image_path <- filtered_unique_items_data()$ItemImagePath[i]
+        if (file.exists(image_path)) {  # 检查图片是否存在
+          addImage(wb,
+                   sheet = "Unique Items",
+                   file = image_path,
+                   startCol = 15,  # 图片插入到 "ItemImagePath" 列
+                   startRow = i + 1,  # 行号加 1，考虑表头
+                   width = 2,
+                   height = 1.5,
+                   units = "in")
+        }
+      }
+
+      # 保存 Excel 文件
+      saveWorkbook(wb, file, overwrite = TRUE)
+    }
+  )
   
   ################################################################
   ##                                                            ##
