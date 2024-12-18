@@ -1334,41 +1334,41 @@ server <- function(input, output, session) {
     )
   })
   
-  # # 动态更新采购时间范围
-  # observe({
-  #   req(unique_items_data())
-  #   purchase_time <- unique_items_data()$PurchaseTime
-  #   updateDateRangeInput(session, "purchase_time_range",
-  #                        start = min(purchase_time, na.rm = TRUE),
-  #                        end = max(purchase_time, na.rm = TRUE))
-  # })
-  # 
-  # # 动态更新国内入库时间范围
-  # observe({
-  #   req(unique_items_data())
-  #   entry_time <- unique_items_data()$DomesticEntryTime
-  #   updateDateRangeInput(session, "entry_time_range",
-  #                        start = min(entry_time, na.rm = TRUE),
-  #                        end = max(entry_time, na.rm = TRUE))
-  # })
-  # 
-  # # 动态更新国内出库时间范围
-  # observe({
-  #   req(unique_items_data())
-  #   exit_time <- unique_items_data()$DomesticExitTime
-  #   updateDateRangeInput(session, "exit_time_range",
-  #                        start = min(exit_time, na.rm = TRUE),
-  #                        end = max(exit_time, na.rm = TRUE))
-  # })
-  # 
-  # # 动态更新国内售出时间范围
-  # observe({
-  #   req(unique_items_data())
-  #   sold_time <- unique_items_data()$DomesticSoldTime
-  #   updateDateRangeInput(session, "sold_time_range",
-  #                        start = min(sold_time, na.rm = TRUE),
-  #                        end = max(sold_time, na.rm = TRUE))
-  # })
+  # 动态更新采购时间范围
+  observe({
+    req(unique_items_data())
+    purchase_time <- unique_items_data()$PurchaseTime
+    updateDateRangeInput(session, "purchase_time_range",
+                         start = min(purchase_time, na.rm = TRUE),
+                         end = max(purchase_time, na.rm = TRUE))
+  })
+
+  # 动态更新国内入库时间范围
+  observe({
+    req(unique_items_data())
+    entry_time <- unique_items_data()$DomesticEntryTime
+    updateDateRangeInput(session, "entry_time_range",
+                         start = min(entry_time, na.rm = TRUE),
+                         end = max(entry_time, na.rm = TRUE))
+  })
+
+  # 动态更新国内出库时间范围
+  observe({
+    req(unique_items_data())
+    exit_time <- unique_items_data()$DomesticExitTime
+    updateDateRangeInput(session, "exit_time_range",
+                         start = min(exit_time, na.rm = TRUE),
+                         end = max(exit_time, na.rm = TRUE))
+  })
+
+  # 动态更新国内售出时间范围
+  observe({
+    req(unique_items_data())
+    sold_time <- unique_items_data()$DomesticSoldTime
+    updateDateRangeInput(session, "sold_time_range",
+                         start = min(sold_time, na.rm = TRUE),
+                         end = max(sold_time, na.rm = TRUE))
+  })
 
   # 筛选逻辑
   filtered_unique_items_data <- reactive({
@@ -1402,25 +1402,29 @@ server <- function(input, output, session) {
 
     # 采购时间筛选
     if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
-      data <- data[data$PurchaseTime >= as.Date(input$purchase_time_range[1]) &
+      data <- data[!is.na(data$PurchaseTime) & 
+                     data$PurchaseTime >= as.Date(input$purchase_time_range[1]) & 
                      data$PurchaseTime <= as.Date(input$purchase_time_range[2]), ]
     }
     
     # 国内入库时间筛选
     if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
-      data <- data[data$DomesticEntryTime >= as.Date(input$entry_time_range[1]) &
+      data <- data[!is.na(data$DomesticEntryTime) & 
+                     data$DomesticEntryTime >= as.Date(input$entry_time_range[1]) & 
                      data$DomesticEntryTime <= as.Date(input$entry_time_range[2]), ]
     }
     
     # 国内出库时间筛选
     if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
-      data <- data[data$DomesticExitTime >= as.Date(input$exit_time_range[1]) &
+      data <- data[!is.na(data$DomesticExitTime) & 
+                     data$DomesticExitTime >= as.Date(input$exit_time_range[1]) & 
                      data$DomesticExitTime <= as.Date(input$exit_time_range[2]), ]
     }
     
     # 国内售出时间筛选
     if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
-      data <- data[data$DomesticSoldTime >= as.Date(input$sold_time_range[1]) &
+      data <- data[!is.na(data$DomesticSoldTime) & 
+                     data$DomesticSoldTime >= as.Date(input$sold_time_range[1]) & 
                      data$DomesticSoldTime <= as.Date(input$sold_time_range[2]), ]
     }
     
