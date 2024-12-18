@@ -1286,11 +1286,44 @@ server <- function(input, output, session) {
       need("MinorType" %in% names(unique_items_data()), "数据中缺少 MinorType 列")
     )
     
-    # 更新下拉菜单选项
-    updateSelectInput(session, "maker", 
-                      choices = unique(unique_items_data()$Maker), 
-                      selected = unique(unique_items_data()$Maker)
-    )
+    # 更新 Maker 选项
+    observe({
+      req(unique_items_data())
+      updateSelectInput(
+        session,
+        "maker",
+        choices = unique(unique_items_data()$Maker),
+        selected = unique(unique_items_data()$Maker)  # 默认全选
+      )
+    })
+    
+    # 更新 MajorType 选项，依赖于 Maker
+    observeEvent(input$maker, {
+      req(unique_items_data())
+      filtered_data <- unique_items_data()[unique_items_data()$Maker %in% input$maker, ]
+      updateSelectInput(
+        session,
+        "major_type",
+        choices = unique(filtered_data$MajorType),
+        selected = unique(filtered_data$MajorType)  # 默认全选
+      )
+    })
+    
+    # 更新 MinorType 选项，依赖于 MajorType
+    observeEvent(input$major_type, {
+      req(unique_items_data())
+      filtered_data <- unique_items_data()[
+        unique_items_data()$MajorType %in% input$major_type & 
+          unique_items_data()$Maker %in% input$maker, 
+      ]
+      updateSelectInput(
+        session,
+        "minor_type",
+        choices = unique(filtered_data$MinorType),
+        selected = unique(filtered_data$MinorType)  # 默认全选
+      )
+    })
+    
     updateSelectInput(session, "unique_status", 
                       choices = unique(unique_items_data()$Status), 
                       selected = unique(unique_items_data()$Status)
@@ -1298,14 +1331,6 @@ server <- function(input, output, session) {
     updateSelectInput(session, "unique_defect", 
                       choices = unique(unique_items_data()$Defect), 
                       selected = unique(unique_items_data()$Defect)
-    )
-    updateSelectInput(session, "major_type", 
-                      choices = unique(unique_items_data()$MajorType), 
-                      selected = unique(unique_items_data()$MajorType)
-    )
-    updateSelectInput(session, "minor_type", 
-                      choices = unique(unique_items_data()$MinorType), 
-                      selected = unique(unique_items_data()$MinorType)
     )
   })
   
