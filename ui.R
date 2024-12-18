@@ -291,7 +291,8 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-        fluidRow(
+        div(
+          class = "sticky-info",
           column(12, uiOutput("outbound_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
         ),
         tags$hr(),
