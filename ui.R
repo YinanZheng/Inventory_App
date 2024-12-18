@@ -38,7 +38,7 @@ ui <- navbarPage(
       /* 主面板 */
       .main-panel {
         flex-grow: 1; /* 占据剩余空间 */
-        top: 70px; /* 与导航栏对齐 */
+        padding-top: 90px; /* 为导航栏预留空间 */
         padding: 20px;
         background-color: #ffffff;
       }
