@@ -1379,12 +1379,16 @@ server <- function(input, output, session) {
       
       # 写入数据到 Excel
       writeData(wb, "物品明细表", data, startCol = 1, startRow = 1)
-
-      col_to_insert <- 3      # 图片插入的列号
+      
+      # 图片插入的列号
+      col_to_insert <- 3      
+      
+      # 设置固定高度 1 inch，计算动态宽度
+      image_height <- 1
       
       # 插入图片到 Excel
       for (i in seq_len(nrow(data))) {
-        image_path <- data[, col_to_insert]
+        image_path <- data[i, col_to_insert]
         image_width_max <- 1
         if (!is.na(image_path) && file.exists(image_path)) {
           
@@ -1394,8 +1398,6 @@ server <- function(input, output, session) {
           
           row_to_insert <- i + 1  # 对应数据的行号
           
-          # 设置固定高度 1 inch，计算动态宽度
-          image_height <- 1  # 固定高度（英寸）
           image_width <- image_height * width_ratio  # 动态宽度（英寸）
           
           # 更新最大宽度
