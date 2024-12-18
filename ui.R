@@ -6,7 +6,7 @@ ui <- navbarPage(
   
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
-
+    
     tags$head(
       tags$style(HTML("
       /* Flexbox 容器 */
@@ -73,8 +73,7 @@ ui <- navbarPage(
             }
           }
         });"))     
- 
-      )
+      
     )
   ),
   
