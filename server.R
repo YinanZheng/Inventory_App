@@ -1366,12 +1366,22 @@ server <- function(input, output, session) {
       # 插入图片到 Excel
       for (i in seq_len(nrow(filtered_unique_items_data()))) {
         image_path <- filtered_unique_items_data()$ItemImagePath[i]
+        image_width_max <- 1
         if (!is.na(image_path) && file.exists(image_path)) {
+          
+          # 获取图片的实际宽高比
+          dims <- get_image_dimensions(image_path)
+          width_ratio <- dims$width / dims$height  # 宽高比
           
           row_to_insert <- i + 1  # 对应数据的行号
           col_to_insert <- 19      # 图片插入的列号
-          image_width <- 1       # 图片宽度（英寸）
-          image_height <- 1     # 图片高度（英寸）
+          
+          # 设置固定高度 1 inch，计算动态宽度
+          image_height <- 1  # 固定高度（英寸）
+          image_width <- image_height * width_ratio  # 动态宽度（英寸）
+          
+          # 更新最大宽度
+          image_width_max <- max(image_width_max, image_width)
           
           insertImage(
             wb = wb,
@@ -1385,14 +1395,19 @@ server <- function(input, output, session) {
           )
           
           # 调整行高和列宽
-          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 14)
-          setColWidths(wb, "物品明细表", cols = col_to_insert, widths = image_width * 7)
-          
+          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 72 / 20)
+
         } else {
           showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
         }
       }
 
+      # 最终设置列宽，保证所有图片适配最大宽度
+      setColWidths(wb, "Sheet1", cols = 19, widths = image_width_max * 10)
+      
+      # 自动调整其他列的宽度
+      setColWidths(wb, "Sheet1", cols = 1:18, widths = "auto")
+      
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
       showNotification("Excel 文件已成功下载", type = "message", duration = 5)

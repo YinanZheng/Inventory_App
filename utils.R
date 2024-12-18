@@ -39,6 +39,13 @@ export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
   return(paste0(pdf_path, ".pdf"))
 }
 
+# Get image height width ratio
+get_image_dimensions <- function(image_path) {
+  img <- magick::image_read(image_path)
+  info <- magick::image_info(img)
+  list(width = info$width, height = info$height)
+}
+
 # Save compressed image to the server
 save_compressed_image <- function(file_path, output_dir, image_name, quality = 75, max_width = 500) {
   # 验证输入
