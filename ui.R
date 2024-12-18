@@ -15,15 +15,16 @@ ui <- navbarPage(
     
     tags$head(
       tags$style(HTML("
-        .sticky-sidebar {
-          position: sticky;
-          top: 70px;
-          z-index: 900;
-          border: 1px solid #e0e0e0;
-          border-radius: 8px;
-          padding: 20px;
-          background-color: #f9f9f9;
-        }"))
+    .sticky-sidebar {
+      position: sticky;
+      top: 70px; /* 导航栏的高度 */
+      z-index: 900;
+      border: 1px solid #e0e0e0;
+      border-radius: 8px;
+      padding: 20px;
+      background-color: #f9f9f9;
+    }
+  "))
     ),
     
     tags$head(tags$script(HTML("
