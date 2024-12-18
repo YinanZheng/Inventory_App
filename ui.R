@@ -8,54 +8,53 @@ ui <- navbarPage(
     shinyjs::useShinyjs(),  # 启用 shinyjs
 
     tags$head(
-      tags$head(
-        tags$style(HTML("
+      tags$style(HTML("
+      /* Flexbox 容器 */
+      .layout-container {
+        display: flex; /* Flex 布局 */
+        flex-wrap: nowrap; /* 禁止换行 */
+        height: 100%; /* 满高布局 */
+      }
+
       /* Sticky Sidebar */
       .sticky-sidebar {
-        position: sticky;
-        top: 70px; /* 距离顶部的偏移，与导航栏对齐 */
+        position: sticky; /* 保持固定 */
+        top: 70px; /* 与导航栏对齐 */
         z-index: 900;
-        width: 500px; /* 固定宽度 */
-        height: calc(100vh - 70px); /* 占据视口高度，减去导航栏高度 */
+        width: 300px; /* 固定宽度 */
+        height: calc(100vh - 70px); /* 自动计算高度 */
         overflow-y: auto; /* 滚动支持 */
         border: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
-        flex-shrink: 0; /* 防止被压缩 */
+        flex-shrink: 0; /* 防止压缩 */
       }
 
       /* 主面板 */
       .main-panel {
-        flex-grow: 1; /* 自动扩展以占据剩余空间 */
+        flex-grow: 1; /* 占据剩余空间 */
         padding: 20px;
         background-color: #ffffff;
       }
 
-      /* Flexbox 容器 */
-      .layout-container {
-        display: flex; /* 使用 Flexbox 布局 */
-        flex-wrap: nowrap; /* 禁止换行 */
-        height: calc(100vh - 70px); /* 确保容器与视口高度一致 */
-      }
-
-      /* 响应式布局：窄屏处理 */
+      /* 响应式布局 */
       @media (max-width: 768px) {
+        .layout-container {
+          flex-direction: column; /* 垂直排列 */
+        }
         .sticky-sidebar {
           position: static; /* 不再固定 */
-          width: 100%; /* 占据全宽 */
+          width: 100%; /* 全宽 */
           height: auto; /* 高度自适应 */
-        }
-        .layout-container {
-          flex-direction: column; /* 改为垂直排列 */
         }
         .main-panel {
           margin-left: 0; /* 无偏移 */
         }
       }
     ")),
-        
-        tags$script(HTML("
+      
+      tags$script(HTML("
         $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
           const items = (event.originalEvent.clipboardData || event.clipboardData).items;
           for (let i = 0; i < items.length; i++) {
@@ -73,7 +72,8 @@ ui <- navbarPage(
               break;
             }
           }
-        });"))
+        });"))     
+ 
       )
     )
   ),
