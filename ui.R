@@ -13,40 +13,45 @@ ui <- navbarPage(
     #   ")),
     # ),
     
-    tags$style(HTML("
+    tags$head(
+      tags$style(HTML("
       /* Sticky Sidebar */
       .sticky-sidebar {
         position: sticky;
-        top: 70px; /* 导航栏的高度 */
+        top: 70px; /* 与固定导航栏对齐 */
         z-index: 900;
+        width: 300px; /* 固定宽度 */
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
-        width: 500px; /* 固定宽度 */
+        flex-shrink: 0; /* 防止在 Flexbox 中缩小 */
       }
 
-      /* 主面板为侧边栏留出空间 */
+      /* 主面板 */
       .main-panel {
         flex-grow: 1; /* 占据剩余空间 */
         padding: 20px;
       }
 
-      /* 父容器使用 Flexbox */
+      /* Flexbox 容器 */
       .layout-container {
-        display: flex;
-        flex-wrap: nowrap; /* 不换行 */
+        display: flex; /* 使用 Flexbox 布局 */
+        flex-wrap: nowrap; /* 禁止换行 */
+        height: 100%; /* 全高 */
       }
 
-      /* 响应式调整：窄屏时侧边栏不固定，主面板占满宽度 */
+      /* 响应式布局：窄屏处理 */
       @media (max-width: 768px) {
         .sticky-sidebar {
-          position: static;
-          width: 100%;
+          position: static; /* 不再固定 */
+          width: 100%; /* 占据全宽 */
         }
         .layout-container {
-          flex-direction: column; /* 窄屏时改为垂直布局 */
+          flex-direction: column; /* 垂直排列 */
         }
         .main-panel {
-          margin-left: 0;
+          margin-left: 0; /* 无偏移 */
         }
       }
     ")),
@@ -76,7 +81,7 @@ ui <- navbarPage(
   tabPanel(
     "采购登记",
     div(
-      style = "display: flex; flex-wrap: nowrap;",  # 使用 flexbox 布局
+      class = "layout-container",  # Flexbox 容器
       
       div(
         class = "sticky-sidebar",  # 引用全局样式
