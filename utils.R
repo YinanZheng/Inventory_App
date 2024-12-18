@@ -671,4 +671,34 @@ handleOperation <- function(
   })
 }
 
-
+# 清理未被记录的图片 (每天运行一次)
+clean_untracked_images <- function() {
+  # 数据库连接信息
+  con <- db_connection()
+  
+  tryCatch({
+    # 1. 获取数据库中记录的图片路径
+    query <- "SELECT ItemImagePath FROM inventory WHERE ItemImagePath IS NOT NULL"
+    recorded_paths <- normalizePath(dbGetQuery(con, query)$ItemImagePath, mustWork = FALSE)
+    
+    # 2. 列出目录中所有图片文件，并规范化路径
+    all_files <- normalizePath(list.files("/var/www/images/", full.names = TRUE), mustWork = FALSE)
+    
+    # 3. 检查哪些文件未被记录
+    untracked_files <- setdiff(all_files, recorded_paths)
+    
+    # 4. 删除未被记录的文件
+    if (length(untracked_files) > 0) {
+      sapply(untracked_files, file.remove)
+      message("以下文件已被删除：")
+      print(untracked_files)
+    } else {
+      message("没有未被记录的文件需要清理。")
+    }
+  }, error = function(e) {
+    message("清理过程中出现错误：", e$message)
+  })
+  
+  # 断开数据库连接
+  dbDisconnect(con)
+}
