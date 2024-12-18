@@ -1367,14 +1367,27 @@ server <- function(input, output, session) {
       for (i in seq_len(nrow(filtered_unique_items_data()))) {
         image_path <- filtered_unique_items_data()$ItemImagePath[i]
         if (!is.na(image_path) && file.exists(image_path)) {
-          insertImage(wb,
-                      sheet = "物品明细表",
-                      file = normalizePath(image_path),  # 使用绝对路径
-                      startCol = 20,  # 插入图片列
-                      startRow = i + 1,  # 考虑表头
-                      width = 2,  # 图片宽度（英寸）
-                      height = 1.5,  # 图片高度（英寸）
-                      units = "in")
+          
+          row_to_insert <- i + 1  # 对应数据的行号
+          col_to_insert <- 19      # 图片插入的列号
+          image_width <- 1       # 图片宽度（英寸）
+          image_height <- 1     # 图片高度（英寸）
+          
+          insertImage(
+            wb = wb,
+            sheet = "物品明细表",
+            file = normalizePath(image_path),
+            startRow = row_to_insert,
+            startCol = col_to_insert,
+            width = image_width,
+            height = image_height,
+            units = "in"
+          )
+          
+          # 调整行高和列宽
+          setRowHeights(wb, "Sheet1", rows = row_to_insert, heights = image_height * 14)
+          setColWidths(wb, "Sheet1", cols = col_to_insert, widths = image_width * 7)
+          
         } else {
           showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
         }
