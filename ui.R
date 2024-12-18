@@ -85,9 +85,8 @@ ui <- navbarPage(
     "采购登记",
     div(
       class = "layout-container",  # Flexbox 容器
-      
       div(
-        class = "sticky-sidebar",  # 引用全局样式
+        class = "sticky-sidebar",  # sticky 侧边栏
         
         fluidRow(
           column(10, 
@@ -165,8 +164,11 @@ ui <- navbarPage(
   
   tabPanel(
     "入库",
-    sidebarLayout(
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
+        
         fluidRow(
           column(
             12,
@@ -228,7 +230,8 @@ ui <- navbarPage(
           )
         )
       ),
-      mainPanel(
+      div(
+        class = "main-panel",
         fluidRow(
           column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;"), # 动态渲染物品信息
         ),
@@ -250,8 +253,10 @@ ui <- navbarPage(
   
   tabPanel(
     "出库",
-    sidebarLayout(
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
         div(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -266,7 +271,8 @@ ui <- navbarPage(
           )
         )
       ),
-      mainPanel(
+      div(
+        class = "main-panel",
         fluidRow(
           column(12, uiOutput("outbound_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
         ),
@@ -286,8 +292,10 @@ ui <- navbarPage(
   
   tabPanel(
     "售出",
-    sidebarLayout(
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
         div(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -302,7 +310,8 @@ ui <- navbarPage(
           )
         )
       ),
-      mainPanel(
+      div(
+        class = "main-panel",
         fluidRow(
           column(12, uiOutput("sold_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
         ),
@@ -326,8 +335,10 @@ ui <- navbarPage(
   
   tabPanel(
     "物品管理",
-    sidebarLayout(
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
         fluidRow(
           column(
             12,
@@ -360,7 +371,8 @@ ui <- navbarPage(
         actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
         
       ),
-      mainPanel(
+      div(
+        class = "main-panel",
         fluidRow(
           column(12, actionButton("toggle_item_table_manage", "物品状态表（点击显示/隐藏）",
                                   style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
@@ -376,8 +388,10 @@ ui <- navbarPage(
   
   tabPanel(
     "瑕疵品管理",
-    sidebarLayout(
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
         fluidRow(
           column(4, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描或输入SKU")),
           column(4, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
@@ -405,7 +419,8 @@ ui <- navbarPage(
         )
       ),
       
-      mainPanel(
+      div(
+        class = "main-panel",
         fluidRow(
           column(12, actionButton("toggle_item_table_defect", "物品状态表（点击显示/隐藏）",
                                   style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
@@ -421,9 +436,10 @@ ui <- navbarPage(
   
   tabPanel(
     "查询",
-    sidebarLayout(
-      # 左侧输入区域
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
         div(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -444,8 +460,8 @@ ui <- navbarPage(
           )
         )
       ),
-      # 右侧显示区域
-      mainPanel(
+      div(
+        class = "main-panel",
         fluidRow(
           # 库存状态图表
           column(
@@ -483,11 +499,14 @@ ui <- navbarPage(
   
   tabPanel(
     "报表下载",
-    sidebarLayout(
-      sidebarPanel(
+    div(
+      class = "layout-container",  # Flexbox 容器
+      div(
+        class = "sticky-sidebar",  # sticky 侧边栏
         
       ),
-      mainPanel(
+      div(
+        class = "main-panel",
         
       )
     )
