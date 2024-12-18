@@ -1406,7 +1406,7 @@ server <- function(input, output, session) {
       }
 
       # 最终设置列宽，保证所有图片适配最大宽度
-      setColWidths(wb, "物品明细表", cols = 19, widths = image_width_max * 12)
+      setColWidths(wb, "物品明细表", cols = 19, widths = image_width_max * 16)
       
       # 自动调整其他列的宽度
       setColWidths(wb, "物品明细表", cols = 1:18, widths = "auto")
