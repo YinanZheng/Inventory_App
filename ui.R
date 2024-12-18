@@ -105,7 +105,7 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(12, textInput("new_name", "商品名:"))
+          column(12, textInput("new_name", "商品名:", width = "100%"))
         ),
         fluidRow(
           column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
