@@ -38,7 +38,6 @@ ui <- navbarPage(
       /* 主面板 */
       .main-panel {
         flex-grow: 1; /* 占据剩余空间 */
-        padding-top: 200px; /* 为导航栏预留空间 */
         padding: 20px;
         background-color: #ffffff;
       }
@@ -239,6 +238,7 @@ ui <- navbarPage(
           style = "
       position: sticky; 
       top: 70px; 
+      z-index: 105
       background-color: white; 
       padding: 10px; 
       border-bottom: 1px solid #ddd; 
