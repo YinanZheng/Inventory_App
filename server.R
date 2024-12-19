@@ -214,6 +214,20 @@ server <- function(input, output, session) {
     data
   })
   
+  # 瑕疵品管理页过滤
+  
+  # 根据开关状态动态过滤数据
+  filtered_unique_items_data_defect <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    if (input$show_defects_only) {
+      data <- data[data$Defect == "瑕疵", ]
+    }
+    
+    data
+  })
+  
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                         column_mapping <- list(
@@ -278,7 +292,7 @@ server <- function(input, output, session) {
                                                          DomesticEntryTime = "国内入库日期",
                                                          Status = "库存状态",
                                                          Defect = "物品状态"
-                                                       ), data = unique_items_data)
+                                                       ), data = filtered_unique_items_data_defect)
   
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
                                                          column_mapping <- list(
