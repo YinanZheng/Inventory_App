@@ -1304,9 +1304,13 @@ server <- function(input, output, session) {
   ## 数据下载分页                                               ##
   ##                                                            ##
   ################################################################
-  # 
+  
+  # 初始化标志变量
+  is_clearing <- reactiveVal(FALSE)
+  
   # 初始化筛选选项
   observe({
+    if (is_clearing()) return()  # 如果正在清空，跳过更新逻辑
     updateFilters(session, unique_items_data, input)
   })
   
@@ -1373,6 +1377,7 @@ server <- function(input, output, session) {
   
   # 全选逻辑
   observeEvent(input$select_all, {
+    is_clearing(FALSE)
     maker_data <- maker_list()
     if (!is.null(maker_data) && nrow(maker_data) > 0) {
       updateSelectizeInput(session, "maker", selected = unique(unique_items_data()$Maker), server = TRUE)
@@ -1381,6 +1386,7 @@ server <- function(input, output, session) {
   
   # 清空逻辑
   observeEvent(input$clear_all, {
+    is_clearing(TRUE)
     updateSelectizeInput(session, "maker", selected = NULL, server = TRUE)
   })
   
