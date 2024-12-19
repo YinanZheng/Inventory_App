@@ -558,24 +558,28 @@ ui <- navbarPage(
                     class = "card",
                     style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                     # tags$h4("开销汇总", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
-                    # 时间范围选择器
-                    dateRangeInput(
-                      "time_range",
-                      label = "选择时间范围",
-                      start = Sys.Date() - 30,  # 默认最近30天
-                      end = Sys.Date()
-                    ),
                     
-                    # 统计精度选择器
-                    selectInput(
-                      "precision",
-                      label = "选择统计精度",
-                      choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
-                      selected = "天"
+                    fluidRow(
+                      # 时间范围选择器
+                      column(4,                   
+                             dateRangeInput(
+                               "time_range",
+                               label = "选择时间范围",
+                               start = Sys.Date() - 30,  # 默认最近30天
+                               end = Sys.Date()
+                             )),
+                      # 统计精度选择器
+                      column(4,
+                             selectInput(
+                               "precision",
+                               label = "选择统计精度",
+                               choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
+                               selected = "天"
+                             ))
                     ),
                     
                     # 图表
-                    plotlyOutput("expense_chart", height = "300px")
+                    plotlyOutput("expense_chart", height = "250px")
                   )
                 )
               )
