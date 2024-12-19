@@ -592,7 +592,7 @@ server <- function(input, output, session) {
   # 监听采购页选中items_table
   observeEvent(unique_items_table_purchase_selected_row(), {
     if (!is.null(unique_items_table_purchase_selected_row()) && length(unique_items_table_purchase_selected_row()) > 0) {
-      selected_data <- unique_items_data()[unique_items_table_purchase_selected_row(), ]
+      selected_data <- filtered_unique_items_data_purchase()[unique_items_table_purchase_selected_row(), ]
       
       # showNotification(paste("Selected MajorType:", selected_data$MajorType))
       # showNotification(paste("Selected MinorType:", selected_data$MinorType))
@@ -1007,7 +1007,7 @@ server <- function(input, output, session) {
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_defect_selected_row(), {
     if (!is.null(unique_items_table_defect_selected_row()) && length(unique_items_table_defect_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_defect_selected_row(), "SKU", drop = TRUE]
+      selected_sku <- filtered_unique_items_data_defect()[unique_items_table_defect_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "defect_sku", value = selected_sku)
       updateTextInput(session, "repair_sku", value = selected_sku)
     }
