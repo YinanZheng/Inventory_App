@@ -441,13 +441,16 @@ ui <- navbarPage(
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
-        switchInput(
-          inputId = "show_defects_only",
-          label = "仅显示瑕疵品",   # 标签
-          value = FALSE,          # 默认值
-          onLabel = "开",         # 开状态的标签
-          offLabel = "关",        # 关状态的标签
-          size = "large"        # 开关尺寸：可选 "small", "default", "large"
+        tags$div(
+          tags$label("仅显示瑕疵品", for = "show_defects_only"),  # 标签放在上方
+          switchInput(
+            inputId = "show_defects_only",
+            label = NULL,        # 不显示标签在开关上
+            value = FALSE,       # 默认值
+            onLabel = "开",       # 开状态的标签
+            offLabel = "关",      # 关状态的标签
+            size = "default"     # 开关尺寸
+          )
         )
       ),
       
