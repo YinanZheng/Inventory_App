@@ -1298,42 +1298,55 @@ server <- function(input, output, session) {
     req(input$time_range) # 确保时间范围存在
     data <- unique_items_data()
     
-    # 过滤数据，确保时间范围被正确使用
-    filtered_data <- data %>%
-      filter(PurchaseTime >= as.Date(input$time_range[1]) &
-               PurchaseTime <= as.Date(input$time_range[2]))
+    # 获取时间范围
+    start_date <- as.Date(input$time_range[1])
+    end_date <- as.Date(input$time_range[2])
     
-    # 按选择的精度分组
-    summarized_data <- filtered_data %>%
+    # 根据统计单位生成完整时间序列
+    time_sequence <- switch(input$precision,
+                            "天" = seq.Date(from = start_date, to = end_date, by = "day"),
+                            "周" = seq.Date(from = floor_date(start_date, "week"),
+                                           to = floor_date(end_date, "week"),
+                                           by = "week"),
+                            "月" = seq.Date(from = floor_date(start_date, "month"),
+                                           to = floor_date(end_date, "month"),
+                                           by = "month"),
+                            "年" = seq.Date(from = floor_date(start_date, "year"),
+                                           to = floor_date(end_date, "year"),
+                                           by = "year"))
+    
+    # 转换为数据框
+    time_df <- data.frame(GroupDate = time_sequence)
+    
+    # 数据过滤并按选择的单位分组
+    summarized_data <- data %>%
       mutate(
         GroupDate = case_when(
-          input$precision == "天" ~ PurchaseTime,
-          input$precision == "周" ~ floor_date(PurchaseTime, "week"),
-          input$precision == "月" ~ floor_date(PurchaseTime, "month"),
-          input$precision == "年" ~ floor_date(PurchaseTime, "year")
+          input$precision == "天" ~ as.Date(PurchaseTime),
+          input$precision == "周" ~ floor_date(as.Date(PurchaseTime), "week"),
+          input$precision == "月" ~ floor_date(as.Date(PurchaseTime), "month"),
+          input$precision == "年" ~ floor_date(as.Date(PurchaseTime), "year")
         )
       ) %>%
       group_by(GroupDate) %>%
       summarize(
         TotalExpense = sum(ProductCost + DomesticShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
-        ShippingCost = sum(DomesticShippingCost, na.rm = TRUE)
-      ) %>%
-      ungroup()
+        ShippingCost = sum(DomesticShippingCost, na.rm = TRUE),
+        .groups = "drop"
+      )
     
-    summarized_data
+    # 将时间序列与统计数据合并，填充缺失值为 0
+    complete_data <- time_df %>%
+      left_join(summarized_data, by = "GroupDate") %>%
+      replace_na(list(TotalExpense = 0, ProductCost = 0, ShippingCost = 0))
+    
+    complete_data
   })
   
-  
-  
-  
+
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
-    
-    # 确保数据存在
-    if (nrow(data) == 0) {
-      return(NULL) # 如果数据为空，返回 NULL
-    }
     
     # 根据用户选择的内容决定显示的 Y 轴数据
     y_var <- switch(input$expense_type,
@@ -1341,25 +1354,10 @@ server <- function(input, output, session) {
                     "cost" = "ProductCost",
                     "shipping" = "ShippingCost")
     
-    # 确保 y_var 对应的数据有效
-    if (!y_var %in% names(data)) {
-      return(NULL)
-    }
-    
     color <- switch(input$expense_type,
                     "total" = "#007BFF",
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
-    
-    # 筛选出有数据的日期
-    non_zero_data <- data %>%
-      filter(!!sym(y_var) > 0) %>%
-      select(GroupDate, Value = !!sym(y_var))
-    
-    # 如果非零数据为空，返回空图
-    if (nrow(non_zero_data) == 0) {
-      return(NULL)
-    }
     
     # 绘制柱状图
     plot_ly(data, x = ~GroupDate, y = ~get(y_var), type = "bar",
@@ -1369,8 +1367,8 @@ server <- function(input, output, session) {
       layout(
         xaxis = list(
           title = "", # 移除 X 轴标题
-          tickvals = ~non_zero_data$GroupDate, # 仅显示有数据的日期
-          ticktext = ~format(non_zero_data$GroupDate, "%Y-%m-%d"), # 格式化为日期
+          tickvals = data$GroupDate, # 显示完整时间序列
+          ticktext = format(data$GroupDate, "%Y-%m-%d"), # 格式化为日期
           tickangle = -45, # 倾斜日期标签
           tickfont = list(size = 12),
           showgrid = FALSE # 隐藏网格线
@@ -1386,6 +1384,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "#FFFFFF" # 图表纸张背景颜色
       )
   })
+  
   
   
   output$pie_chart <- renderPlotly({
