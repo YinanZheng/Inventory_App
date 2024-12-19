@@ -1292,6 +1292,61 @@ server <- function(input, output, session) {
     })
   })
   
+  
+  # 开销统计
+  expense_summary_data <- reactive({
+    data <- unique_items_data()
+    
+    # 确保日期字段为日期格式
+    data <- data %>%
+      mutate(
+        PurchaseTime = as.Date(PurchaseTime)
+      )
+    
+    # 获取用户选择的统计精度和时间范围
+    time_range <- input$time_range  # 假设通过 dateRangeInput 提供时间范围
+    precision <- input$precision    # 选择天、周、月、年
+    
+    # 根据时间范围过滤数据
+    filtered_data <- data %>%
+      filter(PurchaseTime >= as.Date(time_range[1]) & PurchaseTime <= as.Date(time_range[2]))
+    
+    # 按统计精度分组
+    expense_summarized_data <- filtered_data %>%
+      mutate(
+        GroupDate = case_when(
+          precision == "天" ~ PurchaseTime,
+          precision == "周" ~ floor_date(PurchaseTime, "week"),
+          precision == "月" ~ floor_date(PurchaseTime, "month"),
+          precision == "年" ~ floor_date(PurchaseTime, "year")
+        )
+      ) %>%
+      group_by(GroupDate) %>%
+      summarize(
+        TotalExpense = sum(ProductCost + DomesticShippingCost, na.rm = TRUE),
+        ProductCost = sum(ProductCost, na.rm = TRUE),
+        ShippingCost = sum(DomesticShippingCost, na.rm = TRUE)
+      )
+    
+    expense_summarized_data
+  })
+  
+  output$expense_chart <- renderPlotly({
+    data <- expense_summarized_data()
+    
+    # 创建堆叠柱状图，显示总开销以及分开的成本
+    plot_ly(data, x = ~GroupDate) %>%
+      add_bars(y = ~ProductCost, name = "物品成本", marker = list(color = "#28a745")) %>%
+      add_bars(y = ~ShippingCost, name = "运费开销", marker = list(color = "#dc3545")) %>%
+      layout(
+        barmode = "stack", # 堆叠柱状图
+        title = "开销汇总",
+        xaxis = list(title = "时间"),
+        yaxis = list(title = "开销金额"),
+        legend = list(orientation = "h", x = 0.5, xanchor = "center")
+      )
+  })
+  
   # 监听查询页选中inventory table (for SKU query and chart summary)
   observeEvent(input$filtered_inventory_table_rows_selected, {
     selected_row <- input$filtered_inventory_table_rows_selected
