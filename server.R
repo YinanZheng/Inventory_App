@@ -1368,7 +1368,7 @@ server <- function(input, output, session) {
             textposition = "outside") %>% # 数值显示在柱顶外侧
       layout(
         xaxis = list(
-          title = NULL, # 移除 X 轴标题
+          title = "", # 移除 X 轴标题
           tickvals = ~non_zero_data$GroupDate, # 仅显示有数据的日期
           ticktext = ~format(non_zero_data$GroupDate, "%Y-%m-%d"), # 格式化为日期
           tickangle = -45, # 倾斜日期标签
