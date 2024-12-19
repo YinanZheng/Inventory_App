@@ -1374,7 +1374,7 @@ server <- function(input, output, session) {
           showgrid = FALSE # 隐藏网格线
         ),
         yaxis = list(
-          title = "开销（元）", # 隐藏 Y 轴标题
+          title = "采购开销（元）", # 隐藏 Y 轴标题
           tickfont = list(size = 12),
           range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 调整 Y 轴范围，留出空间显示数值
         ),
@@ -1398,20 +1398,30 @@ server <- function(input, output, session) {
       Value = c(total_product_cost, total_shipping_cost)
     )
     
+    # 获取时间范围
+    time_range <- paste(as.Date(input$time_range[1]), "至", as.Date(input$time_range[2]))
+    
     # 绘制饼图
     plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
-            textinfo = "value", # 显示类别和实际数值
-            hoverinfo = "label+percent", # 悬停时显示类别和数值
+            textinfo = "value", # 仅显示实际数值
+            hoverinfo = "label+percent", # 悬停时显示类别和百分比
             insidetextorientation = "radial",
             marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
       layout(
         title = list(
-          text = "总开销分布",
+          text = "总采购开销分布",
           font = list(size = 16, color = "#333", family = "Arial")
+        ),
+        annotations = list(
+          x = 0.5, y = -0.1, # 调整注释的位置
+          text = paste("统计时间范围：", time_range),
+          showarrow = FALSE,
+          font = list(size = 12, color = "#666")
         ),
         showlegend = TRUE # 显示图例
       )
   })
+  
   
   
   

@@ -150,14 +150,14 @@ ui <- navbarPage(
                  # 条件显示日期选择器
                  conditionalPanel(
                    condition = "input.inventory_switch == true",  # JavaScript 条件
-                     dateInput(
-                       inputId = "purchase_date",
-                       label = "采购日期:",
-                       value = Sys.Date(),  # 默认日期为今天
-                       width = "100%"
-                     )
+                   dateInput(
+                     inputId = "purchase_date",
+                     label = "补录采购日期:",
+                     value = Sys.Date(),  # 默认日期为今天
+                     width = "100%"
                    )
                  )
+          )
         ),
         
         
@@ -516,7 +516,7 @@ ui <- navbarPage(
           tabsetPanel(
             type = "tabs", # 使用 tabs 样式
             tabPanel(
-              "物品状态",
+              "商品状态",
               fluidRow(
                 column(
                   4,
@@ -548,10 +548,10 @@ ui <- navbarPage(
                   )
                 )
               )
-            ),
+            ), # end of 商品状态
             
             tabPanel(
-              "开销汇总",
+              "采购开销",
               fluidRow(
                 column(
                   12,
@@ -564,7 +564,7 @@ ui <- navbarPage(
                       column(4,                   
                              dateRangeInput(
                                "time_range",
-                               label = "选择时间范围",
+                               label = "选择采购时间范围",
                                start = Sys.Date() - 30, # 默认最近30天
                                end = Sys.Date()
                              )),
@@ -594,21 +594,15 @@ ui <- navbarPage(
                   )
                 )
               )
-            )
+            ) # end of 开销汇总tab
             
             
             # 你可以在这里添加更多的 tabPanel 来扩展图表
-          )
-        ),
+            
+          ) #end of tabpanel
+        ) #end of main-panel div
         
-        fluidRow(
-          column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-          column(12, div(
-            id = "inventory_table_container",  # 容器 ID
-            DTOutput("filtered_inventory_table")
-          ))
-        )
+        
       )
     )
   ), # end of 查询 tab
