@@ -504,19 +504,6 @@ ui <- navbarPage(
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("query_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%")
-        ),
-        
-        fluidRow(
-          # 物品详情
-          column(
-            12,
-            div(
-              class = "card",
-              style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-              tags$h4("商品详情", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-              uiOutput("query_item_info") # 动态渲染物品信息
-            )
-          )
         )
       ),
       div(
@@ -528,11 +515,27 @@ ui <- navbarPage(
             type = "tabs", # 使用 tabs 样式
             tabPanel(
               "库存状态",
-              div(
-                class = "card",
-                style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px"),
-                plotlyOutput("inventory_status_chart", height = "370px") # 使用 plotlyOutput
+              fluidRow(
+                # 物品详情
+                column(
+                  6,
+                  div(
+                    class = "card",
+                    style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                    tags$h4("商品详情", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                    uiOutput("query_item_info") # 动态渲染物品信息
+                  )
+                ),
+                
+                column(
+                  6,
+                  div(
+                    class = "card",
+                    style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                    tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px"),
+                    plotlyOutput("inventory_status_chart", height = "300px") # 使用 plotlyOutput
+                  )
+                )
               )
             ),
             tabPanel(
@@ -541,7 +544,7 @@ ui <- navbarPage(
                 class = "card",
                 style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                 tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
-                plotlyOutput("defect_status_chart", height = "370px") # 使用 plotlyOutput
+                plotlyOutput("defect_status_chart", height = "300px") # 使用 plotlyOutput
               )
             )
             # 你可以在这里添加更多的 tabPanel 来扩展图表
