@@ -1296,29 +1296,19 @@ server <- function(input, output, session) {
   # 开销统计
   expense_summary_data <- reactive({
     data <- unique_items_data()
-    
-    # 确保日期字段为日期格式
     data <- data %>%
       mutate(
-        PurchaseTime = as.Date(PurchaseTime)
+        PurchaseTime = as.Date(PurchaseTime) # 确保 PurchaseTime 是日期格式
       )
     
-    # 获取用户选择的统计精度和时间范围
-    time_range <- input$time_range  # 假设通过 dateRangeInput 提供时间范围
-    precision <- input$precision    # 选择天、周、月、年
-    
-    # 根据时间范围过滤数据
-    filtered_data <- data %>%
-      filter(PurchaseTime >= as.Date(time_range[1]) & PurchaseTime <= as.Date(time_range[2]))
-    
-    # 按统计精度分组
-    expense_summarized_data <- filtered_data %>%
+    # 按用户选择的时间范围和分组精度处理数据
+    summarized_data <- data %>%
       mutate(
         GroupDate = case_when(
-          precision == "天" ~ PurchaseTime,
-          precision == "周" ~ floor_date(PurchaseTime, "week"),
-          precision == "月" ~ floor_date(PurchaseTime, "month"),
-          precision == "年" ~ floor_date(PurchaseTime, "year")
+          input$precision == "天" ~ PurchaseTime,
+          input$precision == "周" ~ floor_date(PurchaseTime, "week"),
+          input$precision == "月" ~ floor_date(PurchaseTime, "month"),
+          input$precision == "年" ~ floor_date(PurchaseTime, "year")
         )
       ) %>%
       group_by(GroupDate) %>%
@@ -1326,15 +1316,17 @@ server <- function(input, output, session) {
         TotalExpense = sum(ProductCost + DomesticShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
         ShippingCost = sum(DomesticShippingCost, na.rm = TRUE)
-      )
+      ) %>%
+      ungroup()
     
-    expense_summarized_data
+    summarized_data
   })
+  
   
   output$expense_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 根据用户选择的内容决定显示的 Y 轴数据和图表标题
+    # 柱状图数据
     y_var <- switch(input$expense_type,
                     "total" = data$TotalExpense,
                     "cost" = data$ProductCost,
@@ -1350,30 +1342,61 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 绘制单独的柱状图
-    plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
-            name = title_text, marker = list(color = color)) %>%
+    # 饼图数据：计算总开销分布
+    total_product_cost <- sum(data$ProductCost, na.rm = TRUE)
+    total_shipping_cost <- sum(data$ShippingCost, na.rm = TRUE)
+    pie_data <- data.frame(
+      Category = c("物品成本", "运费开销"),
+      Value = c(total_product_cost, total_shipping_cost)
+    )
+    
+    # 柱状图
+    bar_chart <- plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
+                         name = title_text, marker = list(color = color)) %>%
       layout(
         title = list(
           text = paste("开销汇总 -", title_text),
           font = list(size = 18, color = "#333", family = "Arial")
         ),
         xaxis = list(
-          title = "时间",
-          tickangle = -45, # 倾斜时间轴标签
+          title = "日期",
+          tickangle = -45,
           titlefont = list(size = 14),
-          tickfont = list(size = 12)
+          tickfont = list(size = 12),
+          type = "date",
+          tickformat = "%Y-%m-%d"
         ),
         yaxis = list(
           title = paste(title_text, "金额 (元)"),
           titlefont = list(size = 14),
           tickfont = list(size = 12)
         ),
-        legend = list(orientation = "h", x = 0.5, xanchor = "center"),
-        plot_bgcolor = "#F9F9F9", # 图表背景色
-        paper_bgcolor = "#FFFFFF" # 整体背景色
+        showlegend = FALSE # 隐藏图例，饼图会有自己的图例
+      )
+    
+    # 饼图
+    pie_chart <- plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
+                         textinfo = "label+percent", # 显示标签和百分比
+                         insidetextorientation = "radial",
+                         marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
+      layout(
+        title = list(
+          text = "总开销分布",
+          font = list(size = 16, color = "#333", family = "Arial")
+        ),
+        showlegend = TRUE
+      )
+    
+    # 组合柱状图和饼图
+    subplot(bar_chart, pie_chart, nrows = 1, widths = c(0.7, 0.3)) %>%
+      layout(
+        margin = list(l = 50, r = 20, t = 50, b = 80), # 调整边距
+        plot_bgcolor = "#F9F9F9",
+        paper_bgcolor = "#FFFFFF"
       )
   })
+  
+  
   
   
   
