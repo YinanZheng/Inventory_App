@@ -1332,7 +1332,7 @@ server <- function(input, output, session) {
   })
   
   output$expense_chart <- renderPlotly({
-    data <- expense_summarized_data()
+    data <- expense_summary_data()
     
     # 创建堆叠柱状图，显示总开销以及分开的成本
     plot_ly(data, x = ~GroupDate) %>%
