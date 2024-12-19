@@ -447,7 +447,7 @@ ui <- navbarPage(
           value = FALSE,          # 默认值
           onLabel = "开",         # 开状态的标签
           offLabel = "关",        # 关状态的标签
-          size = "default"        # 开关尺寸：可选 "small", "default", "large"
+          size = "large"        # 开关尺寸：可选 "small", "default", "large"
         )
       ),
       
