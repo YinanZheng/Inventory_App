@@ -16,6 +16,7 @@ library(plotly)
 library(rlang)
 library(openxlsx)
 library(lubridate)
+library(tidyr)
 
 # Source all modular functions
 source("./modules/typeModuleUI.R", local = TRUE)
