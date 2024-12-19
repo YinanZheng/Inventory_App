@@ -1419,8 +1419,7 @@ server <- function(input, output, session) {
           font = list(size = 12, color = "#666")
         ),
         showlegend = TRUE, # 显示图例
-        plot_bgcolor = "#f5f5f5", # 设置图表区域背景色
-        paper_bgcolor = "#e0f7fa" # 设置整个图表容器背景色
+        paper_bgcolor = "#F9F9F9" # 设置整个图表容器背景色
       )
   })
   
