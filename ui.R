@@ -565,22 +565,24 @@ ui <- navbarPage(
                              dateRangeInput(
                                "time_range",
                                label = "选择时间范围",
-                               start = Sys.Date() - 30,  # 默认最近30天
+                               start = Sys.Date() - 30, # 默认最近30天
                                end = Sys.Date()
                              )),
                       column(4,
-                             selectInput(
+                             radioButtons(
                                "precision",
                                label = "选择统计精度",
                                choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
-                               selected = "天"
+                               selected = "天",
+                               inline = TRUE # 使选项横向排列
                              )),
                       column(4,
-                             selectInput(
+                             radioButtons(
                                "expense_type",
                                label = "选择显示内容",
                                choices = c("总开销" = "total", "物品成本" = "cost", "运费开销" = "shipping"),
-                               selected = "total"
+                               selected = "total",
+                               inline = TRUE # 使选项横向排列
                              ))
                     ),
                     
@@ -593,6 +595,7 @@ ui <- navbarPage(
                 )
               )
             )
+            
             
             # 你可以在这里添加更多的 tabPanel 来扩展图表
           )

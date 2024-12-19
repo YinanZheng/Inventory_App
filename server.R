@@ -1326,6 +1326,7 @@ server <- function(input, output, session) {
   
   
   
+  
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
