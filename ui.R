@@ -544,17 +544,14 @@ ui <- navbarPage(
                     plotlyOutput("defect_status_chart", height = "400px") # 使用 plotlyOutput
                   )
                 ),
+
+                column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
+                                        style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+                column(12, div(
+                  id = "inventory_table_container",  # 容器 ID
+                  DTOutput("filtered_inventory_table")
+                ))
                 
-                tags$hr(),
-                
-                fluidRow(
-                  column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
-                                          style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-                  column(12, div(
-                    id = "inventory_table_container",  # 容器 ID
-                    DTOutput("filtered_inventory_table")
-                  ))
-                )
               )
             ), # end of 商品状态
             
