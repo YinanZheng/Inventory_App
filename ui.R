@@ -133,6 +133,33 @@ ui <- navbarPage(
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
         
+        fluidRow(
+          column(3, 
+                 tags$div(
+                   tags$label("库存补录", class = "control-label"),  # 控件的标签
+                   switchInput(
+                     inputId = "inventory_switch",  # 开关 ID
+                     label = NULL,                 # 开关本身不显示标签
+                     value = FALSE,                # 默认关闭
+                     size = "small"
+                   )
+                 )
+          ),
+          column(6, 
+                 # 条件显示日期选择器
+                 conditionalPanel(
+                   condition = "input.inventory_switch == true",  # JavaScript 条件
+                   dateInput(
+                     inputId = "inventory_date",
+                     label = "选择日期:",
+                     value = Sys.Date(),  # 默认日期为今天
+                     width = "100%"
+                   )
+                 )
+          )
+        ),
+        
+        
         imageModuleUI("image_purchase"),
         
         fluidRow(
