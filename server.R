@@ -1370,7 +1370,20 @@ server <- function(input, output, session) {
     
     data
   })
-
+  
+  # 全选逻辑
+  observeEvent(input$select_all, {
+    maker_data <- maker_list()
+    if (!is.null(maker_data) && nrow(maker_data) > 0) {
+      updateSelectizeInput(session, "maker", selected = unique(unique_items_data()$Maker), server = TRUE)
+    }
+  })
+  
+  # 清空逻辑
+  observeEvent(input$clear_all, {
+    updateSelectizeInput(session, "maker", selected = NULL, server = TRUE)
+  })
+  
   # 重置按钮调用
   observeEvent(input$reset_filters, {
     updateFilters(session, unique_items_data, input, reset = TRUE)

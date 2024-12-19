@@ -537,9 +537,10 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        selectizeInput("maker", "选择供应商:", choices = NULL, selected = NULL, multiple = FALSE),
+        selectizeInput("maker", "选择供应商:", choices = NULL, selected = NULL, multiple = TRUE),
         actionButton("select_all", "全选", class = "btn-primary"),
         actionButton("clear_all", "清空", class = "btn-danger"),
+        tags$hr(),
         
         selectInput("major_type", "选择大类:", choices = NULL, selected = NULL, multiple = TRUE),
         selectInput("minor_type", "选择小类:", choices = NULL, selected = NULL, multiple = TRUE),
