@@ -437,6 +437,17 @@ ui <- navbarPage(
             class = "btn-success", 
             style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
           ))
+        ),
+        
+        tags$hr(style = "margin: 5px 0; border: none;"),
+        
+        switchInput(
+          inputId = "show_defects_only",
+          label = "仅显示瑕疵品",   # 标签
+          value = FALSE,          # 默认值
+          onLabel = "开",         # 开状态的标签
+          offLabel = "关",        # 关状态的标签
+          size = "default"        # 开关尺寸：可选 "small", "default", "large"
         )
       ),
       
