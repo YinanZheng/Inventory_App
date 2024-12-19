@@ -442,7 +442,7 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         tags$div(
-          tags$h4("仅显示瑕疵品"),  # 标题
+          tags$label("仅显示瑕疵品", class = "control-label"),  
           switchInput(
             inputId = "show_defects_only",  # 开关 ID
             label = NULL,                  # 不显示标签在开关上
