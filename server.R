@@ -1424,14 +1424,6 @@ server <- function(input, output, session) {
   })
   
   
-  
-  
-  
-  
-  
-  
-  
-  
   # 监听查询页选中inventory table (for SKU query and chart summary)
   observeEvent(input$filtered_inventory_table_rows_selected, {
     selected_row <- input$filtered_inventory_table_rows_selected

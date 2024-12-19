@@ -509,9 +509,6 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-        div(
-          class = "sticky-info",
-          style = "max-height: 550px;", #override默认高度增加显示高度
           # 使用 tabsetPanel 来组织分页
           tabsetPanel(
             type = "tabs", # 使用 tabs 样式
@@ -546,6 +543,15 @@ ui <- navbarPage(
                     tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
                     plotlyOutput("defect_status_chart", height = "400px") # 使用 plotlyOutput
                   )
+                ),
+                
+                fluidRow(
+                  column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
+                                          style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+                  column(12, div(
+                    id = "inventory_table_container",  # 容器 ID
+                    DTOutput("filtered_inventory_table")
+                  ))
                 )
               )
             ), # end of 商品状态
@@ -600,9 +606,6 @@ ui <- navbarPage(
             # 你可以在这里添加更多的 tabPanel 来扩展图表
             
           ) #end of tabpanel
-        ) #end of main-panel div
-        
-        
       )
     )
   ), # end of 查询 tab
