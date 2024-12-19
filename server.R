@@ -1376,7 +1376,7 @@ server <- function(input, output, session) {
           showgrid = FALSE # 隐藏网格线
         ),
         yaxis = list(
-          title = NULL, # 隐藏 Y 轴标题
+          title = "开销（元）", # 隐藏 Y 轴标题
           tickfont = list(size = 12),
           range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 调整 Y 轴范围，留出空间显示数值
         ),
