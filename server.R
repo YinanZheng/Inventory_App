@@ -1378,10 +1378,7 @@ server <- function(input, output, session) {
   # 全选逻辑
   observeEvent(input$select_all, {
     is_clearing(FALSE)
-    maker_data <- maker_list()
-    if (!is.null(maker_data) && nrow(maker_data) > 0) {
-      updateSelectizeInput(session, "maker", selected = unique(unique_items_data()$Maker), server = TRUE)
-    }
+    updateSelectizeInput(session, "maker", selected = unique(unique_items_data()$Maker), server = TRUE)
   })
   
   # 清空逻辑
