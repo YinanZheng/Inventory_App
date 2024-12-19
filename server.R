@@ -388,6 +388,20 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
+  # 商品名自动联想
+  observe({
+    # 获取库存表的商品名
+    item_names <- inventory()$ItemName
+    
+    # 动态更新选择列表
+    updateSelectizeInput(
+      session,
+      "new_name",
+      choices = item_names,      # 从库存表中提取商品名
+      server = TRUE              # 启用服务器端大数据支持
+    )
+  })
+  
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
 
