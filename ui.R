@@ -511,6 +511,7 @@ ui <- navbarPage(
         class = "main-panel",
         div(
           class = "sticky-info",
+          style = "max-height: 500px;", #override默认高度增加显示高度
           # 使用 tabsetPanel 来组织分页
           tabsetPanel(
             type = "tabs", # 使用 tabs 样式
