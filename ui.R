@@ -545,6 +545,8 @@ ui <- navbarPage(
                   )
                 ),
                 
+                tags$hr(),
+                
                 fluidRow(
                   column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
                                           style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
@@ -620,6 +622,7 @@ ui <- navbarPage(
         selectizeInput("maker", "选择供应商:", choices = NULL, selected = NULL, multiple = TRUE),
         actionButton("select_all", "全选", class = "btn-primary"),
         actionButton("clear_all", "清空", class = "btn-danger"),
+        
         tags$hr(),
         
         selectInput("major_type", "选择大类:", choices = NULL, selected = NULL, multiple = TRUE),
