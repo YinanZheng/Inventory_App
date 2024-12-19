@@ -141,9 +141,10 @@ server <- function(input, output, session) {
     
     render_table_with_images(
       data = filtered_inventory(),
-      options = list(scrollY = "400px",         # 垂直滚动区域高度
+      options = list(scrollY = "500px",         # 垂直滚动区域高度
                      scrollX = TRUE,           # 启用水平滚动
-                     paging = FALSE,           # 禁用分页
+                     paging = TRUE,           # 禁用分页
+                     filter = "top",
                      fixedHeader = TRUE        # 固定表头
       ),
       column_mapping = column_mapping,
