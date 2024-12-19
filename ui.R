@@ -280,7 +280,7 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU"),
+          textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
           actionButton(
             "confirm_outbound_btn", 
             "确认出库", 
@@ -320,7 +320,7 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("售出操作", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
-          textInput("sold_sku", NULL, placeholder = "请扫描或输入SKU"),
+          textInput("sold_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
           actionButton(
             "confirm_sold_btn", 
             "确认售出", 
