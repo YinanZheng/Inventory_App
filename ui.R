@@ -552,11 +552,14 @@ ui <- navbarPage(
             tabPanel(
               "物品状态",
               fluidRow(
-                div(
-                  class = "card",
-                  style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                  tags$h4("开销汇总", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
-                  plotlyOutput("expense_chart", height = "300px") # 使用 plotlyOutput
+                column(
+                  12,
+                  div(
+                    class = "card",
+                    style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                    tags$h4("开销汇总", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
+                    plotlyOutput("expense_chart", height = "300px") # 使用 plotlyOutput
+                  )
                 )
               )
             )
