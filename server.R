@@ -1334,53 +1334,47 @@ server <- function(input, output, session) {
   output$expense_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 创建堆叠柱状图，显示总开销以及分开的成本
-    plot_ly(data, x = ~GroupDate) %>%
-      # 添加柱状图 (物品成本)
-      add_bars(
-        y = ~ProductCost,
-        name = "物品成本",
-        marker = list(color = "#4CAF50"), # 更柔和的绿色
-        hovertemplate = "时间: %{x}<br>物品成本: %{y:.2f}<extra></extra>" # 自定义悬停信息
-      ) %>%
-      # 添加柱状图 (运费开销)
-      add_bars(
-        y = ~ShippingCost,
-        name = "运费开销",
-        marker = list(color = "#FF5733"), # 更柔和的红色
-        hovertemplate = "时间: %{x}<br>运费开销: %{y:.2f}<extra></extra>" # 自定义悬停信息
-      ) %>%
-      # 布局设置
+    # 根据用户选择的内容决定显示的 Y 轴数据和图表标题
+    y_var <- switch(input$expense_type,
+                    "total" = data$TotalExpense,
+                    "cost" = data$ProductCost,
+                    "shipping" = data$ShippingCost)
+    
+    title_text <- switch(input$expense_type,
+                         "total" = "总开销",
+                         "cost" = "物品成本",
+                         "shipping" = "运费开销")
+    
+    color <- switch(input$expense_type,
+                    "total" = "#007BFF",
+                    "cost" = "#4CAF50",
+                    "shipping" = "#FF5733")
+    
+    # 绘制单独的柱状图
+    plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
+            name = title_text, marker = list(color = color)) %>%
       layout(
-        barmode = "stack", # 堆叠柱状图
         title = list(
-          text = "", 
+          text = paste("开销汇总 -", title_text),
           font = list(size = 18, color = "#333", family = "Arial")
         ),
         xaxis = list(
           title = "时间",
-          tickangle = -45, # 倾斜时间轴标签，防止重叠
+          tickangle = -45, # 倾斜时间轴标签
           titlefont = list(size = 14),
           tickfont = list(size = 12)
         ),
         yaxis = list(
-          title = "开销金额 (元)",
+          title = paste(title_text, "金额 (元)"),
           titlefont = list(size = 14),
           tickfont = list(size = 12)
         ),
-        legend = list(
-          orientation = "h", # 横向排列
-          x = 0.5,
-          xanchor = "center",
-          y = -0.2, # 调整位置到图表下方
-          font = list(size = 12)
-        ),
-        margin = list(l = 50, r = 20, t = 50, b = 80), # 调整图表边距
-        hovermode = "x unified", # 鼠标悬停显示统一信息
+        legend = list(orientation = "h", x = 0.5, xanchor = "center"),
         plot_bgcolor = "#F9F9F9", # 图表背景色
         paper_bgcolor = "#FFFFFF" # 整体背景色
       )
   })
+  
   
   
   # 监听查询页选中inventory table (for SKU query and chart summary)

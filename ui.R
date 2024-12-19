@@ -576,6 +576,14 @@ ui <- navbarPage(
                                label = "选择统计精度",
                                choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
                                selected = "天"
+                             )),
+                      # 选择器控制显示内容
+                      column(4,
+                             selectInput(
+                               "expense_type",
+                               label = "选择显示内容",
+                               choices = c("总开销" = "total", "物品成本" = "cost", "运费开销" = "shipping"),
+                               selected = "total"
                              ))
                     ),
                     
