@@ -351,7 +351,7 @@ ui <- navbarPage(
   ), # end of 出售 tab
   
   
-  tags$div(class = "navbar-divider", style = "height: 2px; margin: 0 15px;"),
+  # tags$div(class = "navbar-divider", style = "height: 2px; margin: 0 15px;"),
   
   
   tabPanel(
