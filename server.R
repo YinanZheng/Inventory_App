@@ -196,7 +196,23 @@ server <- function(input, output, session) {
   ")
   })
   
-  # filtered_unique_items_data <- reactive({unique_items_data()})
+  # 采购页过滤
+  filtered_unique_items_data_purchase <- reactive({
+    req(unique_items_data())  # 确保数据不为空
+    data <- unique_items_data()
+    
+    # 根据输入的 new_maker 进行过滤
+    if (!is.null(input$new_maker) && input$new_maker != "") {
+      data <- data[data$Maker == input$new_maker, ]
+    }
+    
+    # 根据输入的 new_name 进行部分匹配过滤
+    if (!is.null(input$new_name) && input$new_name != "") {
+      data <- data[grepl(input$new_name, data$ItemName, ignore.case = TRUE), ]
+    }
+    
+    data
+  })
   
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
@@ -212,7 +228,7 @@ server <- function(input, output, session) {
                                                           PurchaseTime = "采购日期",
                                                           Status = "库存状态",
                                                           Defect = "物品状态"
-                                                        ), data = unique_items_data)
+                                                        ), data = filtered_unique_items_data_purchase)
   
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
                                                         column_mapping <- list(
@@ -314,7 +330,7 @@ server <- function(input, output, session) {
                                                            DomesticSoldTime = "国内售出日期",
                                                            Status = "库存状态",
                                                            Defect = "物品状态"
-                                                         ), data = filtered_unique_items_data)
+                                                         ), data = filtered_unique_items_data_download)
   
   ####################################################################################################################################
   
@@ -1281,7 +1297,7 @@ server <- function(input, output, session) {
   })
   
   # 筛选逻辑
-  filtered_unique_items_data <- reactive({
+  filtered_unique_items_data_download <- reactive({
     req(unique_items_data())
     data <- unique_items_data()
     
@@ -1357,7 +1373,7 @@ server <- function(input, output, session) {
       addWorksheet(wb, "物品明细表")
 
       # 获取数据
-      data <- filtered_unique_items_data()
+      data <- filtered_unique_items_data_download()
       req(!is.null(data) && nrow(data) > 0)  # 确保数据非空
       
       data <- map_column_names(data, column_mapping = list(
