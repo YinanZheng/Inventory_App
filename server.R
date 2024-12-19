@@ -1330,11 +1330,21 @@ server <- function(input, output, session) {
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
+    # 确保数据存在
+    if (nrow(data) == 0) {
+      return(NULL) # 如果数据为空，返回 NULL
+    }
+    
     # 根据用户选择的内容决定显示的 Y 轴数据
     y_var <- switch(input$expense_type,
-                    "total" = data$TotalExpense,
-                    "cost" = data$ProductCost,
-                    "shipping" = data$ShippingCost)
+                    "total" = "TotalExpense",
+                    "cost" = "ProductCost",
+                    "shipping" = "ShippingCost")
+    
+    # 确保 y_var 对应的数据有效
+    if (!y_var %in% names(data)) {
+      return(NULL)
+    }
     
     color <- switch(input$expense_type,
                     "total" = "#007BFF",
@@ -1343,13 +1353,18 @@ server <- function(input, output, session) {
     
     # 筛选出有数据的日期
     non_zero_data <- data %>%
-      filter(y_var > 0) %>%
-      select(GroupDate, Value = y_var)
+      filter(!!sym(y_var) > 0) %>%
+      select(GroupDate, Value = !!sym(y_var))
+    
+    # 如果非零数据为空，返回空图
+    if (nrow(non_zero_data) == 0) {
+      return(NULL)
+    }
     
     # 绘制柱状图
-    plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
+    plot_ly(data, x = ~GroupDate, y = ~get(y_var), type = "bar",
             name = NULL, marker = list(color = color),
-            text = ~round(y_var, 2), # 显示数值，保留两位小数
+            text = ~round(get(y_var), 2), # 显示数值，保留两位小数
             textposition = "outside") %>% # 数值显示在柱顶外侧
       layout(
         xaxis = list(
@@ -1371,6 +1386,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "#FFFFFF" # 图表纸张背景颜色
       )
   })
+  
   
   output$pie_chart <- renderPlotly({
     data <- expense_summary_data()
