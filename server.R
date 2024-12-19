@@ -535,7 +535,7 @@ server <- function(input, output, session) {
       ### 同时添加信息到 unique_items 表中
       # Prepare data for batch insertion
       if (input$inventory_switch) 
-        purchase_date <- as.Date(input$purchase_date)
+        purchase_date <- format(as.Date(input$purchase_date), "%Y-%m-%d")
       else 
         purchase_date <- format(Sys.time(), "%Y-%m-%d", tz = "Asia/Shanghai")
 
