@@ -180,7 +180,7 @@ ui <- navbarPage(
   ), # end of 采购登记 tab
   
   tabPanel(
-    "入库", icon = icon("down-from-bracket"),
+    "入库", icon = icon("arrow-circle-down"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -271,7 +271,7 @@ ui <- navbarPage(
   ), # end of 入库 tab
   
   tabPanel(
-    "出库", icon = icon("up-from-bracket"),
+    "出库", icon = icon("arrow-circle-up"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
