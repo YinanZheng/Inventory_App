@@ -12,12 +12,6 @@ server <- function(input, output, session) {
   # ReactiveVal 用于存储 unique item 数据
   unique_item_for_report <- reactiveVal()
   
-  # # 用于保存用户上传的文件信息
-  # uploaded_file <- reactiveVal(NULL)
-  # 
-  # # 用于存储粘贴图片数据
-  # pasted_file <- reactiveVal(NULL)  
-  
   # 声明一个 reactiveVal 用于触发unique_items_data刷新
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
@@ -202,7 +196,7 @@ server <- function(input, output, session) {
     data <- unique_items_data()
     
     # 根据输入的 new_maker 进行过滤
-    if (!is.null(input$new_maker) && input$new_maker != "") {
+    if (!is.null(input$new_maker) && input$new_maker != "" && input$new_maker != "!全部供应商!") {
       data <- data[data$Maker == input$new_maker, ]
     }
     
