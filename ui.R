@@ -523,25 +523,28 @@ ui <- navbarPage(
         class = "main-panel",
         div(
           class = "sticky-info",
-          # 库存状态图表
-          column(
-            6,
-            div(
-              class = "card",
-              style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-              tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px"),
-              plotlyOutput("inventory_status_chart", height = "370px") # 使用 plotlyOutput
+          # 使用 tabsetPanel 来组织分页
+          tabsetPanel(
+            type = "tabs", # 使用 tabs 样式
+            tabPanel(
+              "库存状态",
+              div(
+                class = "card",
+                style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px"),
+                plotlyOutput("inventory_status_chart", height = "370px") # 使用 plotlyOutput
+              )
+            ),
+            tabPanel(
+              "瑕疵情况",
+              div(
+                class = "card",
+                style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
+                plotlyOutput("defect_status_chart", height = "370px") # 使用 plotlyOutput
+              )
             )
-          ),
-          # 瑕疵情况图表
-          column(
-            6,
-            div(
-              class = "card",
-              style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-              tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
-              plotlyOutput("defect_status_chart", height = "370px") # 使用 plotlyOutput
-            )
+            # 你可以在这里添加更多的 tabPanel 来扩展图表
           )
         ),
         
