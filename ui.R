@@ -442,17 +442,11 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         tags$div(
-          tags$div(
-            "仅显示瑕疵品",  # 标签直接显示在开关上方
-            style = "font-size: 16px; font-weight: bold; color: #007bff; margin-bottom: 5px;"
-          ),
+          tags$h4("仅显示瑕疵品"),  # 标题
           switchInput(
-            inputId = "show_defects_only",
-            label = NULL,        # 不显示标签在开关上
-            value = FALSE,       # 默认值
-            onLabel = "开",       # 开状态的标签
-            offLabel = "关",      # 关状态的标签
-            size = "default"     # 开关尺寸
+            inputId = "show_defects_only",  # 开关 ID
+            label = NULL,                  # 不显示标签在开关上
+            value = FALSE                  # 默认值：关闭
           )
         )
       ),
