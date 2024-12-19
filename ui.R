@@ -511,7 +511,7 @@ ui <- navbarPage(
         class = "main-panel",
         div(
           class = "sticky-info",
-          style = "max-height: 500px;", #override默认高度增加显示高度
+          style = "max-height: 550px;", #override默认高度增加显示高度
           # 使用 tabsetPanel 来组织分页
           tabsetPanel(
             type = "tabs", # 使用 tabs 样式
@@ -522,7 +522,7 @@ ui <- navbarPage(
                   4,
                   div(
                     class = "card",
-                    style = "height: 353.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                    style = "height: 453.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                     tags$h4("商品详情", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
                     uiOutput("query_item_info") # 动态渲染物品信息
                   )
@@ -534,7 +534,7 @@ ui <- navbarPage(
                     class = "card",
                     style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                     tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px;"),
-                    plotlyOutput("inventory_status_chart", height = "300px") # 使用 plotlyOutput
+                    plotlyOutput("inventory_status_chart", height = "400px") # 使用 plotlyOutput
                   )
                 ),
                 
@@ -544,7 +544,7 @@ ui <- navbarPage(
                     class = "card",
                     style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                     tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
-                    plotlyOutput("defect_status_chart", height = "300px") # 使用 plotlyOutput
+                    plotlyOutput("defect_status_chart", height = "400px") # 使用 plotlyOutput
                   )
                 )
               )
@@ -580,7 +580,7 @@ ui <- navbarPage(
                     ),
                     
                     # 图表
-                    plotlyOutput("expense_chart", height = "250px")
+                    plotlyOutput("expense_chart", height = "350px")
                   )
                 )
               )
