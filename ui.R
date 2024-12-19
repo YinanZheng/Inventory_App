@@ -180,7 +180,7 @@ ui <- navbarPage(
   ), # end of 采购登记 tab
   
   tabPanel(
-    "入库",
+    "入库", icon = icon("down-from-bracket"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -271,7 +271,7 @@ ui <- navbarPage(
   ), # end of 入库 tab
   
   tabPanel(
-    "出库",
+    "出库", icon = icon("up-from-bracket"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -311,7 +311,7 @@ ui <- navbarPage(
   ), # end of 出库 tab
   
   tabPanel(
-    "售出",
+    "售出", icon = icon("dollar-sign"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -355,7 +355,7 @@ ui <- navbarPage(
   
   
   tabPanel(
-    "物品管理",
+    "物品管理", icon = icon("list-check"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -408,7 +408,7 @@ ui <- navbarPage(
   ), # end of 物品管理 tab
   
   tabPanel(
-    "瑕疵品管理",
+    "瑕疵品管理", icon = icon("exclamation-circle"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -467,7 +467,7 @@ ui <- navbarPage(
   ), # end of 瑕疵品管理 tab
   
   tabPanel(
-    "查询",
+    "查询", icon = icon("search"), 
     div(
       class = "layout-container",  # Flexbox 容器
       div(
@@ -531,7 +531,7 @@ ui <- navbarPage(
   ), # end of 查询 tab
   
   tabPanel(
-    "数据下载",
+    "数据下载", icon = icon("download"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
