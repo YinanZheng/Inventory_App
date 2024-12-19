@@ -98,7 +98,7 @@ ui <- navbarPage(
   ),
   
   tabPanel(
-    "采购登记",
+    "采购登记", icon = icon("shopping-cart"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
