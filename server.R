@@ -534,6 +534,11 @@ server <- function(input, output, session) {
       
       ### 同时添加信息到 unique_items 表中
       # Prepare data for batch insertion
+      if (input$inventory_switch) 
+        purchase_date <- input$purchase_date 
+      else 
+        purchase_date <- format(Sys.time(), "%Y-%m-%d", tz = "Asia/Shanghai")
+
       batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
         sku <- added_items_df$SKU[i]
         quantity <- added_items_df$Quantity[i]
@@ -547,7 +552,7 @@ server <- function(input, output, session) {
           as.numeric(unit_shipping_cost),
           "采购",
           "未知",
-          format(Sys.time(), "%Y-%m-%d", tz = "Asia/Shanghai")
+          purchase_date
         )))
       }))
       

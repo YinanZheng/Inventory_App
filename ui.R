@@ -141,7 +141,7 @@ ui <- navbarPage(
                      inputId = "inventory_switch",  # 开关 ID
                      label = NULL,                 # 开关本身不显示标签
                      value = FALSE,                # 默认关闭
-                     size = "large"
+                     size = "default"
                    )
                  )
           ),
@@ -150,7 +150,7 @@ ui <- navbarPage(
                  conditionalPanel(
                    condition = "input.inventory_switch == true",  # JavaScript 条件
                      dateInput(
-                       inputId = "inventory_date",
+                       inputId = "purchase_date",
                        label = "采购日期:",
                        value = Sys.Date(),  # 默认日期为今天
                        width = "100%"
