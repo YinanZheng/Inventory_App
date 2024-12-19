@@ -1295,14 +1295,16 @@ server <- function(input, output, session) {
   
   # 开销统计
   expense_summary_data <- reactive({
+    req(input$time_range) # 确保时间范围存在
     data <- unique_items_data()
-    data <- data %>%
-      mutate(
-        PurchaseTime = as.Date(PurchaseTime) # 确保 PurchaseTime 是日期格式
-      )
     
-    # 按用户选择的时间范围和分组精度处理数据
-    summarized_data <- data %>%
+    # 过滤数据，确保时间范围被正确使用
+    filtered_data <- data %>%
+      filter(PurchaseTime >= as.Date(input$time_range[1]) &
+               PurchaseTime <= as.Date(input$time_range[2]))
+    
+    # 按选择的精度分组
+    summarized_data <- filtered_data %>%
       mutate(
         GroupDate = case_when(
           input$precision == "天" ~ PurchaseTime,
@@ -1321,6 +1323,7 @@ server <- function(input, output, session) {
     
     summarized_data
   })
+  
   
   
   output$bar_chart <- renderPlotly({
