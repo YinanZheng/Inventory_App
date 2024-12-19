@@ -126,8 +126,11 @@ ui <- navbarPage(
             label = "商品名:",         # 输入框标签
             choices = NULL,            # 动态填充的选项（在服务器端设置）
             options = list(
-              placeholder = "请输入商品名...",
-              create = TRUE            # 允许自定义输入值
+              placeholder = "请输入商品名...",  # 输入框提示
+              create = TRUE,                  # 允许自定义输入值
+              dropdownParent = "body",        # 防止 UI 干扰（必要时设置）
+              openOnFocus = FALSE,            # 禁止点击时自动展开下拉菜单
+              onDropdownOpen = I("function() { this.close(); }") # 禁止显示下拉菜单
             ),
             width = "100%"
           ))
