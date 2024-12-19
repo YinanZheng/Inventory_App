@@ -55,6 +55,7 @@ ui <- navbarPage(
       .main-panel {
         flex-grow: 1; /* 占据剩余空间 */
         padding: 20px;
+        padding-top: 0px;
         background-color: #ffffff;
       }
 
