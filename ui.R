@@ -558,10 +558,9 @@ ui <- navbarPage(
                   div(
                     class = "card",
                     style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                    # tags$h4("开销汇总", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
                     
+                    # 选择器行
                     fluidRow(
-                      # 时间范围选择器
                       column(4,                   
                              dateRangeInput(
                                "time_range",
@@ -569,7 +568,6 @@ ui <- navbarPage(
                                start = Sys.Date() - 30,  # 默认最近30天
                                end = Sys.Date()
                              )),
-                      # 统计精度选择器
                       column(4,
                              selectInput(
                                "precision",
@@ -577,7 +575,6 @@ ui <- navbarPage(
                                choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
                                selected = "天"
                              )),
-                      # 选择器控制显示内容
                       column(4,
                              selectInput(
                                "expense_type",
@@ -587,14 +584,16 @@ ui <- navbarPage(
                              ))
                     ),
                     
-                    # 图表
+                    # 图表行：柱状图 + 饼图
                     fluidRow(
-                      column(12, plotlyOutput("expense_chart", height = "350px"))
+                      column(9, plotlyOutput("bar_chart", height = "350px")), # 80% 宽度柱状图
+                      column(3, plotlyOutput("pie_chart", height = "350px"))  # 20% 宽度饼图
                     )
                   )
                 )
               )
             )
+            
             # 你可以在这里添加更多的 tabPanel 来扩展图表
           )
         ),

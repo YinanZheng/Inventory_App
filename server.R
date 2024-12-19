@@ -1323,10 +1323,10 @@ server <- function(input, output, session) {
   })
   
   
-  output$expense_chart <- renderPlotly({
+  output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 柱状图数据
+    # 根据用户选择的内容决定显示的 Y 轴数据和图表标题
     y_var <- switch(input$expense_type,
                     "total" = data$TotalExpense,
                     "cost" = data$ProductCost,
@@ -1342,17 +1342,9 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 饼图数据：计算总开销分布
-    total_product_cost <- sum(data$ProductCost, na.rm = TRUE)
-    total_shipping_cost <- sum(data$ShippingCost, na.rm = TRUE)
-    pie_data <- data.frame(
-      Category = c("物品成本", "运费开销"),
-      Value = c(total_product_cost, total_shipping_cost)
-    )
-    
-    # 柱状图
-    bar_chart <- plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
-                         name = title_text, marker = list(color = color)) %>%
+    # 绘制柱状图
+    plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
+            name = title_text, marker = list(color = color)) %>%
       layout(
         title = list(
           text = paste("开销汇总 -", title_text),
@@ -1373,28 +1365,33 @@ server <- function(input, output, session) {
         ),
         showlegend = FALSE # 隐藏图例，饼图会有自己的图例
       )
+  })
+  
+  output$pie_chart <- renderPlotly({
+    data <- expense_summary_data()
     
-    # 饼图
-    pie_chart <- plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
-                         textinfo = "label+percent", # 显示标签和百分比
-                         insidetextorientation = "radial",
-                         marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
+    # 饼图数据：计算总开销分布
+    total_product_cost <- sum(data$ProductCost, na.rm = TRUE)
+    total_shipping_cost <- sum(data$ShippingCost, na.rm = TRUE)
+    pie_data <- data.frame(
+      Category = c("物品成本", "运费开销"),
+      Value = c(total_product_cost, total_shipping_cost)
+    )
+    
+    # 绘制饼图
+    plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
+            textinfo = "label+percent", # 显示标签和百分比
+            insidetextorientation = "radial",
+            marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
       layout(
         title = list(
           text = "总开销分布",
           font = list(size = 16, color = "#333", family = "Arial")
         ),
-        showlegend = TRUE
-      )
-    
-    # 组合柱状图和饼图，调整宽度比例
-    subplot(bar_chart, pie_chart, widths = c(0.8, 0.2), margin = 0.05) %>%
-      layout(
-        margin = list(l = 50, r = 20, t = 50, b = 80), # 调整边距
-        plot_bgcolor = "#F9F9F9",
-        paper_bgcolor = "#FFFFFF"
+        showlegend = TRUE # 显示图例
       )
   })
+  
   
   
   
