@@ -442,7 +442,10 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         tags$div(
-          tags$label("仅显示瑕疵品", for = "show_defects_only"),  # 标签放在上方
+          tags$div(
+            "仅显示瑕疵品",  # 标签直接显示在开关上方
+            style = "font-size: 16px; font-weight: bold; color: #007bff; margin-bottom: 5px;"
+          ),
           switchInput(
             inputId = "show_defects_only",
             label = NULL,        # 不显示标签在开关上
