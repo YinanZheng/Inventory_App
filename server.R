@@ -1387,14 +1387,15 @@ server <- function(input, output, session) {
         showlegend = TRUE
       )
     
-    # 组合柱状图和饼图
-    subplot(bar_chart, pie_chart, nrows = 1, widths = c(0.7, 0.3)) %>%
+    # 组合柱状图和饼图，调整宽度比例
+    subplot(bar_chart, pie_chart, widths = c(0.8, 0.2), margin = 0.05) %>%
       layout(
         margin = list(l = 50, r = 20, t = 50, b = 80), # 调整边距
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
   })
+  
   
   
   
