@@ -310,7 +310,6 @@ render_table_with_images <- function(data,
     data,
     escape = FALSE,  # Disable HTML escaping to allow rendering of images
     selection = selection,
-    filter = "top",
     rownames = FALSE,
     options = options
   )
