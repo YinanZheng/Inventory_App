@@ -141,7 +141,7 @@ ui <- navbarPage(
                      inputId = "inventory_switch",  # 开关 ID
                      label = NULL,                 # 开关本身不显示标签
                      value = FALSE,                # 默认关闭
-                     size = "default"
+                     size = "large"
                    )
                  )
           ),
