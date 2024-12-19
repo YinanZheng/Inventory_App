@@ -150,7 +150,7 @@ ui <- navbarPage(
                  conditionalPanel(
                    condition = "input.inventory_switch == true",  # JavaScript 条件
                    div(
-                     style = "height: 50px; display: flex;",
+                     style = "height: 40px; display: flex;",
                      dateInput(
                        inputId = "inventory_date",
                        label = "采购日期:",
