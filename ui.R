@@ -588,7 +588,9 @@ ui <- navbarPage(
                     ),
                     
                     # 图表
-                    plotlyOutput("expense_chart", height = "350px")
+                    fluidRow(
+                      column(12, plotlyOutput("expense_chart", height = "350px"))
+                    )
                   )
                 )
               )
