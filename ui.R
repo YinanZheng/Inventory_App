@@ -517,12 +517,11 @@ ui <- navbarPage(
             tabPanel(
               "物品状态",
               fluidRow(
-                # 物品详情
                 column(
                   4,
                   div(
                     class = "card",
-                    style = "height: 353.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                    style = "height: 353.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                     tags$h4("商品详情", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
                     uiOutput("query_item_info") # 动态渲染物品信息
                   )
@@ -551,11 +550,16 @@ ui <- navbarPage(
             ),
             
             tabPanel(
-              "物品状态"
-              
-              
+              "物品状态",
+              fluidRow(
+                div(
+                  class = "card",
+                  style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  tags$h4("开销汇总", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
+                  plotlyOutput("expense_chart", height = "300px") # 使用 plotlyOutput
+                )
+              )
             )
-
             # 你可以在这里添加更多的 tabPanel 来扩展图表
           )
         ),
