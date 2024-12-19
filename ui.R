@@ -149,11 +149,14 @@ ui <- navbarPage(
                  # 条件显示日期选择器
                  conditionalPanel(
                    condition = "input.inventory_switch == true",  # JavaScript 条件
-                   dateInput(
-                     inputId = "inventory_date",
-                     label = "采购日期:",
-                     value = Sys.Date(),  # 默认日期为今天
-                     width = "100%", style = "height: 50px;"
+                   div(
+                     style = "height: 50px; display: flex; align-items: center;",
+                     dateInput(
+                       inputId = "inventory_date",
+                       label = "采购日期:",
+                       value = Sys.Date(),  # 默认日期为今天
+                       width = "100%"
+                     )
                    )
                  )
           )
