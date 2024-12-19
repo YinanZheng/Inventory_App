@@ -772,6 +772,106 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
+  ## 出库分页                                                   ##
+  ##                                                            ##
+  ################################################################
+  
+  # 监听出库 SKU 输入
+  observeEvent(input$outbound_sku, {
+    handleSkuInput(
+      sku_input = input$outbound_sku,
+      output_name = "outbound_item_info",
+      count_label = "可出库数",
+      count_field = "AvailableForOutbound",
+      con = con,
+      output = output,
+      placeholder_path = placeholder_300px_path,
+      host_url = host_url
+    )
+  })
+  
+  # 确认出库逻辑
+  observeEvent(input$confirm_outbound_btn, {
+    handleOperation(
+      operation_name = "出库",
+      sku_input = input$outbound_sku,
+      output_name = "outbound_item_info",
+      query_status = "国内入库",
+      update_status_value = "国内出库",
+      count_label = "可出库数",
+      count_field = "AvailableForOutbound",
+      con = con,
+      output = output,
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session
+    )
+  })
+  
+  # 监听选中行并更新出库 SKU
+  observeEvent(unique_items_table_outbound_selected_row(), {
+    if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "outbound_sku", value = selected_sku)
+    }
+  })
+  
+  
+  
+  ################################################################
+  ##                                                            ##
+  ## 售出分页                                                   ##
+  ##                                                            ##
+  ################################################################
+  
+  # 监听售出 SKU 输入
+  observeEvent(input$sold_sku, {
+    handleSkuInput(
+      sku_input = input$sold_sku,
+      output_name = "sold_item_info",
+      count_label = "可售出数",
+      count_field = "AvailableForSold",
+      con = con,
+      output = output,
+      placeholder_path = placeholder_300px_path,
+      host_url = host_url
+    )
+  })
+  
+  # 确认售出逻辑
+  observeEvent(input$confirm_sold_btn, {
+    handleOperation(
+      operation_name = "售出",
+      sku_input = input$sold_sku,
+      output_name = "sold_item_info",
+      query_status = "国内入库",
+      update_status_value = "国内售出",
+      count_label = "可售出数",
+      count_field = "AvailableForSold",
+      con = con,
+      output = output,
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session
+    )
+  })
+  
+  # 监听选中行并更新售出 SKU
+  observeEvent(unique_items_table_sold_selected_row(), {
+    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "sold_sku", value = selected_sku)
+    }
+  })
+  
+  
+  
+  ###################################################################################################################
+  ###################################################################################################################
+  ###################################################################################################################
+  
+  
+  
+  ################################################################
+  ##                                                            ##
   ## 物品管理分页                                               ##
   ##                                                            ##
   ################################################################
@@ -845,7 +945,7 @@ server <- function(input, output, session) {
       showNotification(paste("删除物品时发生错误：", e$message), type = "error")
     })
   })
-
+  
   # 采购商品图片处理模块
   image_manage <- imageModuleServer("image_manage")
   
@@ -1010,100 +1110,6 @@ server <- function(input, output, session) {
       selected_sku <- filtered_unique_items_data_defect()[unique_items_table_defect_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "defect_sku", value = selected_sku)
       updateTextInput(session, "repair_sku", value = selected_sku)
-    }
-  })
-  
-  
-  
-  ################################################################
-  ##                                                            ##
-  ## 出库分页                                                   ##
-  ##                                                            ##
-  ################################################################
-  
-  # 监听出库 SKU 输入
-  observeEvent(input$outbound_sku, {
-    handleSkuInput(
-      sku_input = input$outbound_sku,
-      output_name = "outbound_item_info",
-      count_label = "可出库数",
-      count_field = "AvailableForOutbound",
-      con = con,
-      output = output,
-      placeholder_path = placeholder_300px_path,
-      host_url = host_url
-    )
-  })
-  
-  # 确认出库逻辑
-  observeEvent(input$confirm_outbound_btn, {
-    handleOperation(
-      operation_name = "出库",
-      sku_input = input$outbound_sku,
-      output_name = "outbound_item_info",
-      query_status = "国内入库",
-      update_status_value = "国内出库",
-      count_label = "可出库数",
-      count_field = "AvailableForOutbound",
-      con = con,
-      output = output,
-      refresh_trigger = unique_items_data_refresh_trigger,
-      session = session
-    )
-  })
-  
-  # 监听选中行并更新出库 SKU
-  observeEvent(unique_items_table_outbound_selected_row(), {
-    if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "outbound_sku", value = selected_sku)
-    }
-  })
-  
-  
-  
-  ################################################################
-  ##                                                            ##
-  ## 售出分页                                                   ##
-  ##                                                            ##
-  ################################################################
-  
-  # 监听售出 SKU 输入
-  observeEvent(input$sold_sku, {
-    handleSkuInput(
-      sku_input = input$sold_sku,
-      output_name = "sold_item_info",
-      count_label = "可售出数",
-      count_field = "AvailableForSold",
-      con = con,
-      output = output,
-      placeholder_path = placeholder_300px_path,
-      host_url = host_url
-    )
-  })
-  
-  # 确认售出逻辑
-  observeEvent(input$confirm_sold_btn, {
-    handleOperation(
-      operation_name = "售出",
-      sku_input = input$sold_sku,
-      output_name = "sold_item_info",
-      query_status = "国内入库",
-      update_status_value = "国内售出",
-      count_label = "可售出数",
-      count_field = "AvailableForSold",
-      con = con,
-      output = output,
-      refresh_trigger = unique_items_data_refresh_trigger,
-      session = session
-    )
-  })
-  
-  # 监听选中行并更新售出 SKU
-  observeEvent(unique_items_table_sold_selected_row(), {
-    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "sold_sku", value = selected_sku)
     }
   })
   
