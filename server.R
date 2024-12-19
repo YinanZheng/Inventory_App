@@ -1341,23 +1341,16 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 筛选非零数据以调整 X 轴标签
-    non_zero_data <- data %>%
-      filter(y_var > 0) %>%
-      select(GroupDate)
-    
     # 绘制柱状图
     plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
             name = NULL, marker = list(color = color),
             text = ~round(y_var, 2), # 显示数值，保留两位小数
-            textposition = "outside") %>% # 将数值放置在柱顶外侧
+            textposition = "outside") %>% # 数值显示在柱顶外侧
       layout(
         xaxis = list(
-          title = NULL, # 隐藏 X 轴标题
+          title = "", # 移除 X 轴标题
           tickangle = -45, # 倾斜日期标签
           tickfont = list(size = 12),
-          tickvals = ~non_zero_data$GroupDate, # 仅显示有数据的标签
-          ticktext = ~non_zero_data$GroupDate, # 显示对应日期
           showgrid = FALSE # 隐藏网格线
         ),
         yaxis = list(
@@ -1370,6 +1363,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "#FFFFFF" # 图表纸张背景颜色
       )
   })
+  
   
   output$pie_chart <- renderPlotly({
     data <- expense_summary_data()
@@ -1384,9 +1378,9 @@ server <- function(input, output, session) {
     
     # 绘制饼图
     plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
-            textinfo = "label+percent+value", # 显示标签、百分比和数值
+            textinfo = "label+value", # 显示类别和实际数值
+            hoverinfo = "label+percent", # 悬停时显示类别和数值
             insidetextorientation = "radial",
-            hoverinfo = "label+value+percent", # 悬停显示更多信息
             marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
       layout(
         title = list(
@@ -1396,6 +1390,7 @@ server <- function(input, output, session) {
         showlegend = TRUE # 显示图例
       )
   })
+  
   
   
   
