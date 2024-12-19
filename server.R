@@ -1326,44 +1326,44 @@ server <- function(input, output, session) {
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 根据用户选择的内容决定显示的 Y 轴数据和图表标题
+    # 根据用户选择的内容决定显示的 Y 轴数据
     y_var <- switch(input$expense_type,
                     "total" = data$TotalExpense,
                     "cost" = data$ProductCost,
                     "shipping" = data$ShippingCost)
-    
-    title_text <- switch(input$expense_type,
-                         "total" = "总开销",
-                         "cost" = "物品成本",
-                         "shipping" = "运费开销")
     
     color <- switch(input$expense_type,
                     "total" = "#007BFF",
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
+    # 筛选非零数据以调整 X 轴标签
+    non_zero_data <- data %>%
+      filter(y_var > 0) %>%
+      select(GroupDate)
+    
     # 绘制柱状图
     plot_ly(data, x = ~GroupDate, y = y_var, type = "bar",
-            name = title_text, marker = list(color = color)) %>%
+            name = NULL, marker = list(color = color),
+            text = ~round(y_var, 2), # 显示数值，保留两位小数
+            textposition = "outside") %>% # 将数值放置在柱顶外侧
       layout(
-        title = list(
-          text = paste("开销汇总 -", title_text),
-          font = list(size = 18, color = "#333", family = "Arial")
-        ),
         xaxis = list(
-          title = "日期",
-          tickangle = -45,
-          titlefont = list(size = 14),
+          title = NULL, # 隐藏 X 轴标题
+          tickangle = -45, # 倾斜日期标签
           tickfont = list(size = 12),
-          type = "date",
-          tickformat = "%Y-%m-%d"
+          tickvals = ~non_zero_data$GroupDate, # 仅显示有数据的标签
+          ticktext = ~non_zero_data$GroupDate, # 显示对应日期
+          showgrid = FALSE # 隐藏网格线
         ),
         yaxis = list(
-          title = paste(title_text, "金额 (元)"),
-          titlefont = list(size = 14),
+          title = NULL, # 隐藏 Y 轴标题
           tickfont = list(size = 12)
         ),
-        showlegend = FALSE # 隐藏图例，饼图会有自己的图例
+        margin = list(l = 50, r = 20, t = 20, b = 50), # 调整边距
+        showlegend = FALSE, # 隐藏图例
+        plot_bgcolor = "#F9F9F9", # 背景颜色
+        paper_bgcolor = "#FFFFFF" # 图表纸张背景颜色
       )
   })
   
@@ -1380,8 +1380,9 @@ server <- function(input, output, session) {
     
     # 绘制饼图
     plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
-            textinfo = "label+percent", # 显示标签和百分比
+            textinfo = "label+percent+value", # 显示标签、百分比和数值
             insidetextorientation = "radial",
+            hoverinfo = "label+value+percent", # 悬停显示更多信息
             marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
       layout(
         title = list(
@@ -1391,6 +1392,7 @@ server <- function(input, output, session) {
         showlegend = TRUE # 显示图例
       )
   })
+  
   
   
   
