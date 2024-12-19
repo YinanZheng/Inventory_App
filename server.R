@@ -1336,16 +1336,52 @@ server <- function(input, output, session) {
     
     # 创建堆叠柱状图，显示总开销以及分开的成本
     plot_ly(data, x = ~GroupDate) %>%
-      add_bars(y = ~ProductCost, name = "物品成本", marker = list(color = "#28a745")) %>%
-      add_bars(y = ~ShippingCost, name = "运费开销", marker = list(color = "#dc3545")) %>%
+      # 添加柱状图 (物品成本)
+      add_bars(
+        y = ~ProductCost,
+        name = "物品成本",
+        marker = list(color = "#4CAF50"), # 更柔和的绿色
+        hovertemplate = "时间: %{x}<br>物品成本: %{y:.2f}<extra></extra>" # 自定义悬停信息
+      ) %>%
+      # 添加柱状图 (运费开销)
+      add_bars(
+        y = ~ShippingCost,
+        name = "运费开销",
+        marker = list(color = "#FF5733"), # 更柔和的红色
+        hovertemplate = "时间: %{x}<br>运费开销: %{y:.2f}<extra></extra>" # 自定义悬停信息
+      ) %>%
+      # 布局设置
       layout(
         barmode = "stack", # 堆叠柱状图
-        title = "开销汇总",
-        xaxis = list(title = "时间"),
-        yaxis = list(title = "开销金额"),
-        legend = list(orientation = "h", x = 0.5, xanchor = "center")
+        title = list(
+          text = "", 
+          font = list(size = 18, color = "#333", family = "Arial")
+        ),
+        xaxis = list(
+          title = "时间",
+          tickangle = -45, # 倾斜时间轴标签，防止重叠
+          titlefont = list(size = 14),
+          tickfont = list(size = 12)
+        ),
+        yaxis = list(
+          title = "开销金额 (元)",
+          titlefont = list(size = 14),
+          tickfont = list(size = 12)
+        ),
+        legend = list(
+          orientation = "h", # 横向排列
+          x = 0.5,
+          xanchor = "center",
+          y = -0.2, # 调整位置到图表下方
+          font = list(size = 12)
+        ),
+        margin = list(l = 50, r = 20, t = 50, b = 80), # 调整图表边距
+        hovermode = "x unified", # 鼠标悬停显示统一信息
+        plot_bgcolor = "#F9F9F9", # 图表背景色
+        paper_bgcolor = "#FFFFFF" # 整体背景色
       )
   })
+  
   
   # 监听查询页选中inventory table (for SKU query and chart summary)
   observeEvent(input$filtered_inventory_table_rows_selected, {
