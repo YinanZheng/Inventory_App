@@ -224,52 +224,52 @@ server <- function(input, output, session) {
   })
   
   # 渲染物品追踪数据表
-  unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
-                                                         column_mapping <- c(common_columns, list(
-                                                           PurchaseTime = "采购日期")
-                                                         ), data = filtered_unique_items_data_purchase)
-  
-  unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
-                                                        column_mapping <- c(common_columns, list(
-                                                          PurchaseTime = "采购日期",
-                                                          DomesticEntryTime = "国内入库日期")
-                                                        ), selection = "multiple", data = unique_items_data)
-  
-  unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
-                                                       column_mapping <- c(common_columns, list(
-                                                         PurchaseTime = "采购日期",
-                                                         DomesticEntryTime = "国内入库日期",
-                                                         DomesticExitTime = "国内出库日期",
-                                                         DomesticSoldTime = "国内售出日期")
-                                                       ), selection = "multiple", data = unique_items_data)
-  
-  unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect",
-                                                       column_mapping <- c(common_columns, list(
-                                                         PurchaseTime = "采购日期",
-                                                         DomesticEntryTime = "国内入库日期")
-                                                       ), data = filtered_unique_items_data_defect)
-  
-  unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
-                                                         column_mapping <- c(common_columns, list(
-                                                           PurchaseTime = "采购日期",
-                                                           DomesticEntryTime = "国内入库日期",
-                                                           DomesticExitTime = "国内出库日期")
-                                                         ), data = unique_items_data)
-  
-  unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
-                                                     column_mapping <- c(common_columns, list(
-                                                       PurchaseTime = PurchaseTime = "采购日期",
-                                                       DomesticEntryTime = "国内入库日期",
-                                                       DomesticSoldTime = "国内售出日期")
-                                                     ), data = unique_items_data)
-  
-  unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
-                                                         column_mapping <- c(common_columns, list(
-                                                           PurchaseTime = "采购日期",
-                                                           DomesticEntryTime = "国内入库日期",
-                                                           DomesticExitTime = "国内出库日期",
-                                                           DomesticSoldTime = "国内售出日期")
-                                                         ), data = filtered_unique_items_data_download)
+  # unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
+  #                                                        column_mapping <- c(common_columns, list(
+  #                                                          PurchaseTime = "采购日期")
+  #                                                        ), data = filtered_unique_items_data_purchase)
+  # 
+  # unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
+  #                                                       column_mapping <- c(common_columns, list(
+  #                                                         PurchaseTime = "采购日期",
+  #                                                         DomesticEntryTime = "国内入库日期")
+  #                                                       ), selection = "multiple", data = unique_items_data)
+  # 
+  # unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
+  #                                                      column_mapping <- c(common_columns, list(
+  #                                                        PurchaseTime = "采购日期",
+  #                                                        DomesticEntryTime = "国内入库日期",
+  #                                                        DomesticExitTime = "国内出库日期",
+  #                                                        DomesticSoldTime = "国内售出日期")
+  #                                                      ), selection = "multiple", data = unique_items_data)
+  # 
+  # unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect",
+  #                                                      column_mapping <- c(common_columns, list(
+  #                                                        PurchaseTime = "采购日期",
+  #                                                        DomesticEntryTime = "国内入库日期")
+  #                                                      ), data = filtered_unique_items_data_defect)
+  # 
+  # unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
+  #                                                        column_mapping <- c(common_columns, list(
+  #                                                          PurchaseTime = "采购日期",
+  #                                                          DomesticEntryTime = "国内入库日期",
+  #                                                          DomesticExitTime = "国内出库日期")
+  #                                                        ), data = unique_items_data)
+  # 
+  # unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
+  #                                                    column_mapping <- c(common_columns, list(
+  #                                                      PurchaseTime = PurchaseTime = "采购日期",
+  #                                                      DomesticEntryTime = "国内入库日期",
+  #                                                      DomesticSoldTime = "国内售出日期")
+  #                                                    ), data = unique_items_data)
+  # 
+  # unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
+  #                                                        column_mapping <- c(common_columns, list(
+  #                                                          PurchaseTime = "采购日期",
+  #                                                          DomesticEntryTime = "国内入库日期",
+  #                                                          DomesticExitTime = "国内出库日期",
+  #                                                          DomesticSoldTime = "国内售出日期")
+  #                                                        ), data = filtered_unique_items_data_download)
   
   ####################################################################################################################################
   
