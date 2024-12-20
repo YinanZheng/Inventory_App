@@ -225,19 +225,9 @@ server <- function(input, output, session) {
   
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
-                                                        column_mapping <- list(
-                                                          SKU = "条形码",
-                                                          ItemName = "商品名",
-                                                          ItemImagePath = "商品图片",
-                                                          Maker = "供应商",
-                                                          MajorType = "大类",
-                                                          MinorType = "小类",
-                                                          ProductCost = "成本",
-                                                          DomesticShippingCost = "平摊运费",
-                                                          PurchaseTime = "采购日期",
-                                                          Status = "库存状态",
-                                                          Defect = "物品状态"
-                                                        ), data = filtered_unique_items_data_purchase)
+                                                         column_mapping <- c(common_columns, list(
+                                                           PurchaseTime = "采购日期")
+                                                         ), data = filtered_unique_items_data_purchase)
   
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
                                                         column_mapping <- list(
