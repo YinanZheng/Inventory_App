@@ -122,9 +122,9 @@ ui <- navbarPage(
         
         fluidRow(
           column(12, selectizeInput(
-            "new_name",                # 输入 ID
-            label = "商品名:",         # 输入框标签
-            choices = NULL,            # 动态填充的选项（在服务器端设置）
+            "new_name",                
+            label = "商品名:",         
+            choices = NULL,            
             options = list(
               placeholder = "请输入商品名...",
               create = TRUE            # 允许自定义输入值
