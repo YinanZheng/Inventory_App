@@ -1380,91 +1380,61 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 初始化标志变量
-  is_clearing <- reactiveVal(FALSE)
-  
-  # 初始化筛选选项
+  # 初始化供应商筛选选项
   observe({
-    if (is_clearing()) return()  # 如果正在清空，跳过更新逻辑
-    updateFilters(session, unique_items_data, input)
+    # 加载供应商列表
+    makers <- unique_items_data() %>% pull(Maker) %>% unique()
+    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
   })
+  
+  # 监听供应商选择变化并动态更新商品名称
+  observe({
+    req(unique_items_data())  # 确保数据存在
+    
+    # 获取用户选择的供应商
+    selected_makers <- input$download_maker
+    
+    # 筛选商品名称
+    if (!is.null(selected_makers) && length(selected_makers) > 0) {
+      filtered_data <- unique_items_data() %>% filter(Maker %in% selected_makers)
+    } else {
+      filtered_data <- unique_items_data()
+    }
+    
+    # 提取对应的商品名称
+    item_names <- filtered_data %>% pull(ItemName) %>% unique()
+    
+    # 更新商品名称选项
+    updateSelectizeInput(session, "download_item_name", choices = item_names)
+  })
+  
   
   # 筛选逻辑
   filtered_unique_items_data_download <- reactive({
-    req(unique_items_data())
+    req(unique_items_data())  # 确保数据不为空
+    
     data <- unique_items_data()
     
-    # 供应商筛选
-    if (!is.null(input$maker)) {
-      data <- data[data$Maker %in% input$maker, ]
+    # 按供应商筛选
+    if (!is.null(input$download_maker) && length(input$download_maker) > 0) {
+      data <- data %>% filter(Maker %in% input$download_maker)
     }
     
-    # 大类筛选
-    if (!is.null(input$major_type)) {
-      data <- data[data$MajorType %in% input$major_type, ]
+    # 按商品名称筛选
+    if (!is.null(input$download_item_name) && input$download_item_name != "") {
+      data <- data %>% filter(ItemName == input$download_item_name)
     }
-
-    # 小类筛选
-    if (!is.null(input$minor_type)) {
-      data <- data[data$MinorType %in% input$minor_type, ]
-    }
-
-    # 状态筛选
-    if (!is.null(input$unique_status)) {
-      data <- data[data$Status %in% input$unique_status, ]
-    }
-
-    # 瑕疵状态筛选
-    if (!is.null(input$unique_defect)) {
-      data <- data[data$Defect %in% input$unique_defect, ]
-    }
-
-    # 采购时间筛选
-    if (!is.null(input$purchase_time_range) && all(!is.na(input$purchase_time_range))) {
-      data <- data[!is.na(data$PurchaseTime) & 
-                     data$PurchaseTime >= as.Date(input$purchase_time_range[1]) & 
-                     data$PurchaseTime <= as.Date(input$purchase_time_range[2]), ]
-    }
-    
-    # # 国内入库时间筛选
-    # if (!is.null(input$entry_time_range) && all(!is.na(input$entry_time_range))) {
-    #   data <- data[!is.na(data$DomesticEntryTime) & 
-    #                  data$DomesticEntryTime >= as.Date(input$entry_time_range[1]) & 
-    #                  data$DomesticEntryTime <= as.Date(input$entry_time_range[2]), ]
-    # }
-    # 
-    # # 国内出库时间筛选
-    # if (!is.null(input$exit_time_range) && all(!is.na(input$exit_time_range))) {
-    #   data <- data[!is.na(data$DomesticExitTime) & 
-    #                  data$DomesticExitTime >= as.Date(input$exit_time_range[1]) & 
-    #                  data$DomesticExitTime <= as.Date(input$exit_time_range[2]), ]
-    # }
-    # 
-    # # 国内售出时间筛选
-    # if (!is.null(input$sold_time_range) && all(!is.na(input$sold_time_range))) {
-    #   data <- data[!is.na(data$DomesticSoldTime) & 
-    #                  data$DomesticSoldTime >= as.Date(input$sold_time_range[1]) & 
-    #                  data$DomesticSoldTime <= as.Date(input$sold_time_range[2]), ]
-    # }
     
     data
   })
   
-  # 全选逻辑
-  observeEvent(input$select_all, {
-    is_clearing(FALSE)
-    updateSelectizeInput(session, "maker", selected = unique(unique_items_data()$Maker), server = TRUE)
-  })
-  
-  # 清空逻辑
-  observeEvent(input$clear_all, {
-    is_clearing(TRUE)
-    updateSelectizeInput(session, "maker", selected = NULL, server = TRUE)
-  })
-  
-  # 重置按钮调用
-  observeEvent(input$reset_filters, {
-    updateFilters(session, unique_items_data, input, reset = TRUE)
+  # 重置筛选
+  observeEvent(input$download_reset_filters, {
+    makers <- unique_items_data() %>% pull(Maker) %>% unique()
+    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
+    
+    item_names <- unique_items_data() %>% pull(ItemName) %>% unique()
+    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = NULL)
   })
   
   # 下载物品表为 Excel

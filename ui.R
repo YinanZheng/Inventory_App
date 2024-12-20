@@ -625,23 +625,34 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        selectizeInput("maker", "选择供应商:", choices = NULL, selected = NULL, multiple = TRUE),
-        actionButton("select_all", "全选", class = "btn-primary"),
-        actionButton("clear_all", "清空", class = "btn-danger"),
+        # 供应商筛选
+        selectizeInput(
+          inputId = "download_maker",
+          label = "选择供应商:",
+          choices = NULL,          # 动态加载供应商
+          selected = NULL,         # 默认全选
+          multiple = TRUE,         # 支持多选
+          options = list(          # 提供更好的交互体验
+            placeholder = "请选择供应商...",
+            allowEmptyOption = TRUE,
+            maxItems = 10          # 限制最多选中10个
+          )
+        ),
         
-        tags$hr(),
+        # 商品名称筛选
+        selectizeInput(
+          inputId = "download_item_name",
+          label = "商品名称:",
+          choices = NULL,          # 动态加载商品名称
+          selected = NULL,         # 默认全选
+          multiple = FALSE,        # 单选，适合精确匹配
+          options = list(          # 提供更好的交互体验
+            placeholder = "请输入商品名称...",
+            create = FALSE         # 不允许用户输入新值
+          )
+        ),
         
-        selectInput("major_type", "选择大类:", choices = NULL, selected = NULL, multiple = TRUE),
-        selectInput("minor_type", "选择小类:", choices = NULL, selected = NULL, multiple = TRUE),
-        selectInput("unique_status", "选择状态:", choices = NULL, selected = NULL, multiple = TRUE),
-        selectInput("unique_defect", "选择瑕疵状态:", choices = NULL, selected = NULL, multiple = TRUE),
-        
-        dateRangeInput("purchase_time_range", "采购时间:", start = NULL, end = NULL),
-        # dateRangeInput("entry_time_range", "国内入库时间:", start = NULL, end = NULL),
-        # dateRangeInput("exit_time_range", "国内出库时间:", start = NULL, end = NULL),
-        # dateRangeInput("sold_time_range", "国内售出时间:", start = NULL, end = NULL),
-        
-        actionButton("reset_filters", "重置筛选", class = "btn-secondary"),
+        actionButton("download_reset_filters", "重置筛选", class = "btn-secondary"),
         
         tags$hr(),
         
