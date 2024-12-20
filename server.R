@@ -1405,7 +1405,7 @@ server <- function(input, output, session) {
     item_names <- filtered_data %>% pull(ItemName) %>% unique()
     
     # 更新商品名称选项
-    updateSelectizeInput(session, "download_item_name", choices = item_names)
+    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = NULL)
   })
   
   
