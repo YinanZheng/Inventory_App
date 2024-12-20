@@ -587,10 +587,10 @@ server <- function(input, output, session) {
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
-      updateTextInput(session, "new_maker", value = NULL)  # 清空供应商选择
+      updateSelectizeInput(session, "new_maker", choices = item_names, selected = "")
       updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
       updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
-      updateTextInput(session, "new_name", value = NULL)  # 清空商品名
+      updateSelectizeInput(session, "new_name", choices = item_names, selected = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
