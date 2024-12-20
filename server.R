@@ -230,19 +230,9 @@ server <- function(input, output, session) {
                                                          ), data = filtered_unique_items_data_purchase)
   
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
-                                                        column_mapping <- list(
-                                                          SKU = "条形码",
-                                                          ItemName = "商品名",
-                                                          ItemImagePath = "商品图片",
-                                                          Maker = "供应商",
-                                                          MajorType = "大类",
-                                                          MinorType = "小类",
-                                                          ProductCost = "成本",
-                                                          DomesticShippingCost = "平摊运费",
+                                                        column_mapping <- c(common_columns, list(
                                                           PurchaseTime = "采购日期",
-                                                          DomesticEntryTime = "国内入库日期",
-                                                          Status = "库存状态",
-                                                          Defect = "物品状态"
+                                                          DomesticEntryTime = "国内入库日期")
                                                         ), selection = "multiple", data = unique_items_data)
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
