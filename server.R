@@ -1387,6 +1387,13 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
   })
   
+  # 初始化供应商筛选选项
+  observe({
+    # 加载供应商列表
+    makers <- unique_items_data() %>% pull(Maker) %>% unique()
+    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
+  })
+  
   # 监听供应商选择变化并动态更新商品名称
   observe({
     req(unique_items_data())  # 确保数据存在
@@ -1401,12 +1408,13 @@ server <- function(input, output, session) {
       filtered_data <- unique_items_data()
     }
     
-    # 提取对应的商品名称
-    item_names <- filtered_data %>% pull(ItemName) %>% unique()
+    # 提取对应的商品名称，并在前面加一个空选项
+    item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
     
-    # 更新商品名称选项
-    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = NULL)
+    # 更新商品名称选项，默认选中空选项
+    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
   })
+  
   
   
   # 筛选逻辑
