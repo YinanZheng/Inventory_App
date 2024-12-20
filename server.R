@@ -187,7 +187,7 @@ server <- function(input, output, session) {
   })
   
   # 采购页过滤
-  filtered_unique_items_data_download <- reactive({
+  filtered_unique_items_data_purchase <- reactive({
     filter_data_by_inputs(
       data = unique_items_data(),
       input = input,
