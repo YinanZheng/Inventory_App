@@ -134,7 +134,7 @@ ui <- navbarPage(
         ),
         fluidRow(
           column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
-          column(4, numericInput("new_product_cost", "成本:", value = 0, min = 0)),
+          column(4, numericInput("new_product_cost", "单价:", value = 0, min = 0)),
           column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
         ),
         fluidRow(

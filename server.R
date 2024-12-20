@@ -210,8 +210,6 @@ server <- function(input, output, session) {
   })
   
   # 瑕疵品管理页过滤
-  
-  # 根据开关状态动态过滤数据
   filtered_unique_items_data_defect <- reactive({
     req(unique_items_data())
     data <- unique_items_data()
@@ -327,8 +325,9 @@ server <- function(input, output, session) {
     updateSelectizeInput(
       session,
       "new_name",
-      choices = item_names,      # 从库存表中提取商品名
-      server = TRUE              # 启用服务器端大数据支持
+      choices = item_names,
+      select = NULL, 
+      server = TRUE
     )
   })
   
@@ -590,10 +589,10 @@ server <- function(input, output, session) {
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
-      updateSelectizeInput(session, "new_maker", selected = NULL)  # 清空供应商选择
+      updateTextInput(session, "new_maker", value = NULL)  # 清空供应商选择
       updateSelectInput(session, "new_major_type", selected = NULL)  # 清空大类选择
       updateSelectInput(session, "new_minor_type", selected = NULL)  # 清空小类选择
-      updateTextInput(session, "new_name", value = "")  # 清空商品名
+      updateTextInput(session, "new_name", value = NULL)  # 清空商品名
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
