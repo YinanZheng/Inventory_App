@@ -714,7 +714,7 @@ filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item
   req(data)  # 确保数据不为空
   
   # 按供应商筛选
-  if (!is.null(input[[maker_input_id]]) && length(input[[maker_input_id]]) > 0) {
+  if (!is.null(input[[maker_input_id]]) && input[[maker_input_id]] != "") {
     data <- data %>% filter(Maker %in% input[[maker_input_id]])
   }
   
