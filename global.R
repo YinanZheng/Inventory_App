@@ -44,6 +44,20 @@ page_width <<- 4
 page_height <<- 2
 size_unit <<- "cm"
 
+# 通用物品表显示列
+common_columns <<- list(
+  SKU = "条形码",
+  ItemName = "商品名",
+  ItemImagePath = "商品图片",
+  Maker = "供应商",
+  MajorType = "大类",
+  MinorType = "小类",
+  ProductCost = "成本",
+  DomesticShippingCost = "平摊运费",
+  Status = "库存状态",
+  Defect = "物品状态"
+)
+
 # 定义需要记录时间的状态
 status_columns <<- list(
   "采购" = "PurchaseTime",
