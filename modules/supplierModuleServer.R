@@ -10,14 +10,14 @@ supplierModuleServer <- function(input, output, session, con) {
     if (is.null(maker_data) || nrow(maker_data) == 0) {
       updateSelectizeInput(session, "new_maker", choices = NULL, server = TRUE)
     } else {
-      choices <- setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")"))
+      choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
       updateSelectizeInput(session, "new_maker", choices = choices, select = "", server = TRUE)
     }
   }
   
   # 初始化供应商选择器
   observe({
-    update_maker_choices(c("", maker_list()))
+    update_maker_choices(maker_list())
   })
   
   # 添加供应商弹窗
