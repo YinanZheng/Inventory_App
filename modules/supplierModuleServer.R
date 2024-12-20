@@ -11,7 +11,7 @@ supplierModuleServer <- function(input, output, session, con) {
       updateSelectizeInput(session, "new_maker", choices = NULL, server = TRUE)
     } else {
       choices <- setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")"))
-      updateSelectizeInput(session, "new_maker", choices = choices, server = TRUE)
+      updateSelectizeInput(session, "new_maker", choices = choices, select = NULL, server = TRUE)
     }
   }
   
