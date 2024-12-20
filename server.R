@@ -187,21 +187,13 @@ server <- function(input, output, session) {
   })
   
   # 采购页过滤
-  filtered_unique_items_data_purchase <- reactive({
-    req(unique_items_data())  # 确保数据不为空
-    data <- unique_items_data()
-    
-    # 根据输入的 new_maker 进行过滤
-    if (!is.null(input$new_maker) && input$new_maker != "" && input$new_maker != "!全部供应商!") {
-      data <- data[data$Maker == input$new_maker, ]
-    }
-    
-    # 根据输入的 new_name 进行部分匹配过滤
-    if (!is.null(input$new_name) && input$new_name != "") {
-      data <- data[grepl(input$new_name, data$ItemName, ignore.case = TRUE), ]
-    }
-    
-    data
+  filtered_unique_items_data_download <- reactive({
+    filter_data_by_inputs(
+      data = unique_items_data(),
+      input = input,
+      maker_input_id = "new_maker",
+      item_name_input_id = "new_name"
+    )
   })
   
   # 瑕疵品管理页过滤
@@ -215,6 +207,17 @@ server <- function(input, output, session) {
     
     data
   })
+  
+  # 下载页过滤
+  filtered_unique_items_data_download <- reactive({
+    filter_data_by_inputs(
+      data = unique_items_data(),
+      input = input,
+      maker_input_id = "download_maker",
+      item_name_input_id = "download_item_name"
+    )
+  })
+  
   
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
@@ -314,14 +317,14 @@ server <- function(input, output, session) {
   # 商品名自动联想
   observe({
     # 获取库存表的商品名
-    item_names <- inventory()$ItemName
+    item_names <- c("", inventory()$ItemName)
     
     # 动态更新选择列表
     updateSelectizeInput(
       session,
       "new_name",
       choices = item_names,
-      select = NULL, 
+      select = "", 
       server = TRUE
     )
   })
@@ -1385,13 +1388,10 @@ server <- function(input, output, session) {
     # 加载供应商列表
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
-  })
-  
-  # 初始化供应商筛选选项
-  observe({
-    # 加载供应商列表
-    makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
+    
+    # 加载商品名称（初始时为空选项）
+    item_names <- c("")  # 仅包含空选项
+    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
   })
   
   # 监听供应商选择变化并动态更新商品名称
@@ -1415,34 +1415,15 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
   })
   
-  
-  
-  # 筛选逻辑
-  filtered_unique_items_data_download <- reactive({
-    req(unique_items_data())  # 确保数据不为空
-    
-    data <- unique_items_data()
-    
-    # 按供应商筛选
-    if (!is.null(input$download_maker) && length(input$download_maker) > 0) {
-      data <- data %>% filter(Maker %in% input$download_maker)
-    }
-    
-    # 按商品名称筛选
-    if (!is.null(input$download_item_name) && input$download_item_name != "") {
-      data <- data %>% filter(ItemName == input$download_item_name)
-    }
-    
-    data
-  })
-  
-  # 重置筛选
+  # 重置筛选逻辑
   observeEvent(input$download_reset_filters, {
+    # 重置供应商筛选为全选
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
     
-    item_names <- unique_items_data() %>% pull(ItemName) %>% unique()
-    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = NULL)
+    # 重置商品名称筛选为空选项
+    item_names <- c("")  # 仅包含空选项
+    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
   })
   
   # 下载物品表为 Excel
