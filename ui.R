@@ -136,7 +136,8 @@ ui <- navbarPage(
             inputId = "purchase_date",
             label = "采购日期:",
             value = Sys.Date(),  # 默认日期为今天
-            width = "100%"
+            width = "100%",
+            style = "height: 38px;"
           ))
         ),
         fluidRow(
