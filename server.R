@@ -129,7 +129,7 @@ server <- function(input, output, session) {
       return(create_empty_inventory())
     }
     
-    result <- result[order(result$update_at, decreasing = TRUE), ]
+    result <- result[order(result$updated_at, decreasing = TRUE), ]
     
     return(result)
   })
