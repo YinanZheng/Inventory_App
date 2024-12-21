@@ -771,10 +771,11 @@ server <- function(input, output, session) {
     tryCatch({
       # 获取 SKU 的操作数据
       sku_data <- fetchSkuOperationData(sku, con)
+      print(sku_data)  # 打印 fetchSkuOperationData 的返回值
       
       if (nrow(sku_data) == 0) {
         showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
-        updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
+        updateTextInput(session, "sold_sku_input", value = "")
         return()
       }
       
@@ -782,7 +783,7 @@ server <- function(input, output, session) {
       available_for_sold <- sku_data$AvailableForSold[1]
       if (available_for_sold <= 0) {
         showNotification("该物品的可售出数量已为 0，无法继续添加！", type = "error")
-        updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
+        updateTextInput(session, "sold_sku_input", value = "")
         return()
       }
       
@@ -790,20 +791,21 @@ server <- function(input, output, session) {
       item_data <- unique_items_data() %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
         slice(1)  # 取第一个符合条件的物品
+      print(item_data)  # 打印从 unique_items_data 获取的物品数据
       
-      # 合并到已选物品列表
-      updated_items <- bind_rows(selected_items(), item_data) %>%
-        distinct(SKU, UniqueID, .keep_all = TRUE)  # 按 SKU 和 UniqueID 去重
+      # 不去重，直接将新物品添加到已选物品列表
+      updated_items <- bind_rows(selected_items(), item_data)
       selected_items(updated_items)
       
-      showNotification(nrow(updated_items))
-      
-      showNotification("物品已添加到订单列表！", type = "message")
+      # 调试输出
+      print(updated_items)  # 打印更新后的 selected_items
+      showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(updated_items)), type = "message")
       updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
     }, error = function(e) {
       showNotification(paste("添加物品时发生错误：", e$message), type = "error")
     })
   })
+  
   
   
   observeEvent(unique_items_table_sold_selected_row(), {
