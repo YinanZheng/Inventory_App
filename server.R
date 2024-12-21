@@ -447,40 +447,53 @@ server <- function(input, output, session) {
       unit_shipping_cost <- total_shipping_cost / sum(added_items_df$Quantity)
       
       for (i in 1:nrow(added_items_df)) {
-        sku <- added_items_df$SKU[i]
-        maker <- added_items_df$Maker[i]
-        major_type <- added_items_df$MajorType[i]
-        minor_type <- added_items_df$MinorType[i]
-        item_name <- added_items_df$ItemName[i]
-        quantity <- added_items_df$Quantity[i]
-        product_cost <- added_items_df$ProductCost[i]
-        image_path <- added_items_df$ItemImagePath[i]  # 已经处理好的图片路径
-        
-        # 检查 SKU 是否已存在
-        existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
-        
-        if (nrow(existing_item) > 0) {
-          # SKU 已存在，更新库存
-          new_quantity <- existing_item$Quantity + quantity
-          new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + (product_cost * quantity)) / new_quantity
-          new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + (unit_shipping_cost * quantity)) / new_quantity
-          
-          dbExecute(con, "UPDATE inventory 
-                        SET Quantity = ?, ProductCost = ?, ShippingCost = ? 
-                        WHERE SKU = ?",
-                    params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), sku))
-          
-          showNotification(paste("库存数据更新成功! SKU:", sku, ", 商品名:", item_name), type = "message")
-        } else {
-          # SKU 不存在，插入新商品
-          dbExecute(con, "INSERT INTO inventory 
-                        (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                    params = list(sku, maker, major_type, minor_type, item_name, quantity, 
-                                  round(product_cost, 2), round(unit_shipping_cost, 2), image_path))
-          
-          showNotification(paste("新商品成功加入库存数据! SKU:", sku, ", 商品名:", item_name), type = "message")
-        }
+        # sku <- added_items_df$SKU[i]
+        # maker <- added_items_df$Maker[i]
+        # major_type <- added_items_df$MajorType[i]
+        # minor_type <- added_items_df$MinorType[i]
+        # item_name <- added_items_df$ItemName[i]
+        # quantity <- added_items_df$Quantity[i]
+        # product_cost <- added_items_df$ProductCost[i]
+        # image_path <- added_items_df$ItemImagePath[i]  # 已经处理好的图片路径
+        # 
+        # # 检查 SKU 是否已存在
+        # existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
+        # 
+        # if (nrow(existing_item) > 0) {
+        #   # SKU 已存在，更新库存
+        #   new_quantity <- existing_item$Quantity + quantity
+        #   new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + (product_cost * quantity)) / new_quantity
+        #   new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + (unit_shipping_cost * quantity)) / new_quantity
+        #   
+        #   dbExecute(con, "UPDATE inventory 
+        #                 SET Quantity = ?, ProductCost = ?, ShippingCost = ? 
+        #                 WHERE SKU = ?",
+        #             params = list(new_quantity, round(new_ave_product_cost, 2), round(new_ave_shipping_cost, 2), sku))
+        #   
+        #   showNotification(paste("库存数据更新成功! SKU:", sku, ", 商品名:", item_name), type = "message")
+        # } else {
+        #   # SKU 不存在，插入新商品
+        #   dbExecute(con, "INSERT INTO inventory 
+        #                 (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
+        #                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+        #             params = list(sku, maker, major_type, minor_type, item_name, quantity, 
+        #                           round(product_cost, 2), round(unit_shipping_cost, 2), image_path))
+        #   
+        #   showNotification(paste("新商品成功加入库存数据! SKU:", sku, ", 商品名:", item_name), type = "message")
+        # }
+        adjust_inventory(
+          con = con,
+          sku = added_items_df$SKU[i],
+          adjustment = added_items_df$Quantity[i],  # 增加库存
+          maker = added_items_df$Maker[i],
+          major_type = added_items_df$MajorType[i],
+          minor_type = added_items_df$MinorType[i],
+          item_name = added_items_df$ItemName[i],
+          quantity = added_items_df$Quantity[i],
+          product_cost = added_items_df$ProductCost[i],
+          unit_shipping_cost = unit_shipping_cost,
+          image_path = added_items_df$ItemImagePath[i]
+        )
       }
       
       # 更新 inventory 数据并触发 UI 刷新
@@ -804,6 +817,13 @@ server <- function(input, output, session) {
       refresh_trigger = unique_items_data_refresh_trigger,
       session = session
     )
+    
+    # 库存调整
+    adjust_inventory(
+      con = con,
+      sku = input$sold_sku,
+      adjustment = -1  # 减少库存
+    )
   })
   
   # 监听选中行并更新售出 SKU
@@ -1115,7 +1135,7 @@ server <- function(input, output, session) {
               tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
               tags$p(tags$b("供应商："), sku_data$Maker[1]),
               tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
-              tags$p(tags$b("库存数量："), sku_data$Quantity[1]),
+              tags$p(tags$b("总库存数："), sku_data$Quantity[1]),
               tags$p(tags$b("平均单价："), sprintf("¥%.2f", sku_data$ProductCost[1])),
               tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
           )

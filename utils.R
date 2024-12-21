@@ -736,5 +736,68 @@ filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item
   data
 }
 
+adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NULL, 
+                             minor_type = NULL, item_name = NULL, quantity = NULL, 
+                             product_cost = NULL, unit_shipping_cost = NULL, image_path = NULL) {
+  tryCatch({
+    # 查询现有库存
+    existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
+    
+    if (nrow(existing_item) > 0) {
+      # SKU 已存在，更新库存
+      new_quantity <- existing_item$Quantity + adjustment  # 调整库存数量
+      
+      # 如果是增加库存（入库），重新计算平均成本和运费
+      if (adjustment > 0 && !is.null(product_cost) && !is.null(quantity)) {
+        new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + 
+                                   (product_cost * quantity)) / new_quantity
+        new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + 
+                                    (unit_shipping_cost * quantity)) / new_quantity
+      } else {
+        # 售出或减少库存时，只更新数量
+        new_ave_product_cost <- existing_item$ProductCost
+        new_ave_shipping_cost <- existing_item$ShippingCost
+      }
+      
+      # 如果库存不足，显示警告并终止
+      if (new_quantity < 0) {
+        showNotification("库存不足，无法完成操作！", type = "error")
+        return(FALSE)  # 返回失败状态
+      }
+      
+      # 更新库存
+      dbExecute(con, "UPDATE inventory 
+                      SET Quantity = ?, ProductCost = ?, ShippingCost = ? 
+                      WHERE SKU = ?", 
+                params = list(new_quantity, round(new_ave_product_cost, 2), 
+                              round(new_ave_shipping_cost, 2), sku))
+      
+      showNotification(paste("库存已成功调整! SKU:", sku), type = "message")
+      return(TRUE)
+    } else {
+      # SKU 不存在，仅在入库时插入新商品
+      if (adjustment > 0 && !is.null(maker) && !is.null(major_type) && 
+          !is.null(minor_type) && !is.null(item_name) && !is.null(quantity) && 
+          !is.null(product_cost)) {
+        
+        dbExecute(con, "INSERT INTO inventory 
+                        (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
+                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  params = list(sku, maker, major_type, minor_type, item_name, quantity, 
+                                round(product_cost, 2), round(unit_shipping_cost, 2), image_path))
+        
+        showNotification(paste("新商品成功加入库存! SKU:", sku, ", 商品名:", item_name), type = "message")
+        return(TRUE)
+      } else {
+        showNotification("库存调整失败：SKU 不存在且缺少新增商品的必要信息！", type = "error")
+        return(FALSE)
+      }
+    }
+  }, error = function(e) {
+    # 错误处理
+    showNotification(paste("调整库存时发生错误：", e$message), type = "error")
+    return(FALSE)
+  })
+}
 
 

@@ -515,7 +515,7 @@ ui <- navbarPage(
                   div(
                     class = "card",
                     style = "height: 453.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                    tags$h4("商品详情", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
+                    tags$h4("商品信息", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
                     uiOutput("query_item_info") # 动态渲染物品信息
                   )
                 ),
