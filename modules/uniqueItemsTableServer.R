@@ -8,6 +8,17 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
       image_column = "ItemImagePath"
     ) %>%
       formatStyle(
+        "库存状态",
+        backgroundColor = styleEqual(
+          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),
+          c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red")
+        ),
+        color = styleEqual(
+          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),
+          c("black", "black", "black", "white", "white", "black", "white")
+        )
+      ) %>%
+      formatStyle(
         "物品状态",
         backgroundColor = styleEqual(
           c("未知", "无瑕", "瑕疵", "修复"),
@@ -19,14 +30,14 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
         )
       ) %>%
       formatStyle(
-        "库存状态",
+        "国际运输",
         backgroundColor = styleEqual(
-          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),
-          c("lightgray", "#c7e89b", "darkgray", "#46a80d", "#173b02", "darkgray", "red")
+          c("空运", "海运"),
+          c("lightblue", "darkblue")
         ),
         color = styleEqual(
-          c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货"),
-          c("black", "black", "black", "white", "white", "black", "white")
+          c("空运", "海运"),
+          c("black", "white")
         )
       )
   })

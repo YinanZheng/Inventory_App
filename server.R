@@ -643,7 +643,7 @@ server <- function(input, output, session) {
       output = output,
       refresh_trigger = unique_items_data_refresh_trigger,
       session = session,
-      input = input # 传递 input 对象
+      input = input
     )
   })
   
@@ -741,7 +741,8 @@ server <- function(input, output, session) {
       con = con,
       output = output,
       refresh_trigger = unique_items_data_refresh_trigger,
-      session = session
+      session = session,
+      input = input
     )
   })
   
@@ -788,7 +789,8 @@ server <- function(input, output, session) {
       con = con,
       output = output,
       refresh_trigger = unique_items_data_refresh_trigger,
-      session = session
+      session = session,
+      input = input
     )
     
     # 库存调整

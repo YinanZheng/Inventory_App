@@ -326,21 +326,33 @@ render_table_with_images <- function(data,
 }
 
 
-update_status <- function(con, unique_id, new_status, defect_status = NULL, refresh_trigger = NULL) {
+update_status <- function(con, unique_id, new_status, defect_status = NULL, shipping_method = NULL, refresh_trigger = NULL) {
   if (!new_status %in% names(status_columns)) {
     showNotification("Invalid status provided", type = "error")
+    return()
   }
   
   # 获取时间戳列
   timestamp_column <- status_columns[[new_status]]
   
   # 动态生成 SQL 查询
-  if (!is.null(defect_status)) {
+  if (!is.null(defect_status) && !is.null(shipping_method)) {
+    query <- paste0(
+      "UPDATE unique_items SET Status = ?, ", 
+      timestamp_column, " = NOW(), Defect = ?, IntlShippingMethod = ? WHERE UniqueID = ?"
+    )
+    params <- list(new_status, defect_status, shipping_method, unique_id)
+  } else if (!is.null(defect_status)) {
     query <- paste0(
       "UPDATE unique_items SET Status = ?, ", 
       timestamp_column, " = NOW(), Defect = ? WHERE UniqueID = ?"
     )
     params <- list(new_status, defect_status, unique_id)
+  } else if (!is.null(shipping_method)) {
+    query <- paste0(
+      "UPDATE unique_items SET IntlShippingMethod = ? WHERE UniqueID = ?"
+    )
+    params <- list(shipping_method, unique_id)
   } else {
     query <- paste0(
       "UPDATE unique_items SET Status = ?, ", 
@@ -637,12 +649,21 @@ handleOperation <- function(
       defect_status <- ifelse(is.null(is_defective) || !is_defective, "无瑕", "瑕疵")
     }
     
+    # 获取国际运输方式
+    shipping_method <- NULL
+    if (!is.null(input) && operation_name %in% c("出库", "售出")) {
+      shipping_method <- ifelse(operation_name == "出库", 
+                                input$outbound_shipping_method, 
+                                input$sold_shipping_method)
+    }
+    
     # 更新状态
     update_status(
       con = con,
       unique_id = sku_items$UniqueID[1],
       new_status = update_status_value,
       defect_status = defect_status, # 动态传递瑕疵状态
+      shipping_method = shipping_method, # 动态传递国际运输方式
       refresh_trigger = refresh_trigger
     )
     
@@ -686,6 +707,7 @@ handleOperation <- function(
     showNotification(paste0(operation_name, "失败：", e$message), type = "error")
   })
 }
+
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
