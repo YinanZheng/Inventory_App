@@ -47,3 +47,50 @@ CREATE TABLE unique_items (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last update timestamp
     FOREIGN KEY (SKU) REFERENCES inventory(SKU)  -- Relationship with inventory table
 );
+
+
+CREATE TABLE orders (
+    OrderID VARCHAR(50) PRIMARY KEY,         -- 订单号，作为主键
+    UsTrackingNumber1 VARCHAR(50),            -- 运单号1
+    UsTrackingNumber2 VARCHAR(50),            -- 运单号2
+    UsTrackingNumber3 VARCHAR(50),            -- 运单号3
+    OrderImagePath VARCHAR(255),            -- 订单图片路径
+    OrderNotes TEXT,                        -- 订单备注
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- 更新时间
+);
+
+-- 在 UsEntryTime 之后增加 Time 列
+ALTER TABLE unique_items
+ADD COLUMN UsCheckTime DATE AFTER UsEntryTime,
+ADD COLUMN UsRelocationTime DATE AFTER UsCheckTime;
+
+-- 在 ReturnTime 之后增加列
+ALTER TABLE unique_items
+ADD COLUMN IntlShippingMethod ENUM('海运', '空运') AFTER ReturnTime,
+ADD COLUMN IntlAirTracking VARCHAR(50) AFTER IntlShippingMethod,
+ADD COLUMN IntlSeaTracking VARCHAR(50) AFTER IntlAirTracking,
+ADD COLUMN OrderID VARCHAR(50) AFTER IntlSeaTracking;
+
+ALTER TABLE unique_items
+ADD CONSTRAINT fk_orders_orderid
+FOREIGN KEY (OrderID) REFERENCES orders(OrderID)
+ON DELETE SET NULL;
+
+-- 修改 Status 列的枚举值
+ALTER TABLE unique_items MODIFY COLUMN Status ENUM(
+    '采购', 
+    '国内入库', 
+    '国内出库', 
+    '国内售出', 
+    '美国入库', 
+    '美国售出', 
+    '美国核对',
+    '美国调货',
+    '退货'
+) NOT NULL;
+
+
+
+
+

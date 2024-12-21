@@ -508,7 +508,11 @@ server <- function(input, output, session) {
       
       # Clear added items and reset input fields
       added_items(create_empty_inventory())
-      image_purchase$reset()
+      image_purchase$reset() # 重置图片
+      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
+      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
+      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
+      
     }, error = function(e) {
       showNotification(paste("发生错误:", e$message), type = "error")
     })

@@ -69,9 +69,12 @@ DELETE FROM inventory;
 DELETE FROM maker_list
 WHERE Name = '';
 
+-- Delete a record using SKU
+DELETE FROM inventory
+WHERE SKU = 'GB-ZK-3TMM';
+
 DELETE FROM item_type_data
 WHERE id BETWEEN 17 AND 22;
-
 
 -- Remove table completely
 USE inventory_system;
@@ -80,16 +83,6 @@ DROP TABLE inventory;
 DROP TABLE maker_list;
 DROP TABLE item_type_data;
 
---
-ALTER TABLE unique_items MODIFY COLUMN Status ENUM(
-    '采购', 
-    '国内入库', 
-    '国内出库', 
-    '国内售出', 
-    '美国入库', 
-    '美国售出', 
-    '美国核对',
-    '美国调货',
-    '退货', 
-) NOT NULL;
+
+
 
