@@ -769,20 +769,9 @@ server <- function(input, output, session) {
     if (is.null(sku) || sku == "") return()  # 如果输入为空，直接返回
     
     tryCatch({
-      # 从 unique_items 表和 inventory 表联表查询符合条件的物品
-      item_data <- dbGetQuery(con, "
-      SELECT 
-        unique_items.UniqueID, 
-        unique_items.SKU, 
-        inventory.ItemName, 
-        inventory.ItemImagePath, 
-        COUNT(unique_items.SKU) AS Quantity
-      FROM unique_items 
-      JOIN inventory ON unique_items.SKU = inventory.SKU
-      WHERE unique_items.SKU = ? AND unique_items.Status = '国内入库' AND unique_items.Defect != '瑕疵'
-      GROUP BY unique_items.SKU
-      LIMIT 1", 
-                              params = list(sku))
+      # 从 unique_items_data 中过滤符合条件的物品
+      item_data <- unique_items_data() %>%
+        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵")
       
       if (nrow(item_data) == 0) {
         showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
@@ -790,8 +779,19 @@ server <- function(input, output, session) {
         return()
       }
       
+      # 提取需要的字段并汇总数量
+      summarized_item <- item_data %>%
+        group_by(SKU) %>%
+        summarise(
+          UniqueID = first(UniqueID),
+          ItemName = first(ItemName),
+          ItemImagePath = first(ItemImagePath),
+          Quantity = n(),
+          .groups = "drop"
+        )
+      
       # 合并到已选物品列表
-      updated_items <- bind_rows(selected_items(), item_data) %>%
+      updated_items <- bind_rows(selected_items(), summarized_item) %>%
         distinct(SKU, UniqueID, .keep_all = TRUE)  # 按 SKU 和 UniqueID 去重
       selected_items(updated_items)
       
@@ -802,7 +802,7 @@ server <- function(input, output, session) {
     })
   })
   
-
+  
   observeEvent(unique_items_table_sold_selected_row(), {
     selected_rows <- unique_items_table_sold_selected_row()
     if (!is.null(selected_rows) && length(selected_rows) > 0) {
