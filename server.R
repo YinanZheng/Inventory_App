@@ -851,24 +851,23 @@ server <- function(input, output, session) {
     tryCatch({
       # 保存订单信息到 orders 表
       dbExecute(con, "
-      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderImagePath, OrderNotes, ShippingMethod)
-      VALUES (?, ?, ?, ?, ?, ?, ?)",
+      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderImagePath, OrderNotes)
+      VALUES (?, ?, ?, ?, ?, ?)",
                 params = list(
                   input$order_id,
                   input$tracking_number1,
                   input$tracking_number2,
                   input$tracking_number3,
                   input$order_image$datapath,
-                  input$order_notes,
-                  input$sold_shipping_method
+                  input$order_notes
                 )
       )
       
-      # 更新物品状态和库存
+      # 更新物品状态、运输方式和订单号
       lapply(1:nrow(selected_items()), function(i) {
         item <- selected_items()[i, ]
         
-        # 更新状态和运输方式
+        # 更新物品状态
         handleOperation(
           operation_name = "售出",
           sku_input = item$SKU,
@@ -884,12 +883,12 @@ server <- function(input, output, session) {
           input = input
         )
         
-        # 更新订单号
+        # 更新订单号和运输方式到 unique_items 表
         dbExecute(con, "
         UPDATE unique_items 
-        SET OrderID = ? 
-        WHERE UniqueID = ?", 
-                  params = list(input$order_id, item$UniqueID)
+        SET OrderID = ?, IntlShippingMethod = ? 
+        WHERE UniqueID = ?",
+                  params = list(input$order_id, input$sold_shipping_method, item$UniqueID)
         )
         
         # 调整库存
