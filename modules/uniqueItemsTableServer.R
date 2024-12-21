@@ -9,9 +9,9 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     )
     
     # 获取数据列名
-    column_names <- table_and_names$column_names
+    column_names <- datatable_and_names$column_names
     
-    table <- table_and_names$datatable
+    table <- datatable_and_names$datatable
     
     # 动态应用样式
     if ("库存状态" %in% column_names) {
