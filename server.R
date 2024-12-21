@@ -287,7 +287,7 @@ server <- function(input, output, session) {
   ################################################################
   
   # 供应商模块
-  supplierModuleServer(input, output, session, con)
+  supplier_module <- callModule(supplierModuleServer, "supplier_module", con = con)
   
   # 物品大小类模块
   typeModuleServer("type_module", con, item_type_data)
@@ -587,6 +587,7 @@ server <- function(input, output, session) {
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
+      supplier_module$update_maker_choices(maker_list())
       updateSelectizeInput(session, "new_name", choices = c("", inventory()$ItemName), selected = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值

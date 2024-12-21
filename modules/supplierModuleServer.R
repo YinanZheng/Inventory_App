@@ -102,4 +102,9 @@ supplierModuleServer <- function(input, output, session, con) {
       ))
     }
   })
+  
+  # 返回 update_maker_choices 函数
+  return(list(
+    update_maker_choices = update_maker_choices  # 暴露此函数供外部调用
+  ))
 }
