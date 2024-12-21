@@ -1,7 +1,7 @@
 uniqueItemsTableServer <- function(input, output, session, column_mapping, selection = "single", data) {
   output$unique_items_table <- renderDT({
     # 初始化渲染表
-    table <- render_table_with_images(
+    datatable_and_names <- render_table_with_images(
       data = data(),                 # 使用传递的 reactive 数据源
       column_mapping = column_mapping, # 映射用户友好的列名
       selection = selection, 
@@ -9,7 +9,9 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     )
     
     # 获取数据列名
-    column_names <- colnames(table)
+    column_names <- table_and_names$column_names
+    
+    table <- table_and_names$datatable
     
     # 动态应用样式
     if ("库存状态" %in% column_names) {

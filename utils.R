@@ -315,13 +315,19 @@ render_table_with_images <- function(data,
     data <- map_column_names(data, column_mapping)
   }
   
-  # Return the rendered datatable
-  datatable(
-    data,
-    escape = FALSE,  # Disable HTML escaping to allow rendering of images
-    selection = selection,
-    rownames = FALSE,
-    options = options
+  # 获取更新后的列名
+  updated_column_names <- colnames(data)
+  
+  # 返回列表，包括 datatable 对象和列名
+  list(
+    datatable = datatable(
+      data,
+      escape = FALSE,  # Disable HTML escaping to allow rendering of images
+      selection = selection,
+      rownames = FALSE,
+      options = options
+    ),
+    column_names = updated_column_names
   )
 }
 

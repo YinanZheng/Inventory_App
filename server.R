@@ -114,7 +114,7 @@ server <- function(input, output, session) {
       selection = "multiple",
       options = list(fixedHeader = TRUE),
       image_column = "ItemImagePath"  # Specify the correct image column
-    )
+    )$datatable
   })
   
   ####################################################################################################################################
@@ -153,7 +153,7 @@ server <- function(input, output, session) {
       options = list(fixedHeader = TRUE),
       column_mapping = column_mapping,
       image_column = "ItemImagePath"  # Specify the image column
-    )
+    )$datatable
   })
   
   ####################################################################################################################################
