@@ -21,13 +21,13 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
   
   # 动态匹配供应商名称
   observe({
-    req(maker_list())
+    req(maker_data())
     output$matched_suppliers <- renderUI({
       current_name <- input$new_supplier_name
       
       if (is.null(current_name) || current_name == "") return(NULL)
       
-      all_suppliers <- maker_list()$Maker
+      all_suppliers <- maker_data()$Maker
       matched <- all_suppliers[grepl(current_name, all_suppliers, ignore.case = TRUE)]
       
       if (length(matched) > 0) {
@@ -44,7 +44,7 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
   # 提交新供应商
   observeEvent(input$submit_supplier, {
     new_supplier <- input$new_supplier_name
-    existing_suppliers <- maker_list()$Maker
+    existing_suppliers <- maker_data()$Maker
     
     if (new_supplier %in% existing_suppliers) {
       showModal(modalDialog(
@@ -62,11 +62,11 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
     if (new_supplier != "") {
       # 添加新供应商到 MySQL 数据库
       tryCatch({
-        dbExecute(con, "INSERT INTO maker_list (Name, Pinyin) VALUES (?, ?)", 
+        dbExecute(con, "INSERT INTO maker_data (Name, Pinyin) VALUES (?, ?)", 
                   params = list(new_supplier, pinyin_name))
         
         # 更新数据并刷新 UI
-        new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
+        new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_data ORDER BY Pinyin ASC")
         update_maker_choices(new_data)
         
         showNotification("新供应商添加成功！", type = "message")
