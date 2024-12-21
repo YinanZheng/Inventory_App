@@ -121,7 +121,7 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(12, selectizeInput(
+          column(8, selectizeInput(
             "new_name",                
             label = "商品名:",         
             choices = NULL,            
@@ -129,6 +129,13 @@ ui <- navbarPage(
               placeholder = "请输入商品名...",
               create = TRUE            # 允许自定义输入值
             ),
+            width = "100%"
+          )),
+          
+          column(4, dateInput(
+            inputId = "purchase_date",
+            label = "采购日期:",
+            value = Sys.Date(),  # 默认日期为今天
             width = "100%"
           ))
         ),
@@ -142,28 +149,6 @@ ui <- navbarPage(
           column(3,actionButton("reset_btn", "清空", icon = icon("snowplow"), class = "btn-danger", 
                                 style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"))
         ),
-        
-        fluidRow(
-          # column(3, 
-          #        tags$div(
-          #          tags$label("库存补录", class = "control-label"),  # 控件的标签
-          #          switchInput(
-          #            inputId = "inventory_switch",  # 开关 ID
-          #            label = NULL,                 # 开关本身不显示标签
-          #            value = FALSE,                # 默认关闭
-          #            size = "default"
-          #          )
-          #        )
-          # ),
-          dateInput(
-            inputId = "purchase_date",
-            label = "采购日期:",
-            value = Sys.Date(),  # 默认日期为今天
-            width = "100%"
-          )
-
-        ),
-        
         
         imageModuleUI("image_purchase"),
         
