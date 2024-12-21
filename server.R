@@ -812,7 +812,8 @@ server <- function(input, output, session) {
   
   output$unique_items_table_sold <- renderDataTable({
     # 渲染 DataTable
-    datatable(selected_items())
+    datatable(data.frame(SKU = "TEST", ItemName = "Example", Status = "国内入库", Defect = "无瑕"))
+    
   })
   
   

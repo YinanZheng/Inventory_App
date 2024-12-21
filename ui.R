@@ -431,8 +431,7 @@ ui <- navbarPage(
         div(
           class = "sticky-info",
           tags$h4("订单内物品", style = "color: #333; font-weight: bold; margin-bottom: 15px;"),
-          column(12, DTOutput("selected_items_table")),
-          
+          column(12, DTOutput("unique_items_table_sold")),
           tags$hr(),
           actionButton("clear_selected_items", "清空选中物品", class = "btn-warning")
         ),
