@@ -408,6 +408,10 @@ ui <- navbarPage(
             selected = "空运"  # 默认选择空运
           ),
           
+          # 条形码输入框
+          tags$hr(),
+          textInput("sold_sku_input", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%"),
+          
           tags$hr(),
           actionButton(
             "confirm_order_btn", 
@@ -446,7 +450,8 @@ ui <- navbarPage(
         )
       )
     )
-  ), # end of 售出 tab
+  )
+  , # end of 售出 tab
   
   
   

@@ -762,54 +762,183 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 监听售出 SKU 输入
-  observeEvent(input$sold_sku, {
-    handleSkuInput(
-      sku_input = input$sold_sku,
-      output_name = "sold_item_info",
-      count_label = "可售出数",
-      count_field = "AvailableForSold",
-      con = con,
-      output = output,
-      placeholder_path = placeholder_300px_path,
-      host_url = host_url
-    )
+  selected_items <- reactiveVal(data.frame())  # 初始化一个空的数据框，用于存储已选物品
+  
+  observeEvent(input$sold_sku_input, {
+    sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
+    if (is.null(sku) || sku == "") return()  # 如果输入为空，直接返回
+    
+    tryCatch({
+      # 从 unique_items 表查询符合条件的物品
+      item_data <- dbGetQuery(con, "
+      SELECT UniqueID, SKU, ItemName, Quantity, ItemImagePath 
+      FROM unique_items 
+      WHERE SKU = ? AND Status = '国内入库' AND Defect != '瑕疵'
+      LIMIT 1", params = list(sku))
+      
+      if (nrow(item_data) == 0) {
+        showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
+        updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
+        return()
+      }
+      
+      # 合并到已选物品列表
+      updated_items <- bind_rows(selected_items(), item_data) %>%
+        distinct(SKU, .keep_all = TRUE)  # 去重
+      selected_items(updated_items)
+      
+      showNotification("物品已添加到订单列表！", type = "message")
+      updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
+    }, error = function(e) {
+      showNotification(paste("添加物品时发生错误：", e$message), type = "error")
+    })
   })
   
-  # 确认售出逻辑
-  observeEvent(input$confirm_sold_btn, {
-    handleOperation(
-      operation_name = "售出",
-      sku_input = input$sold_sku,
-      output_name = "sold_item_info",
-      query_status = "国内入库",
-      update_status_value = "国内售出",
-      count_label = "可售出数",
-      count_field = "AvailableForSold",
-      con = con,
-      output = output,
-      refresh_trigger = unique_items_data_refresh_trigger,
-      session = session,
-      input = input
-    )
-    
-    # 库存调整
-    adjust_inventory(
-      con = con,
-      sku = input$sold_sku,
-      adjustment = -1  # 减少库存
-    )
-    
-    inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-  })
-  
-  # 监听选中行并更新售出 SKU
   observeEvent(unique_items_table_sold_selected_row(), {
-    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "sold_sku", value = selected_sku)
+    selected_rows <- unique_items_table_sold_selected_row()
+    if (!is.null(selected_rows) && length(selected_rows) > 0) {
+      selected_data <- unique_items_data()[selected_rows, ]
+      # 模拟填入条形码
+      updateTextInput(session, "sold_sku_input", value = selected_data$SKU[1])
     }
   })
+  
+  
+  output$selected_items_table <- renderDT({
+    selected_items() %>%
+      select(ItemImagePath, ItemName, Quantity) %>%  # 仅显示必要字段
+      datatable(escape = FALSE, options = list(dom = "t", paging = FALSE))
+  })
+  
+  
+  observeEvent(input$clear_selected_items, {
+    selected_items(data.frame())  # 重置已选物品为空数据框
+    showNotification("已清空选中物品列表！", type = "message")
+  })
+  
+  
+  observeEvent(input$confirm_order_btn, {
+    if (is.null(input$order_id) || nrow(selected_items()) == 0) {
+      showNotification("订单号或物品列表不能为空！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 保存订单信息到 orders 表
+      dbExecute(con, "
+      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderImagePath, OrderNotes, ShippingMethod)
+      VALUES (?, ?, ?, ?, ?, ?, ?)",
+                params = list(
+                  input$order_id,
+                  input$tracking_number1,
+                  input$tracking_number2,
+                  input$tracking_number3,
+                  input$order_image$datapath,
+                  input$order_notes,
+                  input$sold_shipping_method
+                )
+      )
+      
+      # 更新物品状态和库存
+      lapply(1:nrow(selected_items()), function(i) {
+        item <- selected_items()[i, ]
+        
+        # 更新状态和运输方式
+        handleOperation(
+          operation_name = "售出",
+          sku_input = item$SKU,
+          output_name = "sold_item_info",
+          query_status = "国内入库",
+          update_status_value = "国内售出",
+          count_label = "可售出数",
+          count_field = "AvailableForSold",
+          con = con,
+          output = output,
+          refresh_trigger = unique_items_data_refresh_trigger,
+          session = session,
+          input = input
+        )
+        
+        # 更新订单号
+        dbExecute(con, "
+        UPDATE unique_items 
+        SET OrderID = ? 
+        WHERE UniqueID = ?", 
+                  params = list(input$order_id, item$UniqueID)
+        )
+        
+        # 调整库存
+        adjust_inventory(
+          con = con,
+          sku = item$SKU,
+          adjustment = -1
+        )
+      })
+      
+      # 刷新 inventory 数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      
+      # 清空已选物品和订单表单
+      selected_items(data.frame())
+      updateTextInput(session, "order_id", value = "")
+      updateTextAreaInput(session, "order_notes", value = "")
+      updateFileInput(session, "order_image", value = NULL)
+      
+      showNotification("订单已成功保存并更新库存！", type = "message")
+    }, error = function(e) {
+      showNotification(paste("操作失败：", e$message), type = "error")
+    })
+  })
+  
+  
+  # # 监听售出 SKU 输入
+  # observeEvent(input$sold_sku, {
+  #   handleSkuInput(
+  #     sku_input = input$sold_sku,
+  #     output_name = "sold_item_info",
+  #     count_label = "可售出数",
+  #     count_field = "AvailableForSold",
+  #     con = con,
+  #     output = output,
+  #     placeholder_path = placeholder_300px_path,
+  #     host_url = host_url
+  #   )
+  # })
+  # 
+  # # 确认售出逻辑
+  # observeEvent(input$confirm_sold_btn, {
+  #   handleOperation(
+  #     operation_name = "售出",
+  #     sku_input = input$sold_sku,
+  #     output_name = "sold_item_info",
+  #     query_status = "国内入库",
+  #     update_status_value = "国内售出",
+  #     count_label = "可售出数",
+  #     count_field = "AvailableForSold",
+  #     con = con,
+  #     output = output,
+  #     refresh_trigger = unique_items_data_refresh_trigger,
+  #     session = session,
+  #     input = input
+  #   )
+  #   
+  #   # 库存调整
+  #   adjust_inventory(
+  #     con = con,
+  #     sku = input$sold_sku,
+  #     adjustment = -1  # 减少库存
+  #   )
+  #   
+  #   inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+  # })
+  # 
+  # # 监听选中行并更新售出 SKU
+  # observeEvent(unique_items_table_sold_selected_row(), {
+  #   if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+  #     selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+  #     updateTextInput(session, "sold_sku", value = selected_sku)
+  #   }
+  # })
   
   
   
