@@ -6,6 +6,9 @@ server <- function(input, output, session) {
   # ReactiveVal 存储 item_type_data 数据
   item_type_data <- reactiveVal()
   
+  # ReactiveVal 存储 maker_list 数据
+  maker_list <- reactiveVal()
+  
   # ReactiveVal 用于存储 inventory 数据
   inventory <- reactiveVal()
   
@@ -30,6 +33,16 @@ server <- function(input, output, session) {
     }, error = function(e) {
       item_type_data(NULL)  # 如果出错，设为空值
       showNotification("Initiation: Failed to load item type data.", type = "error")
+    })
+  })
+  
+  # 应用启动时加载数据: maker list
+  observe({
+    tryCatch({
+      maker_list(dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC"))
+    }, error = function(e) {
+      maker_list(NULL)  # 如果出错，设为空值
+      showNotification("Initiation: Failed to load maker list data.", type = "error")
     })
   })
   
@@ -287,7 +300,7 @@ server <- function(input, output, session) {
   ################################################################
   
   # 供应商模块
-  supplier_module <- callModule(supplierModuleServer, "supplier_module", con = con)
+  supplierModuleServer(input, output, session, con, maker_list)
   
   # 物品大小类模块
   typeModuleServer("type_module", con, item_type_data)
@@ -587,7 +600,7 @@ server <- function(input, output, session) {
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
-      supplier_module$update_maker_choices(maker_list())
+      update_maker_choices(session, maker_list())
       updateSelectizeInput(session, "new_name", choices = c("", inventory()$ItemName), selected = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值

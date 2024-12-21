@@ -1,23 +1,9 @@
 # 定义供应商模块
-supplierModuleServer <- function(input, output, session, con) {
-  # Reactive: 供应商数据
-  maker_list <- reactive({
-    dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
-  })  
-  
-  # 更新供应商下拉选项函数
-  update_maker_choices <- function(maker_data) {
-    if (is.null(maker_data) || nrow(maker_data) == 0) {
-      updateSelectizeInput(session, "new_maker", choices = NULL, server = TRUE)
-    } else {
-      choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
-      updateSelectizeInput(session, "new_maker", choices = choices, select = "", server = TRUE)
-    }
-  }
-  
+supplierModuleServer <- function(input, output, session, con, maker_data) {
+
   # 初始化供应商选择器
   observe({
-    update_maker_choices(maker_list())
+    update_maker_choices(maker_data())
   })
   
   # 添加供应商弹窗
@@ -102,9 +88,4 @@ supplierModuleServer <- function(input, output, session, con) {
       ))
     }
   })
-  
-  # 返回 update_maker_choices 函数
-  return(list(
-    update_maker_choices = update_maker_choices  # 暴露此函数供外部调用
-  ))
 }
