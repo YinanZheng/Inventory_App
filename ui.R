@@ -144,29 +144,24 @@ ui <- navbarPage(
         ),
         
         fluidRow(
-          column(3, 
-                 tags$div(
-                   tags$label("库存补录", class = "control-label"),  # 控件的标签
-                   switchInput(
-                     inputId = "inventory_switch",  # 开关 ID
-                     label = NULL,                 # 开关本身不显示标签
-                     value = FALSE,                # 默认关闭
-                     size = "default"
-                   )
-                 )
-          ),
-          column(6, 
-                 # 条件显示日期选择器
-                 conditionalPanel(
-                   condition = "input.inventory_switch == true",  # JavaScript 条件
-                   dateInput(
-                     inputId = "purchase_date",
-                     label = "补录采购日期:",
-                     value = Sys.Date(),  # 默认日期为今天
-                     width = "100%"
-                   )
-                 )
+          # column(3, 
+          #        tags$div(
+          #          tags$label("库存补录", class = "control-label"),  # 控件的标签
+          #          switchInput(
+          #            inputId = "inventory_switch",  # 开关 ID
+          #            label = NULL,                 # 开关本身不显示标签
+          #            value = FALSE,                # 默认关闭
+          #            size = "default"
+          #          )
+          #        )
+          # ),
+          dateInput(
+            inputId = "purchase_date",
+            label = "采购日期:",
+            value = Sys.Date(),  # 默认日期为今天
+            width = "100%"
           )
+
         ),
         
         

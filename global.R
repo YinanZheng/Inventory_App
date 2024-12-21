@@ -52,7 +52,7 @@ common_columns <<- list(
   Maker = "供应商",
   MajorType = "大类",
   MinorType = "小类",
-  ProductCost = "成本",
+  ProductCost = "单价",
   DomesticShippingCost = "平摊运费",
   Status = "库存状态",
   Defect = "物品状态"

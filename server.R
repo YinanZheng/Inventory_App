@@ -105,7 +105,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "入库数量",
-      ProductCost = "采购成本"
+      ProductCost = "采购单价"
     )
     
     render_table_with_images(
@@ -148,7 +148,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "总库存数",
-      ProductCost = "平均成本",
+      ProductCost = "平均单价",
       ShippingCost = "平均运费"
     )
     
@@ -357,7 +357,7 @@ server <- function(input, output, session) {
       return()
     }
     if (is.null(input$new_product_cost) || input$new_product_cost < 0 || input$new_product_cost > 999) {
-      showNotification("请填写正确商品成本！", type = "error")
+      showNotification("请填写正确商品单价！", type = "error")
       return()
     }
     if (is.null(input$new_sku) || input$new_sku == "") {
@@ -603,7 +603,7 @@ server <- function(input, output, session) {
       update_maker_choices(session, maker_list())
       updateSelectizeInput(session, "new_name", choices = c("", inventory()$ItemName), selected = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
-      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复成本默认值
+      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       
@@ -861,7 +861,7 @@ server <- function(input, output, session) {
         WHERE SKU = ?", params = list(sku))
         
         if (remaining_items$RemainingCount[1] > 0) {
-          # 更新 inventory 表的平均成本和库存数量
+          # 更新 inventory 表的平均单价和库存数量
           dbExecute(con, "
           UPDATE inventory
           SET Quantity = ?, 
@@ -1116,7 +1116,7 @@ server <- function(input, output, session) {
               tags$p(tags$b("供应商："), sku_data$Maker[1]),
               tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
               tags$p(tags$b("库存数量："), sku_data$Quantity[1]),
-              tags$p(tags$b("平均成本："), sprintf("¥%.2f", sku_data$ProductCost[1])),
+              tags$p(tags$b("平均单价："), sprintf("¥%.2f", sku_data$ProductCost[1])),
               tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
           )
         )
@@ -1346,7 +1346,7 @@ server <- function(input, output, session) {
     total_product_cost <- sum(data$ProductCost, na.rm = TRUE)
     total_shipping_cost <- sum(data$ShippingCost, na.rm = TRUE)
     pie_data <- data.frame(
-      Category = c("物品成本", "运费开销"),
+      Category = c("商品成本", "运费开销"),
       Value = c(total_product_cost, total_shipping_cost)
     )
     
@@ -1458,7 +1458,7 @@ server <- function(input, output, session) {
         Maker = "供应商",
         MajorType = "大类",
         MinorType = "小类",
-        ProductCost = "成本",
+        ProductCost = "单价",
         DomesticShippingCost = "平摊运费",
         PurchaseTime = "采购日期",
         DomesticEntryTime = "国内入库日期",
