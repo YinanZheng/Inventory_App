@@ -6,7 +6,7 @@ typeModuleUI <- function(id) {
       column(2, 
              div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                  actionButton(ns("add_major_type_btn"), label = NULL, icon = icon("plus"),
-                              style = "font-size: 14px; width: 100%; height: 32px; padding: 0px; margin-top: 27px;")
+                              style = "font-size: 14px; width: 100%; height: 38px; padding: 0px; margin-top: 26px;")
              )
       )
     ),
@@ -16,7 +16,7 @@ typeModuleUI <- function(id) {
       column(2, 
              div(style = "display: flex; justify-content: center; align-items: center; height: 100%;", 
                  actionButton(ns("add_minor_type_btn"), label = NULL, icon = icon("plus"),
-                              style = "font-size: 14px; width: 100%; height: 32px; padding: 0px; margin-top: 27px;")
+                              style = "font-size: 14px; width: 100%; height: 38px; padding: 0px; margin-top: 26px;")
              )
       )
     )

@@ -119,7 +119,7 @@ ui <- navbarPage(
           column(2, 
                  div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
                      actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
-                                  style = "font-size: 14px; width: 100%; height: 38px; padding: 0px; margin-top: 27px;")
+                                  style = "font-size: 14px; width: 100%; height: 38px; padding: 0px; margin-top: 26px;")
                  )
           )
         ),
@@ -153,7 +153,7 @@ ui <- navbarPage(
         fluidRow(
           column(9,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%")),
           column(3,actionButton("reset_btn", "清空", icon = icon("snowplow"), class = "btn-danger", 
-                                style = "font-size: 14px; width: 100%; height: 38px; padding: 0px; margin-top: 25px;"))
+                                style = "font-size: 14px; width: 100%; height: 38px; padding: 0px; margin-top: 26px;"))
         ),
         
         imageModuleUI("image_purchase"),
