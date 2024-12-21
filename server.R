@@ -764,17 +764,6 @@ server <- function(input, output, session) {
   
   selected_items <- reactiveVal(data.frame())  # 初始化一个空的数据框，用于存储已选物品
   
-  available_items_data <- reactive({
-    unique_items_data() %>%
-      filter(Status == "国内入库", Defect != "瑕疵") %>%  # 筛选国内库存且非瑕疵的物品
-      group_by(SKU, ItemName, ItemImagePath) %>%          # 按 SKU 和其他关键字段分组
-      summarise(
-        AvailableForSale = n(),                           # 统计可售出数量
-        .groups = "drop"                                  # 取消分组
-      )
-  })
-  
-  
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
     if (is.null(sku) || sku == "") return()  # 如果输入为空，直接返回
@@ -835,8 +824,7 @@ server <- function(input, output, session) {
     
     # 渲染 DataTable
     datatable(
-      data_to_show %>%
-        select(SKU, ItemName, Status, Defect),  # 显示选中物品的必要字段
+      data_to_show,
       options = list(
         pageLength = 10,      # 每页显示 10 条数据
         scrollX = TRUE        # 支持水平滚动
