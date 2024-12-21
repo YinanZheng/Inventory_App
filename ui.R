@@ -74,11 +74,26 @@ ui <- navbarPage(
         }
       }
       
-        .selectize-input, .form-control {
-        height: 38px !important; /* 统一高度 */
-        padding: 6px 12px;       /* 调整内边距 */
-        font-size: 14px;         /* 调整字体大小 */
-      }
+        /* 统一输入框的高度和外观，仅针对实际输入框 */
+        .selectize-input {
+          height: 38px !important; /* 设置输入框高度 */
+          padding: 6px 12px !important; /* 调整内边距 */
+          font-size: 14px !important; /* 字体大小 */
+          line-height: 24px !important; /* 行高 */
+        }
+        
+        /* 避免影响下拉菜单的背景和布局 */
+        .selectize-dropdown {
+          background-color: white; /* 保持下拉菜单的背景为白色 */
+          z-index: 1000; /* 确保下拉菜单在其他元素之上 */
+        }
+        
+        /* 统一表单控件的外观 */
+        .form-control {
+          height: 38px !important;
+          padding: 6px 12px;
+          font-size: 14px;
+        }
     ")),
       
       tags$script(HTML("
