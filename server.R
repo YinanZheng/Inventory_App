@@ -300,7 +300,7 @@ server <- function(input, output, session) {
   ################################################################
   
   # 供应商模块
-  # supplierModuleServer(input, output, session, con, maker_list)
+  supplierModuleServer(input, output, session, con, maker_list)
   
   # 物品大小类模块
   typeModuleServer("type_module", con, item_type_data)
