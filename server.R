@@ -760,9 +760,9 @@ server <- function(input, output, session) {
   ##                                                            ##
   ## 售出分页                                                   ##
   ##                                                            ##
-  ################################################################
+  ################################# ###############################
   
-  selected_items <- reactiveVal(data.frame())  # 初始化一个空的数据框，用于存储已选物品
+  selected_items <- reactiveVal()  # 初始化一个空的数据框，用于存储已选物品
   
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
@@ -795,6 +795,8 @@ server <- function(input, output, session) {
       updated_items <- bind_rows(selected_items(), item_data) %>%
         distinct(SKU, UniqueID, .keep_all = TRUE)  # 按 SKU 和 UniqueID 去重
       selected_items(updated_items)
+      
+      showNotification(nrow(updated_items))
       
       showNotification("物品已添加到订单列表！", type = "message")
       updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框

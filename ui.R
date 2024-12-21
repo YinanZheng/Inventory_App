@@ -392,7 +392,7 @@ ui <- navbarPage(
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           
           # 订单录入表单
-          tags$h4("订单信息录入", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+          tags$h4("订单挂靠", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           textInput("tracking_number1", "运单号1", placeholder = "请输入第一个运单号", width = "100%"),
           textInput("tracking_number2", "运单号2", placeholder = "可选", width = "100%"),
