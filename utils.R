@@ -628,20 +628,20 @@ handleOperation <- function(
   sku <- trimws(sku_input) # 清理空格
   
   if (is.null(sku) || sku == "") {
-    showNotification(paste0("请先扫描 SKU！"), type = "error")
+    showNotification("请先扫描 SKU！", type = "error")
     renderItemInfo(output, output_name, NULL, placeholder_300px_path, count_label, count_field)
     return()
   }
   
   tryCatch({
     # 查询符合条件的物品
-    sku_items <- dbGetQuery(con, paste0("
+    query <- paste0("
       SELECT UniqueID 
       FROM unique_items 
       WHERE SKU = ? AND Status = '", query_status, "' AND Defect != '瑕疵'
       ORDER BY ProductCost ASC
-      LIMIT 1"), 
-                            params = list(sku))
+      LIMIT 1")
+    sku_items <- dbGetQuery(con, query, params = list(sku))
     
     if (nrow(sku_items) == 0) {
       showNotification(paste0("无可", operation_name, "的物品，所有该商品已完成 ", operation_name, "！"), type = "message")
@@ -649,27 +649,22 @@ handleOperation <- function(
     }
     
     # 动态设置瑕疵状态
-    defect_status <- NULL
-    if (operation_name == "入库" && !is.null(input)) {
-      is_defective <- input$defective_item
-      defect_status <- ifelse(is.null(is_defective) || !is_defective, "无瑕", "瑕疵")
-    }
+    defect_status <- if (operation_name == "入库" && !is.null(input)) {
+      ifelse(isTRUE(input$defective_item), "瑕疵", "无瑕")
+    } else NULL
     
-    # 获取国际运输方式
-    shipping_method <- NULL
-    if (!is.null(input) && operation_name %in% c("出库", "售出")) {
-      shipping_method <- ifelse(operation_name == "出库", 
-                                input$outbound_shipping_method, 
-                                input$sold_shipping_method)
-    }
+    # 动态设置运输方式
+    shipping_method <- if (!is.null(input) && operation_name %in% c("出库", "售出")) {
+      ifelse(operation_name == "出库", input$outbound_shipping_method, input$sold_shipping_method)
+    } else NULL
     
-    # 更新状态
+    # 调用更新状态函数
     update_status(
       con = con,
       unique_id = sku_items$UniqueID[1],
       new_status = update_status_value,
-      defect_status = defect_status, # 动态传递瑕疵状态
-      shipping_method = shipping_method, # 动态传递国际运输方式
+      defect_status = defect_status,
+      shipping_method = shipping_method,
       refresh_trigger = refresh_trigger
     )
     
@@ -678,7 +673,6 @@ handleOperation <- function(
     
     # 查询 SKU 数据并刷新 UI
     item_info <- fetchSkuOperationData(sku, con)
-    
     renderItemInfo(
       output = output,
       output_name = output_name,
@@ -702,16 +696,63 @@ handleOperation <- function(
       ))
     }
     
-    # 清空输入框
+    # 重置输入框和其他控件
     updateTextInput(session, paste0(operation_name, "_sku"), value = "")
     if (operation_name == "入库") {
-      updateCheckboxInput(session, "defective_item", value = FALSE) # 重置瑕疵复选框
+      updateCheckboxInput(session, "defective_item", value = FALSE)
     }
     
   }, error = function(e) {
     # 错误处理
     showNotification(paste0(operation_name, "失败：", e$message), type = "error")
   })
+}
+
+update_status <- function(
+    con, 
+    unique_id, 
+    new_status, 
+    defect_status = NULL, 
+    shipping_method = NULL, 
+    refresh_trigger = NULL
+) {
+  # 检查新状态是否有效
+  if (!new_status %in% names(status_columns)) {
+    showNotification("无效的状态更新！", type = "error")
+    return()
+  }
+  
+  # 获取对应的时间戳列
+  timestamp_column <- status_columns[[new_status]]
+  
+  # 构造动态 SQL 查询
+  query <- "UPDATE unique_items SET "
+  params <- list()
+  
+  if (!is.null(new_status)) {
+    query <- paste0(query, "Status = ?, ", timestamp_column, " = NOW()")
+    params <- append(params, new_status)
+  }
+  if (!is.null(defect_status)) {
+    query <- paste0(query, ", Defect = ?")
+    params <- append(params, defect_status)
+  }
+  if (!is.null(shipping_method)) {
+    query <- paste0(query, ", IntlShippingMethod = ?")
+    params <- append(params, shipping_method)
+  }
+  
+  # 添加 WHERE 条件
+  query <- paste0(query, " WHERE UniqueID = ?")
+  params <- append(params, unique_id)
+  
+  # 执行 SQL 更新
+  dbExecute(con, query, params = params)
+  
+  # 触发刷新机制
+  if (!is.null(refresh_trigger)) {
+    refresh_trigger(!refresh_trigger())
+  }
 }
 
 
