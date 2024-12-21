@@ -308,6 +308,12 @@ server <- function(input, output, session) {
     input$new_name
     input$new_maker
   }, {
+    if (is.null(input$new_maker) || input$new_maker == "" || 
+        is.null(input$new_name) || input$new_name == "") {
+      updateTextInput(session, "new_sku", value = "")  # 清空 SKU
+      return()
+    }
+    
     req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name, input$new_maker)
     
     # Dynamically generate SKU
