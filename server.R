@@ -791,7 +791,7 @@ server <- function(input, output, session) {
       updated_items <- bind_rows(selected_items(), item_data)
       selected_items(updated_items)  # 更新 reactiveVal 数据
 
-      showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(selected_items())), type = "message")
+      showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(selected_items)), type = "message")
       updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
     }, error = function(e) {
       showNotification(paste("添加物品时发生错误：", e$message), type = "error")
@@ -812,8 +812,7 @@ server <- function(input, output, session) {
   
   output$unique_items_table_sold <- renderDataTable({
     # 渲染 DataTable
-    datatable(data.frame(SKU = "TEST", ItemName = "Example", Status = "国内入库", Defect = "无瑕"))
-    
+    datatable(data.frame(selected_items()))
   })
   
   
