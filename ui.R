@@ -434,7 +434,7 @@ ui <- navbarPage(
           column(12, DTOutput("selected_items_table")),
           
           tags$hr(),
-          actionButton("clear_selected_items", "清空选中物品", class = "btn-warning", style = "width: 100%;")
+          actionButton("clear_selected_items", "清空选中物品", class = "btn-warning")
         ),
         
         # 全物品表

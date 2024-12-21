@@ -826,15 +826,29 @@ server <- function(input, output, session) {
   
   
   output$unique_items_table_sold <- renderDataTable({
-    unique_items_data() %>%
-      group_by(SKU) %>%
-      summarise(
-        ItemName = first(ItemName),
-        AvailableForSold = fetchSkuOperationData(SKU, con)$AvailableForSold[1],  # 调用函数计算
-        .groups = "drop"
-      ) %>%
-      datatable(options = list(pageLength = 10, scrollX = TRUE))
+    # 从 unique_items_data 获取完整数据
+    data_to_show <- unique_items_data() %>%
+      mutate(
+        AvailableForSold = sapply(SKU, function(sku) {
+          fetchSkuOperationData(sku, con)$AvailableForSold[1]
+        })  # 动态计算每个 SKU 的可售出数量
+      )
+    
+    # 打印数据以供调试
+    print(data_to_show)
+    
+    # 渲染 DataTable
+    datatable(
+      data_to_show %>%
+        select(SKU, ItemName, Status, Defect, AvailableForSold),  # 显示必要字段
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE
+      ),
+      rownames = FALSE
+    )
   })
+  
   
   
   
