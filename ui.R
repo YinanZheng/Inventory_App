@@ -73,6 +73,12 @@ ui <- navbarPage(
           margin-left: 0; /* 无偏移 */
         }
       }
+      
+        .selectize-input, .form-control {
+        height: 38px !important; /* 统一高度 */
+        padding: 6px 12px;       /* 调整内边距 */
+        font-size: 14px;         /* 调整字体大小 */
+      }
     ")),
       
       tags$script(HTML("
@@ -136,8 +142,7 @@ ui <- navbarPage(
             inputId = "purchase_date",
             label = "采购日期:",
             value = Sys.Date(),  # 默认日期为今天
-            width = "100%",
-            style = "height: 38px;"
+            width = "100%"
           ))
         ),
         fluidRow(
