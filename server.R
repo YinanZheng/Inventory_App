@@ -799,7 +799,7 @@ server <- function(input, output, session) {
       
       # 调试输出
       print(updated_items)  # 打印更新后的 selected_items
-      showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(updated_items)), type = "message")
+      showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(selected_items())), type = "message")
       updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
     }, error = function(e) {
       showNotification(paste("添加物品时发生错误：", e$message), type = "error")
@@ -819,28 +819,12 @@ server <- function(input, output, session) {
   
   
   output$unique_items_table_sold <- renderDataTable({
-    # 获取 selected_items 数据
-    data_to_show <- selected_items()
-    
-    if (nrow(data_to_show) == 0) {
-      return(NULL)  # 如果没有数据，则返回空表格
-    }
-    
     # 渲染 DataTable
-    datatable(
-      data_to_show,
-      options = list(
-        pageLength = 10,      # 每页显示 10 条数据
-        scrollX = TRUE        # 支持水平滚动
-      ),
-      rownames = FALSE        # 不显示行号
-    )
+    datatable(selected_items())
   })
   
   
-  
-  
-  
+
   observeEvent(input$clear_selected_items, {
     selected_items(data.frame())  # 重置已选物品为空数据框
     showNotification("已清空选中物品列表！", type = "message")
