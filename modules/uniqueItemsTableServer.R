@@ -9,7 +9,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     )
     
     # 获取数据列名
-    column_names <- colnames(data())
+    column_names <- colnames(table)
     
     # 动态应用样式
     if ("库存状态" %in% column_names) {
