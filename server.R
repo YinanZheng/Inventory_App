@@ -762,43 +762,35 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################# ###############################
   
-  selected_items <- reactiveVal()  # 初始化一个空的数据框，用于存储已选物品
+  selected_items <- reactiveVal(data.frame(
+    SKU = character(),
+    ItemName = character(),
+    Status = character(),
+    Defect = character(),
+    stringsAsFactors = FALSE
+  ))
   
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
     if (is.null(sku) || sku == "") return()  # 如果输入为空，直接返回
     
     tryCatch({
-      # 获取 SKU 的操作数据
-      sku_data <- fetchSkuOperationData(sku, con)
-      print(sku_data)  # 打印 fetchSkuOperationData 的返回值
-      
-      if (nrow(sku_data) == 0) {
-        showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
-        updateTextInput(session, "sold_sku_input", value = "")
-        return()
-      }
-      
-      # 检查是否还有可售出数量
-      available_for_sold <- sku_data$AvailableForSold[1]
-      if (available_for_sold <= 0) {
-        showNotification("该物品的可售出数量已为 0，无法继续添加！", type = "error")
-        updateTextInput(session, "sold_sku_input", value = "")
-        return()
-      }
-      
       # 从 unique_items_data 获取一个具体的物品
       item_data <- unique_items_data() %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        slice(1)  # 取第一个符合条件的物品
+        slice(1) %>%  # 取第一个符合条件的物品
+        select(SKU, ItemName, Status, Defect)  # 确保列名匹配 selected_items 初始化
       print(item_data)  # 打印从 unique_items_data 获取的物品数据
       
-      # 不去重，直接将新物品添加到已选物品列表
-      updated_items <- bind_rows(selected_items(), item_data)
-      selected_items(updated_items)
+      # 如果 item_data 为空，提示用户
+      if (nrow(item_data) == 0) {
+        showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
+        return()
+      }
       
-      # 调试输出
-      print(updated_items)  # 打印更新后的 selected_items
+      updated_items <- bind_rows(selected_items(), item_data)
+      selected_items(updated_items)  # 更新 reactiveVal 数据
+
       showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(selected_items())), type = "message")
       updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
     }, error = function(e) {
