@@ -73,11 +73,6 @@ ui <- navbarPage(
           margin-left: 0; /* 无偏移 */
         }
       }
-      
-      .form-control {
-        height: 38px !important; /* 设置与 selectizeInput 一致的高度 */
-        line-height: 24px !important; /* 确保文字居中 */
-      }
     ")),
       
       tags$script(HTML("
