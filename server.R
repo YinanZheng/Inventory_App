@@ -811,15 +811,34 @@ server <- function(input, output, session) {
   
   
   output$unique_items_table_sold <- renderDataTable({
-    # 渲染 DataTable
-    datatable(data.frame(selected_items()))
+    datatable(
+      data.frame(selected_items()),
+      options = list(
+        pageLength = 10,
+        scrollX = TRUE
+      ),
+      selection = "multiple",  # 单选或多选模式，可改为 "multiple" 支持多选
+      rownames = FALSE
+    )
   })
   
-  
-
   observeEvent(input$clear_selected_items, {
-    selected_items(data.frame())  # 重置已选物品为空数据框
-    showNotification("已清空选中物品列表！", type = "message")
+    selected_row <- input$unique_items_table_sold_rows_selected  # 获取选中的行
+    if (is.null(selected_row) || length(selected_row) == 0) {
+      showNotification("请先选择要删除的物品！", type = "warning")
+      return()
+    }
+    
+    # 获取当前 selected_items 数据
+    current_data <- selected_items()
+    print(current_data)  # 调试：打印当前数据
+    
+    # 删除选中的行
+    updated_data <- current_data[-selected_row, ]
+    selected_items(updated_data)  # 更新 selected_items
+    
+    # 通知用户
+    showNotification("已删除选中物品！", type = "message")
   })
   
   
