@@ -74,43 +74,9 @@ ui <- navbarPage(
         }
       }
       
-      /* 调整输入框样式 */
-      .selectize-input {
-        height: 38px !important; /* 输入框高度 */
-        padding: 6px 12px !important; /* 输入框内边距 */
-        font-size: 14px !important; /* 字体大小 */
-        line-height: 24px !important; /* 垂直居中 */
-        border: 1px solid #ccc !important; /* 边框样式 */
-        border-radius: 4px !important; /* 圆角 */
-        background-color: #fff !important; /* 背景颜色 */
-      }
-      
-      /* 调整下拉菜单样式 */
-      .selectize-dropdown {
-        background-color: white !important; /* 下拉菜单背景颜色 */
-        border: 1px solid #ccc !important; /* 边框样式 */
-        z-index: 1000 !important; /* 确保下拉菜单在前 */
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2) !important; /* 添加阴影效果 */
-      }
-      
-      /* 调整下拉菜单项的样式 */
-      .selectize-dropdown .option {
-        padding: 8px 12px !important; /* 内边距 */
-        font-size: 14px !important; /* 字体大小 */
-        line-height: 20px !important; /* 行高 */
-        color: #333 !important; /* 字体颜色 */
-        background-color: #fff !important; /* 背景颜色 */
-      }
-      
-      .selectize-dropdown .option:hover {
-        background-color: #f0f0f0 !important; /* 鼠标悬浮时的背景颜色 */
-        color: #000 !important; /* 鼠标悬浮时的字体颜色 */
-      }
-      
-      /* 高亮选中项的样式 */
-      .selectize-dropdown .active {
-        background-color: #007bff !important; /* 高亮背景颜色 */
-        color: #fff !important; /* 高亮字体颜色 */
+      .form-control {
+        height: 38px !important; /* 设置与 selectizeInput 一致的高度 */
+        line-height: 24px !important; /* 确保文字居中 */
       }
     ")),
       
