@@ -764,34 +764,46 @@ server <- function(input, output, session) {
   
   selected_items <- reactiveVal(data.frame())  # 初始化一个空的数据框，用于存储已选物品
   
+  available_items_data <- reactive({
+    unique_items_data() %>%
+      filter(Status == "国内入库", Defect != "瑕疵") %>%  # 筛选国内库存且非瑕疵的物品
+      group_by(SKU, ItemName, ItemImagePath) %>%          # 按 SKU 和其他关键字段分组
+      summarise(
+        AvailableForSale = n(),                           # 统计可售出数量
+        .groups = "drop"                                  # 取消分组
+      )
+  })
+  
+  
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
     if (is.null(sku) || sku == "") return()  # 如果输入为空，直接返回
     
     tryCatch({
-      # 从 unique_items_data 中过滤符合条件的物品
-      item_data <- unique_items_data() %>%
-        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵")
+      # 获取 SKU 的操作数据
+      sku_data <- fetchSkuOperationData(sku, con)
       
-      if (nrow(item_data) == 0) {
+      if (nrow(sku_data) == 0) {
         showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
         updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
         return()
       }
       
-      # 提取需要的字段并汇总数量
-      summarized_item <- item_data %>%
-        group_by(SKU) %>%
-        summarise(
-          UniqueID = first(UniqueID),
-          ItemName = first(ItemName),
-          ItemImagePath = first(ItemImagePath),
-          Quantity = n(),
-          .groups = "drop"
-        )
+      # 检查是否还有可售出数量
+      available_for_sold <- sku_data$AvailableForSold[1]
+      if (available_for_sold <= 0) {
+        showNotification("该物品的可售出数量已为 0，无法继续添加！", type = "error")
+        updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
+        return()
+      }
+      
+      # 从 unique_items_data 获取一个具体的物品
+      item_data <- unique_items_data() %>%
+        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
+        slice(1)  # 取第一个符合条件的物品
       
       # 合并到已选物品列表
-      updated_items <- bind_rows(selected_items(), summarized_item) %>%
+      updated_items <- bind_rows(selected_items(), item_data) %>%
         distinct(SKU, UniqueID, .keep_all = TRUE)  # 按 SKU 和 UniqueID 去重
       selected_items(updated_items)
       
@@ -813,11 +825,17 @@ server <- function(input, output, session) {
   })
   
   
-  output$selected_items_table <- renderDT({
-    selected_items() %>%
-      select(ItemImagePath, ItemName, Quantity) %>%  # 仅显示必要字段
-      datatable(escape = FALSE, options = list(dom = "t", paging = FALSE))
+  output$unique_items_table_sold <- renderDataTable({
+    unique_items_data() %>%
+      group_by(SKU) %>%
+      summarise(
+        ItemName = first(ItemName),
+        AvailableForSold = fetchSkuOperationData(SKU, con)$AvailableForSold[1],  # 调用函数计算
+        .groups = "drop"
+      ) %>%
+      datatable(options = list(pageLength = 10, scrollX = TRUE))
   })
+  
   
   
   observeEvent(input$clear_selected_items, {
