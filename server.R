@@ -1122,7 +1122,7 @@ server <- function(input, output, session) {
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_sold_selected_row(), {
     if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_sku <- filtered_unique_items_data_purchase()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      selected_sku <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "sold_sku_input", value = selected_sku)
     }
   })
