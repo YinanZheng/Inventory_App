@@ -418,7 +418,6 @@ ui <- navbarPage(
           selected = "空运"  # 默认选择空运
         ),
         
-        tags$hr(),
         actionButton(
           "confirm_order_btn", 
           "确认售出", 
@@ -426,7 +425,6 @@ ui <- navbarPage(
           class = "btn-success", 
           style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
         )
-
       ),
       
       # 主面板：右侧物品选择和已选物品列表
