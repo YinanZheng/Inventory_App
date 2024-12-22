@@ -11,12 +11,12 @@ db_connection <- function() {
 }
 
 # 更新供应商下拉选项函数
-update_maker_choices <- function(session, maker_data) {
+update_maker_choices <- function(session, input_id, maker_data) {
   if (is.null(maker_data) || nrow(maker_data) == 0) {
-    updateSelectizeInput(session, "new_maker", choices = NULL, server = TRUE)
+    updateSelectizeInput(session, input_id, choices = NULL, server = TRUE)
   } else {
     choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
-    updateSelectizeInput(session, "new_maker", choices = choices, select = "", server = TRUE)
+    updateSelectizeInput(session, input_id, choices = choices, select = "", server = TRUE)
   }
 }
 

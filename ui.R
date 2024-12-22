@@ -349,6 +349,23 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
+        fluidRow(
+          column(6, 
+                 selectizeInput("sold_maker", "供应商:", choices = NULL, width = "100%",
+                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+          ),
+          column(6, selectizeInput(
+            "sold_name",                
+            label = "商品名:",         
+            choices = NULL,            
+            options = list(
+              placeholder = "请输入商品名...",
+              create = TRUE            # 允许自定义输入值
+            ),
+            width = "100%"
+          ))
+        ),
+        
         # 条形码输入框
         textInput("sold_sku_input", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%"),
         

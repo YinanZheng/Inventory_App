@@ -211,6 +211,16 @@ server <- function(input, output, session) {
     )
   })
   
+  # 售出页过滤
+  filtered_unique_items_data_sold <- reactive({
+    filter_unique_items_data_by_inputs(
+      data = unique_items_data(),
+      input = input,
+      maker_input_id = "sold_maker",
+      item_name_input_id = "sold_name"
+    )
+  })
+  
   # 瑕疵品管理页过滤
   filtered_unique_items_data_defect <- reactive({
     req(unique_items_data())
@@ -286,7 +296,7 @@ server <- function(input, output, session) {
                                                        PurchaseTime = "采购日期",
                                                        DomesticSoldTime = "售出日期",
                                                        OrderID = "订单号")
-                                                     ), data = unique_items_data)
+                                                     ), data = filtered_unique_items_data_purchase)
   
   # 国际物流管理分页逻辑
   unique_items_table_logistics_selected_row <- callModule(
@@ -616,7 +626,7 @@ server <- function(input, output, session) {
   observeEvent(input$reset_btn, {
     tryCatch({
       # 清空输入控件
-      update_maker_choices(session, maker_list())
+      update_maker_choices(session, "new_maker", maker_list())
       updateSelectizeInput(session, "new_name", choices = c("", inventory()$ItemName), selected = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
@@ -810,6 +820,45 @@ server <- function(input, output, session) {
     ItemImagePath = character(),
     stringsAsFactors = FALSE
   ))
+  
+  # 初始化供应商筛选选项
+  observe({
+    makers <- unique_items_data() %>% pull(Maker) %>% unique()
+    
+    if (!is.null(makers) && length(makers) > 0) {
+      makers_df <- data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
+        mutate(Pinyin = remove_tone(stri_trans_general(Maker, "Latin")))
+    } else {
+      makers_df <- data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+    }
+    
+    update_maker_choices(session, "sold_maker", makers_df)
+    
+    # 加载商品名称（初始时为空选项）
+    item_names <- c("")  # 仅包含空选项
+    updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
+  })
+  
+  # 监听供应商选择变化并动态更新商品名称
+  observe({
+    req(unique_items_data())  # 确保数据存在
+    
+    # 获取用户选择的供应商
+    selected_makers <- input$sold_maker
+    
+    # 筛选商品名称
+    if (!is.null(selected_makers) && length(selected_makers) > 0) {
+      filtered_data <- unique_items_data() %>% filter(Maker %in% selected_makers)
+    } else {
+      filtered_data <- unique_items_data()
+    }
+    
+    # 提取对应的商品名称，并在前面加一个空选项
+    item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
+    
+    # 更新商品名称选项，默认选中空选项
+    updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
+  })
   
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
@@ -1073,7 +1122,7 @@ server <- function(input, output, session) {
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_sold_selected_row(), {
     if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      selected_sku <- filtered_unique_items_data_purchase()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "sold_sku_input", value = selected_sku)
     }
   })

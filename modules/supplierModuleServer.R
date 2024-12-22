@@ -3,7 +3,7 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
 
   # 初始化供应商选择器
   observe({
-    update_maker_choices(session, maker_data())
+    update_maker_choices(session, "new_maker", maker_data())
   })
   
   # 添加供应商弹窗
@@ -67,7 +67,7 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
         
         # 更新数据并刷新 UI
         new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_data ORDER BY Pinyin ASC")
-        update_maker_choices(new_data)
+        update_maker_choices(session, "new_maker", new_data)
         
         showNotification("新供应商添加成功！", type = "message")
         removeModal()
