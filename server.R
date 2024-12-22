@@ -824,7 +824,7 @@ server <- function(input, output, session) {
                                SKU = "SKU",
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
-                               ProductCost = "单价",
+                               ProductCost = "单价"
                              ), 
                              selection = "single",
                              image_column = "ItemImagePath",
