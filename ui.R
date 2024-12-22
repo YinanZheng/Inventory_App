@@ -395,7 +395,7 @@ ui <- navbarPage(
           tags$h4("订单挂靠", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           textInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
-          imageModuleUI("image_sold"),
+          imageModuleUI("image_sold", label = "订单图片上传"),
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
           
           # 国际运输方式选择
@@ -441,9 +441,9 @@ ui <- navbarPage(
                  div(
                    class = "card",
                    style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                   tags$h4("箱子", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+                   tags$h4("发货箱", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
                    DTOutput("box_table"),  # 显示已放入箱子的物品
-                   actionButton("clear_selected_items", "清空箱子内容", class = "btn-warning", style = "margin-top: 10px; width: 100%;")
+                   actionButton("clear_selected_items", "清空发货箱", class = "btn-warning", style = "margin-top: 10px; width: 100%;")
                  )
           )
         )

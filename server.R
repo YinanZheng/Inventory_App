@@ -760,7 +760,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ## 售出分页                                                   ##
   ##                                                            ##
-  ################################# ###############################
+  ################################################################
   
   # 初始化货架和箱子内物品
   shelf_items <- reactiveVal(data.frame(
@@ -780,6 +780,27 @@ server <- function(input, output, session) {
     ItemImagePath = character(),
     stringsAsFactors = FALSE
   ))
+  
+  # 出售订单图片处理模块
+  image_sold <- imageModuleServer("image_sold")
+  
+  # 检查是否存在该 订单号 的订单记录
+  orders_item <- tryCatch({
+    dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
+  }, error = function(e) {
+    showNotification("检查订单时发生错误！", type = "error")
+    return(data.frame())
+  })
+  
+  existing_orders_path <- if (nrow(orders_item) > 0) orders_item$OrderImagePath[1] else NULL
+  
+  # 处理订单图片上传或粘贴
+  order_image_path <- process_image_upload(
+    sku = input$order_id,
+    file_data = image_sold$uploaded_file(),
+    pasted_data = image_sold$pasted_file(),
+    inventory_path = existing_orders_path
+  )
   
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku_input, {
@@ -909,10 +930,24 @@ server <- function(input, output, session) {
                 )
       )
       
-      # 更新箱子内物品的状态和运输方式
+      # 遍历箱子内物品，减库存并更新物品状态
       lapply(1:nrow(box_items()), function(i) {
         item <- box_items()[i, ]
+        sku <- item$SKU
         
+        # 调整库存：减少数量
+        adjustment_result <- adjust_inventory(
+          con = con,
+          sku = sku,
+          adjustment = -1  # 减少 1 的库存数量
+        )
+        
+        if (!adjustment_result) {
+          showNotification(paste("库存调整失败：SKU", sku, "，操作已终止！"), type = "error")
+          stop("库存调整失败")
+        }
+        
+        # 更新 unique_items 表中的状态和订单号
         dbExecute(con, "
         UPDATE unique_items 
         SET Status = '国内售出', OrderID = ?, IntlShippingMethod = ?
@@ -921,10 +956,19 @@ server <- function(input, output, session) {
         )
       })
       
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      
       showNotification("订单已完成售出并更新状态！", type = "message")
       
       # 清空箱子和订单信息
-      box_items(data.frame(SKU = character(), UniqueID = character(), ItemName = character()))
+      box_items(data.frame(
+        SKU = character(),
+        UniqueID = character(),
+        ItemName = character(),
+        ProductCost = numeric(),
+        ItemImagePath = character(),
+        stringsAsFactors = FALSE
+      ))
       updateTextInput(session, "order_id", value = "")
       updateTextInput(session, "tracking_number1", value = "")
       updateTextAreaInput(session, "order_notes", value = "")
