@@ -867,7 +867,7 @@ server <- function(input, output, session) {
       updateTextInput(session, "order_id", value = "")
       updateTextInput(session, "tracking_number1", value = "")
       updateTextAreaInput(session, "order_notes", value = "")
-      image_sold$clear_files()  # 清空上传或粘贴的图片
+      image_sold$reset()  # 清空上传或粘贴的图片
     }, error = function(e) {
       # 错误处理
       showNotification(paste("登记订单时发生错误：", e$message), type = "error")
