@@ -830,37 +830,18 @@ server <- function(input, output, session) {
                              image_column = "ItemImagePath",
                              options = list(fixedHeader = TRUE))$datatable
   })
-  
-  # # 渲染货架上的物品
-  # output$shelf_table <- renderDataTable({
-  #   shelf_data <- shelf_items()
-  #   
-  #   if (nrow(shelf_data) == 0) {
-  #     return(NULL)  # 如果货架无物品，则显示空表
-  #   }
-  #   
-  #   datatable(
-  #     shelf_data,
-  #     options = list(pageLength = 10, scrollX = TRUE),
-  #     selection = "single",  # 单选模式
-  #     rownames = FALSE
-  #   )
-  # })
-  
-  # 渲染箱子内的物品
-  output$box_table <- renderDataTable({
-    box_data <- box_items()
-    
-    if (nrow(box_data) == 0) {
-      return(NULL)  # 如果箱子为空，则显示空表
-    }
-    
-    datatable(
-      box_data,
-      options = list(pageLength = 10, scrollX = TRUE),
-      selection = "single",  # 单选模式
-      rownames = FALSE
-    )
+
+  output$box_table <- renderDT({
+    render_table_with_images(box_items(), 
+                             column_mapping = list(
+                               SKU = "SKU",
+                               ItemImagePath = "图片",
+                               ItemName = "商品名称",
+                               ProductCost = "单价"
+                             ), 
+                             selection = "single",
+                             image_column = "ItemImagePath",
+                             options = list(fixedHeader = TRUE))$datatable
   })
   
   # 点击货架物品，移入箱子
