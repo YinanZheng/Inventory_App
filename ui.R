@@ -408,15 +408,15 @@ ui <- navbarPage(
                  )
           )
         ),
-        fluidRow(
-          column(12, actionButton("toggle_item_table_sold", "物品状态表（点击显示/隐藏）",
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-          column(12, div(
-            id = "item_table_container_sold",  # 容器 ID
-            style = "margin-bottom: 100px;",
-            uniqueItemsTableUI("unique_items_table_sold")
-          ))
-        )
+        # fluidRow(
+        #   column(12, actionButton("toggle_item_table_sold", "物品状态表（点击显示/隐藏）",
+        #                           style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+        #   column(12, div(
+        #     id = "item_table_container_sold",  # 容器 ID
+        #     style = "margin-bottom: 100px;",
+        #     uniqueItemsTableUI("unique_items_table_sold")
+        #   ))
+        # )
       )
     )
   ), # end of 售出 tab
