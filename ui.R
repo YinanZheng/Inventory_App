@@ -399,7 +399,7 @@ ui <- navbarPage(
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
           actionButton(
             "register_order_btn",
-            "登记订单",
+            "登记/更新订单",
             icon = icon("save"),
             class = "btn-primary",
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
