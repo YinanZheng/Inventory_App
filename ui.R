@@ -387,12 +387,16 @@ ui <- navbarPage(
       # 左侧订单信息录入
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        
+        # 条形码输入框
+        textInput("sold_sku_input", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%"),
+        
         div(
           class = "card",
-          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           
           # 订单录入表单
-          tags$h4("订单挂靠", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+          tags$h4("订单登记", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           textInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
           imageModuleUI("image_sold", label = "订单图片上传"),
@@ -413,10 +417,6 @@ ui <- navbarPage(
           choices = list("空运" = "空运", "海运" = "海运"),
           selected = "空运"  # 默认选择空运
         ),
-        
-        # 条形码输入框
-        tags$hr(),
-        textInput("sold_sku_input", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%"),
         
         tags$hr(),
         actionButton(
