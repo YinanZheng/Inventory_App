@@ -167,6 +167,7 @@ server <- function(input, output, session) {
     SELECT 
       unique_items.UniqueID, 
       unique_items.SKU, 
+      unqiue_items.OrderID,
       unique_items.ProductCost,
       unique_items.DomesticShippingCost,
       unique_items.Status,
@@ -177,6 +178,8 @@ server <- function(input, output, session) {
       unique_items.DomesticExitTime,
       unique_items.DomesticSoldTime,
       unique_items.UsEntryTime,
+      unique_items.UsCheckTime,
+      unique_items.UsRelocationTime,
       unique_items.UsSoldTime,
       unique_items.ReturnTime,
       unique_items.updated_at,
@@ -267,8 +270,8 @@ server <- function(input, output, session) {
                                                      column_mapping <- c(common_columns, list(
                                                        IntlShippingMethod = "国际运输",
                                                        PurchaseTime = "采购日期",
-                                                       DomesticEntryTime = "入库日期",
-                                                       DomesticSoldTime = "售出日期")
+                                                       DomesticSoldTime = "售出日期",
+                                                       OrderID = "订单号")
                                                      ), data = unique_items_data)
   
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
@@ -911,6 +914,7 @@ server <- function(input, output, session) {
     })
   })
   
+  # 渲染货架
   output$shelf_table <- renderDT({
     render_table_with_images(shelf_items(), 
                              column_mapping = list(
@@ -924,6 +928,7 @@ server <- function(input, output, session) {
                              options = list(fixedHeader = TRUE))$datatable
   })
 
+  # 渲染箱子
   output$box_table <- renderDT({
     render_table_with_images(box_items(), 
                              column_mapping = list(
@@ -1052,7 +1057,13 @@ server <- function(input, output, session) {
     })
   })
   
-  
+  # 监听选中行并更新 SKU
+  observeEvent(unique_items_table_sold_selected_row(), {
+    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+      selected_sku <- filtered_unique_items_data_defect()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "sold_sku_input", value = selected_sku)
+    }
+  })
   
   ###################################################################################################################
   ###################################################################################################################

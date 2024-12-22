@@ -333,51 +333,6 @@ ui <- navbarPage(
     )
   ), # end of 出库 tab
   
-  # tabPanel(
-  #   "售出", icon = icon("dollar-sign"),
-  #   div(
-  #     class = "layout-container",  # Flexbox 容器
-  #     div(
-  #       class = "sticky-sidebar",  # sticky 侧边栏
-  #       div(
-  #         class = "card",
-  #         style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-  #         tags$h4("售出操作", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
-  #         textInput("sold_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
-  #         radioButtons(
-  #           inputId = "sold_shipping_method",
-  #           label = "选择国际运输方式:",
-  #           choices = list("空运" = "空运", "海运" = "海运"),
-  #           selected = "空运"  # 默认选择空运
-  #         ),
-  #         actionButton(
-  #           "confirm_sold_btn", 
-  #           "确认售出", 
-  #           icon = icon("check"), 
-  #           class = "btn-success", 
-  #           style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
-  #         )
-  #       )
-  #     ),
-  #     div(
-  #       class = "main-panel",
-  #       div(
-  #         class = "sticky-info",
-  #         column(12, uiOutput("sold_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
-  #       ),
-  #       tags$hr(),
-  #       fluidRow(
-  #         column(12, actionButton("toggle_item_table_sold", "物品状态表（点击显示/隐藏）",
-  #                                 style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")), # 折叠按钮
-  #         column(12, div(
-  #           id = "item_table_container_sold", # 容器 ID
-  #           style = "margin-bottom: 100px;",
-  #           uniqueItemsTableUI("unique_items_table_sold")
-  #         ))
-  #       )
-  #     )
-  #   )
-  # ), # end of 出售 tab
   
   tabPanel(
     "售出", icon = icon("dollar-sign"),
@@ -452,11 +407,19 @@ ui <- navbarPage(
                    actionButton("clear_selected_items", "清空发货箱", class = "btn-warning", style = "margin-top: 10px; width: 100%;")
                  )
           )
+        ),
+        fluidRow(
+          column(12, actionButton("toggle_item_table_sold", "物品状态表（点击显示/隐藏）",
+                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+          column(12, div(
+            id = "item_table_container_sold",  # 容器 ID
+            style = "margin-bottom: 100px;",
+            uniqueItemsTableUI("unique_items_table_sold")
+          ))
         )
       )
     )
   ), # end of 售出 tab
-  
   
   
   tabPanel(
