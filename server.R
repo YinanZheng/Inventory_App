@@ -818,15 +818,17 @@ server <- function(input, output, session) {
     })
   })
   
-  output$shelf_table <- render_table_with_images(shelf_items(), 
-                                                 column_mapping = list(
-                                                   SKU = "SKU",
-                                                   ItemImagePath = "图片",
-                                                   ItemName = "商品名称",
-                                                   ProductCost = "单价",
-                                                 ), 
-                                                 selection = "single",
-                                                 image_column = "ItemImagePath")$datatable
+  output$shelf_table <- renderDT({
+    render_table_with_images(shelf_items(), 
+                             column_mapping = list(
+                               SKU = "SKU",
+                               ItemImagePath = "图片",
+                               ItemName = "商品名称",
+                               ProductCost = "单价",
+                             ), 
+                             selection = "single",
+                             image_column = "ItemImagePath")$datatable
+  })
   
   # # 渲染货架上的物品
   # output$shelf_table <- renderDataTable({
