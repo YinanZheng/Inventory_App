@@ -167,7 +167,7 @@ server <- function(input, output, session) {
     SELECT 
       unique_items.UniqueID, 
       unique_items.SKU, 
-      unqiue_items.OrderID,
+      unique_items.OrderID,
       unique_items.ProductCost,
       unique_items.DomesticShippingCost,
       unique_items.Status,
