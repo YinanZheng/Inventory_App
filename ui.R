@@ -58,6 +58,14 @@ ui <- navbarPage(
         padding-top: 0px;
         background-color: #ffffff;
       }
+      
+      /* 自定义 selectize 样式 */
+      .custom-selectize .selectize-input {
+        font-size: 12px !important; /* 设置输入框字体大小 */
+      }
+      .custom-selectize .selectize-dropdown-content {
+        font-size: 12px !important; /* 设置下拉菜单字体大小 */
+      }
 
       /* 响应式布局 */
       @media (max-width: 768px) {
@@ -358,7 +366,8 @@ ui <- navbarPage(
         fluidRow(
           column(6, 
                  selectizeInput("sold_maker", "供应商:", choices = NULL, width = "100%",
-                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500)),
+                 class = "custom-selectize" # 自定义 class
           ),
           column(6, selectizeInput(
             "sold_name",                
@@ -369,7 +378,8 @@ ui <- navbarPage(
               create = TRUE            # 允许自定义输入值
             ),
             width = "100%"
-          ))
+          ),class = "custom-selectize" # 自定义 class
+          )
         ),
         
         # 条形码输入框
