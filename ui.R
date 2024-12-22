@@ -426,14 +426,25 @@ ui <- navbarPage(
         class = "main-panel",
         
         fluidRow(
+          # 货架部分
           column(6,
-                 tags$h4("货架", style = "color: #007BFF; font-weight: bold;"),
-                 DTOutput("shelf_table")  # 显示货架上的物品
+                 div(
+                   class = "card",
+                   style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                   tags$h4("货架", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                   DTOutput("shelf_table")  # 显示货架上的物品
+                 )
           ),
+          
+          # 箱子部分
           column(6,
-                 tags$h4("箱子", style = "color: #28A745; font-weight: bold;"),
-                 DTOutput("box_table"),  # 显示已放入箱子的物品
-                 actionButton("clear_selected_items", "清空箱子内容", class = "btn-warning")
+                 div(
+                   class = "card",
+                   style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                   tags$h4("箱子", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+                   DTOutput("box_table"),  # 显示已放入箱子的物品
+                   actionButton("clear_selected_items", "清空箱子内容", class = "btn-warning", style = "margin-top: 10px; width: 100%;")
+                 )
           )
         )
         # 
