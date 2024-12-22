@@ -60,7 +60,7 @@ SELECT * FROM item_type_data;
 
 -- Remove all record
 USE inventory_system;
-
+DELETE FROM orders;
 DELETE FROM maker_list;
 DELETE FROM item_type_data;
 DELETE FROM unique_items;
