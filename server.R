@@ -266,13 +266,13 @@ server <- function(input, output, session) {
                                                            DomesticExitTime = "出库日期")
                                                          ), data = unique_items_data)
   
-  # unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
-  #                                                    column_mapping <- c(common_columns, list(
-  #                                                      IntlShippingMethod = "国际运输",
-  #                                                      PurchaseTime = "采购日期",
-  #                                                      DomesticSoldTime = "售出日期",
-  #                                                      OrderID = "订单号")
-  #                                                    ), data = unique_items_data)
+  unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
+                                                     column_mapping <- c(common_columns, list(
+                                                       IntlShippingMethod = "国际运输",
+                                                       PurchaseTime = "采购日期",
+                                                       DomesticSoldTime = "售出日期",
+                                                       OrderID = "订单号")
+                                                     ), data = unique_items_data)
   
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
                                                          column_mapping <- c(common_columns, list(
@@ -1060,7 +1060,7 @@ server <- function(input, output, session) {
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_sold_selected_row(), {
     if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_sku <- filtered_unique_items_data_defect()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "sold_sku_input", value = selected_sku)
     }
   })
