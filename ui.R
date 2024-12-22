@@ -404,28 +404,29 @@ ui <- navbarPage(
             class = "btn-primary",
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
           ),
-          
-          # 国际运输方式选择
-          radioButtons(
-            inputId = "sold_shipping_method",
-            label = "选择国际运输方式:",
-            choices = list("空运" = "空运", "海运" = "海运"),
-            selected = "空运"  # 默认选择空运
-          ),
-          
-          # 条形码输入框
-          tags$hr(),
-          textInput("sold_sku_input", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%"),
-          
-          tags$hr(),
-          actionButton(
-            "confirm_order_btn", 
-            "确认售出", 
-            icon = icon("check"), 
-            class = "btn-success", 
-            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
-          )
+        ),
+        
+        # 国际运输方式选择
+        radioButtons(
+          inputId = "sold_shipping_method",
+          label = "选择国际运输方式:",
+          choices = list("空运" = "空运", "海运" = "海运"),
+          selected = "空运"  # 默认选择空运
+        ),
+        
+        # 条形码输入框
+        tags$hr(),
+        textInput("sold_sku_input", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%"),
+        
+        tags$hr(),
+        actionButton(
+          "confirm_order_btn", 
+          "确认售出", 
+          icon = icon("check"), 
+          class = "btn-success", 
+          style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
         )
+
       ),
       
       # 主面板：右侧物品选择和已选物品列表
