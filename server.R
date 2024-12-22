@@ -785,7 +785,6 @@ server <- function(input, output, session) {
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
     if (is.null(sku) || sku == "") {
-      showNotification("请输入有效的 SKU！", type = "error")
       return()
     }
     
@@ -793,7 +792,7 @@ server <- function(input, output, session) {
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath)
+        select(SKU, UniqueID, ItemName, ProductCost)
       
       if (nrow(all_shelf_items) == 0) {
         showNotification("未找到符合条件的物品！", type = "error")
