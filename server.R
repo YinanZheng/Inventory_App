@@ -827,7 +827,8 @@ server <- function(input, output, session) {
                                ProductCost = "单价",
                              ), 
                              selection = "single",
-                             image_column = "ItemImagePath")$datatable
+                             image_column = "ItemImagePath",
+                             options = list(fixedHeader = TRUE))$datatable
   })
   
   # # 渲染货架上的物品
