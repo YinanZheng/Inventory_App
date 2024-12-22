@@ -784,37 +784,67 @@ server <- function(input, output, session) {
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
   
-  # 检查是否存在该 订单号 的订单记录
-  observeEvent(input$order_id, {
+  observeEvent(input$register_order_btn, {
     # 检查订单号是否为空
-    req(input$order_id)  # 如果 input$order_id 为空，则不会执行后续代码
-    
-    # 查询订单记录
-    orders_item <- tryCatch({
-      dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
-    }, error = function(e) {
-      showNotification("检查订单时发生错误！", type = "error")
-      return(data.frame())
-    })
-
-    # 根据查询结果执行逻辑
-    if (nrow(orders_item) > 0) {
-      showNotification("订单号已存在！", type = "warning")
-    } else {
-      showNotification("订单号可用！", type = "success")
+    if (is.null(input$order_id) || input$order_id == "") {
+      showNotification("订单号不能为空！", type = "error")
+      return()
     }
+    
+    tryCatch({
+      # 查询是否已有相同订单号的记录
+      existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
+      
+      # 确定库存路径（若已有订单记录）
+      existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
+      
+      # 处理订单图片
+      order_image_path <- process_image_upload(
+        sku = input$order_id,
+        file_data = image_sold$uploaded_file(),
+        pasted_data = image_sold$pasted_file(),
+        inventory_path = existing_orders_path
+      )
+      print(paste("订单图片路径:", order_image_path))  # 调试信息
+      
+      if (nrow(existing_order) > 0) {
+        # 如果订单号已存在，更新图片和其他信息
+        dbExecute(con, "
+        UPDATE orders 
+        SET OrderImagePath = COALESCE(?, OrderImagePath), 
+            UsTrackingNumber1 = COALESCE(?, UsTrackingNumber1), 
+            OrderNotes = COALESCE(?, OrderNotes)
+        WHERE OrderID = ?",
+                  params = list(order_image_path, input$tracking_number1, input$order_notes, input$order_id)
+        )
+        showNotification("订单信息已更新！", type = "message")
+      } else {
+        # 如果订单号不存在，插入新订单记录
+        dbExecute(con, "
+        INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes, OrderImagePath)
+        VALUES (?, ?, ?, ?)",
+                  params = list(
+                    input$order_id,
+                    input$tracking_number1,
+                    input$order_notes,
+                    order_image_path
+                  )
+        )
+        showNotification("订单已成功登记！", type = "message")
+      }
+      
+      # 清空表单内容
+      updateTextInput(session, "order_id", value = "")
+      updateTextInput(session, "tracking_number1", value = "")
+      updateTextAreaInput(session, "order_notes", value = "")
+      image_sold$clear_files()  # 清空上传或粘贴的图片
+    }, error = function(e) {
+      # 错误处理
+      showNotification(paste("登记订单时发生错误：", e$message), type = "error")
+    })
   })
   
-  existing_orders_path <- if (nrow(orders_item) > 0) orders_item$OrderImagePath[1] else NULL
-  
-  # 处理订单图片上传或粘贴
-  order_image_path <- process_image_upload(
-    sku = input$order_id,
-    file_data = image_sold$uploaded_file(),
-    pasted_data = image_sold$pasted_file(),
-    inventory_path = existing_orders_path
-  )
-  
+
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
