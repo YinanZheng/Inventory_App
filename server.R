@@ -900,28 +900,26 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      # 保存订单信息
+      # 保存订单信息到 orders 表
       dbExecute(con, "
-        INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes)
-        VALUES (?, ?, ?, ?, ?)",
+      INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes)
+      VALUES (?, ?, ?)",
                 params = list(
                   input$order_id,
                   input$tracking_number1,
-                  input$tracking_number2,
-                  input$tracking_number3,
                   input$order_notes
                 )
       )
       
-      # 更新箱子内物品的状态
+      # 更新箱子内物品的状态和运输方式
       lapply(1:nrow(box_items()), function(i) {
         item <- box_items()[i, ]
         
         dbExecute(con, "
-          UPDATE unique_items 
-          SET Status = '国内售出', OrderID = ?
-          WHERE UniqueID = ?",
-                  params = list(input$order_id, item$UniqueID)
+        UPDATE unique_items 
+        SET Status = '国内售出', OrderID = ?, IntlShippingMethod = ?
+        WHERE UniqueID = ?",
+                  params = list(input$order_id, input$sold_shipping_method, item$UniqueID)
         )
       })
       
@@ -930,11 +928,14 @@ server <- function(input, output, session) {
       # 清空箱子和订单信息
       box_items(data.frame(SKU = character(), UniqueID = character(), ItemName = character()))
       updateTextInput(session, "order_id", value = "")
+      updateTextInput(session, "tracking_number1", value = "")
       updateTextAreaInput(session, "order_notes", value = "")
+      updateTextInput(session, "sold_sku_input", value = "")
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
+  
   
   
   

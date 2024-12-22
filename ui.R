@@ -394,7 +394,7 @@ ui <- navbarPage(
           # 订单录入表单
           tags$h4("订单挂靠", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
-          textInput("tracking_number1", "运单号1", placeholder = "请输入运单号", width = "100%"),
+          textInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
           imageModuleUI("image_sold"),
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
           
@@ -447,27 +447,6 @@ ui <- navbarPage(
                  )
           )
         )
-        # 
-        # # 简化的物品选择列表
-        # div(
-        #   class = "sticky-info",
-        #   tags$h4("订单内物品", style = "color: #333; font-weight: bold; margin-bottom: 15px;"),
-        #   column(12, DTOutput("unique_items_table_sold")),
-        #   tags$hr(),
-        #   actionButton("clear_selected_items", "清空选中物品", class = "btn-warning")
-        # ),
-        # 
-        # # 全物品表
-        # tags$hr(),
-        # fluidRow(
-        #   column(12, actionButton("toggle_item_table_sold", "物品状态表（点击显示/隐藏）",
-        #                           style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),
-        #   column(12, div(
-        #     id = "item_table_container_sold",  # 容器 ID
-        #     style = "margin-bottom: 100px;",
-        #     uniqueItemsTableUI("unique_items_table_sold")  # 物品表
-        #   ))
-        # )
       )
     )
   ), # end of 售出 tab
