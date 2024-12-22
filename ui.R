@@ -395,8 +395,6 @@ ui <- navbarPage(
           tags$h4("订单挂靠", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           textInput("tracking_number1", "运单号1", placeholder = "请输入运单号", width = "100%"),
-          textInput("tracking_number2", "运单号2", placeholder = "可选", width = "100%"),
-          textInput("tracking_number3", "运单号3", placeholder = "可选", width = "100%"),
           imageModuleUI("image_sold"),
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
           
@@ -434,7 +432,8 @@ ui <- navbarPage(
           ),
           column(6,
                  tags$h4("箱子", style = "color: #28A745; font-weight: bold;"),
-                 DTOutput("box_table")  # 显示已放入箱子的物品
+                 DTOutput("box_table"),  # 显示已放入箱子的物品
+                 actionButton("clear_selected_items", "清空箱子内容", class = "btn-warning")
           )
         )
         # 
