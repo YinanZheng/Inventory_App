@@ -785,11 +785,24 @@ server <- function(input, output, session) {
   image_sold <- imageModuleServer("image_sold")
   
   # 检查是否存在该 订单号 的订单记录
-  orders_item <- tryCatch({
-    dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
-  }, error = function(e) {
-    showNotification("检查订单时发生错误！", type = "error")
-    return(data.frame())
+  observeEvent(input$order_id, {
+    # 检查订单号是否为空
+    req(input$order_id)  # 如果 input$order_id 为空，则不会执行后续代码
+    
+    # 查询订单记录
+    orders_item <- tryCatch({
+      dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
+    }, error = function(e) {
+      showNotification("检查订单时发生错误！", type = "error")
+      return(data.frame())
+    })
+
+    # 根据查询结果执行逻辑
+    if (nrow(orders_item) > 0) {
+      showNotification("订单号已存在！", type = "warning")
+    } else {
+      showNotification("订单号可用！", type = "success")
+    }
   })
   
   existing_orders_path <- if (nrow(orders_item) > 0) orders_item$OrderImagePath[1] else NULL
