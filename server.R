@@ -467,7 +467,7 @@ server <- function(input, output, session) {
         )
       }
       
-      # 更新 inventory 数据并触发 UI 刷新
+      # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
@@ -1028,7 +1028,9 @@ server <- function(input, output, session) {
         )
       })
       
+      # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       showNotification("订单已完成售出并更新状态！", type = "message")
       
@@ -1049,58 +1051,6 @@ server <- function(input, output, session) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
-  
-  
-  
-  
-  # # 监听售出 SKU 输入
-  # observeEvent(input$sold_sku, {
-  #   handleSkuInput(
-  #     sku_input = input$sold_sku,
-  #     output_name = "sold_item_info",
-  #     count_label = "可售出数",
-  #     count_field = "AvailableForSold",
-  #     con = con,
-  #     output = output,
-  #     placeholder_path = placeholder_300px_path,
-  #     host_url = host_url
-  #   )
-  # })
-  # 
-  # # 确认售出逻辑
-  # observeEvent(input$confirm_sold_btn, {
-  #   handleOperation(
-  #     operation_name = "售出",
-  #     sku_input = input$sold_sku,
-  #     output_name = "sold_item_info",
-  #     query_status = "国内入库",
-  #     update_status_value = "国内售出",
-  #     count_label = "可售出数",
-  #     count_field = "AvailableForSold",
-  #     con = con,
-  #     output = output,
-  #     refresh_trigger = unique_items_data_refresh_trigger,
-  #     session = session,
-  #     input = input
-  #   )
-  #   
-  #   # 库存调整
-  #   adjust_inventory(
-  #     con = con,
-  #     sku = input$sold_sku,
-  #     adjustment = -1  # 减少库存
-  #   )
-  #   
-  #   inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-  # })
-  # 
-  # # 监听选中行并更新售出 SKU
-  # observeEvent(unique_items_table_sold_selected_row(), {
-  #   if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-  #     selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
-  #     updateTextInput(session, "sold_sku", value = selected_sku)
-  #   }
-  # })
   
   
   
@@ -1174,11 +1124,9 @@ server <- function(input, output, session) {
       
       showNotification("物品删除成功！", type = "message")
       
-      # 更新inventory()，触发filtered_inventory_table更新
+      # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      
-      # 触发更新刷新unique_items_data
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) 
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
     }, error = function(e) {
       dbRollback(con) # 回滚事务
@@ -1235,10 +1183,8 @@ server <- function(input, output, session) {
                     WHERE SKU = ?",
                   params = list(updated_image_path, selected_sku))
         
-        # 更新 `inventory()`，触发表格重新渲染
+        # 更新 inventory, unique_items数据并触发 UI 刷新
         inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-        
-        # 触发刷新 `unique_items_data`
         unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
         
         # 显示成功通知
