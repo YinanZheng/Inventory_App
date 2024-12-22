@@ -302,7 +302,8 @@ ui <- navbarPage(
             inputId = "outbound_shipping_method",
             label = "选择国际运输方式:",
             choices = list("空运" = "空运", "海运" = "海运"),
-            selected = "空运"  # 默认选择空运
+            selected = "空运",  # 默认选择空运
+            inline = TRUE       # 设置为横向排布
           ),
           actionButton(
             "confirm_outbound_btn", 
@@ -370,7 +371,8 @@ ui <- navbarPage(
           inputId = "sold_shipping_method",
           label = "选择国际运输方式:",
           choices = list("空运" = "空运", "海运" = "海运"),
-          selected = "空运"  # 默认选择空运
+          selected = "空运",  # 默认选择空运
+          inline = TRUE       # 设置为横向排布
         ),
         
         actionButton(
@@ -455,12 +457,21 @@ ui <- navbarPage(
         ),
         
         tags$hr(), # 分隔线
-        
-        imageModuleUI("image_manage"),
-        
-        actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
-        
+        div(
+          class = "card shadow-sm", # 添加卡片样式
+          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+          # 卡片标题
+          div(
+            style = "margin-bottom: 10px; padding-bottom: 8px;",
+            tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+  
+          imageModuleUI("image_manage", label = ""),
+          
+          actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
+          ),
+        )
       ),
+      
       div(
         class = "main-panel",
         fluidRow(
