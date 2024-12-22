@@ -546,6 +546,54 @@ ui <- navbarPage(
     )
   ), # end of 瑕疵品管理 tab
   
+  
+  tabPanel(
+    "国际物流管理", icon = icon("globe"),
+    div(
+      class = "layout-container",
+      div(
+        class = "sticky-sidebar",
+        fluidRow(
+          column(
+            12,
+            textInput(
+              "intl_tracking_number",
+              "国际运单号:",
+              placeholder = "请输入空运或海运运单号",
+              width = "100%"
+            )
+          ),
+          column(
+            12,
+            selectInput(
+              "intl_shipping_method",
+              "国际运输方式:",
+              choices = c("空运" = "空运", "海运" = "海运"),
+              selected = "空运",
+              width = "100%"
+            )
+          ),
+          column(
+            12,
+            actionButton(
+              "link_tracking_btn",
+              "挂靠运单",
+              icon = icon("link"),
+              class = "btn-primary",
+              style = "margin-top: 20px; width: 100%;"
+            )
+          )
+        )
+      ),
+      div(
+        class = "main-panel",
+        uniqueItemsTableUI("unique_items_table_logistics")
+      )
+    )
+  ),
+  
+  
+  
   tabPanel(
     "查询", icon = icon("search"), 
     div(
