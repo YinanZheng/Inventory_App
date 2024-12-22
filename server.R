@@ -792,7 +792,8 @@ server <- function(input, output, session) {
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath)
+        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
+        arrange(ProductCost)  # 按单价从低到高排序
       
       if (nrow(all_shelf_items) == 0) {
         showNotification("未找到符合条件的物品！", type = "error")
@@ -817,21 +818,31 @@ server <- function(input, output, session) {
     })
   })
   
-  # 渲染货架上的物品
-  output$shelf_table <- renderDataTable({
-    shelf_data <- shelf_items()
-    
-    if (nrow(shelf_data) == 0) {
-      return(NULL)  # 如果货架无物品，则显示空表
-    }
-    
-    datatable(
-      shelf_data,
-      options = list(pageLength = 10, scrollX = TRUE),
-      selection = "single",  # 单选模式
-      rownames = FALSE
-    )
-  })
+  output$shelf_table <- render_table_with_images(shelf_items(), 
+                                                 column_mapping = list(
+                                                   SKU = "SKU",
+                                                   ItemImagePath = "图片",
+                                                   ItemName = "商品名称",
+                                                   ProductCost = "单价",
+                                                 ), 
+                                                 selection = "single",
+                                                 image_column = "ItemImagePath")$datatable
+  
+  # # 渲染货架上的物品
+  # output$shelf_table <- renderDataTable({
+  #   shelf_data <- shelf_items()
+  #   
+  #   if (nrow(shelf_data) == 0) {
+  #     return(NULL)  # 如果货架无物品，则显示空表
+  #   }
+  #   
+  #   datatable(
+  #     shelf_data,
+  #     options = list(pageLength = 10, scrollX = TRUE),
+  #     selection = "single",  # 单选模式
+  #     rownames = FALSE
+  #   )
+  # })
   
   # 渲染箱子内的物品
   output$box_table <- renderDataTable({
