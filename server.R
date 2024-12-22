@@ -167,7 +167,6 @@ server <- function(input, output, session) {
     SELECT 
       unique_items.UniqueID, 
       unique_items.SKU, 
-      unqiue_items.OrderID,
       unique_items.ProductCost,
       unique_items.DomesticShippingCost,
       unique_items.Status,
@@ -765,305 +764,305 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # # 初始化货架和箱子内物品
-  # shelf_items <- reactiveVal(data.frame(
-  #   SKU = character(),
-  #   UniqueID = character(),
-  #   ItemName = character(),
-  #   ProductCost = numeric(),
-  #   ItemImagePath = character(),
-  #   stringsAsFactors = FALSE
-  # ))
-  # 
-  # box_items <- reactiveVal(data.frame(
-  #   SKU = character(),
-  #   UniqueID = character(),
-  #   ItemName = character(),
-  #   ProductCost = numeric(),
-  #   ItemImagePath = character(),
-  #   stringsAsFactors = FALSE
-  # ))
-  # 
-  # # 出售订单图片处理模块
-  # image_sold <- imageModuleServer("image_sold")
-  # 
-  # # 在输入订单号时检查订单信息并填充
-  # observeEvent(input$order_id, {
-  #   # 检查订单号是否为空
-  #   req(input$order_id)  # 如果订单号为空，停止执行
-  #   
-  #   tryCatch({
-  #     # 查询订单信息
-  #     existing_order <- dbGetQuery(con, "
-  #     SELECT UsTrackingNumber1, OrderNotes 
-  #     FROM orders 
-  #     WHERE OrderID = ?", 
-  #                                  params = list(input$order_id)
-  #     )
-  #     
-  #     # 如果订单存在，填充对应字段
-  #     if (nrow(existing_order) > 0) {
-  #       showNotification("已找到订单信息！字段已自动填充。", type = "message")
-  #       updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
-  #       updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
-  #     } else {
-  #       showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
-  #       updateTextInput(session, "tracking_number1", value = "")
-  #       updateTextAreaInput(session, "order_notes", value = "")
-  #     }
-  #   }, error = function(e) {
-  #     showNotification(paste("检查订单时发生错误：", e$message), type = "error")
-  #   })
-  # })
-  # 
-  # # 登记订单逻辑
-  # observeEvent(input$register_order_btn, {
-  #   # 检查订单号是否为空
-  #   if (is.null(input$order_id) || input$order_id == "") {
-  #     showNotification("订单号不能为空！", type = "error")
-  #     return()
-  #   }
-  #   
-  #   tryCatch({
-  #     # 查询是否已有相同订单号的记录
-  #     existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
-  #     
-  #     # 确定库存路径（若已有订单记录）
-  #     existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
-  #     
-  #     # 处理订单图片
-  #     order_image_path <- process_image_upload(
-  #       sku = input$order_id,
-  #       file_data = image_sold$uploaded_file(),
-  #       pasted_data = image_sold$pasted_file(),
-  #       inventory_path = existing_orders_path
-  #     )
-  #     print(paste("订单图片路径:", order_image_path))  # 调试信息
-  #     
-  #     if (nrow(existing_order) > 0) {
-  #       # 如果订单号已存在，更新图片和其他信息
-  #       dbExecute(con, "
-  #       UPDATE orders 
-  #       SET OrderImagePath = COALESCE(?, OrderImagePath), 
-  #           UsTrackingNumber1 = COALESCE(?, UsTrackingNumber1), 
-  #           OrderNotes = COALESCE(?, OrderNotes)
-  #       WHERE OrderID = ?",
-  #                 params = list(order_image_path, input$tracking_number1, input$order_notes, input$order_id)
-  #       )
-  #       showNotification("订单信息已更新！", type = "message")
-  #     } else {
-  #       # 如果订单号不存在，插入新订单记录
-  #       dbExecute(con, "
-  #       INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes, OrderImagePath)
-  #       VALUES (?, ?, ?, ?)",
-  #                 params = list(
-  #                   input$order_id,
-  #                   input$tracking_number1,
-  #                   input$order_notes,
-  #                   order_image_path
-  #                 )
-  #       )
-  #       showNotification("订单已成功登记！", type = "message")
-  #     }
-  #     
-  #     # 清空表单内容
-  #     updateTextInput(session, "order_id", value = "")
-  #     updateTextInput(session, "tracking_number1", value = "")
-  #     updateTextAreaInput(session, "order_notes", value = "")
-  #     image_sold$reset()  # 清空上传或粘贴的图片
-  #   }, error = function(e) {
-  #     # 错误处理
-  #     showNotification(paste("登记订单时发生错误：", e$message), type = "error")
-  #   })
-  # })
-  # 
-  # # 响应输入或扫描的 SKU，更新货架上的物品
-  # observeEvent(input$sold_sku_input, {
-  #   sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
-  #   if (is.null(sku) || sku == "") {
-  #     return()
-  #   }
-  #   
-  #   tryCatch({
-  #     # 从 unique_items_data 获取符合条件的货架物品
-  #     all_shelf_items <- unique_items_data() %>%
-  #       filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-  #       select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
-  #       arrange(ProductCost)  # 按单价从低到高排序
-  #     
-  #     if (nrow(all_shelf_items) == 0) {
-  #       showNotification("未找到符合条件的物品！", type = "error")
-  #       return()
-  #     }
-  #     
-  #     # 从箱子中获取当前 SKU 的已选数量
-  #     box_data <- box_items()
-  #     box_sku_count <- sum(box_data$SKU == sku)
-  #     
-  #     # 扣除已移入箱子的物品
-  #     if (box_sku_count > 0) {
-  #       all_shelf_items <- all_shelf_items %>%
-  #         slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
-  #     }
-  #     
-  #     # 更新货架
-  #     shelf_items(all_shelf_items)
-  #     showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
-  #   }, error = function(e) {
-  #     showNotification(paste("加载货架时发生错误：", e$message), type = "error")
-  #   })
-  # })
-  # 
-  # # 渲染货架
-  # output$shelf_table <- renderDT({
-  #   render_table_with_images(shelf_items(), 
-  #                            column_mapping = list(
-  #                              SKU = "SKU",
-  #                              ItemImagePath = "图片",
-  #                              ItemName = "商品名称",
-  #                              ProductCost = "单价"
-  #                            ), 
-  #                            selection = "single",
-  #                            image_column = "ItemImagePath",
-  #                            options = list(fixedHeader = TRUE))$datatable
-  # })
-  # 
-  # # 渲染箱子
-  # output$box_table <- renderDT({
-  #   render_table_with_images(box_items(), 
-  #                            column_mapping = list(
-  #                              SKU = "SKU",
-  #                              ItemImagePath = "图片",
-  #                              ItemName = "商品名称",
-  #                              ProductCost = "单价"
-  #                            ), 
-  #                            selection = "single",
-  #                            image_column = "ItemImagePath",
-  #                            options = list(fixedHeader = TRUE))$datatable
-  # })
-  # 
-  # # 点击货架物品，移入箱子
-  # observeEvent(input$shelf_table_rows_selected, {
-  #   selected_row <- input$shelf_table_rows_selected
-  #   shelf_data <- shelf_items()
-  #   
-  #   if (!is.null(selected_row) && nrow(shelf_data) >= selected_row) {
-  #     selected_item <- shelf_data[selected_row, ]  # 获取选中的物品
-  #     
-  #     # 更新箱子内容
-  #     current_box <- box_items()
-  #     box_items(bind_rows(current_box, selected_item))
-  #     
-  #     # 更新货架上的物品，移除已选的
-  #     updated_shelf <- shelf_data[-selected_row, ]
-  #     shelf_items(updated_shelf)
-  #     
-  #     showNotification("物品已移入箱子！", type = "message")
-  #   }
-  # })
-  # 
-  # # 点击箱子物品，还回货架
-  # observeEvent(input$box_table_rows_selected, {
-  #   selected_row <- input$box_table_rows_selected
-  #   box_data <- box_items()
-  #   
-  #   if (!is.null(selected_row) && nrow(box_data) >= selected_row) {
-  #     selected_item <- box_data[selected_row, ]  # 获取选中的物品
-  #     
-  #     # 更新货架内容
-  #     current_shelf <- shelf_items()
-  #     shelf_items(bind_rows(current_shelf, selected_item))
-  #     
-  #     # 更新箱子内的物品，移除已选的
-  #     updated_box <- box_data[-selected_row, ]
-  #     box_items(updated_box)
-  #     
-  #     showNotification("物品已还回货架！", type = "message")
-  #   }
-  # })
-  # 
-  # # 清空箱子
-  # observeEvent(input$clear_selected_items, {
-  #   box_items(data.frame(SKU = character(), UniqueID = character(), ItemName = character()))
-  #   showNotification("箱子已清空！", type = "message")
-  # })
-  # 
-  # # 确认售出
-  # observeEvent(input$confirm_order_btn, {
-  #   if (is.null(input$order_id) || nrow(box_items()) == 0) {
-  #     showNotification("订单号或箱子内容不能为空！", type = "error")
-  #     return()
-  #   }
-  #   
-  #   tryCatch({
-  #     # 保存订单信息到 orders 表
-  #     dbExecute(con, "
-  #     INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes)
-  #     VALUES (?, ?, ?)",
-  #               params = list(
-  #                 input$order_id,
-  #                 input$tracking_number1,
-  #                 input$order_notes
-  #               )
-  #     )
-  #     
-  #     # 遍历箱子内物品，减库存并更新物品状态
-  #     lapply(1:nrow(box_items()), function(i) {
-  #       item <- box_items()[i, ]
-  #       sku <- item$SKU
-  #       
-  #       # 调整库存：减少数量
-  #       adjustment_result <- adjust_inventory(
-  #         con = con,
-  #         sku = sku,
-  #         adjustment = -1  # 减少 1 的库存数量
-  #       )
-  #       
-  #       if (!adjustment_result) {
-  #         showNotification(paste("库存调整失败：SKU", sku, "，操作已终止！"), type = "error")
-  #         stop("库存调整失败")
-  #       }
-  #       
-  #       # 更新 unique_items 表中的状态和订单号
-  #       dbExecute(con, "
-  #       UPDATE unique_items 
-  #       SET Status = '国内售出', OrderID = ?, IntlShippingMethod = ?
-  #       WHERE UniqueID = ?",
-  #                 params = list(input$order_id, input$sold_shipping_method, item$UniqueID)
-  #       )
-  #     })
-  #     
-  #     # 更新 inventory, unique_items数据并触发 UI 刷新
-  #     inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-  #     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-  #     
-  #     showNotification("订单已完成售出并更新状态！", type = "message")
-  #     
-  #     # 清空箱子和订单信息
-  #     box_items(data.frame(
-  #       SKU = character(),
-  #       UniqueID = character(),
-  #       ItemName = character(),
-  #       ProductCost = numeric(),
-  #       ItemImagePath = character(),
-  #       stringsAsFactors = FALSE
-  #     ))
-  #     updateTextInput(session, "order_id", value = "")
-  #     updateTextInput(session, "tracking_number1", value = "")
-  #     updateTextAreaInput(session, "order_notes", value = "")
-  #     updateTextInput(session, "sold_sku_input", value = "")
-  #   }, error = function(e) {
-  #     showNotification(paste("操作失败：", e$message), type = "error")
-  #   })
-  # })
-  # 
-  # # 监听选中行并更新 SKU
-  # observeEvent(unique_items_table_sold_selected_row(), {
-  #   if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-  #     selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
-  #     updateTextInput(session, "sold_sku_input", value = selected_sku)
-  #   }
-  # })
+  # 初始化货架和箱子内物品
+  shelf_items <- reactiveVal(data.frame(
+    SKU = character(),
+    UniqueID = character(),
+    ItemName = character(),
+    ProductCost = numeric(),
+    ItemImagePath = character(),
+    stringsAsFactors = FALSE
+  ))
+  
+  box_items <- reactiveVal(data.frame(
+    SKU = character(),
+    UniqueID = character(),
+    ItemName = character(),
+    ProductCost = numeric(),
+    ItemImagePath = character(),
+    stringsAsFactors = FALSE
+  ))
+  
+  # 出售订单图片处理模块
+  image_sold <- imageModuleServer("image_sold")
+  
+  # 在输入订单号时检查订单信息并填充
+  observeEvent(input$order_id, {
+    # 检查订单号是否为空
+    req(input$order_id)  # 如果订单号为空，停止执行
+    
+    tryCatch({
+      # 查询订单信息
+      existing_order <- dbGetQuery(con, "
+      SELECT UsTrackingNumber1, OrderNotes 
+      FROM orders 
+      WHERE OrderID = ?", 
+                                   params = list(input$order_id)
+      )
+      
+      # 如果订单存在，填充对应字段
+      if (nrow(existing_order) > 0) {
+        showNotification("已找到订单信息！字段已自动填充。", type = "message")
+        updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
+        updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
+      } else {
+        showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
+        updateTextInput(session, "tracking_number1", value = "")
+        updateTextAreaInput(session, "order_notes", value = "")
+      }
+    }, error = function(e) {
+      showNotification(paste("检查订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  # 登记订单逻辑
+  observeEvent(input$register_order_btn, {
+    # 检查订单号是否为空
+    if (is.null(input$order_id) || input$order_id == "") {
+      showNotification("订单号不能为空！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 查询是否已有相同订单号的记录
+      existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
+      
+      # 确定库存路径（若已有订单记录）
+      existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
+      
+      # 处理订单图片
+      order_image_path <- process_image_upload(
+        sku = input$order_id,
+        file_data = image_sold$uploaded_file(),
+        pasted_data = image_sold$pasted_file(),
+        inventory_path = existing_orders_path
+      )
+      print(paste("订单图片路径:", order_image_path))  # 调试信息
+      
+      if (nrow(existing_order) > 0) {
+        # 如果订单号已存在，更新图片和其他信息
+        dbExecute(con, "
+        UPDATE orders 
+        SET OrderImagePath = COALESCE(?, OrderImagePath), 
+            UsTrackingNumber1 = COALESCE(?, UsTrackingNumber1), 
+            OrderNotes = COALESCE(?, OrderNotes)
+        WHERE OrderID = ?",
+                  params = list(order_image_path, input$tracking_number1, input$order_notes, input$order_id)
+        )
+        showNotification("订单信息已更新！", type = "message")
+      } else {
+        # 如果订单号不存在，插入新订单记录
+        dbExecute(con, "
+        INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes, OrderImagePath)
+        VALUES (?, ?, ?, ?)",
+                  params = list(
+                    input$order_id,
+                    input$tracking_number1,
+                    input$order_notes,
+                    order_image_path
+                  )
+        )
+        showNotification("订单已成功登记！", type = "message")
+      }
+      
+      # 清空表单内容
+      updateTextInput(session, "order_id", value = "")
+      updateTextInput(session, "tracking_number1", value = "")
+      updateTextAreaInput(session, "order_notes", value = "")
+      image_sold$reset()  # 清空上传或粘贴的图片
+    }, error = function(e) {
+      # 错误处理
+      showNotification(paste("登记订单时发生错误：", e$message), type = "error")
+    })
+  })
+
+  # 响应输入或扫描的 SKU，更新货架上的物品
+  observeEvent(input$sold_sku_input, {
+    sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
+    if (is.null(sku) || sku == "") {
+      return()
+    }
+    
+    tryCatch({
+      # 从 unique_items_data 获取符合条件的货架物品
+      all_shelf_items <- unique_items_data() %>%
+        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
+        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
+        arrange(ProductCost)  # 按单价从低到高排序
+      
+      if (nrow(all_shelf_items) == 0) {
+        showNotification("未找到符合条件的物品！", type = "error")
+        return()
+      }
+      
+      # 从箱子中获取当前 SKU 的已选数量
+      box_data <- box_items()
+      box_sku_count <- sum(box_data$SKU == sku)
+      
+      # 扣除已移入箱子的物品
+      if (box_sku_count > 0) {
+        all_shelf_items <- all_shelf_items %>%
+          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
+      }
+      
+      # 更新货架
+      shelf_items(all_shelf_items)
+      showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
+    }, error = function(e) {
+      showNotification(paste("加载货架时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  # 渲染货架
+  output$shelf_table <- renderDT({
+    render_table_with_images(shelf_items(), 
+                             column_mapping = list(
+                               SKU = "SKU",
+                               ItemImagePath = "图片",
+                               ItemName = "商品名称",
+                               ProductCost = "单价"
+                             ), 
+                             selection = "single",
+                             image_column = "ItemImagePath",
+                             options = list(fixedHeader = TRUE))$datatable
+  })
+
+  # 渲染箱子
+  output$box_table <- renderDT({
+    render_table_with_images(box_items(), 
+                             column_mapping = list(
+                               SKU = "SKU",
+                               ItemImagePath = "图片",
+                               ItemName = "商品名称",
+                               ProductCost = "单价"
+                             ), 
+                             selection = "single",
+                             image_column = "ItemImagePath",
+                             options = list(fixedHeader = TRUE))$datatable
+  })
+  
+  # 点击货架物品，移入箱子
+  observeEvent(input$shelf_table_rows_selected, {
+    selected_row <- input$shelf_table_rows_selected
+    shelf_data <- shelf_items()
+    
+    if (!is.null(selected_row) && nrow(shelf_data) >= selected_row) {
+      selected_item <- shelf_data[selected_row, ]  # 获取选中的物品
+      
+      # 更新箱子内容
+      current_box <- box_items()
+      box_items(bind_rows(current_box, selected_item))
+      
+      # 更新货架上的物品，移除已选的
+      updated_shelf <- shelf_data[-selected_row, ]
+      shelf_items(updated_shelf)
+      
+      showNotification("物品已移入箱子！", type = "message")
+    }
+  })
+  
+  # 点击箱子物品，还回货架
+  observeEvent(input$box_table_rows_selected, {
+    selected_row <- input$box_table_rows_selected
+    box_data <- box_items()
+    
+    if (!is.null(selected_row) && nrow(box_data) >= selected_row) {
+      selected_item <- box_data[selected_row, ]  # 获取选中的物品
+      
+      # 更新货架内容
+      current_shelf <- shelf_items()
+      shelf_items(bind_rows(current_shelf, selected_item))
+      
+      # 更新箱子内的物品，移除已选的
+      updated_box <- box_data[-selected_row, ]
+      box_items(updated_box)
+      
+      showNotification("物品已还回货架！", type = "message")
+    }
+  })
+  
+  # 清空箱子
+  observeEvent(input$clear_selected_items, {
+    box_items(data.frame(SKU = character(), UniqueID = character(), ItemName = character()))
+    showNotification("箱子已清空！", type = "message")
+  })
+  
+  # 确认售出
+  observeEvent(input$confirm_order_btn, {
+    if (is.null(input$order_id) || nrow(box_items()) == 0) {
+      showNotification("订单号或箱子内容不能为空！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 保存订单信息到 orders 表
+      dbExecute(con, "
+      INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes)
+      VALUES (?, ?, ?)",
+                params = list(
+                  input$order_id,
+                  input$tracking_number1,
+                  input$order_notes
+                )
+      )
+      
+      # 遍历箱子内物品，减库存并更新物品状态
+      lapply(1:nrow(box_items()), function(i) {
+        item <- box_items()[i, ]
+        sku <- item$SKU
+        
+        # 调整库存：减少数量
+        adjustment_result <- adjust_inventory(
+          con = con,
+          sku = sku,
+          adjustment = -1  # 减少 1 的库存数量
+        )
+        
+        if (!adjustment_result) {
+          showNotification(paste("库存调整失败：SKU", sku, "，操作已终止！"), type = "error")
+          stop("库存调整失败")
+        }
+        
+        # 更新 unique_items 表中的状态和订单号
+        dbExecute(con, "
+        UPDATE unique_items 
+        SET Status = '国内售出', OrderID = ?, IntlShippingMethod = ?
+        WHERE UniqueID = ?",
+                  params = list(input$order_id, input$sold_shipping_method, item$UniqueID)
+        )
+      })
+      
+      # 更新 inventory, unique_items数据并触发 UI 刷新
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+      showNotification("订单已完成售出并更新状态！", type = "message")
+      
+      # 清空箱子和订单信息
+      box_items(data.frame(
+        SKU = character(),
+        UniqueID = character(),
+        ItemName = character(),
+        ProductCost = numeric(),
+        ItemImagePath = character(),
+        stringsAsFactors = FALSE
+      ))
+      updateTextInput(session, "order_id", value = "")
+      updateTextInput(session, "tracking_number1", value = "")
+      updateTextAreaInput(session, "order_notes", value = "")
+      updateTextInput(session, "sold_sku_input", value = "")
+    }, error = function(e) {
+      showNotification(paste("操作失败：", e$message), type = "error")
+    })
+  })
+  
+  # 监听选中行并更新 SKU
+  observeEvent(unique_items_table_sold_selected_row(), {
+    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+      selected_sku <- unique_items_data()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
+      updateTextInput(session, "sold_sku_input", value = selected_sku)
+    }
+  })
   
   
   
