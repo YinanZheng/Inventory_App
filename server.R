@@ -297,7 +297,7 @@ server <- function(input, output, session) {
       PurchaseTime = "采购日期",
       IntlAirTracking = "国际空运单号",
       IntlSeaTracking = "国际海运单号"
-    )),
+    )), selection = "multiple",
     data = filtered_unique_items_data_logistics
   )
   
