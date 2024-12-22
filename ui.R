@@ -587,10 +587,10 @@ ui <- navbarPage(
             6,
             actionButton(
               "delete_tracking_btn",
-              "删除运单号",
+              "删除运单",
               icon = icon("trash"),
               class = "btn-danger",
-              style = "margin-top: 10px; width: 100%;"
+              style = "margin-top: 20px; width: 100%;"
             )
           )
         )
