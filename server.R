@@ -1334,9 +1334,10 @@ server <- function(input, output, session) {
   ################################################################
   
   # 挂靠运单号逻辑
-  # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
+    showNotification(selected_rows)
+    
     tracking_number <- input$intl_tracking_number
     shipping_method <- input$intl_shipping_method
     
@@ -1391,7 +1392,6 @@ server <- function(input, output, session) {
     })
   })
   
-  # 删除运单号逻辑
   # 删除运单号逻辑
   observeEvent(input$delete_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
