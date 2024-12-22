@@ -266,13 +266,13 @@ server <- function(input, output, session) {
                                                            DomesticExitTime = "出库日期")
                                                          ), data = unique_items_data)
   
-  unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
-                                                     column_mapping <- c(common_columns, list(
-                                                       IntlShippingMethod = "国际运输",
-                                                       PurchaseTime = "采购日期",
-                                                       DomesticSoldTime = "售出日期",
-                                                       OrderID = "订单号")
-                                                     ), data = unique_items_data)
+  # unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
+  #                                                    column_mapping <- c(common_columns, list(
+  #                                                      IntlShippingMethod = "国际运输",
+  #                                                      PurchaseTime = "采购日期",
+  #                                                      DomesticSoldTime = "售出日期",
+  #                                                      OrderID = "订单号")
+  #                                                    ), data = unique_items_data)
   
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
                                                          column_mapping <- c(common_columns, list(
