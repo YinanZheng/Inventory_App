@@ -248,6 +248,9 @@ ui <- navbarPage(
               )
             )
           ),
+          
+          tags$hr(), # 分隔线
+          
           # 条形码生成下载按钮
           column(12,              
                  tags$div(
@@ -479,6 +482,7 @@ ui <- navbarPage(
         ),
         
         tags$hr(), # 分隔线
+        
         div(
           class = "card shadow-sm", # 添加卡片样式
           style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
