@@ -1333,6 +1333,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
     tracking_number <- input$intl_tracking_number
@@ -1379,6 +1380,37 @@ server <- function(input, output, session) {
     })
   })
   
+  # 删除运单号逻辑
+  observeEvent(input$delete_tracking_btn, {
+    selected_rows <- unique_items_table_logistics_selected_row()
+    
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选择需要删除运单号的物品！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      selected_items <- unique_items_data()[selected_rows, ]
+      
+      # 删除运单号
+      lapply(selected_items$UniqueID, function(unique_id) {
+        dbExecute(
+          con,
+          "UPDATE unique_items 
+         SET IntlAirTracking = NULL, IntlSeaTracking = NULL 
+         WHERE UniqueID = ?",
+          params = list(unique_id)
+        )
+      })
+      
+      # 刷新数据
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      showNotification("运单号已成功删除！", type = "message")
+      
+    }, error = function(e) {
+      showNotification(paste("删除运单号失败：", e$message), type = "error")
+    })
+  })
   
   
   ################################################################
