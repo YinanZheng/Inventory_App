@@ -762,7 +762,14 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################# ###############################
   
-  # 初始化箱子内物品
+  # 初始化货架和箱子内物品
+  shelf_items <- reactiveVal(data.frame(
+    SKU = character(),
+    UniqueID = character(),
+    ItemName = character(),
+    stringsAsFactors = FALSE
+  ))
+  
   box_items <- reactiveVal(data.frame(
     SKU = character(),
     UniqueID = character(),
@@ -770,16 +777,14 @@ server <- function(input, output, session) {
     stringsAsFactors = FALSE
   ))
   
+  # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
-    
-    # 检查 SKU 是否为空
     if (is.null(sku) || sku == "") {
       showNotification("请输入有效的 SKU！", type = "error")
       return()
     }
     
-    # 获取货架物品
     tryCatch({
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
@@ -809,43 +814,23 @@ server <- function(input, output, session) {
     })
   })
   
-  # 动态获取货架上的物品
-  shelf_items <- reactive({
-    req(input$sold_sku_input)  # 如果输入为空，则不会触发
-    
-    # 从 unique_items_data 获取符合条件的物品
-    all_shelf_items <- unique_items_data() %>%
-      filter(SKU == trimws(input$sold_sku_input), Status == "国内入库", Defect != "瑕疵")
-    
-    # 从箱子中获取当前 SKU 的物品数量
-    box_data <- box_items()
-    box_sku_count <- sum(box_data$SKU == trimws(input$sold_sku_input))
-    
-    # 扣除已在箱子中的物品
-    if (box_sku_count > 0) {
-      all_shelf_items <- all_shelf_items %>%
-        slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
-    }
-    
-    return(all_shelf_items)
-  })
-  
+  # 渲染货架上的物品
   output$shelf_table <- renderDataTable({
     shelf_data <- shelf_items()
     
     if (nrow(shelf_data) == 0) {
-      return(NULL)  # 如果货架上无物品，则显示空表
+      return(NULL)  # 如果货架无物品，则显示空表
     }
     
     datatable(
-      shelf_data %>%
-        select(UniqueID, SKU, ItemName),  # 显示货架上的必要信息
+      shelf_data,
       options = list(pageLength = 5, scrollX = TRUE),
       selection = "single",  # 单选模式
       rownames = FALSE
     )
   })
   
+  # 渲染箱子内的物品
   output$box_table <- renderDataTable({
     box_data <- box_items()
     
@@ -861,6 +846,7 @@ server <- function(input, output, session) {
     )
   })
   
+  # 点击货架物品，移入箱子
   observeEvent(input$shelf_table_rows_selected, {
     selected_row <- input$shelf_table_rows_selected
     shelf_data <- shelf_items()
@@ -872,10 +858,15 @@ server <- function(input, output, session) {
       current_box <- box_items()
       box_items(bind_rows(current_box, selected_item))
       
+      # 更新货架上的物品，移除已选的
+      updated_shelf <- shelf_data[-selected_row, ]
+      shelf_items(updated_shelf)
+      
       showNotification("物品已移入箱子！", type = "message")
     }
   })
   
+  # 点击箱子物品，还回货架
   observeEvent(input$box_table_rows_selected, {
     selected_row <- input$box_table_rows_selected
     box_data <- box_items()
@@ -883,13 +874,25 @@ server <- function(input, output, session) {
     if (!is.null(selected_row) && nrow(box_data) >= selected_row) {
       selected_item <- box_data[selected_row, ]  # 获取选中的物品
       
-      # 更新箱子内容
+      # 更新货架内容
+      current_shelf <- shelf_items()
+      shelf_items(bind_rows(current_shelf, selected_item))
+      
+      # 更新箱子内的物品，移除已选的
       updated_box <- box_data[-selected_row, ]
       box_items(updated_box)
       
       showNotification("物品已还回货架！", type = "message")
     }
   })
+  
+  # 清空箱子
+  observeEvent(input$clear_selected_items, {
+    box_items(data.frame(SKU = character(), UniqueID = character(), ItemName = character()))
+    showNotification("箱子已清空！", type = "message")
+  })
+  
+  
   
   # # 监听售出 SKU 输入
   # observeEvent(input$sold_sku, {
