@@ -1336,8 +1336,6 @@ server <- function(input, output, session) {
   # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
-    showNotification(selected_rows)
-    
     tracking_number <- input$intl_tracking_number
     shipping_method <- input$intl_shipping_method
     
@@ -1352,42 +1350,43 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
+      # 获取选中的物品
       selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
-      
-      # 调试输出选中物品的运输方式
-      print("Selected Items Shipping Method:")
-      print(selected_items$IntlShippingMethod)
-      
+
       # 检查运输方式一致性
-      if (any(is.na(selected_items$IntlShippingMethod) | selected_items$IntlShippingMethod != shipping_method)) {
+      inconsistent_methods <- selected_items %>%
+        filter(is.na(IntlShippingMethod) | IntlShippingMethod != shipping_method)
+      
+      if (nrow(inconsistent_methods) > 0) {
         showNotification("选中物品的物流方式与当前选择不符！", type = "error")
         return()
       }
       
-      # 更新运单号
-      lapply(selected_items$UniqueID, function(unique_id) {
-        params <- list(
-          ifelse(shipping_method == "空运", tracking_number, NA),
-          ifelse(shipping_method == "海运", tracking_number, NA),
-          unique_id
-        )
-        
-        # 调试输出参数
-        print("DB Update Params:")
-        print(params)
-        
+      # 准备批量更新的参数
+      update_data <- selected_items %>%
+        mutate(
+          IntlAirTracking = ifelse(shipping_method == "空运", tracking_number, NA),
+          IntlSeaTracking = ifelse(shipping_method == "海运", tracking_number, NA)
+        ) %>%
+        select(UniqueID, IntlAirTracking, IntlSeaTracking)
+      
+      # 批量更新数据库
+      dbBegin(con)
+      for (i in 1:nrow(update_data)) {
         dbExecute(
           con,
           "UPDATE unique_items SET IntlAirTracking = ?, IntlSeaTracking = ? WHERE UniqueID = ?",
-          params = params
+          params = list(update_data$IntlAirTracking[i], update_data$IntlSeaTracking[i], update_data$UniqueID[i])
         )
-      })
+      }
+      dbCommit(con)
       
       # 刷新数据
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       showNotification("运单号已成功挂靠！", type = "message")
       
     }, error = function(e) {
+      dbRollback(con)  # 如果发生错误，回滚事务
       showNotification(paste("挂靠失败：", e$message), type = "error")
     })
   })
@@ -1403,10 +1402,6 @@ server <- function(input, output, session) {
     
     tryCatch({
       selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
-      
-      # 调试输出选中项
-      print("Selected Items for Deletion:")
-      print(selected_items)
       
       # 删除运单号
       lapply(selected_items$UniqueID, function(unique_id) {
