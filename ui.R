@@ -245,22 +245,27 @@ ui <- navbarPage(
                 icon = icon("check"), 
                 class = "btn-primary", 
                 style = "font-size: 16px; width: 100%; height: 42px;"
-              ),
-              
-              tags$hr(),
-              
-              # 条形码生成下载按钮
-              tags$div(
-                class = "card",
-                style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
-                
-                tags$div(
-                  style = "display: flex; justify-content: space-between; align-items: center;",
-                  actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
-                  downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
-                )
               )
             )
+          ),
+          # 条形码生成下载按钮
+          column(12,              
+                 tags$div(
+                   class = "card",
+                   style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
+                   
+                   # 卡片标题
+                   div(
+                     style = "margin-bottom: 10px; padding-bottom: 8px;",
+                     tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                   ),
+                   
+                   tags$div(
+                     style = "display: flex; justify-content: space-between; align-items: center;",
+                     actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
+                     downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
+                   )
+                 )
           )
         )
       ),
