@@ -867,9 +867,6 @@ server <- function(input, output, session) {
       }
       
       # 清空表单内容
-      updateTextInput(session, "order_id", value = "")
-      updateTextInput(session, "tracking_number1", value = "")
-      updateTextAreaInput(session, "order_notes", value = "")
       image_sold$reset()  # 清空上传或粘贴的图片
     }, error = function(e) {
       # 错误处理
@@ -996,17 +993,6 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      # 保存订单信息到 orders 表
-      dbExecute(con, "
-      INSERT INTO orders (OrderID, UsTrackingNumber1, OrderNotes)
-      VALUES (?, ?, ?)",
-                params = list(
-                  input$order_id,
-                  input$tracking_number1,
-                  input$order_notes
-                )
-      )
-      
       # 遍历箱子内物品，减库存并更新物品状态
       lapply(1:nrow(box_items()), function(i) {
         item <- box_items()[i, ]
