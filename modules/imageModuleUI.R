@@ -1,4 +1,4 @@
-imageModuleUI <- function(id, label = "商品图片上传") {
+imageModuleUI <- function(id, label = "商品图片上传", label_color = "#007BFF") {
   ns <- NS(id)
   
   tagList(
@@ -6,7 +6,7 @@ imageModuleUI <- function(id, label = "商品图片上传") {
     tags$div(
       class = "card",
       style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 5px;",
-      tags$h5(label, style = "margin-bottom: 15px; font-weight: bold; color: #007BFF;"),
+      tags$h5(label, style = sprintf("margin-bottom: 15px; font-weight: bold; color: %s;", label_color)),
       
       # 粘贴区域
       tags$div(

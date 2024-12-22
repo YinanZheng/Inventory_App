@@ -383,7 +383,7 @@ ui <- navbarPage(
           tags$h4("订单登记", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           textInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
-          imageModuleUI("image_sold", label = "订单图片上传"),
+          imageModuleUI("image_sold", label = "订单图片上传", label_color = "#28A745"),
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
           actionButton(
             "register_order_btn",
