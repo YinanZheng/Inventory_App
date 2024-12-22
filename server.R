@@ -767,7 +767,7 @@ server <- function(input, output, session) {
     SKU = character(),
     UniqueID = character(),
     ItemName = character(),
-    ProductCost = numereic(),
+    ProductCost = numeric(),
     ItemImagePath = character(),
     stringsAsFactors = FALSE
   ))
@@ -776,7 +776,7 @@ server <- function(input, output, session) {
     SKU = character(),
     UniqueID = character(),
     ItemName = character(),
-    ProductCost = numereic(),
+    ProductCost = numeric(),
     ItemImagePath = character(),
     stringsAsFactors = FALSE
   ))
