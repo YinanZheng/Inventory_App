@@ -762,158 +762,134 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################# ###############################
   
-  selected_items <- reactiveVal(data.frame(
+  # 初始化箱子内物品
+  box_items <- reactiveVal(data.frame(
     SKU = character(),
+    UniqueID = character(),
     ItemName = character(),
-    Status = character(),
-    Defect = character(),
     stringsAsFactors = FALSE
   ))
   
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
-    if (is.null(sku) || sku == "") return()  # 如果输入为空，直接返回
     
+    # 检查 SKU 是否为空
+    if (is.null(sku) || sku == "") {
+      showNotification("请输入有效的 SKU！", type = "error")
+      return()
+    }
+    
+    # 获取货架物品
     tryCatch({
-      # 从 unique_items_data 获取一个具体的物品
-      item_data <- unique_items_data() %>%
+      # 从 unique_items_data 获取符合条件的货架物品
+      all_shelf_items <- unique_items_data() %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        slice(1) %>%  # 取第一个符合条件的物品
-        select(SKU, ItemName, Status, Defect)  # 确保列名匹配 selected_items 初始化
-      print(item_data)  # 打印从 unique_items_data 获取的物品数据
+        select(SKU, UniqueID, ItemName)
       
-      # 如果 item_data 为空，提示用户
-      if (nrow(item_data) == 0) {
-        showNotification("未找到符合条件的物品，可能已经售出或不存在！", type = "error")
+      if (nrow(all_shelf_items) == 0) {
+        showNotification("未找到符合条件的物品！", type = "error")
         return()
       }
       
-      updated_items <- bind_rows(selected_items(), item_data)
-      selected_items(updated_items)  # 更新 reactiveVal 数据
-
-      showNotification(paste("物品已添加到订单列表！当前已选物品数：", nrow(selected_items)), type = "message")
-      updateTextInput(session, "sold_sku_input", value = "")  # 清空输入框
+      # 从箱子中获取当前 SKU 的已选数量
+      box_data <- box_items()
+      box_sku_count <- sum(box_data$SKU == sku)
+      
+      # 扣除已移入箱子的物品
+      if (box_sku_count > 0) {
+        all_shelf_items <- all_shelf_items %>%
+          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
+      }
+      
+      # 更新货架
+      shelf_items(all_shelf_items)
+      showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
     }, error = function(e) {
-      showNotification(paste("添加物品时发生错误：", e$message), type = "error")
+      showNotification(paste("加载货架时发生错误：", e$message), type = "error")
     })
   })
   
-  
-  
-  observeEvent(unique_items_table_sold_selected_row(), {
-    selected_rows <- unique_items_table_sold_selected_row()
-    if (!is.null(selected_rows) && length(selected_rows) > 0) {
-      selected_data <- unique_items_data()[selected_rows, ]
-      # 模拟填入条形码
-      updateTextInput(session, "sold_sku_input", value = selected_data$SKU[1])
+  # 动态获取货架上的物品
+  shelf_items <- reactive({
+    req(input$sold_sku_input)  # 如果输入为空，则不会触发
+    
+    # 从 unique_items_data 获取符合条件的物品
+    all_shelf_items <- unique_items_data() %>%
+      filter(SKU == trimws(input$sold_sku_input), Status == "国内入库", Defect != "瑕疵")
+    
+    # 从箱子中获取当前 SKU 的物品数量
+    box_data <- box_items()
+    box_sku_count <- sum(box_data$SKU == trimws(input$sold_sku_input))
+    
+    # 扣除已在箱子中的物品
+    if (box_sku_count > 0) {
+      all_shelf_items <- all_shelf_items %>%
+        slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
     }
+    
+    return(all_shelf_items)
   })
   
-  
-  output$unique_items_table_sold <- renderDataTable({
+  output$shelf_table <- renderDataTable({
+    shelf_data <- shelf_items()
+    
+    if (nrow(shelf_data) == 0) {
+      return(NULL)  # 如果货架上无物品，则显示空表
+    }
+    
     datatable(
-      data.frame(selected_items()),
-      options = list(
-        pageLength = 10,
-        scrollX = TRUE
-      ),
-      selection = "multiple",  # 单选或多选模式，可改为 "multiple" 支持多选
+      shelf_data %>%
+        select(UniqueID, SKU, ItemName),  # 显示货架上的必要信息
+      options = list(pageLength = 5, scrollX = TRUE),
+      selection = "single",  # 单选模式
       rownames = FALSE
     )
   })
   
-  observeEvent(input$clear_selected_items, {
-    selected_row <- input$unique_items_table_sold_rows_selected  # 获取选中的行
-    if (is.null(selected_row) || length(selected_row) == 0) {
-      showNotification("请先选择要删除的物品！", type = "warning")
-      return()
+  output$box_table <- renderDataTable({
+    box_data <- box_items()
+    
+    if (nrow(box_data) == 0) {
+      return(NULL)  # 如果箱子为空，则显示空表
     }
     
-    # 获取当前 selected_items 数据
-    current_data <- selected_items()
-    print(current_data)  # 调试：打印当前数据
-    
-    # 删除选中的行
-    updated_data <- current_data[-selected_row, ]
-    selected_items(updated_data)  # 更新 selected_items
-    
-    # 通知用户
-    showNotification("已删除选中物品！", type = "message")
+    datatable(
+      box_data,
+      options = list(pageLength = 5, scrollX = TRUE),
+      selection = "single",  # 单选模式
+      rownames = FALSE
+    )
   })
   
-  
-  observeEvent(input$confirm_order_btn, {
-    if (is.null(input$order_id) || nrow(selected_items()) == 0) {
-      showNotification("订单号或物品列表不能为空！", type = "error")
-      return()
+  observeEvent(input$shelf_table_rows_selected, {
+    selected_row <- input$shelf_table_rows_selected
+    shelf_data <- shelf_items()
+    
+    if (!is.null(selected_row) && nrow(shelf_data) >= selected_row) {
+      selected_item <- shelf_data[selected_row, ]  # 获取选中的物品
+      
+      # 更新箱子内容
+      current_box <- box_items()
+      box_items(bind_rows(current_box, selected_item))
+      
+      showNotification("物品已移入箱子！", type = "message")
     }
-    
-    tryCatch({
-      # 保存订单信息到 orders 表
-      dbExecute(con, "
-      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderImagePath, OrderNotes)
-      VALUES (?, ?, ?, ?, ?, ?)",
-                params = list(
-                  input$order_id,
-                  input$tracking_number1,
-                  input$tracking_number2,
-                  input$tracking_number3,
-                  input$order_image$datapath,
-                  input$order_notes
-                )
-      )
-      
-      # 更新物品状态、运输方式和订单号
-      lapply(1:nrow(selected_items()), function(i) {
-        item <- selected_items()[i, ]
-        
-        # 更新物品状态
-        handleOperation(
-          operation_name = "售出",
-          sku_input = item$SKU,
-          output_name = "sold_item_info",
-          query_status = "国内入库",
-          update_status_value = "国内售出",
-          count_label = "可售出数",
-          count_field = "AvailableForSold",
-          con = con,
-          output = output,
-          refresh_trigger = unique_items_data_refresh_trigger,
-          session = session,
-          input = input
-        )
-        
-        # 更新订单号和运输方式到 unique_items 表
-        dbExecute(con, "
-        UPDATE unique_items 
-        SET OrderID = ?, IntlShippingMethod = ? 
-        WHERE UniqueID = ?",
-                  params = list(input$order_id, input$sold_shipping_method, item$UniqueID)
-        )
-        
-        # 调整库存
-        adjust_inventory(
-          con = con,
-          sku = item$SKU,
-          adjustment = -1
-        )
-      })
-      
-      # 刷新 inventory 数据
-      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      
-      # 清空已选物品和订单表单
-      selected_items(data.frame())
-      updateTextInput(session, "order_id", value = "")
-      updateTextAreaInput(session, "order_notes", value = "")
-      updateFileInput(session, "order_image", value = NULL)
-      
-      showNotification("订单已成功保存并更新库存！", type = "message")
-    }, error = function(e) {
-      showNotification(paste("操作失败：", e$message), type = "error")
-    })
   })
   
+  observeEvent(input$box_table_rows_selected, {
+    selected_row <- input$box_table_rows_selected
+    box_data <- box_items()
+    
+    if (!is.null(selected_row) && nrow(box_data) >= selected_row) {
+      selected_item <- box_data[selected_row, ]  # 获取选中的物品
+      
+      # 更新箱子内容
+      updated_box <- box_data[-selected_row, ]
+      box_items(updated_box)
+      
+      showNotification("物品已还回货架！", type = "message")
+    }
+  })
   
   # # 监听售出 SKU 输入
   # observeEvent(input$sold_sku, {
