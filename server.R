@@ -223,6 +223,18 @@ server <- function(input, output, session) {
     data
   })
   
+  # 根据物流方式筛选物品数据
+  filtered_unique_items_data_logistics <- reactive({
+    data <- unique_items_data()
+    shipping_method <- input$intl_shipping_method 
+    
+    if (!is.null(shipping_method) && shipping_method != "全部") {
+      data <- data %>% filter(IntlShippingMethod == shipping_method)
+    }
+    
+    data
+  })
+  
   # 下载页过滤
   filtered_unique_items_data_download <- reactive({
     filter_unique_items_data_by_inputs(
@@ -286,7 +298,7 @@ server <- function(input, output, session) {
       IntlAirTracking = "国际空运单号",
       IntlSeaTracking = "国际海运单号"
     )),
-    data = unique_items_data
+    data = filtered_unique_items_data_logistics
   )
   
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
