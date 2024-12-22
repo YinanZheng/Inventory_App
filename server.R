@@ -784,6 +784,36 @@ server <- function(input, output, session) {
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
   
+  # 在输入订单号时检查订单信息并填充
+  observeEvent(input$order_id, {
+    # 检查订单号是否为空
+    req(input$order_id)  # 如果订单号为空，停止执行
+    
+    tryCatch({
+      # 查询订单信息
+      existing_order <- dbGetQuery(con, "
+      SELECT UsTrackingNumber1, OrderNotes 
+      FROM orders 
+      WHERE OrderID = ?", 
+                                   params = list(input$order_id)
+      )
+      
+      # 如果订单存在，填充对应字段
+      if (nrow(existing_order) > 0) {
+        showNotification("已找到订单信息！字段已自动填充。", type = "message")
+        updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
+        updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
+      } else {
+        showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
+        updateTextInput(session, "tracking_number1", value = "")
+        updateTextAreaInput(session, "order_notes", value = "")
+      }
+    }, error = function(e) {
+      showNotification(paste("检查订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  # 登记订单逻辑
   observeEvent(input$register_order_btn, {
     # 检查订单号是否为空
     if (is.null(input$order_id) || input$order_id == "") {
@@ -843,7 +873,6 @@ server <- function(input, output, session) {
       showNotification(paste("登记订单时发生错误：", e$message), type = "error")
     })
   })
-  
 
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku_input, {

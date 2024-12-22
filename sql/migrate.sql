@@ -52,6 +52,7 @@ SELECT * FROM item_type_data;
  
 --
 USE inventory_system;
+SELECT * FROM orders;
 SELECT * FROM inventory;
 SELECT * FROM unique_items;
 SELECT * FROM maker_list;
