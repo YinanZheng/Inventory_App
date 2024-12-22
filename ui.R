@@ -247,10 +247,12 @@ ui <- navbarPage(
                 style = "font-size: 16px; width: 100%; height: 42px;"
               )
             )
-          ),
+          )
+        ),
           
-          tags$hr(), # 分隔线
-          
+        tags$hr(), # 分隔线
+        
+        fluidRow( 
           # 条形码生成下载按钮
           column(12,              
                  tags$div(
@@ -272,6 +274,7 @@ ui <- navbarPage(
           )
         )
       ),
+      
       div(
         class = "main-panel",
         
