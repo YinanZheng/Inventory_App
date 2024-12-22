@@ -296,7 +296,7 @@ server <- function(input, output, session) {
                                                        PurchaseTime = "采购日期",
                                                        DomesticSoldTime = "售出日期",
                                                        OrderID = "订单号")
-                                                     ), data = filtered_unique_items_data_purchase)
+                                                     ), data = filtered_unique_items_data_sold)
   
   # 国际物流管理分页逻辑
   unique_items_table_logistics_selected_row <- callModule(
