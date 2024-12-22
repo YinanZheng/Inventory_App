@@ -1352,6 +1352,8 @@ server <- function(input, output, session) {
     tryCatch({
       selected_items <- unique_items_data()[selected_rows, ]
       
+      showNotification(selected_items$IntlShippingMethod[1])
+      
       # 检查运输方式一致性
       if (any(selected_items$IntlShippingMethod != shipping_method)) {
         showNotification("选择的物品与指定运输方式不一致！", type = "error")
