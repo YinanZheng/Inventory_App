@@ -1334,6 +1334,7 @@ server <- function(input, output, session) {
   ################################################################
   
   # 挂靠运单号逻辑
+  # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
     tracking_number <- input$intl_tracking_number
@@ -1352,24 +1353,32 @@ server <- function(input, output, session) {
     tryCatch({
       selected_items <- unique_items_data()[selected_rows, ]
       
-      showNotification(selected_items$IntlShippingMethod[1])
+      # 调试输出选中物品的运输方式
+      print("Selected Items Shipping Method:")
+      print(selected_items$IntlShippingMethod)
       
       # 检查运输方式一致性
-      if (any(selected_items$IntlShippingMethod != shipping_method)) {
-        showNotification("选择的物品与指定运输方式不一致！", type = "error")
+      if (any(is.na(selected_items$IntlShippingMethod) | selected_items$IntlShippingMethod != shipping_method)) {
+        showNotification("选中物品的物流方式与当前选择不符！", type = "error")
         return()
       }
       
       # 更新运单号
       lapply(selected_items$UniqueID, function(unique_id) {
+        params <- list(
+          ifelse(shipping_method == "空运", tracking_number, NA),
+          ifelse(shipping_method == "海运", tracking_number, NA),
+          unique_id
+        )
+        
+        # 调试输出参数
+        print("DB Update Params:")
+        print(params)
+        
         dbExecute(
           con,
           "UPDATE unique_items SET IntlAirTracking = ?, IntlSeaTracking = ? WHERE UniqueID = ?",
-          params = list(
-            ifelse(shipping_method == "空运", tracking_number, NULL),
-            ifelse(shipping_method == "海运", tracking_number, NULL),
-            unique_id
-          )
+          params = params
         )
       })
       
@@ -1383,6 +1392,7 @@ server <- function(input, output, session) {
   })
   
   # 删除运单号逻辑
+  # 删除运单号逻辑
   observeEvent(input$delete_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
     
@@ -1393,6 +1403,10 @@ server <- function(input, output, session) {
     
     tryCatch({
       selected_items <- unique_items_data()[selected_rows, ]
+      
+      # 调试输出选中项
+      print("Selected Items for Deletion:")
+      print(selected_items)
       
       # 删除运单号
       lapply(selected_items$UniqueID, function(unique_id) {
