@@ -1352,7 +1352,7 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      selected_items <- unique_items_data()[selected_rows, ]
+      selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
       
       # 调试输出选中物品的运输方式
       print("Selected Items Shipping Method:")
@@ -1402,7 +1402,7 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      selected_items <- unique_items_data()[selected_rows, ]
+      selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
       
       # 调试输出选中项
       print("Selected Items for Deletion:")
