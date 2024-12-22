@@ -366,7 +366,7 @@ ui <- navbarPage(
         fluidRow(
           column(6, 
                  selectizeInput("sold_maker", "供应商:", choices = NULL, width = "100%",
-                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500)),
+                                options = list(placeholder = '供应商名称(或拼音)...', maxOptions = 500)),
                  class = "custom-selectize" # 自定义 class
           ),
           column(6, selectizeInput(
@@ -374,7 +374,7 @@ ui <- navbarPage(
             label = "商品名:",         
             choices = NULL,            
             options = list(
-              placeholder = "请输入商品名...",
+              placeholder = "商品名...",
               create = TRUE            # 允许自定义输入值
             ),
             width = "100%"
