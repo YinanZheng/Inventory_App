@@ -590,7 +590,7 @@ ui <- navbarPage(
         uniqueItemsTableUI("unique_items_table_logistics")
       )
     )
-  ),
+  ), # end of 国际物流管理 tab
   
   
   

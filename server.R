@@ -274,6 +274,19 @@ server <- function(input, output, session) {
                                                        OrderID = "订单号")
                                                      ), data = unique_items_data)
   
+  # 国际物流管理分页逻辑
+  unique_items_table_logistics_selected_row <- callModule(
+    uniqueItemsTableServer,
+    "unique_items_table_logistics",
+    column_mapping = c(common_columns, list(
+      IntlShippingMethod = "国际运输",
+      PurchaseTime = "采购日期",
+      IntlAirTracking = "国际空运单号",
+      IntlSeaTracking = "国际海运单号"
+    )),
+    data = unique_items_data
+  )
+  
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
                                                          column_mapping <- c(common_columns, list(
                                                            PurchaseTime = "采购日期",
@@ -1296,6 +1309,60 @@ server <- function(input, output, session) {
       updateTextInput(session, "defect_sku", value = selected_sku)
       updateTextInput(session, "repair_sku", value = selected_sku)
     }
+  })
+  
+  
+  
+  ################################################################
+  ##                                                            ##
+  ## 国际物流管理分页                                           ##
+  ##                                                            ##
+  ################################################################
+  
+  observeEvent(input$link_tracking_btn, {
+    selected_rows <- unique_items_table_logistics_selected_row()
+    tracking_number <- input$intl_tracking_number
+    shipping_method <- input$intl_shipping_method
+    
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选择物品！", type = "error")
+      return()
+    }
+    
+    if (is.null(tracking_number) || tracking_number == "") {
+      showNotification("运单号不能为空！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      selected_items <- unique_items_data()[selected_rows, ]
+      
+      # 检查运输方式一致性
+      if (any(selected_items$IntlShippingMethod != shipping_method)) {
+        showNotification("选择的物品与指定运输方式不一致！", type = "error")
+        return()
+      }
+      
+      # 更新运单号
+      lapply(selected_items$UniqueID, function(unique_id) {
+        dbExecute(
+          con,
+          "UPDATE unique_items SET IntlAirTracking = ?, IntlSeaTracking = ? WHERE UniqueID = ?",
+          params = list(
+            ifelse(shipping_method == "空运", tracking_number, NULL),
+            ifelse(shipping_method == "海运", tracking_number, NULL),
+            unique_id
+          )
+        )
+      })
+      
+      # 刷新数据
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      showNotification("运单号已成功挂靠！", type = "message")
+      
+    }, error = function(e) {
+      showNotification(paste("挂靠失败：", e$message), type = "error")
+    })
   })
   
   
