@@ -792,7 +792,7 @@ server <- function(input, output, session) {
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost)
+        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath)
       
       if (nrow(all_shelf_items) == 0) {
         showNotification("未找到符合条件的物品！", type = "error")
