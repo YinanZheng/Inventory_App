@@ -863,8 +863,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku, {
     sku <- trimws(input$sold_sku)  # 清理条形码输入空格
@@ -1863,9 +1861,6 @@ server <- function(input, output, session) {
         ProductCost = "单价",
         DomesticShippingCost = "平摊运费",
         PurchaseTime = "采购日期",
-        DomesticEntryTime = "入库日期",
-        DomesticExitTime = "出库日期",
-        DomesticSoldTime = "售出日期",
         Status = "库存状态",
         Defect = "物品状态"
       ))

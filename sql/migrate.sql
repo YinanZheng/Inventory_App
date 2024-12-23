@@ -87,3 +87,16 @@ DROP TABLE item_type_data;
 
 
 
+DELETE FROM orders
+WHERE OrderID = '12345';
+123456
+1111111
+
+UPDATE orders
+SET OrderImagePath = "/var/www/images/1554_20241223145900.jpg"
+WHERE OrderID = "1554";
+
+
+UPDATE unique_items
+SET OrderID = "1554"
+WHERE SKU = "AA-H5-8CF0";
