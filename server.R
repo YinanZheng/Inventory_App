@@ -1865,37 +1865,53 @@ server <- function(input, output, session) {
         Defect = "物品状态"
       ))
       
-      data <- data %>%
-        group_by(`条形码`, `采购日期`) %>%
+      # 按 SKU 计算全局库存统计
+      sku_inventory_stats <- data %>%
+        group_by(`条形码`) %>%
         summarize(
-          `商品名` = first(`商品名`),  # 保留商品名等信息
-          `供应商` = first(`供应商`),
-          `大类` = first(`大类`),
-          `小类` = first(`小类`),
-          `单价` = mean(`单价`, na.rm = TRUE),  # 平均单价
-          `平摊运费` = mean(`平摊运费`, na.rm = TRUE),  # 平均运费
-          数量 = n(),  # 统计每组的记录数
           总剩余库存数 = sum(`库存状态` %in% c("国内入库", "国内出库", "美国入库")),
           国内库存数 = sum(`库存状态` == "国内入库"),
           在途库存数 = sum(`库存状态` == "国内出库"),
-          美国库存数 = sum(`库存状态` == "美国入库")
-        ) %>%
-        ungroup()
+          美国库存数 = sum(`库存状态` == "美国入库"),
+          无瑕 = sum(`物品状态` == "无瑕"),
+          瑕疵 = sum(`物品状态` == "瑕疵"),
+          修复 = sum(`物品状态` == "修复"),
+          .groups = "drop"
+        )
       
-      n_col <- ncol(data)
+      # 按条形码和采购日期分组，统计其他信息
+      grouped_data <- data %>%
+        group_by(`条形码`, `采购日期`) %>%
+        summarize(
+          商品名 = first(`商品名`),
+          商品图片 = first(`商品图片`),
+          供应商 = first(`供应商`),
+          大类 = first(`大类`),
+          小类 = first(`小类`),
+          批次单价 = mean(`单价`, na.rm = TRUE),
+          批次平摊运费 = mean(`平摊运费`, na.rm = TRUE),
+          批次采购数 = n(),  # 记录数
+          .groups = "drop"
+        )
+      
+      # 合并全局统计到分组数据
+      final_data <- grouped_data %>%
+        left_join(sku_inventory_stats, by = "条形码")
+      
+      n_col <- ncol(final_data)
       
       # 写入数据到 Excel
-      writeData(wb, "物品明细表", data, startCol = 1, startRow = 1)
+      writeData(wb, "物品明细表", final_data, startCol = 1, startRow = 1)
       
       # 图片插入的列号
-      col_to_insert <- 3      
+      col_to_insert <- 4      
       
       # 设置固定高度 1 inch，计算动态宽度
       image_height <- 1
       
       # 插入图片到 Excel
-      for (i in seq_len(nrow(data))) {
-        image_path <- data[i, col_to_insert]
+      for (i in seq_len(nrow(final_data))) {
+        image_path <- final_data[i, col_to_insert]
         image_width_max <- 1
         if (!is.na(image_path) && file.exists(image_path)) {
           
