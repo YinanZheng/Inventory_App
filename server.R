@@ -860,6 +860,16 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
   })
   
+  # 监听选中行并更新 SKU
+  observeEvent(unique_items_table_sold_selected_row(), {
+    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+      selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
+      updateSelectInput(session, "sold_maker", selected = selected_data$Maker)
+      updateTextInput(session, "sold_name", value = selected_data$ItemName)
+      updateTextInput(session, "sold_sku_input", value = selected_sku)
+    }
+  })
+  
     # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
@@ -1120,13 +1130,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # 监听选中行并更新 SKU
-  observeEvent(unique_items_table_sold_selected_row(), {
-    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_sku <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "sold_sku_input", value = selected_sku)
-    }
-  })
+
   
   
   
