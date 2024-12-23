@@ -1851,19 +1851,23 @@ server <- function(input, output, session) {
       data <- filtered_unique_items_data_download()
       req(!is.null(data) && nrow(data) > 0)  # 确保数据非空
       
-      data <- map_column_names(data, column_mapping = list(
-        SKU = "条形码",
-        ItemName = "商品名",
-        ItemImagePath = "商品图片",
-        Maker = "供应商",
-        MajorType = "大类",
-        MinorType = "小类",
-        ProductCost = "单价",
-        DomesticShippingCost = "平摊运费",
-        PurchaseTime = "采购日期",
-        Status = "库存状态",
-        Defect = "物品状态"
-      ))
+      data <- data %>%
+        group_by(SKU, PurchaseTime) %>%  # 按 SKU 和采购日期分组
+        summarize(
+          ItemName = first(ItemName),  # 保留商品名等信息
+          Maker = first(Maker),
+          MajorType = first(MajorType),
+          MinorType = first(MinorType),
+          ProductCost = mean(ProductCost, na.rm = TRUE),  # 平均单价
+          DomesticShippingCost = mean(DomesticShippingCost, na.rm = TRUE),  # 平均运费
+          
+          # 统计四列全局库存数
+          总剩余库存数 = sum(Status %in% c("国内入库", "国内出库", "美国入库")),
+          国内库存数 = sum(Status == "国内入库"),
+          在途库存数 = sum(Status == "国内出库"),
+          美国库存数 = sum(Status == "美国入库")
+        ) %>%
+        ungroup()  # 解除分组
       
       n_col <- ncol(data)
       
