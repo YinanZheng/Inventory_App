@@ -815,10 +815,6 @@ server <- function(input, output, session) {
     }
     
     update_maker_choices(session, "sold_maker", makers_df)
-    
-    # 加载商品名称（初始时为空选项）
-    item_names <- c("")  # 仅包含空选项
-    updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
   })
   
   # 监听供应商选择变化并动态更新商品名称
