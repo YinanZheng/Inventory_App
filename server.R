@@ -1092,18 +1092,18 @@ server <- function(input, output, session) {
         }
         
         # 更新 unique_items 表中的状态和订单号
-        dbExecute(con, "
-        UPDATE unique_items 
-        SET Status = '国内售出', OrderID = ?, IntlShippingMethod = ?
-        WHERE UniqueID = ?",
-                  params = list(input$order_id, input$sold_shipping_method, item$UniqueID)
+        update_status(
+          con = con,
+          unique_id = item$UniqueID,
+          new_status = "国内售出",
+          shipping_method = input$sold_shipping_method,
+          refresh_trigger = unique_items_data_refresh_trigger
         )
       })
       
       # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-      
+
       showNotification("订单已完成售出并更新状态！", type = "message")
       
       # 清空箱子
