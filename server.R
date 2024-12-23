@@ -855,8 +855,7 @@ server <- function(input, output, session) {
   # 清空输入
   observeEvent(input$sold_reset_btn, {
     tryCatch({
-      # 清空输入控件
-      updateTextInput(session, "sold_maker", value = "")
+      update_maker_choices(session, "sold_maker", makers_df())
       updateTextInput(session, "sold_name", value = "")
       updateTextInput(session, "sold_sku", value = "")
 
