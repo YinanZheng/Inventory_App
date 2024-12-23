@@ -1110,14 +1110,8 @@ server <- function(input, output, session) {
       showNotification("订单已完成售出并更新状态！", type = "message")
       
       # 清空箱子和订单信息
-      box_items(data.frame(
-        SKU = character(),
-        UniqueID = character(),
-        ItemName = character(),
-        ProductCost = numeric(),
-        ItemImagePath = character(),
-        stringsAsFactors = FALSE
-      ))
+      box_items(create_empty_shelf_box())
+      
       updateTextInput(session, "order_id", value = "")
       updateTextInput(session, "tracking_number1", value = "")
       updateTextAreaInput(session, "order_notes", value = "")
