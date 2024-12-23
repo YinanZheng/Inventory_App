@@ -811,15 +811,22 @@ ui <- navbarPage(
           )
         ),
         
+        # 采购日期筛选
+        dateRangeInput(
+          inputId = "download_date_range",
+          label = "选择采购日期范围:",
+          start = Sys.Date() - 30, # 默认最近30天
+          end = Sys.Date(),        # 默认结束日期为今天
+          format = "yyyy-mm-dd",   # 日期格式
+          separator = " 至 "
+        ),
+        
         actionButton("download_reset_filters", "重置筛选", class = "btn-secondary"),
         
         tags$hr(),
         
-        downloadButton("download_unique_items_xlsx", "下载物品明细 (Excel)", 
-                       class = "btn-primary", style = "width: 100%;"),
-        
-        downloadButton("download_inventory_xlsx", "下载库存表 (Excel)", 
-                       class = "btn-primary", style = "width: 100%; margin-top: 10px;")      
+        downloadButton("download_unique_items_xlsx", "下载物品明细表 (Excel)", 
+                       class = "btn-primary", style = "width: 100%;")
         
       ),
       div(

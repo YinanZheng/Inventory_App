@@ -801,7 +801,7 @@ clean_untracked_images <- function() {
 }
 
 # 从输入数据中筛选数据
-filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item_name_input_id) {
+filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item_name_input_id, date_range_input_id = NULL) {
   req(data)  # 确保数据不为空
   
   # 按供应商筛选
@@ -814,8 +814,15 @@ filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item
     data <- data %>% filter(ItemName == input[[item_name_input_id]])
   }
   
+  # 按采购日期筛选
+  if (!is.null(date_range_input_id) && !is.null(input[[date_range_input_id]]) && length(input[[date_range_input_id]]) == 2) {
+    date_range <- as.Date(input[[date_range_input_id]])
+    data <- data %>% filter(as.Date(PurchaseTime) >= date_range[1], as.Date(PurchaseTime) <= date_range[2])
+  }
+  
   data
 }
+
 
 adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NULL, 
                              minor_type = NULL, item_name = NULL, quantity = NULL, 

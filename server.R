@@ -251,7 +251,8 @@ server <- function(input, output, session) {
       data = unique_items_data(),
       input = input,
       maker_input_id = "download_maker",
-      item_name_input_id = "download_item_name"
+      item_name_input_id = "download_item_name",
+      date_range_input_id = "download_date_range"
     )
   })
   
@@ -298,18 +299,14 @@ server <- function(input, output, session) {
                                                        OrderID = "订单号")
                                                      ), data = filtered_unique_items_data_sold)
   
-  # 国际物流管理分页逻辑
-  unique_items_table_logistics_selected_row <- callModule(
-    uniqueItemsTableServer,
-    "unique_items_table_logistics",
-    column_mapping = c(common_columns, list(
-      IntlShippingMethod = "国际运输",
-      PurchaseTime = "采购日期",
-      IntlAirTracking = "国际空运单号",
-      IntlSeaTracking = "国际海运单号"
-    )), selection = "multiple",
-    data = filtered_unique_items_data_logistics
-  )
+  unique_items_table_logistics_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_logistics",
+                                                          column_mapping = c(common_columns, list(
+                                                            IntlShippingMethod = "国际运输",
+                                                            PurchaseTime = "采购日期",
+                                                            IntlAirTracking = "国际空运单号",
+                                                            IntlSeaTracking = "国际海运单号"
+                                                          )), selection = "multiple",
+                                                          data = filtered_unique_items_data_logistics)
   
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
                                                          column_mapping <- c(common_columns, list(
