@@ -850,7 +850,7 @@ server <- function(input, output, session) {
       shinyjs::delay(300, {  # 延迟 300 毫秒
         updateTextInput(session, "sold_name", value = selected_data$ItemName)
       })
-      updateTextInput(session, "sold_sku_input", value = selected_data$SKU)
+      updateTextInput(session, "sold_sku", value = selected_data$SKU)
     }
   })
   
@@ -859,20 +859,18 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       updateSelectInput(session, "sold_maker", selected = "")
-      shinyjs::delay(300, {  # 延迟 300 毫秒
-        updateTextInput(session, "sold_name", selected = "")
-      })
+      updateTextInput(session, "sold_name", selected = "")
       updateTextInput(session, "sold_sku", value = "")
 
-      showNotification("筛选条件已清空！", type = "message")
+      showNotification("筛选条件已重置！", type = "message")
     }, error = function(e) {
-      showNotification("清空输入时发生错误，请重试！", type = "error")
+      showNotification("重置输入时发生错误，请重试！", type = "error")
     })
   })
   
   # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input$sold_sku_input, {
-    sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
+  observeEvent(input$sold_sku, {
+    sku <- trimws(input$sold_sku)  # 清理条形码输入空格
     if (is.null(sku) || sku == "") {
       return()
     }
@@ -1123,7 +1121,7 @@ server <- function(input, output, session) {
       updateTextInput(session, "order_id", value = "")
       updateTextInput(session, "tracking_number1", value = "")
       updateTextAreaInput(session, "order_notes", value = "")
-      updateTextInput(session, "sold_sku_input", value = "")
+      updateTextInput(session, "sold_sku", value = "")
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
