@@ -583,7 +583,7 @@ server <- function(input, output, session) {
       shinyjs::delay(300, {  # 延迟 300 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateSelectInput(session, "new_name", value = selected_data$ItemName)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
@@ -603,7 +603,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
-      updateSelectInput(session, "new_name", value = selected_data$ItemName)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
