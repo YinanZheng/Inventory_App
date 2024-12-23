@@ -785,8 +785,8 @@ ui <- navbarPage(
         class = "sticky-sidebar",  # sticky 侧边栏
         
         div(
-          class = "card",
-          style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          class = "card shadow-sm", # 添加卡片样式
+          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
           
           tags$h4("表格筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           
