@@ -860,6 +860,43 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
   })
   
+    # 响应输入或扫描的 SKU，更新货架上的物品
+  observeEvent(input$sold_sku_input, {
+    sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
+    if (is.null(sku) || sku == "") {
+      return()
+    }
+    
+    tryCatch({
+      # 从 unique_items_data 获取符合条件的货架物品
+      all_shelf_items <- unique_items_data() %>%
+        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
+        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
+        arrange(ProductCost)  # 按单价从低到高排序
+      
+      if (nrow(all_shelf_items) == 0) {
+        showNotification("未找到符合条件的物品！", type = "error")
+        return()
+      }
+      
+      # 从箱子中获取当前 SKU 的已选数量
+      box_data <- box_items()
+      box_sku_count <- sum(box_data$SKU == sku)
+      
+      # 扣除已移入箱子的物品
+      if (box_sku_count > 0) {
+        all_shelf_items <- all_shelf_items %>%
+          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
+      }
+      
+      # 更新货架
+      shelf_items(all_shelf_items)
+      showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
+    }, error = function(e) {
+      showNotification(paste("加载货架时发生错误：", e$message), type = "error")
+    })
+  })
+  
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
   
@@ -950,43 +987,7 @@ server <- function(input, output, session) {
     })
   })
 
-  # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input$sold_sku_input, {
-    sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
-    if (is.null(sku) || sku == "") {
-      return()
-    }
-    
-    tryCatch({
-      # 从 unique_items_data 获取符合条件的货架物品
-      all_shelf_items <- unique_items_data() %>%
-        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
-        arrange(ProductCost)  # 按单价从低到高排序
-      
-      if (nrow(all_shelf_items) == 0) {
-        showNotification("未找到符合条件的物品！", type = "error")
-        return()
-      }
-      
-      # 从箱子中获取当前 SKU 的已选数量
-      box_data <- box_items()
-      box_sku_count <- sum(box_data$SKU == sku)
-      
-      # 扣除已移入箱子的物品
-      if (box_sku_count > 0) {
-        all_shelf_items <- all_shelf_items %>%
-          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
-      }
-      
-      # 更新货架
-      shelf_items(all_shelf_items)
-      showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
-    }, error = function(e) {
-      showNotification(paste("加载货架时发生错误：", e$message), type = "error")
-    })
-  })
-  
+
   # 渲染货架
   output$shelf_table <- renderDT({
     render_table_with_images(shelf_items(), 
