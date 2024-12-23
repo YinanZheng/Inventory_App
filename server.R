@@ -1904,7 +1904,7 @@ server <- function(input, output, session) {
       writeData(wb, "物品明细表", final_data, startCol = 1, startRow = 1)
       
       # 图片插入的列号
-      col_to_insert <- 4      
+      col_to_insert <- which(colnames(final_data) == "商品图片")      
       
       # 设置固定高度 1 inch，计算动态宽度
       image_height <- 1
