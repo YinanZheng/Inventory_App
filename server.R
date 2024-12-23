@@ -803,17 +803,20 @@ server <- function(input, output, session) {
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
   
-  # 初始化供应商筛选选项
-  observe({
+  # 缓存 makers_df
+  makers_df <- reactive({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     
     if (!is.null(makers) && length(makers) > 0) {
-      makers_df <- data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
+      data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
         mutate(Pinyin = remove_tone(stri_trans_general(Maker, "Latin")))
     } else {
-      makers_df <- data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+      data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
     }
-    
+  })
+  
+  # 初始化供应商筛选选项
+  observe({
     update_maker_choices(session, "sold_maker", makers_df)
   })
   
@@ -854,7 +857,7 @@ server <- function(input, output, session) {
   observeEvent(input$sold_reset_btn, {
     tryCatch({
       # 清空输入控件
-      updateSelectInput(session, "sold_maker", selected = "")
+      update_maker_choices(session, "sold_maker", makers_df)
       shinyjs::delay(300, {  # 延迟 300 毫秒
         updateTextInput(session, "sold_name", value = "")
       })
