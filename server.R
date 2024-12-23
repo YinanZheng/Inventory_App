@@ -866,7 +866,7 @@ server <- function(input, output, session) {
       selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
       updateSelectInput(session, "sold_maker", selected = selected_data$Maker)
       updateTextInput(session, "sold_name", value = selected_data$ItemName)
-      updateTextInput(session, "sold_sku_input", value = selected_sku)
+      updateTextInput(session, "sold_sku_input", value = selected_data$SKU)
     }
   })
   
