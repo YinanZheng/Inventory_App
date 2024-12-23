@@ -815,9 +815,8 @@ server <- function(input, output, session) {
     }
   })
 
-  # 初始化供应商筛选选项
-  observe({
-    update_maker_choices(session, "sold_maker", makers_df)
+  observeEvent(makers_df(), {
+    update_maker_choices(session, "sold_maker", makers_df())
   })
   
   # 监听供应商选择变化并动态更新商品名称
