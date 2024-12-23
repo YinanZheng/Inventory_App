@@ -854,7 +854,23 @@ server <- function(input, output, session) {
     }
   })
   
-    # 响应输入或扫描的 SKU，更新货架上的物品
+  # 清空输入
+  observeEvent(input$sold_reset_btn, {
+    tryCatch({
+      # 清空输入控件
+      updateSelectInput(session, "sold_maker", selected = "")
+      shinyjs::delay(300, {  # 延迟 300 毫秒
+        updateTextInput(session, "sold_name", selected = "")
+      })
+      updateTextInput(session, "sold_sku", value = "")
+
+      showNotification("筛选条件已清空！", type = "message")
+    }, error = function(e) {
+      showNotification("清空输入时发生错误，请重试！", type = "error")
+    })
+  })
+  
+  # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku_input, {
     sku <- trimws(input$sold_sku_input)  # 清理条形码输入空格
     if (is.null(sku) || sku == "") {
