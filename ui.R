@@ -801,7 +801,8 @@ ui <- navbarPage(
               placeholder = "请选择供应商...",
               allowEmptyOption = TRUE,
               maxItems = 10          # 限制最多选中10个
-            )
+            ),
+            width = "100%"
           ),
           
           # 商品名称筛选
@@ -814,7 +815,8 @@ ui <- navbarPage(
             options = list(          # 提供更好的交互体验
               placeholder = "请输入商品名称...",
               create = FALSE         # 不允许用户输入新值
-            )
+            ),
+            width = "100%"
           ),
           
           # 采购日期筛选
@@ -824,7 +826,8 @@ ui <- navbarPage(
             start = Sys.Date() - 30, # 默认最近30天
             end = Sys.Date(),        # 默认结束日期为今天
             format = "yyyy-mm-dd",   # 日期格式
-            separator = " 至 "
+            separator = " 至 ",
+            width = "100%"
           ),
           
           actionButton("download_reset_filters", "重置筛选", class = "btn-secondary")
