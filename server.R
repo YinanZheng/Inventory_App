@@ -578,7 +578,7 @@ server <- function(input, output, session) {
       # showNotification(paste("Selected MinorType:", selected_data$MinorType))
       
       # Update input fields in the sidebar
-      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
+      updateSelectizeInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
       shinyjs::delay(300, {  # 延迟 300 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
@@ -600,7 +600,7 @@ server <- function(input, output, session) {
       selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
       
       # 更新侧边栏的输入字段
-      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
+      updateSelectizeInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
       updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
       updateTextInput(session, "new_name", value = selected_data$ItemName)
