@@ -1911,7 +1911,7 @@ server <- function(input, output, session) {
       
       # 插入图片到 Excel
       for (i in seq_len(nrow(final_data))) {
-        image_path <- final_data[i, col_to_insert]
+        image_path <- as.character(final_data[i, col_to_insert])
         image_width_max <- 1
         # if (!is.na(image_path) && file.exists(image_path)) {
           
