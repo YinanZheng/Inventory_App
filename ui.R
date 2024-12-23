@@ -784,44 +784,51 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        # 供应商筛选
-        selectizeInput(
-          inputId = "download_maker",
-          label = "选择供应商:",
-          choices = NULL,          # 动态加载供应商
-          selected = NULL,         # 默认全选
-          multiple = TRUE,         # 支持多选
-          options = list(          # 提供更好的交互体验
-            placeholder = "请选择供应商...",
-            allowEmptyOption = TRUE,
-            maxItems = 10          # 限制最多选中10个
-          )
+        div(
+          class = "card",
+          style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          
+          tags$h4("表格筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+          
+          # 供应商筛选
+          selectizeInput(
+            inputId = "download_maker",
+            label = "选择供应商:",
+            choices = NULL,          # 动态加载供应商
+            selected = NULL,         # 默认全选
+            multiple = TRUE,         # 支持多选
+            options = list(          # 提供更好的交互体验
+              placeholder = "请选择供应商...",
+              allowEmptyOption = TRUE,
+              maxItems = 10          # 限制最多选中10个
+            )
+          ),
+          
+          # 商品名称筛选
+          selectizeInput(
+            inputId = "download_item_name",
+            label = "商品名称:",
+            choices = NULL,          # 动态加载商品名称
+            selected = NULL,         # 默认全选
+            multiple = FALSE,        # 单选，适合精确匹配
+            options = list(          # 提供更好的交互体验
+              placeholder = "请输入商品名称...",
+              create = FALSE         # 不允许用户输入新值
+            )
+          ),
+          
+          # 采购日期筛选
+          dateRangeInput(
+            inputId = "download_date_range",
+            label = "选择采购日期范围:",
+            start = Sys.Date() - 30, # 默认最近30天
+            end = Sys.Date(),        # 默认结束日期为今天
+            format = "yyyy-mm-dd",   # 日期格式
+            separator = " 至 "
+          ),
+          
+          actionButton("download_reset_filters", "重置筛选", class = "btn-secondary")
         ),
-        
-        # 商品名称筛选
-        selectizeInput(
-          inputId = "download_item_name",
-          label = "商品名称:",
-          choices = NULL,          # 动态加载商品名称
-          selected = NULL,         # 默认全选
-          multiple = FALSE,        # 单选，适合精确匹配
-          options = list(          # 提供更好的交互体验
-            placeholder = "请输入商品名称...",
-            create = FALSE         # 不允许用户输入新值
-          )
-        ),
-        
-        # 采购日期筛选
-        dateRangeInput(
-          inputId = "download_date_range",
-          label = "选择采购日期范围:",
-          start = Sys.Date() - 30, # 默认最近30天
-          end = Sys.Date(),        # 默认结束日期为今天
-          format = "yyyy-mm-dd",   # 日期格式
-          separator = " 至 "
-        ),
-        
-        actionButton("download_reset_filters", "重置筛选", class = "btn-secondary"),
         
         tags$hr(),
         
