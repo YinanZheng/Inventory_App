@@ -815,6 +815,7 @@ server <- function(input, output, session) {
     }
   })
 
+  # 更新供应商名称
   observeEvent(makers_df(), {
     update_maker_choices(session, "sold_maker", makers_df())
   })
@@ -864,6 +865,8 @@ server <- function(input, output, session) {
       showNotification("重置输入时发生错误，请重试！", type = "error")
     })
   })
+  
+  
   
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku, {
