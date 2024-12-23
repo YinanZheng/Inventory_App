@@ -803,22 +803,22 @@ server <- function(input, output, session) {
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
   
-  # 缓存 makers_df
-  makers_df <- reactive({
-    makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    
-    if (!is.null(makers) && length(makers) > 0) {
-      data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
-        mutate(Pinyin = remove_tone(stri_trans_general(Maker, "Latin")))
-    } else {
-      data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-    }
-  })
-  
-  # 初始化供应商筛选选项
-  observe({
-    update_maker_choices(session, "sold_maker", makers_df)
-  })
+  # # 缓存 makers_df
+  # makers_df <- reactive({
+  #   makers <- unique_items_data() %>% pull(Maker) %>% unique()
+  #   
+  #   if (!is.null(makers) && length(makers) > 0) {
+  #     data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
+  #       mutate(Pinyin = remove_tone(stri_trans_general(Maker, "Latin")))
+  #   } else {
+  #     data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+  #   }
+  # })
+  # 
+  # # 初始化供应商筛选选项
+  # observe({
+  #   update_maker_choices(session, "sold_maker", makers_df)
+  # })
   
   # 监听供应商选择变化并动态更新商品名称
   observe({
