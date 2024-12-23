@@ -859,7 +859,9 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       updateSelectInput(session, "sold_maker", selected = "")
-      updateTextInput(session, "sold_name", selected = "")
+      shinyjs::delay(300, {  # 延迟 300 毫秒
+        updateTextInput(session, "sold_name", value = "")
+      })
       updateTextInput(session, "sold_sku", value = "")
 
       showNotification("筛选条件已重置！", type = "message")
