@@ -633,9 +633,6 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       
-      # 清空已添加的商品
-      added_items(create_empty_inventory())
-      
       # 重置图片控件
       image_purchase$reset()
 
@@ -983,7 +980,6 @@ server <- function(input, output, session) {
       showNotification(paste("登记订单时发生错误：", e$message), type = "error")
     })
   })
-
 
   # 渲染货架
   output$shelf_table <- renderDT({
