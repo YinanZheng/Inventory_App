@@ -860,12 +860,14 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
   })
   
-  # 监听选中行并更新 SKU
+  # 监听选中行并更新 maker, item name, SKU
   observeEvent(unique_items_table_sold_selected_row(), {
     if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
       selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
       updateSelectInput(session, "sold_maker", selected = selected_data$Maker)
-      updateTextInput(session, "sold_name", value = selected_data$ItemName)
+      shinyjs::delay(300, {  # 延迟 300 毫秒
+        updateTextInput(session, "sold_name", value = selected_data$ItemName)
+      })
       updateTextInput(session, "sold_sku_input", value = selected_data$SKU)
     }
   })
