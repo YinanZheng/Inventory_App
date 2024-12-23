@@ -1106,13 +1106,18 @@ server <- function(input, output, session) {
       
       showNotification("订单已完成售出并更新状态！", type = "message")
       
-      # 清空箱子和订单信息
+      # 清空箱子
       box_items(create_empty_shelf_box())
       
+      # 清空筛选条件
+      update_maker_choices(session, "sold_maker", makers_df())
+      updateTextInput(session, "sold_name", value = "")
+      updateTextInput(session, "sold_sku", value = "")
+      
+      # 清空订单信息
       updateTextInput(session, "order_id", value = "")
       updateTextInput(session, "tracking_number1", value = "")
       updateTextAreaInput(session, "order_notes", value = "")
-      updateTextInput(session, "sold_sku", value = "")
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
