@@ -443,7 +443,10 @@ ui <- navbarPage(
                  div(
                    class = "card",
                    style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                   tags$h4("货架", icon = icon("shelves"), style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                   tags$h4(
+                     HTML(paste0("货架 ", as.character(icon("shelves")))), 
+                     style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
+                   ),
                    DTOutput("shelf_table")  # 显示货架上的物品
                  )
           ),
