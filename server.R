@@ -803,23 +803,8 @@ server <- function(input, output, session) {
   ################################################################
   
   # 初始化货架和箱子内物品
-  shelf_items <- reactiveVal(data.frame(
-    SKU = character(),
-    UniqueID = character(),
-    ItemName = character(),
-    ProductCost = numeric(),
-    ItemImagePath = character(),
-    stringsAsFactors = FALSE
-  ))
-  
-  box_items <- reactiveVal(data.frame(
-    SKU = character(),
-    UniqueID = character(),
-    ItemName = character(),
-    ProductCost = numeric(),
-    ItemImagePath = character(),
-    stringsAsFactors = FALSE
-  ))
+  shelf_items <- reactiveVal(create_empty_shelf_box())
+  box_items <- reactiveVal(create_empty_shelf_box())
   
   # 初始化供应商筛选选项
   observe({
@@ -1070,7 +1055,7 @@ server <- function(input, output, session) {
   
   # 清空箱子
   observeEvent(input$clear_selected_items, {
-    box_items(data.frame(SKU = character(), UniqueID = character(), ItemName = character()))
+    box_items(create_empty_shelf_box())
     showNotification("箱子已清空！", type = "message")
   })
   

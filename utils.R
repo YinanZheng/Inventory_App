@@ -263,6 +263,18 @@ create_empty_inventory <- function() {
   )
 }
 
+# 空的箱子与货架
+create_empty_shelf_box <- function() {
+  data.frame(
+    SKU = character(),
+    UniqueID = character(),
+    ItemName = character(),
+    ProductCost = numeric(),
+    ItemImagePath = character(),
+    stringsAsFactors = FALSE
+  )
+}
+
 # Map column names and filter only mapped columns
 map_column_names <- function(data, column_mapping) {
   # Get the mapped columns in the order of column_mapping
