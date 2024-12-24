@@ -576,13 +576,15 @@ ui <- navbarPage(
         ),
         div(
           style = "margin-bottom: 20px;",
-          tags$label("仅显示无瑕品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
+          tags$label("仅显示无瑕品", class = "control-label"),  
           switchInput(
             inputId = "show_perfects_only",  # 开关 ID
             label = NULL,                   # 不显示标签在开关上
             value = FALSE                   # 默认值：关闭
           )
         ),
+        
+        tags$hr(), # 分隔线
         
         # 登记修复品部分
         div(
@@ -597,13 +599,15 @@ ui <- navbarPage(
         ),
         div(
           style = "margin-bottom: 20px;",
-          tags$label("仅显示瑕疵品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
+          tags$label("仅显示瑕疵品", class = "control-label"),  
           switchInput(
             inputId = "show_defects_only",  # 开关 ID
             label = NULL,                   # 不显示标签在开关上
             value = FALSE                   # 默认值：关闭
           )
         ),
+        
+        tags$hr(), # 分隔线
         
         # 备注输入框
         textAreaInput(
