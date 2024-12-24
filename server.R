@@ -281,6 +281,19 @@ server <- function(input, output, session) {
   })
   
   
+  # 缓存 makers_df
+  makers_df <- reactive({
+    makers <- unique_items_data() %>% pull(Maker) %>% unique()
+    
+    if (!is.null(makers) && length(makers) > 0) {
+      data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
+        mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+    } else {
+      data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+    }
+  })
+  
+  
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                          column_mapping <- c(common_columns, list(
@@ -897,68 +910,14 @@ server <- function(input, output, session) {
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
   
-  # 缓存 makers_df
-  makers_df <- reactive({
-    makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    
-    if (!is.null(makers) && length(makers) > 0) {
-      data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
-        mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-    } else {
-      data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-    }
-  })
-  
-  # 更新供应商名称
-  observeEvent(makers_df(), {
-    update_maker_choices(session, "sold_maker", makers_df())
-  })
-  
-  # 监听供应商选择变化并动态更新商品名称
-  observe({
-    req(unique_items_data())  # 确保数据存在
-    
-    # 获取用户选择的供应商
-    selected_makers <- input$sold_maker
-    
-    # 筛选商品名称
-    if (!is.null(selected_makers) && length(selected_makers) > 0) {
-      filtered_data <- unique_items_data() %>% filter(Maker %in% selected_makers)
-    } else {
-      filtered_data <- unique_items_data()
-    }
-    
-    # 提取对应的商品名称，并在前面加一个空选项
-    item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
-    
-    # 更新商品名称选项，默认选中空选项
-    updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
-  })
-  
-  # 监听选中行并更新 maker, item name, SKU
-  observeEvent(unique_items_table_sold_selected_row(), {
-    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
-      updateSelectInput(session, "sold_maker", selected = selected_data$Maker)
-      shinyjs::delay(300, {  # 延迟 300 毫秒
-        updateTextInput(session, "sold_name", value = selected_data$ItemName)
-      })
-      updateTextInput(session, "sold_sku", value = selected_data$SKU)
-    }
-  })
-  
-  # 清空输入
-  observeEvent(input$sold_reset_btn, {
-    tryCatch({
-      update_maker_choices(session, "sold_maker", makers_df())
-      updateTextInput(session, "sold_name", value = "")
-      updateTextInput(session, "sold_sku", value = "")
-      
-      showNotification("筛选条件已重置！", type = "message")
-    }, error = function(e) {
-      showNotification("重置输入时发生错误，请重试！", type = "error")
-    })
-  })
+  itemFilterServer(
+    id = "item_filter",
+    makers_df = makers_df,  # 供应商数据
+    unique_items_data = unique_items_data,  # 所有物品数据
+    filtered_unique_items_data = filtered_unique_items_data_sold,  # 筛选后的物品数据
+    unique_items_table_selected_row = unique_items_table_sold_selected_row,  # 选中行数据
+    label = "sold"
+  )
   
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku, {
