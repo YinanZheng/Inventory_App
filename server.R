@@ -965,49 +965,19 @@ server <- function(input, output, session) {
   
   ######
   
-  # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input$sold_sku, {
-    sku <- trimws(input$sold_sku)  # 清理条形码输入空格
-    if (is.null(sku) || sku == "") {
-      return()
-    }
-    
-    tryCatch({
-      # 从 unique_items_data 获取符合条件的货架物品
-      all_shelf_items <- unique_items_data() %>%
-        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
-        arrange(ProductCost)  # 按单价从低到高排序
-      
-      if (nrow(all_shelf_items) == 0) {
-        showNotification("未找到符合条件的物品！", type = "error")
-        return()
-      }
-      
-      # 从箱子中获取当前 SKU 的已选数量
-      box_data <- box_items()
-      box_sku_count <- sum(box_data$SKU == sku)
-      
-      # 扣除已移入箱子的物品
-      if (box_sku_count > 0) {
-        all_shelf_items <- all_shelf_items %>%
-          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
-      }
-      
-      # 更新货架
-      shelf_items(all_shelf_items)
-      showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
-    }, error = function(e) {
-      showNotification(paste("加载货架时发生错误：", e$message), type = "error")
-    })
-  })
-  
-  # 定义存储运单号动态行数的 reactiveVal
+  # 定义存储运单号动态行数的 reactiveVal，初始值为 1
   tracking_rows <- reactiveVal(1)
   
   # 动态生成运单号输入框
   output$additional_tracking_numbers <- renderUI({
     rows <- tracking_rows()
+    
+    # 确保至少返回一个空的 UI，否则初始时页面可能为空
+    if (rows < 2) {
+      return(tagList())
+    }
+    
+    # 动态生成从运单号2开始的输入框
     tracking_inputs <- lapply(2:rows, function(i) {
       textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
     })
@@ -1017,10 +987,10 @@ server <- function(input, output, session) {
   # 监听增加运单号按钮点击
   observeEvent(input$add_tracking_btn, {
     rows <- tracking_rows()
-    if (rows < 4) {
+    if (rows < 3) {  # 最多允许2个运单号
       tracking_rows(rows + 1)
     } else {
-      showNotification("最多只能添加 3 个运单号！", type = "warning")
+      showNotification("最多只能添加 2 个运单号！", type = "warning")
     }
   })
   
