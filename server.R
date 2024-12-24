@@ -1056,9 +1056,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  
-  
   # 登记订单逻辑
   observeEvent(input$register_order_btn, {
     # 检查订单号是否为空
@@ -1116,6 +1113,26 @@ server <- function(input, output, session) {
       showNotification(paste("登记订单时发生错误：", e$message), type = "error")
     })
   })
+  
+  # 监听清空按钮的点击事件
+  observeEvent(input$clear_order_btn, {
+    # 重置所有输入框
+    updateSelectInput(session, "platform", selected = "")
+    updateTextInput(session, "order_id", value = "")
+    updateTextInput(session, "customer_name", value = "")
+    updateTextInput(session, "tracking_number1", value = "")
+    
+    # 动态隐藏运单号 2 和 3
+    tracking_rows(1)  # 重置动态行数
+    
+    # 清空备注和图片模块
+    updateTextAreaInput(session, "order_notes", value = "")
+    image_sold$reset()
+    
+    showNotification("已清空所有输入！", type = "message")
+  })
+  
+  #####
   
   # 渲染货架
   output$shelf_table <- renderDT({
