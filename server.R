@@ -776,7 +776,7 @@ server <- function(input, output, session) {
     
     # 更新 inventory, unique_items数据并触发 UI 刷新
     inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-    refresh_trigger = unique_items_data_refresh_trigger
+    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
   })
   
   
