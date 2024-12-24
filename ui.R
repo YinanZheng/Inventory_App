@@ -375,8 +375,39 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        itemFilterUI("item_filter", label = "sold"),
-
+        div(
+          class = "card",
+          style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          
+          # 订单录入表单
+          tags$h4("物品筛选", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+          
+          fluidRow(
+            column(6, 
+                   selectizeInput("sold_maker", "供应商:", choices = NULL, width = "100%",
+                                  options = list(placeholder = '供应商名称(或拼音)...', maxOptions = 500)),
+                   class = "custom-selectize" # 自定义 class
+            ),
+            column(6, selectizeInput(
+              "sold_name",                
+              label = "商品名:",         
+              choices = NULL,            
+              options = list(
+                placeholder = "商品名...",
+                create = TRUE            # 允许自定义输入值
+              ),
+              width = "100%"
+            ),class = "custom-selectize" # 自定义 class
+            )
+          ),
+          
+          fluidRow(
+            column(9, textInput("sold_sku", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%")),
+            column(3, actionButton("sold_reset_btn", "清空", icon = icon("snowplow"), class = "btn-danger", 
+                                  style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;"))          
+          )
+        ),
+        
         div(
           class = "card",
           style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
