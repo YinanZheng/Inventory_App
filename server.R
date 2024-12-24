@@ -1040,9 +1040,9 @@ server <- function(input, output, session) {
     req(input$order_id)  # 如果订单号为空，停止执行
     
     tryCatch({
-      # 查询订单信息
+      # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
-      SELECT UsTrackingNumber1, OrderNotes 
+      SELECT CustomerName, Platform, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes 
       FROM orders 
       WHERE OrderID = ?", 
                                    params = list(input$order_id)
@@ -1051,14 +1051,33 @@ server <- function(input, output, session) {
       # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
         showNotification("已找到订单信息！字段已自动填充。", type = "message")
+        
+        # 填充各字段信息
+        updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
+        updateSelectInput(session, "platform", selected = existing_order$Platform[1])
         updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
+        updateTextInput(session, "tracking_number2", value = existing_order$UsTrackingNumber2[1] %||% "")
+        updateTextInput(session, "tracking_number3", value = existing_order$UsTrackingNumber3[1] %||% "")
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
+        
+        # 更新动态运单号显示逻辑
+        tracking_rows(sum(!is.na(existing_order[1, c("UsTrackingNumber2", "UsTrackingNumber3")])))
       } else {
+        # 如果订单记录不存在，清空所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
+        
+        updateTextInput(session, "customer_name", value = "")
+        updateSelectInput(session, "platform", selected = "")
         updateTextInput(session, "tracking_number1", value = "")
+        updateTextInput(session, "tracking_number2", value = "")
+        updateTextInput(session, "tracking_number3", value = "")
         updateTextAreaInput(session, "order_notes", value = "")
+        
+        # 隐藏动态运单号输入框
+        tracking_rows(1)
       }
     }, error = function(e) {
+      # 捕获错误并通知用户
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
     })
   })
