@@ -267,7 +267,8 @@ server <- function(input, output, session) {
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
                                                         column_mapping <- c(common_columns, list(
                                                           PurchaseTime = "采购日期",
-                                                          DomesticEntryTime = "入库日期")
+                                                          DomesticEntryTime = "入库日期",
+                                                          DefectNotes = "瑕疵品备注")
                                                         ), selection = "multiple", data = unique_items_data)
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
