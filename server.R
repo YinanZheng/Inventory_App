@@ -972,15 +972,23 @@ server <- function(input, output, session) {
   output$additional_tracking_numbers <- renderUI({
     rows <- tracking_rows()
     
-    # 确保至少返回一个空的 UI，否则初始时页面可能为空
-    if (rows < 2) {
-      return(tagList())
-    }
-    
-    # 动态生成从运单号2开始的输入框
     tracking_inputs <- lapply(2:rows, function(i) {
-      textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
+      # 提取当前输入框的值，防止重新渲染时被清空
+      value <- switch(
+        i,
+        "2" = input$tracking_number2 %||% "",  # 保留运单号2的值
+        "3" = input$tracking_number3 %||% ""  # 保留运单号3的值
+      )
+      
+      textInput(
+        paste0("tracking_number", i),
+        paste0("运单号 ", i),
+        value = value,  # 赋予当前值
+        placeholder = "请输入运单号",
+        width = "100%"
+      )
     })
+    
     do.call(tagList, tracking_inputs)
   })
   
