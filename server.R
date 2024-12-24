@@ -228,7 +228,7 @@ server <- function(input, output, session) {
     data <- unique_items_data()
     
     # 默认过滤状态不为“未知”的物品
-    data <- data[data$Status != "未知", ]
+    data <- data[data$Defect != "未知", ]
     
     # 如果启用了“仅显示瑕疵品”，进一步过滤
     if (input$show_defects_only) {
