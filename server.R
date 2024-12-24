@@ -1659,14 +1659,14 @@ server <- function(input, output, session) {
     # 根据统计单位生成完整时间序列
     time_sequence <- switch(input$precision,
                             "天" = seq.Date(from = start_date, to = end_date, by = "day"),
-                            "周" = seq.Date(from = lubridate::floor_date(start_date, "week"),
-                                           to = lubridate::floor_date(end_date, "week"),
+                            "周" = seq.Date(from = floor_date(start_date, "week"),
+                                           to = floor_date(end_date, "week"),
                                            by = "week"),
-                            "月" = seq.Date(from = lubridate::floor_date(start_date, "month"),
-                                           to = lubridate::floor_date(end_date, "month"),
+                            "月" = seq.Date(from = floor_date(start_date, "month"),
+                                           to = floor_date(end_date, "month"),
                                            by = "month"),
-                            "年" = seq.Date(from = lubridate::floor_date(start_date, "year"),
-                                           to = lubridate::floor_date(end_date, "year"),
+                            "年" = seq.Date(from = floor_date(start_date, "year"),
+                                           to = floor_date(end_date, "year"),
                                            by = "year"))
     
     # 转换为数据框
@@ -1677,9 +1677,9 @@ server <- function(input, output, session) {
       mutate(
         GroupDate = case_when(
           input$precision == "天" ~ as.Date(PurchaseTime),
-          input$precision == "周" ~ lubridate::floor_date(as.Date(PurchaseTime), "week"),
-          input$precision == "月" ~ lubridate::floor_date(as.Date(PurchaseTime), "month"),
-          input$precision == "年" ~ lubridate::floor_date(as.Date(PurchaseTime), "year")
+          input$precision == "周" ~ floor_date(as.Date(PurchaseTime), "week"),
+          input$precision == "月" ~ floor_date(as.Date(PurchaseTime), "month"),
+          input$precision == "年" ~ floor_date(as.Date(PurchaseTime), "year")
         )
       ) %>%
       group_by(GroupDate) %>%
