@@ -1104,6 +1104,12 @@ server <- function(input, output, session) {
       return()
     }
     
+    # 检查电商平台是否为空
+    if (is.null(input$platform) || input$platform == "") {
+      showNotification("电商平台不能为空，请选择一个平台！", type = "error")
+      return()
+    }
+    
     tryCatch({
       # 查询是否已有相同订单号的记录
       existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
@@ -1125,6 +1131,8 @@ server <- function(input, output, session) {
       tracking_number2 <- input$tracking_number2 %||% NA
       tracking_number3 <- input$tracking_number3 %||% NA
       order_notes <- input$order_notes %||% NA
+      customer_name <- input$customer_name %||% NA
+      platform <- input$platform  # 此时 platform 已验证非空，无需使用 %||%
       
       if (nrow(existing_order) > 0) {
         # 如果订单号已存在，更新图片和其他信息
@@ -1134,14 +1142,18 @@ server <- function(input, output, session) {
           UsTrackingNumber1 = COALESCE(?, UsTrackingNumber1), 
           UsTrackingNumber2 = COALESCE(?, UsTrackingNumber2),
           UsTrackingNumber3 = COALESCE(?, UsTrackingNumber3),
-          OrderNotes = COALESCE(?, OrderNotes)
+          OrderNotes = COALESCE(?, OrderNotes),
+          CustomerName = COALESCE(?, CustomerName),
+          Platform = COALESCE(?, Platform)
       WHERE OrderID = ?",
                   params = list(
                     order_image_path, 
                     tracking_number1, 
                     tracking_number2,
                     tracking_number3,
-                    order_notes, 
+                    order_notes,
+                    customer_name,
+                    platform,
                     input$order_id
                   )
         )
@@ -1149,14 +1161,16 @@ server <- function(input, output, session) {
       } else {
         # 如果订单号不存在，插入新订单记录
         dbExecute(con, "
-      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, OrderImagePath)
-      VALUES (?, ?, ?, ?, ?, ?)",
+      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, CustomerName, Platform, OrderImagePath)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                   params = list(
                     input$order_id,
                     tracking_number1,
                     tracking_number2,
                     tracking_number3,
                     order_notes,
+                    customer_name,
+                    platform,
                     order_image_path
                   )
         )
