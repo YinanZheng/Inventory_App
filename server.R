@@ -1338,6 +1338,13 @@ server <- function(input, output, session) {
       # 获取选中物品的数据
       selected_data <- filtered_unique_items_data_defect()[selected_rows, ]
       
+      # 检查是否所有选中物品都满足条件（Defect == "无瑕"）
+      invalid_items <- selected_data[selected_data$Defect != "无瑕", ]
+      if (nrow(invalid_items) > 0) {
+        showNotification("只有‘无瑕’状态的物品可以登记为瑕疵品！", type = "error")
+        return()
+      }
+      
       # 遍历每个选中物品，进行状态更新和备注添加
       lapply(selected_data$UniqueID, function(unique_id) {
         # 更新状态为瑕疵
@@ -1359,6 +1366,7 @@ server <- function(input, output, session) {
     })
   })
   
+  
   # 处理登记为修复品
   observeEvent(input$register_repair, {
     selected_rows <- unique_items_table_defect_selected_row()  # 获取选中行索引
@@ -1371,6 +1379,13 @@ server <- function(input, output, session) {
     tryCatch({
       # 获取选中物品的数据
       selected_data <- filtered_unique_items_data_defect()[selected_rows, ]
+      
+      # 检查是否所有选中物品都满足条件（Defect == "瑕疵"）
+      invalid_items <- selected_data[selected_data$Defect != "瑕疵", ]
+      if (nrow(invalid_items) > 0) {
+        showNotification("只有‘瑕疵’状态的物品可以登记为修复品！", type = "error")
+        return()
+      }
       
       # 遍历每个选中物品，进行状态更新和备注添加
       lapply(selected_data$UniqueID, function(unique_id) {
@@ -1392,6 +1407,7 @@ server <- function(input, output, session) {
       showNotification(paste("登记失败：", e$message), type = "error")
     })
   })
+  
   
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_defect_selected_row(), {
