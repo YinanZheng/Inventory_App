@@ -1965,6 +1965,9 @@ server <- function(input, output, session) {
       paste("unique_items-", format(Sys.time(), "%Y%m%d-%H%M%S", tz = "Asia/Shanghai"), ".xlsx", sep = "")
     },
     content = function(file) {
+      # 定义 PICTURE_TYPE_JPG 的值
+      PICTURE_TYPE_JPG <- 5
+      
       # 获取数据
       data <- filtered_unique_items_data_download()
       req(!is.null(data) && nrow(data) > 0)  # 确保数据非空
@@ -2039,6 +2042,7 @@ server <- function(input, output, session) {
       showNotification("XLSX 文件已成功下载并包含图片", type = "message", duration = 5)
     }
   )
+  
   
   ################################################################
   ##                                                            ##
