@@ -974,6 +974,8 @@ server <- function(input, output, session) {
     rows <- tracking_rows()  # 获取当前输入框行数
     current_values <- tracking_values()  # 获取动态保存的值
     
+    print(current_values)  # 调试：查看当前值
+    
     if (rows < 2) {
       return(NULL)  # 初始状态返回空，保持只显示运单号1
     }
@@ -1008,6 +1010,8 @@ server <- function(input, output, session) {
         tracking_number2 = input$tracking_number2 %||% current_values$tracking_number2,
         tracking_number3 = input$tracking_number3 %||% current_values$tracking_number3
       ))
+      
+      print(tracking_values())  # 调试：打印当前保存的值
       
       # 增加行数
       tracking_rows(rows + 1)
@@ -1058,7 +1062,7 @@ server <- function(input, output, session) {
   
   # 在输入订单号时检查订单信息并填充
   observeEvent(input$order_id, {
-    req(input$order_id)  # 如果订单号为空，停止执行
+    req(input$order_id)  # 检查订单号是否为空
     
     tryCatch({
       # 查询订单信息
@@ -1069,25 +1073,27 @@ server <- function(input, output, session) {
                                    params = list(input$order_id)
       )
       
+      print(existing_order)  # 调试：打印查询结果
+      
       if (nrow(existing_order) > 0) {
         showNotification("已找到订单信息！字段已自动填充。", type = "message")
         
         # 更新第一个运单号
         updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1] %||% "")
         
-        # 保存运单号2和3的值，处理 NULL 为 ""
+        # 保存动态输入框的值
         tracking_values(list(
           tracking_number2 = existing_order$UsTrackingNumber2[1] %||% "",
           tracking_number3 = existing_order$UsTrackingNumber3[1] %||% ""
         ))
         
+        # 打印 tracking_values 内容以调试
+        print(tracking_values())
+        
         # 动态调整输入框数量
-        valid_tracking_count <- sum(!is.na(c(
-          existing_order$UsTrackingNumber2[1],
-          existing_order$UsTrackingNumber3[1]
-        )) & c(
-          existing_order$UsTrackingNumber2[1] != "",
-          existing_order$UsTrackingNumber3[1] != ""
+        valid_tracking_count <- sum(c(
+          !is.na(existing_order$UsTrackingNumber2[1]) & existing_order$UsTrackingNumber2[1] != "",
+          !is.na(existing_order$UsTrackingNumber3[1]) & existing_order$UsTrackingNumber3[1] != ""
         ))
         tracking_rows(max(valid_tracking_count + 1, 1))  # 至少显示运单号1
       } else {
