@@ -1345,10 +1345,10 @@ server <- function(input, output, session) {
       # 获取选中物品的数据
       selected_data <- filtered_unique_items_data_defect()[selected_rows, ]
       
-      # 检查是否所有选中物品都满足条件（Defect == "无瑕"）
-      invalid_items <- selected_data[selected_data$Defect != "无瑕", ]
+      # 检查是否所有选中物品的状态符合要求（Defect == "无瑕" 或 Defect == "修复"）
+      invalid_items <- selected_data[!selected_data$Defect %in% c("无瑕", "修复"), ]
       if (nrow(invalid_items) > 0) {
-        showNotification("只有‘无瑕’状态的物品可以登记为瑕疵品！", type = "error")
+        showNotification("只有‘无瑕’或‘修复’状态的物品可以登记为瑕疵品！", type = "error")
         return()
       }
       
