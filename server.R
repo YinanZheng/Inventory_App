@@ -1367,6 +1367,9 @@ server <- function(input, output, session) {
         )
       })
       
+      # 清空备注栏
+      updateTextAreaInput(session, "manage_defective_notes", value = "")
+      
       showNotification("所选物品已成功登记为瑕疵品！", type = "message")
     }, error = function(e) {
       showNotification(paste("登记失败：", e$message), type = "error")
@@ -1407,6 +1410,9 @@ server <- function(input, output, session) {
           status_label = "修复"
         )
       })
+      
+      # 清空备注栏
+      updateTextAreaInput(session, "manage_defective_notes", value = "")
       
       showNotification("所选物品已成功登记为修复品！", type = "message")
     }, error = function(e) {
