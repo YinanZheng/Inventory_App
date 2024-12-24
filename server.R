@@ -721,10 +721,10 @@ server <- function(input, output, session) {
       })
     } else if (defective_item) {
       # 如果勾选了瑕疵品但没有填写备注
-      showNotification("请填写瑕疵品备注！", type = "error")
+      showNotification("无瑕疵品备注！", type = "warning")
     } else {
       # 未选择瑕疵品时，正常完成入库
-      showNotification("入库操作完成，无瑕疵品备注！", type = "message")
+      showNotification("入库操作完成！", type = "message")
     }
     
   })

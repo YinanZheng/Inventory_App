@@ -590,6 +590,15 @@ ui <- navbarPage(
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
+        textAreaInput(
+          inputId = "manage_defective_notes",
+          label = "瑕疵品备注：",
+          placeholder = "请输入备注内容...",
+          width = "100%"
+        ),
+        
+        tags$hr(style = "margin: 5px 0; border: none;"),
+        
         tags$div(
           tags$label("仅显示瑕疵品", class = "control-label"),  
           switchInput(
