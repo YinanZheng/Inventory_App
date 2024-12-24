@@ -918,13 +918,13 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   params = list(
                     sku, maker, major_type, minor_type, item_name, 
-                    quantity, 
+                    0, 
                     round(product_cost, 2), 
                     round(unit_shipping_cost, 2), 
                     image_path
                   ))
         
-        showNotification(paste("新商品成功加入库存! SKU:", sku, ", 商品名:", item_name), type = "message")
+        showNotification(paste("新商品成功登记! SKU:", sku, ", 商品名:", item_name), type = "message")
         return(TRUE)
       } else {
         showNotification("库存调整失败：SKU 不存在且缺少新增商品的必要信息！", type = "error")
