@@ -966,57 +966,32 @@ server <- function(input, output, session) {
   
   ######
   
-  tracking_rows <- reactiveVal(1)  # 控制动态输入框数量
-  tracking_values <- reactiveVal(list(tracking_number2 = "", tracking_number3 = ""))  # 保存动态输入框的当前值
+  # 定义存储运单号动态行数的 reactiveVal，初始值为 1
+  tracking_rows <- reactiveVal(1)
   
   # 动态生成运单号输入框
   output$additional_tracking_numbers <- renderUI({
-    rows <- tracking_rows()  # 获取当前输入框行数
-    current_values <- tracking_values()  # 获取动态保存的值
+    rows <- tracking_rows()
     
-    print(current_values)  # 调试：查看当前值
-    
+    # 确保至少返回一个空的 UI，否则初始时页面可能为空
     if (rows < 2) {
-      return(NULL)  # 初始状态返回空，保持只显示运单号1
+      return(tagList())
     }
     
+    # 动态生成从运单号2开始的输入框
     tracking_inputs <- lapply(2:rows, function(i) {
-      value <- switch(
-        i,
-        "2" = current_values$tracking_number2 %||% "",
-        "3" = current_values$tracking_number3 %||% ""
-      )
-      
-      textInput(
-        paste0("tracking_number", i),
-        paste0("运单号 ", i),
-        value = value,  # 使用当前保存的值
-        placeholder = "请输入运单号",
-        width = "100%"
-      )
+      textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
     })
-    
     do.call(tagList, tracking_inputs)
   })
   
   # 监听增加运单号按钮点击
   observeEvent(input$add_tracking_btn, {
     rows <- tracking_rows()
-    
-    if (rows < 3) {  # 最多允许2个额外运单号
-      # 保存当前输入框的值
-      current_values <- tracking_values()
-      tracking_values(list(
-        tracking_number2 = input$tracking_number2 %||% current_values$tracking_number2,
-        tracking_number3 = input$tracking_number3 %||% current_values$tracking_number3
-      ))
-      
-      print(tracking_values())  # 调试：打印当前保存的值
-      
-      # 增加行数
+    if (rows < 3) {  # 最多允许添加2个运单号
       tracking_rows(rows + 1)
     } else {
-      showNotification("最多只能添加 2 个额外运单号！", type = "warning")
+      showNotification("最多只能添加 2 个运单号！", type = "warning")
     }
   })
   
@@ -1062,49 +1037,62 @@ server <- function(input, output, session) {
   
   # 在输入订单号时检查订单信息并填充
   observeEvent(input$order_id, {
-    req(input$order_id)  # 检查订单号是否为空
+    # 检查订单号是否为空
+    req(input$order_id)  # 如果订单号为空，停止执行
     
     tryCatch({
-      # 查询订单信息
+      # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
-      SELECT UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3 
+      SELECT CustomerName, Platform, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes 
       FROM orders 
       WHERE OrderID = ?", 
                                    params = list(input$order_id)
       )
       
-      print(existing_order)  # 调试：打印查询结果
-      
+      # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
         showNotification("已找到订单信息！字段已自动填充。", type = "message")
         
-        # 更新第一个运单号
-        updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1] %||% "")
+        # 填充各字段信息
+        updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
+        updateSelectInput(session, "platform", selected = existing_order$Platform[1])
+        updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
+        updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
         
-        # 保存动态输入框的值
-        tracking_values(list(
-          tracking_number2 = existing_order$UsTrackingNumber2[1] %||% "",
-          tracking_number3 = existing_order$UsTrackingNumber3[1] %||% ""
-        ))
+        # 根据是否存在运单号动态调整输入框显示
+        tracking_numbers <- c(
+          existing_order$UsTrackingNumber1[1],
+          existing_order$UsTrackingNumber2[1],
+          existing_order$UsTrackingNumber3[1]
+        )
         
-        # 打印 tracking_values 内容以调试
-        print(tracking_values())
+        # 动态调整运单号输入栏的数量
+        valid_tracking_count <- sum(!is.na(tracking_numbers) & tracking_numbers != "")
+        tracking_rows(max(valid_tracking_count, 1))  # 至少显示一个运单号输入框
         
-        # 动态调整输入框数量
-        valid_tracking_count <- sum(c(
-          !is.na(existing_order$UsTrackingNumber2[1]) & existing_order$UsTrackingNumber2[1] != "",
-          !is.na(existing_order$UsTrackingNumber3[1]) & existing_order$UsTrackingNumber3[1] != ""
-        ))
-        tracking_rows(max(valid_tracking_count + 1, 1))  # 至少显示运单号1
+        # 更新运单号 2 和 3
+        if (valid_tracking_count > 1) {
+          updateTextInput(session, "tracking_number2", value = tracking_numbers[2])
+        }
+        if (valid_tracking_count > 2) {
+          updateTextInput(session, "tracking_number3", value = tracking_numbers[3])
+        }
       } else {
+        # 如果订单记录不存在，清空所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
         
-        # 重置动态输入框和值
+        updateTextInput(session, "customer_name", value = "")
+        updateSelectInput(session, "platform", selected = "")
         updateTextInput(session, "tracking_number1", value = "")
-        tracking_values(list(tracking_number2 = "", tracking_number3 = ""))
+        updateTextInput(session, "tracking_number2", value = "")
+        updateTextInput(session, "tracking_number3", value = "")
+        updateTextAreaInput(session, "order_notes", value = "")
+        
+        # 隐藏动态运单号输入框
         tracking_rows(1)
       }
     }, error = function(e) {
+      # 捕获错误并通知用户
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
     })
   })
