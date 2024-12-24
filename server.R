@@ -172,6 +172,7 @@ server <- function(input, output, session) {
       unique_items.DomesticShippingCost,
       unique_items.Status,
       unique_items.Defect,
+      unique_items.DefectNote,
       unique_items.IntlShippingMethod,
       unique_items.IntlAirTracking,
       unique_items.IntlSeaTracking,
@@ -689,6 +690,16 @@ server <- function(input, output, session) {
       last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
       selected_sku <- unique_items_data()[last_selected, "SKU", drop = TRUE]
       updateTextInput(session, "inbound_sku", value = selected_sku)
+    }
+  })
+  
+  # 控制备注输入框显示/隐藏
+  observeEvent(input$defective_item, {
+    if (input$defective_item) {
+      shinyjs::show("defective_notes_container")
+    } else {
+      shinyjs::hide("defective_notes_container")
+      updateTextInput(session, "defective_notes", value = "") # 清空备注
     }
   })
   

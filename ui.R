@@ -246,6 +246,17 @@ ui <- navbarPage(
                 tags$label("瑕疵品", `for` = "defective_item", style = "font-size: 18px; font-weight: bold; color: #444;")
               ),
               
+              div(
+                id = "defective_notes_container",
+                style = "display: none; margin-top: 10px;",
+                textInput(
+                  inputId = "defective_notes",
+                  label = "瑕疵品备注：",
+                  placeholder = "请输入备注内容...",
+                  width = "100%"
+                )
+              ),
+              
               # 确认入库按钮
               actionButton(
                 "confirm_inbound_btn", 

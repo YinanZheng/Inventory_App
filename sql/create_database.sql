@@ -60,6 +60,12 @@ CREATE TABLE orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- 更新时间
 );
 
+
+
+
+
+USE inventory_system;
+
 -- 在 UsEntryTime 之后增加 Time 列
 ALTER TABLE unique_items
 ADD COLUMN UsCheckTime DATE AFTER UsEntryTime,
@@ -76,6 +82,12 @@ ALTER TABLE unique_items
 ADD CONSTRAINT fk_orders_orderid
 FOREIGN KEY (OrderID) REFERENCES orders(OrderID)
 ON DELETE SET NULL;
+
+-- 在 Defect 之后增加列
+ALTER TABLE unique_items
+ADD COLUMN DefectNote VARCHAR(255) AFTER Defect;
+
+DESCRIBE unique_items;
 
 -- 修改 Status 列的枚举值
 ALTER TABLE unique_items MODIFY COLUMN Status ENUM(
