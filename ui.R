@@ -563,55 +563,47 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        # 登记瑕疵品和修复品部分
-        fluidRow(
-          column(
-            width = 7,  # 左侧按钮
-            actionButton(
-              "register_defective", 
-              "登记瑕疵品", 
-              icon = icon("circle-exclamation"),
-              class = "btn-warning", 
-              style = "font-size: 16px; width: 100%;"
-            )
-          ),
-          column(
-            width = 5,  # 右侧开关
-            div(
-              tags$label("仅显示无瑕品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
-              switchInput(
-                inputId = "show_perfects_only",  # 开关 ID
-                label = NULL,                   # 不显示标签在开关上
-                value = FALSE                   # 默认值：关闭
-              )
-            )
+        # 登记瑕疵品部分
+        div(
+          style = "margin-bottom: 20px;",
+          actionButton(
+            "register_defective", 
+            "登记瑕疵品", 
+            icon = icon("circle-exclamation"),
+            class = "btn-warning", 
+            style = "font-size: 16px; width: 100%;"
           )
         ),
-        fluidRow(
-          column(
-            width = 7,  # 左侧按钮
-            actionButton(
-              "register_repair", 
-              "登记修复品", 
-              icon = icon("hammer"),
-              class = "btn-success", 
-              style = "font-size: 16px; width: 100%;"
-            )
-          ),
-          column(
-            width = 5,  # 右侧开关
-            div(
-              tags$label("仅显示瑕疵品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
-              switchInput(
-                inputId = "show_defects_only",  # 开关 ID
-                label = NULL,                   # 不显示标签在开关上
-                value = FALSE                   # 默认值：关闭
-              )
-            )
+        div(
+          style = "margin-bottom: 20px;",
+          tags$label("仅显示无瑕品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
+          switchInput(
+            inputId = "show_perfects_only",  # 开关 ID
+            label = NULL,                   # 不显示标签在开关上
+            value = FALSE                   # 默认值：关闭
           )
         ),
         
-        tags$hr(style = "margin: 15px 0; border: none;"),  # 分割线
+        # 登记修复品部分
+        div(
+          style = "margin-bottom: 20px;",
+          actionButton(
+            "register_repair", 
+            "登记修复品", 
+            icon = icon("hammer"),
+            class = "btn-success", 
+            style = "font-size: 16px; width: 100%;"
+          )
+        ),
+        div(
+          style = "margin-bottom: 20px;",
+          tags$label("仅显示瑕疵品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
+          switchInput(
+            inputId = "show_defects_only",  # 开关 ID
+            label = NULL,                   # 不显示标签在开关上
+            value = FALSE                   # 默认值：关闭
+          )
+        ),
         
         # 备注输入框
         textAreaInput(
