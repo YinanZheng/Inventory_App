@@ -667,7 +667,7 @@ server <- function(input, output, session) {
   
   # 确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
-    handleOperation(
+    unique_ID <- handleOperation(
       operation_name = "入库",
       sku_input = input$inbound_sku,
       output_name = "inbound_item_info",
@@ -681,6 +681,51 @@ server <- function(input, output, session) {
       session = session,
       input = input
     )
+
+    # 检查是否启用了瑕疵品选项
+    defective_item <- input$defective_item
+    defect_notes <- trimws(input$defective_notes)
+    
+    # 如果选中瑕疵品并填写了备注
+    if (defective_item && defect_notes != "") {
+      # 获取当前日期
+      current_date <- format(Sys.Date(), "%Y-%m-%d", tz = "Asia/Shanghai")
+      # 在备注前添加日期
+      defect_notes <- paste0("[瑕疵 ", current_date, "] ", defect_notes)
+      
+      tryCatch({
+        # 查询当前的备注内容
+        current_notes <- dbGetQuery(
+          con,
+          "SELECT DefectNotes FROM unique_items WHERE UniqueID = ?",
+          params = list(unique_ID)
+        )
+        
+        # 如果当前已有备注，则拼接新的备注
+        if (nrow(current_notes) > 0 && !is.na(current_notes$DefectNotes[1])) {
+          updated_notes <- paste(current_notes$DefectNotes[1], defect_notes, sep = "; ")
+        } else {
+          updated_notes <- defect_notes
+        }
+        
+        # 更新数据库中的备注内容
+        dbExecute(
+          con,
+          "UPDATE unique_items SET DefectNotes = ? WHERE UniqueID = ?",
+          params = list(updated_notes, unique_ID)
+        )
+        showNotification("瑕疵品备注已成功添加！", type = "message")
+      }, error = function(e) {
+        showNotification(paste("添加备注时发生错误：", e$message), type = "error")
+      })
+    } else if (defective_item) {
+      # 如果勾选了瑕疵品但没有填写备注
+      showNotification("请填写瑕疵品备注！", type = "error")
+    } else {
+      # 未选择瑕疵品时，正常完成入库
+      showNotification("入库操作完成，无瑕疵品备注！", type = "message")
+    }
+    
   })
   
   # 监听选中行并更新 SKU
