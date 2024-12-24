@@ -970,7 +970,11 @@ server <- function(input, output, session) {
   
   # 动态生成运单号输入框
   output$additional_tracking_numbers <- renderUI({
-    rows <- tracking_rows()
+    rows <- tracking_rows()  # 获取当前行数
+    
+    if (rows < 2) {
+      return(NULL)  # 初始状态返回空，保持只有运单号1显示
+    }
     
     tracking_inputs <- lapply(2:rows, function(i) {
       # 提取当前输入框的值，防止重新渲染时被清空
@@ -995,7 +999,7 @@ server <- function(input, output, session) {
   # 监听增加运单号按钮点击
   observeEvent(input$add_tracking_btn, {
     rows <- tracking_rows()
-    if (rows < 3) {  # 最多允许2个运单号
+    if (rows < 3) {  # 最多允许2个额外运单号
       tracking_rows(rows + 1)
     } else {
       showNotification("最多只能添加 2 个运单号！", type = "warning")
