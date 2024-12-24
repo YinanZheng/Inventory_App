@@ -33,6 +33,9 @@ source("utils.R", local = TRUE)
 # 定义轮询间隔（以毫秒为单位）
 poll_interval <<- 10000  # 每 10 秒检查一次
 
+# 定义 PICTURE_TYPE_JPG 的值
+PICTURE_TYPE_JPG <- 5  # JPG 对应的图片类型值
+
 host_url <<- "http://54.254.120.88/"
 
 placeholder_300px_path <<- "https://dummyimage.com/300x300/cccccc/000000.png&text=No+Image"
