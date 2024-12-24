@@ -227,21 +227,19 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤状态不为“未知”的物品
-    data <- data[data$Defect != "未知" & data$Status == "国内入库", ]
+    # 默认过滤状态不为“未知”且状态为“国内入库”的物品
+    data <- data[!is.na(data$Defect) & data$Defect != "未知" & data$Status == "国内入库", ]
     
-    # 如果启用了“仅显示瑕疵品”，进一步过滤
-    if (input$show_defects_only) {
+    # 检查是否启用了“仅显示瑕疵品”，与“仅显示无瑕品”互斥
+    if (isTRUE(input$show_defects_only) && !isTRUE(input$show_pefects_only)) {
       data <- data[data$Defect == "瑕疵", ]
-    }
-    
-    # 如果启用了“仅显示无瑕品”，进一步过滤
-    if (input$show_pefects_only) {
+    } else if (isTRUE(input$show_pefects_only) && !isTRUE(input$show_defects_only)) {
       data <- data[data$Defect == "无瑕", ]
     }
     
     data
   })
+  
   
   # 根据物流方式筛选物品数据
   filtered_unique_items_data_logistics <- reactive({
