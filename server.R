@@ -962,6 +962,9 @@ server <- function(input, output, session) {
     })
   })
   
+  
+  ######
+  
   # 响应输入或扫描的 SKU，更新货架上的物品
   observeEvent(input$sold_sku, {
     sku <- trimws(input$sold_sku)  # 清理条形码输入空格
@@ -999,6 +1002,28 @@ server <- function(input, output, session) {
     })
   })
   
+  # 定义存储运单号动态行数的 reactiveVal
+  tracking_rows <- reactiveVal(1)
+  
+  # 动态生成运单号输入框
+  output$additional_tracking_numbers <- renderUI({
+    rows <- tracking_rows()
+    tracking_inputs <- lapply(2:rows, function(i) {
+      textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
+    })
+    do.call(tagList, tracking_inputs)
+  })
+  
+  # 监听增加运单号按钮点击
+  observeEvent(input$add_tracking_btn, {
+    rows <- tracking_rows()
+    if (rows < 4) {
+      tracking_rows(rows + 1)
+    } else {
+      showNotification("最多只能添加 3 个运单号！", type = "warning")
+    }
+  })
+  
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
   
@@ -1030,6 +1055,9 @@ server <- function(input, output, session) {
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
     })
   })
+  
+  
+  
   
   # 登记订单逻辑
   observeEvent(input$register_order_btn, {
