@@ -249,7 +249,7 @@ ui <- navbarPage(
               div(
                 id = "defective_notes_container",
                 style = "display: none; margin-top: 10px;",
-                textInput(
+                textAreaInput(
                   inputId = "defective_notes",
                   label = "瑕疵品备注：",
                   placeholder = "请输入备注内容...",

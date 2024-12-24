@@ -172,7 +172,7 @@ server <- function(input, output, session) {
       unique_items.DomesticShippingCost,
       unique_items.Status,
       unique_items.Defect,
-      unique_items.DefectNote,
+      unique_items.DefectNotes,
       unique_items.IntlShippingMethod,
       unique_items.IntlAirTracking,
       unique_items.IntlSeaTracking,
@@ -281,7 +281,8 @@ server <- function(input, output, session) {
   unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect",
                                                        column_mapping <- c(common_columns, list(
                                                          PurchaseTime = "采购日期",
-                                                         DomesticEntryTime = "入库日期")
+                                                         DomesticEntryTime = "入库日期",
+                                                         DefectNotes = "瑕疵品备注")
                                                        ), data = filtered_unique_items_data_defect)
   
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 

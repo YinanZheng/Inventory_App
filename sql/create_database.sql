@@ -85,7 +85,11 @@ ON DELETE SET NULL;
 
 -- 在 Defect 之后增加列
 ALTER TABLE unique_items
-ADD COLUMN DefectNote VARCHAR(255) AFTER Defect;
+ADD COLUMN DefectNotes VARCHAR(255) AFTER Defect;
+
+ALTER TABLE unique_items
+DROP COLUMN DefectNote;
+
 
 DESCRIBE unique_items;
 
