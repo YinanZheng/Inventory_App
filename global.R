@@ -14,7 +14,7 @@ library(RMariaDB)
 library(uuid)
 library(plotly)
 library(rlang)
-library(openxlsx)
+library(xlsx)
 library(lubridate)
 library(tidyr)
 
