@@ -414,6 +414,9 @@ ui <- navbarPage(
           
           # 订单录入表单标题
           tags$h4("订单登记", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+    
+          # 订单号
+          textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           
           # 电商平台选择
           selectInput(
@@ -423,9 +426,6 @@ ui <- navbarPage(
             selected = "",
             width = "100%"
           ),
-          
-          # 订单号
-          textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           
           # 顾客姓名
           textInput("customer_name", "顾客姓名", placeholder = "请输入顾客姓名", width = "100%"),
