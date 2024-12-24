@@ -227,18 +227,22 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤状态不为“未知”且状态为“国内入库”的物品
+    # 默认过滤条件：状态为“国内入库”且 Defect 不为“未知”
     data <- data[!is.na(data$Defect) & data$Defect != "未知" & data$Status == "国内入库", ]
     
-    # 检查是否启用了“仅显示瑕疵品”，与“仅显示无瑕品”互斥
-    if (isTRUE(input$show_defects_only) && !isTRUE(input$show_pefects_only)) {
+    # 处理开关互斥逻辑
+    if (isTRUE(input$show_defects_only)) {
+      # 如果仅显示瑕疵品
       data <- data[data$Defect == "瑕疵", ]
-    } else if (isTRUE(input$show_pefects_only) && !isTRUE(input$show_defects_only)) {
+    } else if (isTRUE(input$show_perfects_only)) {
+      # 如果仅显示无瑕品
       data <- data[data$Defect == "无瑕", ]
     }
     
+    # 返回过滤后的数据
     data
   })
+  
   
   
   # 根据物流方式筛选物品数据
@@ -1369,7 +1373,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
   # 处理登记为修复品
   observeEvent(input$register_repair, {
     selected_rows <- unique_items_table_defect_selected_row()  # 获取选中行索引
@@ -1411,7 +1414,19 @@ server <- function(input, output, session) {
     })
   })
   
-
+  # 监听“仅显示无瑕品”开关的状态变化
+  observeEvent(input$show_perfects_only, {
+    if (input$show_perfects_only && input$show_defects_only) {
+      updateSwitchInput(session, "show_defects_only", value = FALSE)
+    }
+  })
+  
+  # 监听“仅显示瑕疵品”开关的状态变化
+  observeEvent(input$show_defects_only, {
+    if (input$show_defects_only && input$show_perfects_only) {
+      updateSwitchInput(session, "show_perfects_only", value = FALSE)
+    }
+  })
   
   ################################################################
   ##                                                            ##

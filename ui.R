@@ -563,11 +563,10 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        # 登记瑕疵品 + 仅显示无瑕品开关
-        div(
-          style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;",
-          div(
-            style = "flex: 1; margin-right: 10px;",  # 按钮占据左侧宽度
+        # 登记瑕疵品和修复品部分
+        fluidRow(
+          column(
+            width = 7,  # 左侧按钮
             actionButton(
               "register_defective", 
               "登记瑕疵品", 
@@ -576,22 +575,21 @@ ui <- navbarPage(
               style = "font-size: 16px; width: 100%;"
             )
           ),
-          div(
-            style = "flex: 0.4;",  # 开关占据右侧小部分
-            tags$label("仅显示无瑕品", class = "control-label", style = "margin-bottom: 5px; display: block; text-align: center;"),  
-            switchInput(
-              inputId = "show_perfects_only",  # 开关 ID
-              label = NULL,                   # 不显示标签在开关上
-              value = FALSE                   # 默认值：关闭
+          column(
+            width = 5,  # 右侧开关
+            div(
+              tags$label("仅显示无瑕品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
+              switchInput(
+                inputId = "show_perfects_only",  # 开关 ID
+                label = NULL,                   # 不显示标签在开关上
+                value = FALSE                   # 默认值：关闭
+              )
             )
           )
         ),
-        
-        # 登记修复品 + 仅显示瑕疵品开关
-        div(
-          style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;",
-          div(
-            style = "flex: 1; margin-right: 10px;",  # 按钮占据左侧宽度
+        fluidRow(
+          column(
+            width = 7,  # 左侧按钮
             actionButton(
               "register_repair", 
               "登记修复品", 
@@ -600,26 +598,27 @@ ui <- navbarPage(
               style = "font-size: 16px; width: 100%;"
             )
           ),
-          div(
-            style = "flex: 0.4;",  # 开关占据右侧小部分
-            tags$label("仅显示瑕疵品", class = "control-label", style = "margin-bottom: 5px; display: block; text-align: center;"),  
-            switchInput(
-              inputId = "show_defects_only",  # 开关 ID
-              label = NULL,                   # 不显示标签在开关上
-              value = FALSE                   # 默认值：关闭
+          column(
+            width = 5,  # 右侧开关
+            div(
+              tags$label("仅显示瑕疵品", class = "control-label", style = "font-size: 12px; display: block; text-align: center;"),  
+              switchInput(
+                inputId = "show_defects_only",  # 开关 ID
+                label = NULL,                   # 不显示标签在开关上
+                value = FALSE                   # 默认值：关闭
+              )
             )
           )
         ),
         
+        tags$hr(style = "margin: 15px 0; border: none;"),  # 分割线
+        
         # 备注输入框
-        div(
-          style = "margin-bottom: 20px;",
-          textAreaInput(
-            inputId = "manage_defective_notes",
-            label = "备注：",
-            placeholder = "请输入备注内容...",
-            width = "100%"
-          )
+        textAreaInput(
+          inputId = "manage_defective_notes",
+          label = "备注：",
+          placeholder = "请输入备注内容...",
+          width = "100%"
         )
       ),
       
@@ -627,13 +626,22 @@ ui <- navbarPage(
       div(
         class = "main-panel",
         fluidRow(
-          column(12, actionButton("toggle_item_table_defect", "物品状态表（点击显示/隐藏）",
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-          column(12, div(
-            id = "item_table_container_defect",  # 容器 ID
-            style = "margin-bottom: 100px;",
-            uniqueItemsTableUI("unique_items_table_defect")
-          ))
+          column(
+            12, 
+            actionButton(
+              "toggle_item_table_defect", 
+              "物品状态表（点击显示/隐藏）",
+              style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;"
+            )
+          ),
+          column(
+            12, 
+            div(
+              id = "item_table_container_defect",  # 容器 ID
+              style = "margin-bottom: 100px;",
+              uniqueItemsTableUI("unique_items_table_defect")
+            )
+          )
         )
       )
     )
