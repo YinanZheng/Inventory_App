@@ -2029,7 +2029,7 @@ server <- function(input, output, session) {
         for (i in seq_len(nrow(final_data))) {
           image_path <- as.character(final_data[i, image_col])
           if (!is.na(image_path) && file.exists(image_path)) {
-            addPicture(image_path, sheet, startRow = i + 1, startColumn = image_col, scale = 1)
+            addPicture(image_path, sheet, startRow = i + 1, startColumn = image_col, scale = 1, type = 5)
           }
         }
       }
