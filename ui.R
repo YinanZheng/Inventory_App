@@ -563,43 +563,38 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         fluidRow(
-          # column(7, textInput("defect_sku", "瑕疵品登记:", placeholder = "请扫描或输入SKU")),
-          # column(3, numericInput("defect_quantity", "数量:", value = 1, min = 1, step = 1)),
           column(12, actionButton(
-            "defect_register", 
+            "register_defective", 
             "登记瑕疵品", 
             icon = icon("circle-exclamation"),
             class = "btn-warning", 
             style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
-          ))
+          )
+          ),
+          column(5, div(
+            tags$label("仅显示无瑕品", class = "control-label"),  
+            switchInput(
+              inputId = "show_perfects_only",  # 开关 ID
+              label = NULL,                  # 不显示标签在开关上
+              value = FALSE                  # 默认值：关闭
+            )
+          )
+          )
+        )
+      ),
+      
+      tags$hr(style = "margin: 5px 0; border: none;"),
+      
+      fluidRow(
+        column(7, actionButton(
+          "register_repair", 
+          "登记修复品", 
+          icon = icon("hammer"),
+          class = "btn-success", 
+          style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
+        )
         ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        fluidRow(
-          # column(7, textInput("repair_sku", "瑕疵品修复:", placeholder = "请扫描或输入SKU")),
-          # column(3, numericInput("repair_quantity", "数量:", value = 1, min = 1, step = 1)),
-          column(12, actionButton(
-            "repair_register", 
-            "登记修复品", 
-            icon = icon("hammer"),
-            class = "btn-success", 
-            style = "font-size: 14px; width: 100%; height: 42px; padding: 0px; margin-top: 27px;"
-          ))
-        ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        textAreaInput(
-          inputId = "manage_defective_notes",
-          label = "备注：",
-          placeholder = "请输入备注内容...",
-          width = "100%"
-        ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        tags$div(
+        column(5, div(
           tags$label("仅显示瑕疵品", class = "control-label"),  
           switchInput(
             inputId = "show_defects_only",  # 开关 ID
@@ -607,6 +602,16 @@ ui <- navbarPage(
             value = FALSE                  # 默认值：关闭
           )
         )
+        )
+      ),
+      
+      tags$hr(style = "margin: 5px 0; border: none;"),
+      
+      textAreaInput(
+        inputId = "manage_defective_notes",
+        label = "备注：",
+        placeholder = "请输入备注内容...",
+        width = "100%"
       ),
       
       div(

@@ -228,11 +228,16 @@ server <- function(input, output, session) {
     data <- unique_items_data()
     
     # 默认过滤状态不为“未知”的物品
-    data <- data[data$Defect != "未知", ]
+    data <- data[data$Defect != "未知" & data$Status == "国内入库", ]
     
     # 如果启用了“仅显示瑕疵品”，进一步过滤
     if (input$show_defects_only) {
       data <- data[data$Defect == "瑕疵", ]
+    }
+    
+    # 如果启用了“仅显示无瑕品”，进一步过滤
+    if (input$show_pefects_only) {
+      data <- data[data$Defect == "无瑕", ]
     }
     
     data
@@ -1408,17 +1413,7 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  # 监听选中行并更新 SKU
-  observeEvent(unique_items_table_defect_selected_row(), {
-    if (!is.null(unique_items_table_defect_selected_row()) && length(unique_items_table_defect_selected_row()) > 0) {
-      selected_sku <- filtered_unique_items_data_defect()[unique_items_table_defect_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "defect_sku", value = selected_sku)
-      updateTextInput(session, "repair_sku", value = selected_sku)
-    }
-  })
-  
-  
+
   
   ################################################################
   ##                                                            ##
