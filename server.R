@@ -227,6 +227,10 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
+    # 默认过滤状态不为“未知”的物品
+    data <- data[data$Status != "未知", ]
+    
+    # 如果启用了“仅显示瑕疵品”，进一步过滤
     if (input$show_defects_only) {
       data <- data[data$Defect == "瑕疵", ]
     }
@@ -284,7 +288,7 @@ server <- function(input, output, session) {
                                                          PurchaseTime = "采购日期",
                                                          DomesticEntryTime = "入库日期",
                                                          DefectNotes = "瑕疵品备注")
-                                                       ), data = filtered_unique_items_data_defect)
+                                                       ), selection = "multiple", data = filtered_unique_items_data_defect)
   
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
                                                          column_mapping <- c(common_columns, list(
@@ -1321,83 +1325,71 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 监听瑕疵品登记
-  observeEvent(input$defect_register, {
-    sku <- trimws(input$defect_sku)
-    quantity <- input$defect_quantity
-    defect_notes <- trimws(input$manage_defective_notes)
+  # 处理登记为瑕疵品
+  observeEvent(input$register_defective, {
+    selected_rows <- unique_items_table_defect_selected_row()  # 获取选中行索引
     
-    if (is.null(sku) || sku == "" || is.null(quantity) || quantity <= 0) {
-      showNotification("请输入有效的条形码和数量！", type = "error")
-      return()
-    }
-    
-    sku_data <- dbGetQuery(con, "SELECT * FROM unique_items WHERE SKU = ?", params = list(sku))
-    
-    if (nrow(sku_data) == 0) {
-      showNotification("条形码未找到！", type = "error")
-      return()
-    }
-    
-    available_items <- sku_data[sku_data$Status == "国内入库" & sku_data$Defect == "无瑕", ]
-    available_quantity <- nrow(available_items)
-    
-    if (quantity > available_quantity) {
-      showNotification("库存不足，无法登记为瑕疵品！", type = "error")
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选择物品！", type = "error")
       return()
     }
     
     tryCatch({
-      selected_ids <- available_items$UniqueID[1:quantity]
-      lapply(selected_ids, function(unique_id) {
-        # 更新状态
-        update_status(con, unique_id, "国内入库", defect_status = "瑕疵")
+      # 获取选中物品的数据
+      selected_data <- filtered_unique_items_data_defect()[selected_rows, ]
+      
+      # 遍历每个选中物品，进行状态更新和备注添加
+      lapply(selected_data$UniqueID, function(unique_id) {
+        # 更新状态为瑕疵
+        update_status(con, unique_id, "国内入库", defect_status = "瑕疵", refresh_trigger = unique_items_data_refresh_trigger)
+        
         # 添加备注
-        add_defective_note(con, unique_id, defect_notes, status_label = "瑕疵", refresh_trigger = unique_items_data_refresh_trigger)
+        defect_notes <- trimws(input$manage_defective_notes)
+        add_defective_note(
+          con = con,
+          unique_id = unique_id,
+          note_content = defect_notes,
+          status_label = "瑕疵"
+        )
       })
-      showNotification("瑕疵品登记成功，并成功添加备注！", type = "message")
+      
+      showNotification("所选物品已成功登记为瑕疵品！", type = "message")
     }, error = function(e) {
       showNotification(paste("登记失败：", e$message), type = "error")
     })
   })
   
-  # 监听修复品登记
-  observeEvent(input$repair_register, {
-    sku <- trimws(input$repair_sku)
-    quantity <- input$repair_quantity
-    repair_notes <- trimws(input$manage_defective_notes)
+  # 处理登记为修复品
+  observeEvent(input$register_repair, {
+    selected_rows <- unique_items_table_defect_selected_row()  # 获取选中行索引
     
-    if (is.null(sku) || sku == "" || is.null(quantity) || quantity <= 0) {
-      showNotification("请输入有效的条形码和数量！", type = "error")
-      return()
-    }
-    
-    sku_data <- dbGetQuery(con, "SELECT * FROM unique_items WHERE SKU = ?", params = list(sku))
-    
-    if (nrow(sku_data) == 0) {
-      showNotification("条形码未找到！", type = "error")
-      return()
-    }
-    
-    defect_items <- sku_data[sku_data$Status == "国内入库" & sku_data$Defect == "瑕疵", ]
-    defect_quantity <- nrow(defect_items)
-    
-    if (quantity > defect_quantity) {
-      showNotification("瑕疵品数量不足，无法修复！", type = "error")
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请先选择物品！", type = "error")
       return()
     }
     
     tryCatch({
-      selected_ids <- defect_items$UniqueID[1:quantity]
-      lapply(selected_ids, function(unique_id) {
-        # 更新状态
-        update_status(con, unique_id, "国内入库", defect_status = "修复")
+      # 获取选中物品的数据
+      selected_data <- filtered_unique_items_data_defect()[selected_rows, ]
+      
+      # 遍历每个选中物品，进行状态更新和备注添加
+      lapply(selected_data$UniqueID, function(unique_id) {
+        # 更新状态为修复
+        update_status(con, unique_id, "国内入库", defect_status = "修复", refresh_trigger = unique_items_data_refresh_trigger)
+        
         # 添加备注
-        add_defective_note(con, unique_id, repair_notes, status_label = "修复", refresh_trigger = unique_items_data_refresh_trigger)
+        repair_notes <- trimws(input$manage_defective_notes)
+        add_defective_note(
+          con = con,
+          unique_id = unique_id,
+          note_content = repair_notes,
+          status_label = "修复"
+        )
       })
-      showNotification("修复登记成功，并成功添加备注！", type = "message")
+      
+      showNotification("所选物品已成功登记为修复品！", type = "message")
     }, error = function(e) {
-      showNotification(paste("修复登记失败：", e$message), type = "error")
+      showNotification(paste("登记失败：", e$message), type = "error")
     })
   })
   
