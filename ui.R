@@ -425,13 +425,13 @@ ui <- navbarPage(
           ),
           
           # 订单号
-          numericInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
+          textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           
           # 顾客姓名
           textInput("customer_name", "顾客姓名", placeholder = "请输入顾客姓名", width = "100%"),
           
           # 运单号1
-          numericInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
+          textInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
           
           # 运单号动态添加部分
           uiOutput("additional_tracking_numbers"),

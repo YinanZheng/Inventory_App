@@ -979,7 +979,7 @@ server <- function(input, output, session) {
     
     # 动态生成从运单号2开始的输入框
     tracking_inputs <- lapply(2:rows, function(i) {
-      numericInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
+      textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
     })
     do.call(tagList, tracking_inputs)
   })
