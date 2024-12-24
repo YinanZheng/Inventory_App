@@ -565,16 +565,20 @@ ui <- navbarPage(
         
         # 登记瑕疵品 + 仅显示无瑕品开关
         div(
-          style = "display: flex; align-items: center; margin-bottom: 20px;",
-          actionButton(
-            "register_defective", 
-            "登记瑕疵品", 
-            icon = icon("circle-exclamation"),
-            class = "btn-warning", 
-            style = "font-size: 16px; width: 70%; margin-right: 10px;"
+          style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;",
+          div(
+            style = "flex: 1; margin-right: 10px;",  # 按钮占据左侧宽度
+            actionButton(
+              "register_defective", 
+              "登记瑕疵品", 
+              icon = icon("circle-exclamation"),
+              class = "btn-warning", 
+              style = "font-size: 16px; width: 100%;"
+            )
           ),
           div(
-            tags$label("仅显示无瑕品", class = "control-label", style = "margin-bottom: 0;"),  
+            style = "flex: 0.4;",  # 开关占据右侧小部分
+            tags$label("仅显示无瑕品", class = "control-label", style = "margin-bottom: 5px; display: block; text-align: center;"),  
             switchInput(
               inputId = "show_perfects_only",  # 开关 ID
               label = NULL,                   # 不显示标签在开关上
@@ -585,16 +589,20 @@ ui <- navbarPage(
         
         # 登记修复品 + 仅显示瑕疵品开关
         div(
-          style = "display: flex; align-items: center; margin-bottom: 20px;",
-          actionButton(
-            "register_repair", 
-            "登记修复品", 
-            icon = icon("hammer"),
-            class = "btn-success", 
-            style = "font-size: 16px; width: 70%; margin-right: 10px;"
+          style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 20px;",
+          div(
+            style = "flex: 1; margin-right: 10px;",  # 按钮占据左侧宽度
+            actionButton(
+              "register_repair", 
+              "登记修复品", 
+              icon = icon("hammer"),
+              class = "btn-success", 
+              style = "font-size: 16px; width: 100%;"
+            )
           ),
           div(
-            tags$label("仅显示瑕疵品", class = "control-label", style = "margin-bottom: 0;"),  
+            style = "flex: 0.4;",  # 开关占据右侧小部分
+            tags$label("仅显示瑕疵品", class = "control-label", style = "margin-bottom: 5px; display: block; text-align: center;"),  
             switchInput(
               inputId = "show_defects_only",  # 开关 ID
               label = NULL,                   # 不显示标签在开关上
