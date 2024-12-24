@@ -562,7 +562,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        
+        width = "300px",
         # 登记瑕疵品部分
         div(
           style = "margin-bottom: 20px;",
