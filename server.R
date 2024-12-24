@@ -518,7 +518,7 @@ server <- function(input, output, session) {
         adjust_inventory(
           con = con,
           sku = added_items_df$SKU[i],
-          adjustment = added_items_df$Quantity[i],  # 增加库存
+          adjustment = 0,  # 采购物品尚未入库，库存不变
           maker = added_items_df$Maker[i],
           major_type = added_items_df$MajorType[i],
           minor_type = added_items_df$MinorType[i],
@@ -705,6 +705,30 @@ server <- function(input, output, session) {
       session = session,
       input = input
     )
+    
+    # 根据 unique_ID 查询对应的物品信息
+    item_info <- dbGetQuery(con, "SELECT SKU FROM unique_items WHERE UniqueID = ?", 
+                            params = list(unique_ID))
+    
+    if (nrow(item_info) == 0) {
+      showNotification("未找到对应的物品信息！", type = "error")
+      return()
+    }
+    
+    # 提取 SKU 信息
+    sku <- item_info$SKU[1]
+    
+    # 调用 adjust_inventory 增加库存，忽略成本参数
+    adjust_result <- adjust_inventory(
+      con = con,
+      sku = sku,
+      adjustment = 1  # 入库时库存增加 1
+    )
+    
+    if (!adjust_result) {
+      showNotification("库存增加失败！", type = "error")
+      return()
+    }
     
     # 检查是否启用了瑕疵品选项
     defective_item <- input$defective_item
