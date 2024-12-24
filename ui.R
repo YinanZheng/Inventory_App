@@ -442,6 +442,8 @@ ui <- navbarPage(
             style = "background-color: #28A745; color: white; border: none; margin-top: 10px; width: 100%; font-size: 14px;"
           ),
           
+          tags$hr(), # 分隔线
+          
           # 订单图片上传
           imageModuleUI("image_sold", label = "订单图片上传", label_color = "#28A745"),
           
