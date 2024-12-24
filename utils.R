@@ -714,7 +714,7 @@ handleOperation <- function(
       updateCheckboxInput(session, "defective_item", value = FALSE)
     }
     
-    return(sku_items$UniqueID[1])
+    return(as.character(sku_items$UniqueID[1]))
     
   }, error = function(e) {
     # 错误处理
