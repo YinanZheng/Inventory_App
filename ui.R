@@ -592,7 +592,7 @@ ui <- navbarPage(
         
         textAreaInput(
           inputId = "manage_defective_notes",
-          label = "瑕疵品备注：",
+          label = "备注：",
           placeholder = "请输入备注内容...",
           width = "100%"
         ),

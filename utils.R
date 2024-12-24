@@ -769,6 +769,41 @@ update_status <- function(
   }
 }
 
+# 添加瑕疵备注
+add_defective_note <- function(con, unique_id, note_content, status_label = "瑕疵", refresh_trigger = NULL) {
+  # 获取当前日期并格式化
+  current_date <- format(Sys.Date(), "%Y-%m-%d", tz = "Asia/Shanghai")
+  
+  # 为备注添加时间戳和状态标记
+  new_note <- paste0("[", status_label, " ", current_date, "] ", note_content)
+  
+  # 查询现有备注
+  current_notes <- dbGetQuery(
+    con,
+    "SELECT DefectNotes FROM unique_items WHERE UniqueID = ?",
+    params = list(unique_id)
+  )
+  
+  # 拼接备注
+  if (nrow(current_notes) > 0 && !is.na(current_notes$DefectNotes[1])) {
+    updated_notes <- paste(current_notes$DefectNotes[1], new_note, sep = "; ")
+  } else {
+    updated_notes <- new_note
+  }
+  
+  # 更新数据库中的备注
+  dbExecute(
+    con,
+    "UPDATE unique_items SET DefectNotes = ? WHERE UniqueID = ?",
+    params = list(updated_notes, unique_id)
+  )
+  
+  # 触发刷新机制
+  if (!is.null(refresh_trigger)) {
+    refresh_trigger(!refresh_trigger())
+  }
+}
+
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
