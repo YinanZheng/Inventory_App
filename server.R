@@ -1120,9 +1120,11 @@ server <- function(input, output, session) {
       )
       print(paste("订单图片路径:", order_image_path))  # 调试信息
       
-      # 确保所有参数为长度为1的值
-      tracking_number2 <- ifelse(is.null(input$tracking_number2) || input$tracking_number2 == "", NA, input$tracking_number2)
-      tracking_number3 <- ifelse(is.null(input$tracking_number3) || input$tracking_number3 == "", NA, input$tracking_number3)
+      # 使用 %||% 确保所有参数为长度为 1 的值
+      tracking_number1 <- input$tracking_number1 %||% NA
+      tracking_number2 <- input$tracking_number2 %||% NA
+      tracking_number3 <- input$tracking_number3 %||% NA
+      order_notes <- input$order_notes %||% NA
       
       if (nrow(existing_order) > 0) {
         # 如果订单号已存在，更新图片和其他信息
@@ -1136,10 +1138,10 @@ server <- function(input, output, session) {
       WHERE OrderID = ?",
                   params = list(
                     order_image_path, 
-                    input$tracking_number1, 
+                    tracking_number1, 
                     tracking_number2,
                     tracking_number3,
-                    input$order_notes, 
+                    order_notes, 
                     input$order_id
                   )
         )
@@ -1151,10 +1153,10 @@ server <- function(input, output, session) {
       VALUES (?, ?, ?, ?, ?, ?)",
                   params = list(
                     input$order_id,
-                    input$tracking_number1,
+                    tracking_number1,
                     tracking_number2,
                     tracking_number3,
-                    input$order_notes,
+                    order_notes,
                     order_image_path
                   )
         )
