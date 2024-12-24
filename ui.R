@@ -415,12 +415,6 @@ ui <- navbarPage(
           # 订单录入表单标题
           tags$h4("订单登记", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
           
-          # 订单号
-          textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
-          
-          # 顾客姓名
-          textInput("customer_name", "顾客姓名", placeholder = "请输入顾客姓名", width = "100%"),
-          
           # 电商平台选择
           selectInput(
             inputId = "platform",
@@ -430,6 +424,12 @@ ui <- navbarPage(
             width = "100%"
           ),
           
+          # 订单号
+          textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
+          
+          # 顾客姓名
+          textInput("customer_name", "顾客姓名", placeholder = "请输入顾客姓名", width = "100%"),
+          
           # 运单号1
           textInput("tracking_number1", "运单号 1", placeholder = "请输入运单号", width = "100%"),
           
@@ -437,7 +437,7 @@ ui <- navbarPage(
           uiOutput("additional_tracking_numbers"),
           actionButton(
             "add_tracking_btn",
-            label = NULL,
+            label = "点击增加一行运单号输入栏",
             icon = icon("plus"),
             style = "background-color: #28A745; color: white; border: none; margin-top: 10px; width: 100%; font-size: 14px;"
           ),
@@ -448,15 +448,27 @@ ui <- navbarPage(
           # 订单备注
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
           
-          # 登记按钮
-          actionButton(
-            "register_order_btn",
-            "登记/更新订单",
-            icon = icon("save"),
-            class = "btn-primary",
-            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
+          # 按钮区
+          div(
+            style = "margin-top: 10px; display: flex; justify-content: space-between;",
+            actionButton(
+              "register_order_btn",
+              "登记/更新订单",
+              icon = icon("save"),
+              class = "btn-primary",
+              style = "font-size: 16px; width: 48%; height: 42px;"
+            ),
+            actionButton(
+              "clear_order_btn",
+              "清空订单输入",
+              icon = icon("eraser"),
+              class = "btn-warning",
+              style = "font-size: 16px; width: 48%; height: 42px;"
+            )
           )
         ),
+        
+        tags$hr(), # 分隔线
         
         # 国际运输方式选择
         radioButtons(
