@@ -64,8 +64,13 @@ CREATE TABLE orders (
 USE inventory_system;
 
 ALTER TABLE orders
+DROP COLUMN Platform;
+
+ALTER TABLE orders
 ADD COLUMN CustomerName VARCHAR(50) AFTER UsTrackingNumber3,
-ADD COLUMN Platform VARCHAR(50) AFTER CustomerName;
+
+ALTER TABLE orders
+ADD COLUMN Platform ENUM('Etsy', 'Shopify', 'TikTok', '其他') NOT NULL AFTER CustomerName;
 
 DESCRIBE orders;
 

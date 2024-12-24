@@ -410,21 +410,52 @@ ui <- navbarPage(
         
         div(
           class = "card",
-          style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           
-          # 订单录入表单
+          # 订单录入表单标题
           tags$h4("订单登记", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+          
+          # 订单号
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
-          textInput("tracking_number1", "运单号", placeholder = "请输入运单号", width = "100%"),
+          
+          # 顾客姓名
+          textInput("customer_name", "顾客姓名", placeholder = "请输入顾客姓名", width = "100%"),
+          
+          # 电商平台选择
+          selectInput(
+            inputId = "platform",
+            label = "电商平台",
+            choices = c("请选择平台" = "", "Etsy" = "Etsy", "Shopify" = "Shopify", "TikTok" = "TikTok", "其他" = "其他"),
+            selected = "",
+            width = "100%"
+          ),
+          
+          # 运单号1
+          textInput("tracking_number1", "运单号 1", placeholder = "请输入运单号", width = "100%"),
+          
+          # 运单号动态添加部分
+          uiOutput("additional_tracking_numbers"),
+          actionButton(
+            "add_tracking_btn",
+            label = NULL,
+            icon = icon("plus"),
+            style = "background-color: #28A745; color: white; border: none; margin-top: 10px; width: 100%; font-size: 14px;"
+          ),
+          
+          # 订单图片上传
           imageModuleUI("image_sold", label = "订单图片上传", label_color = "#28A745"),
+          
+          # 订单备注
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
+          
+          # 登记按钮
           actionButton(
             "register_order_btn",
             "登记/更新订单",
             icon = icon("save"),
             class = "btn-primary",
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
-          ),
+          )
         ),
         
         # 国际运输方式选择
