@@ -210,6 +210,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        style = "width: 400px;", # override 宽度
         
         fluidRow(
           column(
