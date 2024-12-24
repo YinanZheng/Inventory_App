@@ -706,6 +706,11 @@ server <- function(input, output, session) {
       input = input
     )
     
+    # 检查 unique_ID 是否为空
+    if (is.null(unique_ID) || unique_ID == "") {
+      return()
+    }
+    
     # 根据 unique_ID 查询对应的物品信息
     item_info <- dbGetQuery(con, "SELECT SKU FROM unique_items WHERE UniqueID = ?", 
                             params = list(unique_ID))
@@ -742,7 +747,8 @@ server <- function(input, output, session) {
           con = con,
           unique_id = unique_ID,
           note_content = defect_notes,
-          status_label = "瑕疵"
+          status_label = "瑕疵",
+          refresh_trigger = NULL
         )
         showNotification("瑕疵品备注已成功添加！", type = "message")
       }, error = function(e) {
@@ -755,6 +761,10 @@ server <- function(input, output, session) {
       # 未选择瑕疵品时，正常完成入库
       showNotification("入库操作完成！", type = "message")
     }
+    
+    # 更新 inventory, unique_items数据并触发 UI 刷新
+    inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+    refresh_trigger = unique_items_data_refresh_trigger
   })
   
   
@@ -1170,6 +1180,8 @@ server <- function(input, output, session) {
           sku = sku,
           adjustment = -1  # 减少 1 的库存数量
         )
+        
+        inventory(dbGetQuery(con, "SELECT * FROM inventory"))
         
         if (!adjustment_result) {
           showNotification(paste("库存调整失败：SKU", sku, "，操作已终止！"), type = "error")
