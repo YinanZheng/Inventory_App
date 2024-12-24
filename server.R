@@ -909,7 +909,8 @@ server <- function(input, output, session) {
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
   
-
+  
+  ######
   
   # 更新供应商名称
   observeEvent(makers_df(), {
@@ -968,26 +969,30 @@ server <- function(input, output, session) {
   # 定义存储运单号动态行数的 reactiveVal，初始值为 1
   tracking_rows <- reactiveVal(1)
   
+  # 保存动态运单号的当前值
+  tracking_values <- reactiveVal(list(tracking_number2 = "", tracking_number3 = ""))
+  
   # 动态生成运单号输入框
   output$additional_tracking_numbers <- renderUI({
-    rows <- tracking_rows()  # 获取当前行数
+    rows <- tracking_rows()
     
     if (rows < 2) {
       return(NULL)  # 初始状态返回空，保持只有运单号1显示
     }
     
+    current_values <- tracking_values()  # 获取当前值
+    
     tracking_inputs <- lapply(2:rows, function(i) {
-      # 提取当前输入框的值，防止重新渲染时被清空
       value <- switch(
         i,
-        "2" = input$tracking_number2 %||% "",  # 保留运单号2的值
-        "3" = input$tracking_number3 %||% ""  # 保留运单号3的值
+        "2" = current_values$tracking_number2 %||% "",
+        "3" = current_values$tracking_number3 %||% ""
       )
       
       textInput(
         paste0("tracking_number", i),
         paste0("运单号 ", i),
-        value = value,  # 赋予当前值
+        value = value,  # 保留当前值
         placeholder = "请输入运单号",
         width = "100%"
       )
@@ -999,7 +1004,15 @@ server <- function(input, output, session) {
   # 监听增加运单号按钮点击
   observeEvent(input$add_tracking_btn, {
     rows <- tracking_rows()
+    
     if (rows < 3) {  # 最多允许2个额外运单号
+      # 保存当前输入框的值
+      current_values <- tracking_values()
+      tracking_values(list(
+        tracking_number2 = input$tracking_number2 %||% current_values$tracking_number2,
+        tracking_number3 = input$tracking_number3 %||% current_values$tracking_number3
+      ))
+      
       tracking_rows(rows + 1)
     } else {
       showNotification("最多只能添加 2 个运单号！", type = "warning")
@@ -1060,7 +1073,6 @@ server <- function(input, output, session) {
                                    params = list(input$order_id)
       )
       
-      # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
         showNotification("已找到订单信息！字段已自动填充。", type = "message")
         
@@ -1070,24 +1082,21 @@ server <- function(input, output, session) {
         updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
         
+        # 保存运单号2和运单号3的值
+        tracking_values(list(
+          tracking_number2 = existing_order$UsTrackingNumber2[1] %||% "",
+          tracking_number3 = existing_order$UsTrackingNumber3[1] %||% ""
+        ))
+        
         # 根据是否存在运单号动态调整输入框显示
-        tracking_numbers <- c(
-          existing_order$UsTrackingNumber1[1],
+        valid_tracking_count <- sum(!is.na(c(
           existing_order$UsTrackingNumber2[1],
           existing_order$UsTrackingNumber3[1]
-        )
-        
-        # 动态调整运单号输入栏的数量
-        valid_tracking_count <- sum(!is.na(tracking_numbers) & tracking_numbers != "")
-        tracking_rows(max(valid_tracking_count, 1))  # 至少显示一个运单号输入框
-        
-        # 更新运单号 2 和 3
-        if (valid_tracking_count > 1) {
-          updateTextInput(session, "tracking_number2", value = tracking_numbers[2])
-        }
-        if (valid_tracking_count > 2) {
-          updateTextInput(session, "tracking_number3", value = tracking_numbers[3])
-        }
+        )) & c(
+          existing_order$UsTrackingNumber2[1] != "",
+          existing_order$UsTrackingNumber3[1] != ""
+        ))
+        tracking_rows(max(valid_tracking_count + 1, 1))  # 至少显示一个运单号输入框
       } else {
         # 如果订单记录不存在，清空所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
@@ -1095,15 +1104,13 @@ server <- function(input, output, session) {
         updateTextInput(session, "customer_name", value = "")
         updateSelectInput(session, "platform", selected = "")
         updateTextInput(session, "tracking_number1", value = "")
-        updateTextInput(session, "tracking_number2", value = "")
-        updateTextInput(session, "tracking_number3", value = "")
         updateTextAreaInput(session, "order_notes", value = "")
         
-        # 隐藏动态运单号输入框
+        # 重置动态输入框
+        tracking_values(list(tracking_number2 = "", tracking_number3 = ""))
         tracking_rows(1)
       }
     }, error = function(e) {
-      # 捕获错误并通知用户
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
     })
   })
@@ -1215,7 +1222,8 @@ server <- function(input, output, session) {
     showNotification("已清空所有输入！", type = "message")
   })
   
-  #####
+  
+  ######
   
   # 渲染货架
   output$shelf_table <- renderDT({
