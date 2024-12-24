@@ -389,6 +389,29 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL, ship
 }
 
 
+update_order_id <- function(con, unique_id, order_id) {
+  if (is.null(order_id) || order_id == "") {
+    showNotification("订单号不能为空！", type = "error")
+    return()
+  }
+  
+  tryCatch({
+    # 构造 SQL 更新语句
+    query <- "UPDATE unique_items SET OrderID = ? WHERE UniqueID = ?"
+    params <- list(order_id, unique_id)
+    
+    # 执行 SQL 更新
+    dbExecute(con, query, params = params)
+    
+    # 成功提示
+    showNotification(paste("订单号已成功更新，UniqueID:", unique_id), type = "message")
+  }, error = function(e) {
+    # 错误提示
+    showNotification(paste("更新订单号时发生错误：", e$message), type = "error")
+  })
+}
+
+
 fetchSkuData <- function(sku, con) {
   query <- "
     SELECT 

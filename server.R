@@ -1242,13 +1242,20 @@ server <- function(input, output, session) {
           stop("库存调整失败")
         }
         
-        # 更新 unique_items 表中的状态和订单号
+        # 更新 unique_items 表中的状态
         update_status(
           con = con,
           unique_id = item$UniqueID,
           new_status = "国内售出",
           shipping_method = input$sold_shipping_method,
           refresh_trigger = unique_items_data_refresh_trigger
+        )
+        
+        # 更新订单号
+        update_order_id(
+          con = con,
+          unique_id = item$UniqueID,
+          order_id = input$order_id
         )
       })
       
