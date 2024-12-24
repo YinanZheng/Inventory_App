@@ -121,7 +121,7 @@ server <- function(input, output, session) {
   
   # 库存表 （过滤）
   filtered_inventory <- reactive({
-
+    
     result <- inventory()
     
     # Return empty inventory if no results
@@ -328,7 +328,7 @@ server <- function(input, output, session) {
   ####################################################################################################################################
   
   
-
+  
   ################################################################
   ##                                                            ##
   ## 采购分页                                                   ##
@@ -386,7 +386,7 @@ server <- function(input, output, session) {
   
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
-
+  
   # Handle add item button click
   observeEvent(input$add_btn, {
     # 验证输入
@@ -510,7 +510,7 @@ server <- function(input, output, session) {
       
       # 同时添加信息到 unique_items 表中
       purchase_date <- format(as.Date(input$purchase_date), "%Y-%m-%d")
-
+      
       batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
         sku <- added_items_df$SKU[i]
         quantity <- added_items_df$Quantity[i]
@@ -632,7 +632,7 @@ server <- function(input, output, session) {
       
       # 重置图片控件
       image_purchase$reset()
-
+      
       # 通知用户
       showNotification("输入已清空！", type = "message")
     }, error = function(e) {
@@ -642,7 +642,7 @@ server <- function(input, output, session) {
   })
   
   
-    
+  
   ################################################################
   ##                                                            ##
   ## 入库分页                                                   ##
@@ -803,7 +803,7 @@ server <- function(input, output, session) {
   # 缓存 makers_df
   makers_df <- reactive({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
-
+    
     if (!is.null(makers) && length(makers) > 0) {
       data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
         mutate(Pinyin = remove_tone(stri_trans_general(Maker, "Latin")))
@@ -811,7 +811,7 @@ server <- function(input, output, session) {
       data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
     }
   })
-
+  
   # 更新供应商名称
   observeEvent(makers_df(), {
     update_maker_choices(session, "sold_maker", makers_df())
@@ -856,7 +856,7 @@ server <- function(input, output, session) {
       update_maker_choices(session, "sold_maker", makers_df())
       updateTextInput(session, "sold_name", value = "")
       updateTextInput(session, "sold_sku", value = "")
-
+      
       showNotification("筛选条件已重置！", type = "message")
     }, error = function(e) {
       showNotification("重置输入时发生错误，请重试！", type = "error")
@@ -989,7 +989,7 @@ server <- function(input, output, session) {
       showNotification(paste("登记订单时发生错误：", e$message), type = "error")
     })
   })
-
+  
   # 渲染货架
   output$shelf_table <- renderDT({
     render_table_with_images(shelf_items(), 
@@ -1003,7 +1003,7 @@ server <- function(input, output, session) {
                              image_column = "ItemImagePath",
                              options = list(fixedHeader = TRUE))$datatable
   })
-
+  
   # 渲染箱子
   output$box_table <- renderDT({
     render_table_with_images(box_items(), 
@@ -1101,7 +1101,7 @@ server <- function(input, output, session) {
       
       # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-
+      
       showNotification("订单已完成售出并更新状态！", type = "message")
       
       # 清空箱子
@@ -1121,7 +1121,7 @@ server <- function(input, output, session) {
     })
   })
   
-
+  
   
   
   
@@ -1397,7 +1397,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 获取选中的物品
       selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
-
+      
       # 检查运输方式一致性
       inconsistent_methods <- selected_items %>%
         filter(is.na(IntlShippingMethod) | IntlShippingMethod != shipping_method)
@@ -1840,17 +1840,17 @@ server <- function(input, output, session) {
   # 下载物品表为 Excel
   output$download_unique_items_xlsx <- downloadHandler(
     filename = function() {
-      paste("unique_items-", Sys.Date(), ".xlsx", sep = "")
+      paste("unique_items-", format(Sys.time(), "%Y%m%d-%H%M%S", tz = "Asia/Shanghai"), ".xlsx", sep = "")
     },
     content = function(file) {
       # 创建 Excel 文件
       wb <- createWorkbook()
       addWorksheet(wb, "物品明细表")
-
+      
       # 获取数据
       data <- filtered_unique_items_data_download()
       req(!is.null(data) && nrow(data) > 0)  # 确保数据非空
-
+      
       data <- map_column_names(data, column_mapping = list(
         SKU = "条形码",
         ItemName = "商品名",
@@ -1864,7 +1864,7 @@ server <- function(input, output, session) {
         Status = "库存状态",
         Defect = "物品状态"
       ))
-
+      
       # 按 SKU 计算全局库存统计
       sku_inventory_stats <- data %>%
         group_by(`条形码`) %>%
@@ -1878,7 +1878,7 @@ server <- function(input, output, session) {
           修复 = sum(`物品状态` == "修复"),
           .groups = "drop"
         )
-
+      
       # 按条形码和采购日期分组，统计其他信息
       grouped_data <- data %>%
         group_by(`条形码`, `采购日期`) %>%
@@ -1893,72 +1893,73 @@ server <- function(input, output, session) {
           批次采购数 = n(),  # 记录数
           .groups = "drop"
         )
-
+      
       # 合并全局统计到分组数据
       final_data <- grouped_data %>%
         left_join(sku_inventory_stats, by = "条形码")
-
+      
       n_col <- ncol(final_data)
-
+      
       # 写入数据到 Excel
       writeData(wb, "物品明细表", final_data, startCol = 1, startRow = 1)
-
+      
       # 图片插入的列号
       col_to_insert <- which(colnames(final_data) == "商品图片")
-
+      
       # 设置固定高度 1 inch，计算动态宽度
       image_height <- 1
-
+      
       # 插入图片到 Excel
       for (i in seq_len(nrow(final_data))) {
         image_path <- as.character(final_data[i, col_to_insert])
         image_width_max <- 1
         # if (!is.na(image_path) && file.exists(image_path)) {
-
-          # 获取图片的实际宽高比
-          dims <- get_image_dimensions(image_path)
-          width_ratio <- dims$width / dims$height  # 宽高比
-
-          row_to_insert <- i + 1  # 对应数据的行号
-
-          image_width <- image_height * width_ratio  # 动态宽度（英寸）
-
-          # 更新最大宽度
-          image_width_max <- max(image_width_max, image_width)
-
-          insertImage(
-            wb = wb,
-            sheet = "物品明细表",
-            file = normalizePath(image_path),
-            startRow = row_to_insert,
-            startCol = col_to_insert,
-            width = image_width,
-            height = image_height,
-            units = "in"
-          )
-
-          # 清空路径数据
-          writeData(wb, "物品明细表", "", startCol = col_to_insert, startRow = i + 1)
-
-          # 调整行高和列宽
-          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
-
+        
+        # 获取图片的实际宽高比
+        dims <- get_image_dimensions(image_path)
+        width_ratio <- dims$width / dims$height  # 宽高比
+        
+        row_to_insert <- i + 1  # 对应数据的行号
+        
+        image_width <- image_height * width_ratio  # 动态宽度（英寸）
+        
+        # 更新最大宽度
+        image_width_max <- max(image_width_max, image_width)
+        
+        insertImage(
+          wb = wb,
+          sheet = "物品明细表",
+          file = normalizePath(image_path),
+          startRow = row_to_insert,
+          startCol = col_to_insert,
+          width = image_width,
+          height = image_height,
+          units = "in"
+        )
+        
+        # 清空路径数据
+        writeData(wb, "物品明细表", "", startCol = col_to_insert, startRow = i + 1)
+        
+        # 调整行高和列宽
+        setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
+        
         # } else {
         #   showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
         # }
       }
-
+      
       # 最终设置列宽，保证所有图片适配最大宽度
       setColWidths(wb, "物品明细表", cols = col_to_insert, widths = image_width_max * 16)
-
+      
       # 自动调整其他列的宽度
       setColWidths(wb, "物品明细表", cols = seq_len(n_col)[-col_to_insert], widths = "auto")
-
+      
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
       showNotification("Excel 文件已成功下载", type = "message", duration = 5)
     }
   )
+  
   
   
   ################################################################
