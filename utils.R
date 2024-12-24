@@ -811,9 +811,15 @@ clean_untracked_images <- function() {
   con <- db_connection()
   
   tryCatch({
-    # 1. 获取数据库中记录的图片路径
-    query <- "SELECT ItemImagePath FROM inventory WHERE ItemImagePath IS NOT NULL"
-    recorded_paths <- normalizePath(dbGetQuery(con, query)$ItemImagePath, mustWork = FALSE)
+    # 1. 获取数据库中记录的图片路径（包括 inventory 和 orders 表）
+    inventory_query <- "SELECT ItemImagePath FROM inventory WHERE ItemImagePath IS NOT NULL"
+    orders_query <- "SELECT OrderImagePath FROM orders WHERE OrderImagePath IS NOT NULL"
+    
+    inventory_paths <- normalizePath(dbGetQuery(con, inventory_query)$ItemImagePath, mustWork = FALSE)
+    orders_paths <- normalizePath(dbGetQuery(con, orders_query)$OrderImagePath, mustWork = FALSE)
+    
+    # 合并所有记录路径
+    recorded_paths <- unique(c(inventory_paths, orders_paths))
     
     # 2. 列出目录中所有图片文件，并规范化路径
     all_files <- normalizePath(list.files("/var/www/images/", full.names = TRUE), mustWork = FALSE)
@@ -836,6 +842,10 @@ clean_untracked_images <- function() {
   # 断开数据库连接
   dbDisconnect(con)
 }
+
+
+
+
 
 # 从输入数据中筛选数据
 filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item_name_input_id, date_range_input_id = NULL) {

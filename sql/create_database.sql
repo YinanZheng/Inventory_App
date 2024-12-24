@@ -60,8 +60,18 @@ CREATE TABLE orders (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- 更新时间
 );
 
+-- 在 UsTrackingNumber3 之后增加列
+USE inventory_system;
 
+ALTER TABLE orders
+ADD COLUMN CustomerName VARCHAR(50) AFTER UsTrackingNumber3,
+ADD COLUMN Platform VARCHAR(50) AFTER CustomerName;
 
+DESCRIBE orders;
+
+SELECT * FROM orders;
+
+--
 
 
 USE inventory_system;
@@ -89,6 +99,7 @@ ADD COLUMN DefectNotes VARCHAR(255) AFTER Defect;
 
 ALTER TABLE unique_items
 DROP COLUMN DefectNote;
+
 
 
 DESCRIBE unique_items;
