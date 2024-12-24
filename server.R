@@ -212,6 +212,18 @@ server <- function(input, output, session) {
     )
   })
   
+  # 入库页过滤
+  filtered_unique_items_data_inbound <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    # 默认过滤条件：Defect 不为 NA 且 Status 为“国内入库”或“采购”
+    data <- data[!is.na(data$Defect) & data$Status %in% c("国内入库", "采购"), ]
+    
+    # 返回过滤后的数据
+    data
+  })
+  
   # 售出页过滤
   filtered_unique_items_data_sold <- reactive({
     filter_unique_items_data_by_inputs(
@@ -280,7 +292,7 @@ server <- function(input, output, session) {
                                                           PurchaseTime = "采购日期",
                                                           DomesticEntryTime = "入库日期",
                                                           DefectNotes = "瑕疵品备注")
-                                                        ), selection = "multiple", data = unique_items_data)
+                                                        ), selection = "multiple", data = filtered_unique_items_data_inbound)
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
                                                        column_mapping <- c(common_columns, list(
@@ -728,7 +740,7 @@ server <- function(input, output, session) {
     if (length(selected_row) > 0) {
       # 仅处理最后一个选择的行
       last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
-      selected_sku <- unique_items_data()[last_selected, "SKU", drop = TRUE]
+      selected_sku <- filtered_unique_items_data_inbound()[last_selected, "SKU", drop = TRUE]
       updateTextInput(session, "inbound_sku", value = selected_sku)
     }
   })
@@ -753,7 +765,7 @@ server <- function(input, output, session) {
     }
     
     # 获取选中物品的数据
-    selected_items <- unique_items_data()[selected_rows, ]
+    selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
     if (nrow(selected_items) == 0) {
       showNotification("选中数据无效，请重新选择！", type = "error")
       return()
