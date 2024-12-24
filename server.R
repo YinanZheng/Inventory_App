@@ -1058,7 +1058,7 @@ server <- function(input, output, session) {
   
   # 在输入订单号时检查订单信息并填充
   observeEvent(input$order_id, {
-    req(input$order_id)  # 如果订单号为空，则停止
+    req(input$order_id)  # 如果订单号为空，停止执行
     
     tryCatch({
       # 查询订单信息
@@ -1075,7 +1075,7 @@ server <- function(input, output, session) {
         # 更新第一个运单号
         updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1] %||% "")
         
-        # 保存运单号2和3的值
+        # 保存运单号2和3的值，处理 NULL 为 ""
         tracking_values(list(
           tracking_number2 = existing_order$UsTrackingNumber2[1] %||% "",
           tracking_number3 = existing_order$UsTrackingNumber3[1] %||% ""
