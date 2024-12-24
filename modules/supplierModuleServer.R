@@ -57,7 +57,7 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
     }
     
     # 自动生成拼音
-    pinyin_name <- remove_tone(stri_trans_general(new_supplier, "Latin"))
+    pinyin_name <- remove_tone(stringi::stri_trans_general(new_supplier, "Latin"))
     
     if (new_supplier != "") {
       # 添加新供应商到 MySQL 数据库
