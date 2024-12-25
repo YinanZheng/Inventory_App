@@ -1799,9 +1799,10 @@ server <- function(input, output, session) {
     # 获取选中的订单数据
     selected_order <- filtered_orders()[selected_row, ]  
     order_id <- selected_order$OrderID
+    customer_name <- selected_order$CustomerName
     
     # 填充左侧订单信息栏
-    updateTextInput(session, "update_customer_name", value = selected_order$CustomerName)
+    updateTextInput(session, "update_customer_name", value = customer_name)
     updateSelectInput(session, "update_platform", selected = selected_order$Platform)
     updateTextInput(session, "update_tracking_number1", value = selected_order$UsTrackingNumber1)
     updateTextInput(session, "update_tracking_number2", value = selected_order$UsTrackingNumber2)
