@@ -1049,21 +1049,26 @@ server <- function(input, output, session) {
   })
   
   # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input$sold_sku, {
+  # 响应输入或扫描的 SKU，更新货架上的物品
+  observe({
     sku <- trimws(input$sold_sku)  # 清理条形码输入空格
-    if (is.null(sku) || sku == "") {
+    unique_items <- unique_items_data()  # 监听 unique_items_data 的变化
+    
+    # 如果 SKU 或 unique_items_data 没有变化，直接返回
+    if (is.null(sku) || sku == "" || is.null(unique_items)) {
       return()
     }
     
     tryCatch({
       # 从 unique_items_data 获取符合条件的货架物品
-      all_shelf_items <- unique_items_data() %>%
+      all_shelf_items <- unique_items %>%
         filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
       if (nrow(all_shelf_items) == 0) {
         showNotification("未找到符合条件的物品！", type = "error")
+        shelf_items(data.frame())  # 清空货架
         return()
       }
       
