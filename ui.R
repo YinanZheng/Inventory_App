@@ -129,7 +129,7 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(8, selectizeInput(
+          column(7, selectizeInput(
             "new_name",                
             label = "商品名:",         
             choices = NULL,            
@@ -140,7 +140,7 @@ ui <- navbarPage(
             width = "100%"
           )),
           
-          column(4, dateInput(
+          column(5, dateInput(
             inputId = "purchase_date",
             label = "采购日期:",
             value = Sys.Date(),  # 默认日期为今天
