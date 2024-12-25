@@ -135,7 +135,9 @@ ui <- navbarPage(
             choices = NULL,            
             options = list(
               placeholder = "请输入商品名...",
-              create = TRUE            # 允许自定义输入值
+              create = TRUE,            # 允许自定义输入值
+              persist = TRUE,            # 启用持久化，确保输入内容可编辑
+              allowEmptyOption = TRUE    # 允许选择空选项，避免意外清空
             ),
             width = "100%"
           )),
