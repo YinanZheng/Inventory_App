@@ -777,7 +777,7 @@ ui <- navbarPage(
         div(
           class = "card",
           style = "padding: 15px; border: 1px solid #ccc; border-radius: 8px;",
-          tags$h4("订单信息", style = "color: #007BFF; font-weight: bold;"),
+          tags$h4("订单信息修改", style = "color: #28A745; font-weight: bold;"),
           textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%"),
           selectInput(
             inputId = "update_platform", 
