@@ -1814,7 +1814,6 @@ server <- function(input, output, session) {
                data = associated_items)
   })
   
-  
   # 更新订单逻辑
   observeEvent(input$update_order_btn, {
     req(selected_order_row())  # 确保用户选择了一行订单

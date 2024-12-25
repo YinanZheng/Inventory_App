@@ -28,23 +28,31 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
         )
     }
     
-    # # 根据需要动态添加更多样式
-    # if ("订单状态" %in% column_names) {
-    #   table <- table %>%
-    #     formatStyle(
-    #       "订单状态",
-    #       backgroundColor = styleEqual(
-    #         c("处理中", "已完成", "取消"),
-    #         c("yellow", "green", "red")
-    #       ),
-    #       color = styleEqual(
-    #         c("处理中", "已完成", "取消"),
-    #         c("black", "white", "white")
-    #       )
-    #     )
-    # }
-    
     table
+  })
+  
+  # 监听用户点击图片列
+  observeEvent(input$order_table_cell_clicked, {
+    info <- input$order_table_cell_clicked
+    
+    # 检查是否点击了图片列
+    if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
+      column_index <- which(names(data()) == "OrderImagePath")  # 图片列的索引
+      if (info$col == column_index) {
+        # 获取点击的图片路径
+        img_path <- data()[info$row, "OrderImagePath"]
+        req(img_path)  # 确保图片路径存在
+        
+        # 弹出窗口显示大图
+        showModal(modalDialog(
+          title = "订单图片预览",
+          img(src = img_path, height = "400px", style = "display: block; margin: 0 auto;"),
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("关闭")
+        ))
+      }
+    }
   })
   
   # 返回选中行的索引
