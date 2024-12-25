@@ -1788,7 +1788,7 @@ server <- function(input, output, session) {
     
     # 关联物品的数据源
     associated_items <- reactive({
-      unique_items() %>% filter(OrderID == order_id)  # 根据订单号筛选关联物品
+      unique_items_data() %>% filter(OrderID == order_id)  # 根据订单号筛选关联物品
     })
     
     # 使用 uniqueItemsTableServer 渲染关联物品表
