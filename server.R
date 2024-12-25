@@ -1332,12 +1332,6 @@ server <- function(input, output, session) {
     }
   })
   
-  # 清空箱子
-  observeEvent(input$clear_selected_items, {
-    box_items(create_empty_shelf_box())
-    showNotification("箱子已清空！", type = "message")
-  })
-  
   # 确认售出
   observeEvent(input$confirm_order_btn, {
     if (is.null(input$order_id) || nrow(box_items()) == 0) {

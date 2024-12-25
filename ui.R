@@ -510,7 +510,6 @@ ui <- navbarPage(
                      style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
                    ),
                    DTOutput("box_table"),  # 显示已放入箱子的物品
-                   actionButton("clear_selected_items", "清空发货箱", class = "btn-warning", style = "margin-top: 10px; width: 100%;"),
                    actionButton("confirm_order_btn", "确认售出", icon = icon("check"), class = "btn-success", 
                                 style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;")
                  )
