@@ -405,13 +405,13 @@ server <- function(input, output, session) {
   selected_order_row <- callModule(orderTableServer, "orders_table_module",
                                    column_mapping = list(
                                      OrderID = "订单号",
-                                     CustomerName = "顾客姓名",
+                                     OrderImagePath = "图片",
+                                     CustomerName = "姓名",
                                      Platform = "平台",
-                                     UsTrackingNumber1 = "运单号1",
-                                     UsTrackingNumber2 = "运单号2",
-                                     UsTrackingNumber3 = "运单号3",
-                                     OrderNotes = "订单备注",
-                                     OrderImagePath = "订单图片"
+                                     UsTrackingNumber1 = "运单",
+                                     UsTrackingNumber2 = "运单2",
+                                     UsTrackingNumber3 = "运单3",
+                                     OrderNotes = "备注"
                                    ),
                                    data = filtered_orders,  # 数据源
                                    selection = "single"  # 单选模式
@@ -1780,15 +1780,8 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  output$show_tracking_number2 <- reactive({
-    # 检查是否有运单号2
-    input$update_tracking_number2 != ""
-  })
-  
-  output$show_tracking_number3 <- reactive({
-    # 检查是否有运单号3
-    input$update_tracking_number3 != ""
-  })
+  output$show_tracking_number2 <- reactive({input$update_tracking_number2 != ""})
+  output$show_tracking_number3 <- reactive({input$update_tracking_number3 != ""})
   
   outputOptions(output, "show_tracking_number2", suspendWhenHidden = FALSE)
   outputOptions(output, "show_tracking_number3", suspendWhenHidden = FALSE)
@@ -1803,8 +1796,6 @@ server <- function(input, output, session) {
   
   # 订单图片处理模块
   image_order_manage <- imageModuleServer("image_order_manage")
-  
-
   
   # 选择某个订单后，渲染关联物品表
   observeEvent(selected_order_row(), {

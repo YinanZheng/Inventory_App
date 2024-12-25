@@ -51,7 +51,7 @@ size_unit <<- "cm"
 common_columns <<- list(
   SKU = "条形码",
   ItemName = "商品名",
-  ItemImagePath = "商品图片",
+  ItemImagePath = "商品图",
   Maker = "供应商",
   # MajorType = "大类",
   # MinorType = "小类",
