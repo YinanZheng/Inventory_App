@@ -746,25 +746,19 @@ ui <- navbarPage(
   
   
   # 订单管理分页
+  # 订单管理分页
   tabPanel(
     title = "订单管理",
-    icon = icon("clipboard-list"),  # 可选图标
+    icon = icon("clipboard-list"),
     div(
-      class = "layout-container",  # Flexbox 容器
+      class = "layout-container",
       
-      # 左侧：搜索和操作区
+      # 左侧：操作区
       div(
-        class = "sticky-sidebar",  # 固定侧边栏
+        class = "sticky-sidebar",
         style = "width: 400px;",
         
-        # 搜索订单
-        textInput("search_order_id", "订单号", placeholder = "输入订单号进行搜索", width = "100%"),
-        actionButton("search_order_btn", "搜索订单", icon = icon("search"), class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
-        
-        # 删除订单
-        actionButton("delete_order_btn", "删除订单", icon = icon("trash"), class = "btn-danger", style = "width: 100%; margin-bottom: 10px;"),
-        
-        # 更新订单
+        # 动态填写订单信息
         fluidRow(
           column(6, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
           column(6, selectInput(
@@ -781,19 +775,27 @@ ui <- navbarPage(
           column(6, textInput("update_tracking_number3", "运单号3", placeholder = "更新运单号3", width = "100%"))
         ),
         textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
-        actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 100%; margin-top: 10px;")
+        
+        # 操作按钮
+        div(
+          style = "margin-top: 10px; display: flex; justify-content: space-between;",
+          actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 48%;"),
+          actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 48%;")
+        )
       ),
       
       # 右侧：主面板
       div(
         class = "main-panel",
         
+        # 订单数据表渲染
         div(
           style = "margin-bottom: 20px;",
-          tags$h4("订单图片", style = "color: #007BFF; font-weight: bold;"),
-          uiOutput("order_image_ui")  # 动态显示订单图片
+          tags$h4("订单数据", style = "color: #007BFF; font-weight: bold;"),
+          DTOutput("orders_table")  # 显示订单数据表
         ),
         
+        # 关联物品
         div(
           style = "margin-top: 20px;",
           tags$h4("关联物品", style = "color: #007BFF; font-weight: bold;"),
