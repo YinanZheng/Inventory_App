@@ -1812,7 +1812,7 @@ server <- function(input, output, session) {
     # 动态更新标题
     output$associated_items_title <- renderUI({
       tags$h4(
-        sprintf("订单号：%s 顾客：%s 的订单物品", order_id, customer_name),
+        sprintf("%s - %s 的订单物品", order_id, customer_name),
         style = "color: #007BFF; font-weight: bold;"
       )
     })
