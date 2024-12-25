@@ -2497,72 +2497,74 @@ server <- function(input, output, session) {
     if (admin_logged_in()) {
       tagList(
         tags$h4("物品状态管理", style = "color: #007BFF;"),
-        textInput("admin_input_sku", "输入 SKU 查看详情：", width = "100%"),
-        actionButton("admin_search_sku", "查询", class = "btn-primary", style = "width: 100%; margin-top: 10px;"),
+        
+        # 输入 SKU 自动过滤物品
+        textInput("admin_input_sku", "输入 SKU 查看详情：", placeholder = "请输入 SKU", width = "100%"),
+        
         tags$hr(),
+        
+        # 目标状态选择
         selectInput("admin_target_status", "目标状态：", 
                     choices = c("采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "退货"), 
                     selected = NULL, width = "100%"),
+        
+        # 更新选中物品状态
         actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;")
       )
     } else {
-      div(tags$p("请输入密码以访问管理员功能", style = "color: red;"))
+      div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
     }
   })
   
-  # 定义一个 reactiveVal 存储筛选后的数据
-  filtered_unique_items_data_admin <- reactiveVal()
-  
-  # SKU 查询逻辑
-  observeEvent(input$admin_search_sku, {
-    req(input$admin_input_sku)
+  # 通过 SKU 筛选物品数据
+  filtered_unique_items_data_admin <- reactive({
+    data <- unique_items_data()
     sku <- trimws(input$admin_input_sku)
     
-    # 从 unique_items_data 过滤数据
-    matched_items <- unique_items_data() %>% filter(SKU == sku)
-    
-    if (nrow(matched_items) > 0) {
-      filtered_items_data(matched_items)  # 更新筛选后的数据
-      showNotification("查询成功！", type = "message")
-    } else {
-      showNotification("未找到匹配的 SKU！", type = "error")
+    # 自动过滤 SKU，同时排除 NA 值
+    if (!is.null(sku) && sku != "") {
+      data <- data %>% filter(!is.na(SKU) & SKU == sku)
     }
+    
+    data
   })
   
-  # 渲染物品明细表
+  # 使用 uniqueItemsTableServer 渲染表格
   callModule(uniqueItemsTableServer, "admin_items_table", 
-             column_mapping <- c(common_columns, list(
-               PurchaseTime = "采购日期",
-               DomesticEntryTime = "入库日期",
-               DomesticExitTime = "出库日期",
-               DomesticSoldTime = "售出日期")
+             column_mapping = c(
+               SKU = "条形码",
+               ItemName = "商品名",
+               Status = "当前状态",
+               ProductCost = "单价",
+               ItemImagePath = "图片"
              ), 
              selection = "single", 
-             data = filtered_items_data)
+             data = filtered_unique_items_data_admin)
   
-  # 状态更新逻辑
+  # 更新物品状态逻辑
   observeEvent(input$admin_update_status_btn, {
     req(input$admin_target_status, input$admin_items_table_rows_selected)
     
-    # 获取选中的行数据
     selected_row <- input$admin_items_table_rows_selected
-    selected_item <- filtered_items_data()[selected_row, ]
+    selected_item <- filtered_unique_items_data_admin()[selected_row, ]
     
     if (nrow(selected_item) > 0) {
       tryCatch({
-        # 更新数据库中的状态
+        # 更新物品状态
         dbExecute(
           con,
           "UPDATE unique_items SET Status = ? WHERE UniqueID = ?",
           params = list(input$admin_target_status, selected_item$UniqueID)
         )
-        showNotification(paste("物品状态更新为：", input$admin_target_status), type = "message")
+        showNotification("状态更新成功！", type = "message")
         
         # 刷新数据
         unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       }, error = function(e) {
         showNotification(paste("状态更新失败：", e$message), type = "error")
       })
+    } else {
+      showNotification("未选择有效的物品！", type = "error")
     }
   })
   
