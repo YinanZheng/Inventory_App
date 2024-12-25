@@ -306,6 +306,30 @@ server <- function(input, output, session) {
     }
   })
   
+  # 订单页订单过滤
+  filtered_orders <- reactive({
+    req(orders())  # 确保数据存在
+    
+    data <- orders()
+    
+    # 根据筛选条件动态过滤
+    if (input$filter_order_id != "") {
+      data <- data %>% filter(grepl(input$filter_order_id, OrderID, ignore.case = TRUE))
+    }
+    
+    if (input$filter_customer_name != "") {
+      data <- data %>% filter(grepl(input$filter_customer_name, CustomerName, ignore.case = TRUE))
+    }
+    
+    if (input$filter_platform != "") {
+      data <- data %>% filter(Platform == input$filter_platform)
+    }
+    
+    data
+  })
+  
+  
+  
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                          column_mapping <- c(common_columns, list(
@@ -379,7 +403,7 @@ server <- function(input, output, session) {
                                      OrderNotes = "订单备注",
                                      OrderImagePath = "订单图片"
                                    ),
-                                   data = orders,  # 数据源
+                                   data = filtered_orders,  # 数据源
                                    selection = "single"  # 单选模式
   )
   
@@ -1746,56 +1770,46 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 搜索订单逻辑
-  observeEvent(input$search_order_btn, {
-    req(input$search_order_id)  # 检查是否输入订单号
+  # 监听筛选条件变化
+  observe({
+    input$filter_order_id
+    input$filter_customer_name
+    input$filter_platform
+    filtered_orders()  # 自动触发数据刷新
+  })
+  
+  # 选择某个订单后，渲染关联物品表
+  observeEvent(selected_order_row(), {
+    selected_row <- selected_order_row()
+    req(selected_row)  # 确保用户选择了一行
     
-    tryCatch({
-      # 查询订单信息
-      order_data <- dbGetQuery(con, "
-      SELECT UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, CustomerName, Platform, OrderNotes, OrderImagePath 
-      FROM orders 
-      WHERE OrderID = ?", 
-                               params = list(input$search_order_id)
-      )
-      
-      if (nrow(order_data) > 0) {
-        # 填充订单信息
-        updateTextInput(session, "update_customer_name", value = order_data$CustomerName[1])
-        updateSelectInput(session, "update_platform", selected = order_data$Platform[1])
-        updateTextInput(session, "update_tracking_number1", value = order_data$UsTrackingNumber1[1])
-        updateTextInput(session, "update_tracking_number2", value = order_data$UsTrackingNumber2[1])
-        updateTextInput(session, "update_tracking_number3", value = order_data$UsTrackingNumber3[1])
-        updateTextAreaInput(session, "update_order_notes", value = order_data$OrderNotes[1])
-        
-        # 显示订单图片
-        output$order_image_ui <- renderUI({
-          img(src = order_data$OrderImagePath[1], height = "200px", style = "border: 1px solid #ddd; margin-top: 10px;")
-        })
-        
-        # 查询关联物品
-        associated_items <- dbGetQuery(con, "
-        SELECT * 
-        FROM unique_items 
-        WHERE OrderID = ?", 
-                                       params = list(input$search_order_id)
-        )
-        
-        # 显示关联物品表
-        output$associated_items_table <- renderDT({
-          datatable(associated_items, options = list(pageLength = 10))
-        })
-      } else {
-        showNotification("未找到订单记录！", type = "warning")
-      }
-    }, error = function(e) {
-      showNotification(paste("搜索订单时发生错误：", e$message), type = "error")
+    selected_order <- filtered_orders()[selected_row, ]  # 获取选中的订单
+    order_id <- selected_order$OrderID
+    
+    # 关联物品的数据源
+    associated_items <- reactive({
+      unique_items() %>% filter(OrderID == order_id)  # 根据订单号筛选关联物品
     })
+    
+    # 使用 uniqueItemsTableServer 渲染关联物品表
+    callModule(uniqueItemsTableServer, "associated_items_table_module",
+               column_mapping = c(common_columns, list(
+                 PurchaseTime = "采购日期",
+                 IntlShippingMethod = "国际运输",
+                 IntlAirTracking = "国际空运单号",
+                 IntlSeaTracking = "国际海运单号"
+               )),
+               data = associated_items)
   })
   
   # 更新订单逻辑
   observeEvent(input$update_order_btn, {
-    req(input$search_order_id)  # 检查是否输入订单号
+    req(selected_order_row())  # 确保用户选择了一行订单
+    selected_row <- selected_order_row()
+    
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
     
     tryCatch({
       # 更新订单信息
@@ -1806,16 +1820,18 @@ server <- function(input, output, session) {
           UsTrackingNumber1 = ?, 
           UsTrackingNumber2 = ?, 
           UsTrackingNumber3 = ?, 
-          OrderNotes = ?
+          OrderNotes = ?, 
+          OrderImagePath = ?
       WHERE OrderID = ?",
                 params = list(
-                  input$update_customer_name,
-                  input$update_platform,
-                  input$update_tracking_number1,
-                  input$update_tracking_number2,
-                  input$update_tracking_number3,
-                  input$update_order_notes,
-                  input$search_order_id
+                  input$update_customer_name,  # 更新的顾客姓名
+                  input$update_platform,       # 更新的电商平台
+                  input$update_tracking_number1,  # 更新的运单号1
+                  input$update_tracking_number2,  # 更新的运单号2
+                  input$update_tracking_number3,  # 更新的运单号3
+                  input$update_order_notes,       # 更新的备注
+                  order_image$uploaded_file()$datapath %||% order_image$pasted_file()$datapath,  # 图片路径
+                  order_id  # 目标订单号
                 )
       )
       showNotification("订单信息已成功更新！", type = "message")
@@ -1826,23 +1842,32 @@ server <- function(input, output, session) {
   
   # 删除订单逻辑
   observeEvent(input$delete_order_btn, {
-    req(input$search_order_id)  # 检查是否输入订单号
+    req(selected_order_row())  # 确保用户选择了一行订单
+    selected_row <- selected_order_row()
+    
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
     
     tryCatch({
-      # 删除订单及其关联物品
-      dbExecute(con, "DELETE FROM unique_items WHERE OrderID = ?", params = list(input$search_order_id))
-      dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(input$search_order_id))
+      # 删除与订单关联的物品
+      dbExecute(con, "DELETE FROM unique_items WHERE OrderID = ?", params = list(order_id))
       
-      showNotification("订单已成功删除！", type = "message")
+      # 删除订单
+      dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(order_id))
       
-      # 清空表单内容
+      showNotification("订单及其关联物品已成功删除！", type = "message")
+      
+      # 重置订单信息输入框
       updateTextInput(session, "update_customer_name", value = "")
       updateSelectInput(session, "update_platform", selected = "")
       updateTextInput(session, "update_tracking_number1", value = "")
       updateTextInput(session, "update_tracking_number2", value = "")
       updateTextInput(session, "update_tracking_number3", value = "")
       updateTextAreaInput(session, "update_order_notes", value = "")
-      output$order_image_ui <- renderUI({})
+      order_image$reset()  # 清空图片上传模块
+      
+      # 清空关联物品表
       output$associated_items_table <- renderDT({ NULL })
     }, error = function(e) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")

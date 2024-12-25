@@ -768,7 +768,6 @@ ui <- navbarPage(
           selected = "", 
           width = "100%"
         ),
-        actionButton("filter_orders_btn", "筛选订单", icon = icon("filter"), class = "btn-primary", style = "width: 100%; margin-top: 10px;"),
         
         # 订单信息
         tags$h4("订单信息", style = "color: #007BFF; font-weight: bold; margin-top: 20px;"),
