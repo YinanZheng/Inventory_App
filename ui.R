@@ -752,7 +752,7 @@ ui <- navbarPage(
     div(
       class = "layout-container",
       
-      # 左侧：筛选条件和订单操作
+      # 左侧：筛选条件和订单信息
       div(
         class = "sticky-sidebar",
         style = "width: 400px;",
@@ -770,7 +770,25 @@ ui <- navbarPage(
         ),
         actionButton("filter_orders_btn", "筛选订单", icon = icon("filter"), class = "btn-primary", style = "width: 100%; margin-top: 10px;"),
         
-        # 更新和删除订单
+        # 订单信息
+        tags$h4("订单信息", style = "color: #007BFF; font-weight: bold; margin-top: 20px;"),
+        textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%"),
+        selectInput(
+          inputId = "update_platform", 
+          label = "电商平台",
+          choices = c("Etsy", "Shopify", "TikTok", "其他"),
+          selected = NULL, 
+          width = "100%"
+        ),
+        textInput("update_tracking_number1", "运单号1", placeholder = "更新运单号1", width = "100%"),
+        textInput("update_tracking_number2", "运单号2", placeholder = "更新运单号2", width = "100%"),
+        textInput("update_tracking_number3", "运单号3", placeholder = "更新运单号3", width = "100%"),
+        textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
+        
+        # 图片模块
+        imageModuleUI("order_image", label = "订单图片上传", label_color = "#007BFF"),
+        
+        # 更新和删除按钮
         div(
           style = "margin-top: 20px; display: flex; justify-content: space-between;",
           actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 48%;"),
