@@ -1929,7 +1929,7 @@ server <- function(input, output, session) {
       
       # 刷新数据
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      unique_items_data(dbGetQuery(con, "SELECT * FROM unique_items"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       orders(dbGetQuery(con, "SELECT * FROM orders"))
       
       # 清空左侧输入栏
