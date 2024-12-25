@@ -392,7 +392,7 @@ server <- function(input, output, session) {
                                                          ), data = filtered_unique_items_data_download)
   
   # 调用模块化的服务器逻辑
-  selected_order_row <- callModule(orderTableServer, "order_table_module",
+  selected_order_row <- callModule(orderTableServer, "orders_table_module",
                                    column_mapping = list(
                                      OrderID = "订单号",
                                      CustomerName = "顾客姓名",
