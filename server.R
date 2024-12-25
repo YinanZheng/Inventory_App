@@ -2477,45 +2477,96 @@ server <- function(input, output, session) {
   ## 移库模块（管理员模式）                                     ##
   ##                                                            ##
   ################################################################
+
+  # 管理员登录状态
+  admin_logged_in <- reactiveVal(FALSE)
   
-  # # 监听移库按钮点击
-  # observeEvent(input$move_selected, {
-  #   # 获取选中的行索引
-  #   selected_row <- input$unique_items_table_rows_selected
-  #   
-  #   # 检查是否有选中行
-  #   if (is.null(selected_row) || length(selected_row) == 0) {
-  #     showNotification("请先在物品状态表中选择一行物品再执行移库操作！", type = "error")
-  #     return()
-  #   }
-  #   
-  #   # 检查是否选择了移库目标
-  #   target_status <- input$target_status
-  #   if (is.null(target_status) || target_status == "") {
-  #     showNotification("请选择一个移库目标！", type = "error")
-  #     return()
-  #   }
-  #   
-  #   # 获取选中行的数据
-  #   selected_data <- unique_items_data()[selected_row, ]
-  #   unique_id <- selected_data$UniqueID
-  #   current_status <- selected_data$Status
-  #   
-  #   # 如果当前状态已经是目标状态
-  #   if (current_status == target_status) {
-  #     showNotification("物品已经在目标状态，无需移库！", type = "message")
-  #     return()
-  #   }
-  #   
-  #   # 执行移库操作
-  #   tryCatch({
-  #     update_status(con, unique_id, target_status)
-  #     showNotification(paste("物品成功移至状态：", target_status), type = "message")
-  # 
-  #   }, error = function(e) {
-  #     showNotification(paste("移库操作失败：", e$message), type = "error")
-  #   })
-  # })
+  # 监听登录按钮
+  observeEvent(input$admin_login_btn, {
+    if (input$admin_password == admin_password) {
+      admin_logged_in(TRUE)
+      showNotification("登录成功！", type = "message")
+    } else {
+      showNotification("密码错误，请重试！", type = "error")
+      admin_logged_in(FALSE)
+    }
+  })
+  
+  # 渲染管理员控制
+  output$admin_controls <- renderUI({
+    if (admin_logged_in()) {
+      tagList(
+        tags$h4("物品状态管理", style = "color: #007BFF;"),
+        textInput("admin_input_sku", "输入 SKU 查看详情：", width = "100%"),
+        actionButton("admin_search_sku", "查询", class = "btn-primary", style = "width: 100%; margin-top: 10px;"),
+        tags$hr(),
+        selectInput("admin_target_status", "目标状态：", 
+                    choices = c("采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "退货"), 
+                    selected = NULL, width = "100%"),
+        actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;")
+      )
+    } else {
+      div(tags$p("请输入密码以访问管理员功能", style = "color: red;"))
+    }
+  })
+  
+  # 定义一个 reactiveVal 存储筛选后的数据
+  filtered_items_data <- reactiveVal()
+  
+  # SKU 查询逻辑
+  observeEvent(input$admin_search_sku, {
+    req(input$admin_input_sku)
+    sku <- trimws(input$admin_input_sku)
+    
+    # 从 unique_items_data 过滤数据
+    matched_items <- unique_items_data() %>% filter(SKU == sku)
+    
+    if (nrow(matched_items) > 0) {
+      filtered_items_data(matched_items)  # 更新筛选后的数据
+      showNotification("查询成功！", type = "message")
+    } else {
+      showNotification("未找到匹配的 SKU！", type = "error")
+    }
+  })
+  
+  # 渲染物品明细表
+  callModule(uniqueItemsTableServer, "admin_items_table", 
+             column_mapping <- c(common_columns, list(
+               PurchaseTime = "采购日期",
+               DomesticEntryTime = "入库日期",
+               DomesticExitTime = "出库日期",
+               DomesticSoldTime = "售出日期")
+             ), 
+             selection = "single", 
+             data = filtered_items_data)
+  
+  # 状态更新逻辑
+  observeEvent(input$admin_update_status_btn, {
+    req(input$admin_target_status, input$admin_items_table_rows_selected)
+    
+    # 获取选中的行数据
+    selected_row <- input$admin_items_table_rows_selected
+    selected_item <- filtered_items_data()[selected_row, ]
+    
+    if (nrow(selected_item) > 0) {
+      tryCatch({
+        # 更新数据库中的状态
+        dbExecute(
+          con,
+          "UPDATE unique_items SET Status = ? WHERE UniqueID = ?",
+          params = list(input$admin_target_status, selected_item$UniqueID)
+        )
+        showNotification(paste("物品状态更新为：", input$admin_target_status), type = "message")
+        
+        # 刷新数据
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      }, error = function(e) {
+        showNotification(paste("状态更新失败：", e$message), type = "error")
+      })
+    }
+  })
+  
+  
   
   
   # Disconnect from the database on app stop

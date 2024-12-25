@@ -1009,5 +1009,24 @@ ui <- navbarPage(
         uniqueItemsTableUI("unique_items_table_download")
       )
     )
-  ) # End of 数据下载 tab
+  ), # End of 数据下载 tab
+  
+  tabPanel(
+    "管理员", icon = icon("user-shield"),
+    div(
+      class = "layout-container",
+      div(
+        class = "sticky-sidebar",
+        style = "width: 300px;",
+        passwordInput("admin_password", "请输入管理员密码：", width = "100%"),
+        actionButton("admin_login_btn", "登录", icon = icon("unlock"), class = "btn-primary", style = "width: 100%; margin-top: 10px;"),
+        tags$hr(),
+        uiOutput("admin_controls")
+      ),
+      div(
+        class = "main-panel",
+        uniqueItemsTableUI("admin_items_table")  # 使用你的模组渲染物品明细表
+      )
+    )
+  ) # End of 管理员 tab
 )

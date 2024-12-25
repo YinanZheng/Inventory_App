@@ -80,3 +80,6 @@ defect_statuses <<- c("瑕疵", "修复", "无瑕")
 `%||%` <- function(a, b) {
   if (!is.null(a)) a else b
 }
+
+# 定义管理员密码
+admin_password <- "zyn1029"
