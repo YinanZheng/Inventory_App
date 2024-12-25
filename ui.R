@@ -186,7 +186,16 @@ ui <- navbarPage(
             style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
           ),
           
-          actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
+          div(
+            style = "text-align: center; margin-top: 15px;",  # 父容器的样式
+            actionButton(
+              inputId = "confirm_btn", 
+              label = "确认登记采购货品", 
+              icon = icon("check"), 
+              class = "btn-info",
+              style = "width: auto;"  # 保持按钮宽度为内容适配
+            )
+          )
         ),
         
         fluidRow(
@@ -267,7 +276,7 @@ ui <- navbarPage(
             )
           )
         ),
-          
+        
         tags$hr(), # 分隔线
         
         fluidRow( 
@@ -402,7 +411,7 @@ ui <- navbarPage(
           fluidRow(
             column(9, textInput("sold_sku", "输入或扫描条形码", placeholder = "请输入条形码", width = "100%")),
             column(3, actionButton("sold_reset_btn", "清空", icon = icon("snowplow"), class = "btn-danger", 
-                                  style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;"))          
+                                   style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;"))          
           )
         ),
         
@@ -412,7 +421,7 @@ ui <- navbarPage(
           
           # 订单录入表单标题
           tags$h4("订单登记", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
-    
+          
           # 订单号
           textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
           
@@ -568,10 +577,10 @@ ui <- navbarPage(
           div(
             style = "margin-bottom: 10px; padding-bottom: 8px;",
             tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-  
-          imageModuleUI("image_manage", label = ""),
-          
-          actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
+            
+            imageModuleUI("image_manage", label = ""),
+            
+            actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
           ),
         )
       ),
@@ -833,102 +842,102 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-          # 使用 tabsetPanel 来组织分页
-          tabsetPanel(
-            type = "tabs", # 使用 tabs 样式
-            tabPanel(
-              "商品状态",
-              fluidRow(
-                column(
-                  4,
-                  div(
-                    class = "card",
-                    style = "height: 453.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                    tags$h4("商品信息", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
-                    uiOutput("query_item_info") # 动态渲染物品信息
-                  )
-                ),
-                
-                column(
-                  4,
-                  div(
-                    class = "card",
-                    style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                    tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px;"),
-                    plotlyOutput("inventory_status_chart", height = "400px") # 使用 plotlyOutput
-                  )
-                ),
-                
-                column(
-                  4,
-                  div(
-                    class = "card",
-                    style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                    tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
-                    plotlyOutput("defect_status_chart", height = "400px") # 使用 plotlyOutput
-                  )
-                ),
-
-                column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
-                                        style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-                column(12, div(
-                  id = "inventory_table_container",  # 容器 ID
-                  DTOutput("filtered_inventory_table")
-                ))
-                
-              )
-            ), # end of 商品状态
-            
-            tabPanel(
-              "采购开销",
-              fluidRow(
-                column(
-                  12,
-                  div(
-                    class = "card",
-                    style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                    
-                    # 选择器行
-                    fluidRow(
-                      column(4,                   
-                             dateRangeInput(
-                               "time_range",
-                               label = "选择采购时间范围",
-                               start = Sys.Date() - 30, # 默认最近30天
-                               end = Sys.Date()
-                             )),
-                      column(4,
-                             radioButtons(
-                               "precision",
-                               label = "选择统计精度",
-                               choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
-                               selected = "天",
-                               inline = TRUE # 使选项横向排列
-                             )),
-                      column(4,
-                             radioButtons(
-                               "expense_type",
-                               label = "选择显示内容",
-                               choices = c("总开销" = "total", "物品成本" = "cost", "运费开销" = "shipping"),
-                               selected = "total",
-                               inline = TRUE # 使选项横向排列
-                             ))
-                    ),
-                    
-                    # 图表行：柱状图 + 饼图
-                    fluidRow(
-                      column(9, plotlyOutput("bar_chart", height = "350px")), # 80% 宽度柱状图
-                      column(3, plotlyOutput("pie_chart", height = "350px"))  # 20% 宽度饼图
-                    )
+        # 使用 tabsetPanel 来组织分页
+        tabsetPanel(
+          type = "tabs", # 使用 tabs 样式
+          tabPanel(
+            "商品状态",
+            fluidRow(
+              column(
+                4,
+                div(
+                  class = "card",
+                  style = "height: 453.89px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  tags$h4("商品信息", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
+                  uiOutput("query_item_info") # 动态渲染物品信息
+                )
+              ),
+              
+              column(
+                4,
+                div(
+                  class = "card",
+                  style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  tags$h4("库存状态图表", style = "color: #28a745; font-weight: bold; padding-left: 10px;"),
+                  plotlyOutput("inventory_status_chart", height = "400px") # 使用 plotlyOutput
+                )
+              ),
+              
+              column(
+                4,
+                div(
+                  class = "card",
+                  style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
+                  plotlyOutput("defect_status_chart", height = "400px") # 使用 plotlyOutput
+                )
+              ),
+              
+              column(12, actionButton("toggle_inventory_table", "库存表（点击显示/隐藏）", 
+                                      style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
+              column(12, div(
+                id = "inventory_table_container",  # 容器 ID
+                DTOutput("filtered_inventory_table")
+              ))
+              
+            )
+          ), # end of 商品状态
+          
+          tabPanel(
+            "采购开销",
+            fluidRow(
+              column(
+                12,
+                div(
+                  class = "card",
+                  style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  
+                  # 选择器行
+                  fluidRow(
+                    column(4,                   
+                           dateRangeInput(
+                             "time_range",
+                             label = "选择采购时间范围",
+                             start = Sys.Date() - 30, # 默认最近30天
+                             end = Sys.Date()
+                           )),
+                    column(4,
+                           radioButtons(
+                             "precision",
+                             label = "选择统计精度",
+                             choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
+                             selected = "天",
+                             inline = TRUE # 使选项横向排列
+                           )),
+                    column(4,
+                           radioButtons(
+                             "expense_type",
+                             label = "选择显示内容",
+                             choices = c("总开销" = "total", "物品成本" = "cost", "运费开销" = "shipping"),
+                             selected = "total",
+                             inline = TRUE # 使选项横向排列
+                           ))
+                  ),
+                  
+                  # 图表行：柱状图 + 饼图
+                  fluidRow(
+                    column(9, plotlyOutput("bar_chart", height = "350px")), # 80% 宽度柱状图
+                    column(3, plotlyOutput("pie_chart", height = "350px"))  # 20% 宽度饼图
                   )
                 )
               )
-            ) # end of 开销汇总tab
-            
-            
-            # 你可以在这里添加更多的 tabPanel 来扩展图表
-            
-          ) #end of tabpanel
+            )
+          ) # end of 开销汇总tab
+          
+          
+          # 你可以在这里添加更多的 tabPanel 来扩展图表
+          
+        ) #end of tabpanel
       )
     )
   ), # end of 查询 tab
@@ -1002,9 +1011,9 @@ ui <- navbarPage(
     )
   ) # End of 数据下载 tab
   
-  # # 添加全局底部
-  # footer = tags$div(
-  #   style = "padding: 10px; background-color: #f8f9fa; text-align: center;",
-  #   tags$span("版权所有 © 2024 Golden Bean LLC")
-  # )
+  # 添加全局底部
+  footer = tags$div(
+    style = "padding: 10px; background-color: #f8f9fa; text-align: center;",
+    tags$span("版权所有 © 2024 Golden Bean LLC")
+  )
 )
