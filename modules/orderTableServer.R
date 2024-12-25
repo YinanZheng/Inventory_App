@@ -35,10 +35,9 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
   observeEvent(input$order_table_cell_clicked, {
     info <- input$order_table_cell_clicked
     
-    # 检查是否点击了图片列
+    # 检查是否点击了图片列（第二列）
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
-      column_index <- which(names(data()) == "OrderImagePath")  # 图片列的索引
-      if (info$col == column_index) {
+      if (info$col == 1) {  # 第二列在 R 中的索引是 1
         # 获取点击的图片路径
         img_path <- data()[info$row, "OrderImagePath"]
         req(img_path)  # 确保图片路径存在
