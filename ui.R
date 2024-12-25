@@ -788,23 +788,16 @@ ui <- navbarPage(
       div(
         class = "main-panel",
         
-        tabsetPanel(
-          tabPanel(
-            title = "订单详情",
-            div(
-              style = "margin-bottom: 20px;",
-              tags$h4("订单图片", style = "color: #007BFF; font-weight: bold;"),
-              uiOutput("order_image_ui")  # 动态显示订单图片
-            )
-          ),
-          tabPanel(
-            title = "关联物品",
-            div(
-              style = "margin-top: 20px;",
-              tags$h4("关联物品", style = "color: #007BFF; font-weight: bold;"),
-              DTOutput("associated_items_table")  # 显示关联物品表
-            )
-          )
+        div(
+          style = "margin-bottom: 20px;",
+          tags$h4("订单图片", style = "color: #007BFF; font-weight: bold;"),
+          uiOutput("order_image_ui")  # 动态显示订单图片
+        ),
+        
+        div(
+          style = "margin-top: 20px;",
+          tags$h4("关联物品", style = "color: #007BFF; font-weight: bold;"),
+          DTOutput("associated_items_table")  # 显示关联物品表
         )
       )
     )
