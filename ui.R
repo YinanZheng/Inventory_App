@@ -479,14 +479,6 @@ ui <- navbarPage(
           choices = list("空运" = "空运", "海运" = "海运"),
           selected = "空运",  # 默认选择空运
           inline = TRUE       # 设置为横向排布
-        ),
-        
-        actionButton(
-          "confirm_order_btn", 
-          "确认售出", 
-          icon = icon("check"), 
-          class = "btn-success", 
-          style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
         )
       ),
       
@@ -518,7 +510,9 @@ ui <- navbarPage(
                      style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
                    ),
                    DTOutput("box_table"),  # 显示已放入箱子的物品
-                   actionButton("clear_selected_items", "清空发货箱", class = "btn-warning", style = "margin-top: 10px; width: 100%;")
+                   actionButton("clear_selected_items", "清空发货箱", class = "btn-warning", style = "margin-top: 10px; width: 100%;"),
+                   actionButton("confirm_order_btn", "确认售出", icon = icon("check"), class = "btn-success", 
+                                style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;")
                  )
           )
         ),
