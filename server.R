@@ -2499,14 +2499,17 @@ server <- function(input, output, session) {
         tags$h4("物品状态管理", style = "color: #007BFF;"),
         
         # 输入 SKU 自动过滤物品
-        textInput("admin_input_sku", "输入 SKU 查看详情：", placeholder = "请输入 SKU", width = "100%"),
+        textInput("admin_input_sku", "", placeholder = "请输入 SKU", width = "100%"),
         
         tags$hr(),
         
         # 目标状态选择
-        selectInput("admin_target_status", "目标状态：", 
+        selectInput("admin_target_status", "目标状态改为：", 
                     choices = c("采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "退货"), 
                     selected = NULL, width = "100%"),
+        
+        # 是否记录修改时间
+        checkboxInput("admin_record_timestamp", "记录修改时间", value = FALSE),
         
         # 更新选中物品状态
         actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;")
@@ -2557,6 +2560,9 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
+      # 获取是否记录修改时间的选项
+      record_timestamp <- input$admin_record_timestamp
+      
       # 遍历选中物品
       lapply(1:nrow(selected_items), function(i) {
         unique_id <- selected_items$UniqueID[i]
@@ -2568,7 +2574,7 @@ server <- function(input, output, session) {
           unique_id = unique_id,
           new_status = new_status,
           refresh_trigger = unique_items_data_refresh_trigger,
-          update_timestamp = FALSE
+          update_timestamp = record_timestamp  # 使用用户选择的值
         )
       })
       
@@ -2581,6 +2587,7 @@ server <- function(input, output, session) {
       showNotification(paste("状态更新失败：", e$message), type = "error")
     })
   })
+  
   
   
   
