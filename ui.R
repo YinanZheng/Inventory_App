@@ -785,7 +785,7 @@ ui <- navbarPage(
         textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
         
         # 图片模块
-        imageModuleUI("order_image", label = "订单图片上传", label_color = "#007BFF"),
+        imageModuleUI("image_order_manage", label = "订单图片上传", label_color = "#007BFF"),
         
         # 更新和删除按钮
         div(

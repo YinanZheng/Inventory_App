@@ -1778,15 +1778,27 @@ server <- function(input, output, session) {
     filtered_orders()  # 自动触发数据刷新
   })
   
+  # 订单图片处理模块
+  image_order_manage <- imageModuleServer("image_order_manage")
+  
   # 选择某个订单后，渲染关联物品表
   observeEvent(selected_order_row(), {
     selected_row <- selected_order_row()
     req(selected_row)  # 确保用户选择了一行
     
-    selected_order <- filtered_orders()[selected_row, ]  # 获取选中的订单
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]  
     order_id <- selected_order$OrderID
     
-    # 关联物品的数据源
+    # 填充左侧订单信息栏
+    updateTextInput(session, "update_customer_name", value = selected_order$CustomerName)
+    updateSelectInput(session, "update_platform", selected = selected_order$Platform)
+    updateTextInput(session, "update_tracking_number1", value = selected_order$UsTrackingNumber1)
+    updateTextInput(session, "update_tracking_number2", value = selected_order$UsTrackingNumber2)
+    updateTextInput(session, "update_tracking_number3", value = selected_order$UsTrackingNumber3)
+    updateTextAreaInput(session, "update_order_notes", value = selected_order$OrderNotes)
+    
+    # 渲染关联物品表
     associated_items <- reactive({
       unique_items_data() %>% filter(OrderID == order_id)  # 根据订单号筛选关联物品
     })
@@ -1801,6 +1813,7 @@ server <- function(input, output, session) {
                )),
                data = associated_items)
   })
+  
   
   # 更新订单逻辑
   observeEvent(input$update_order_btn, {
@@ -1830,7 +1843,7 @@ server <- function(input, output, session) {
                   input$update_tracking_number2,  # 更新的运单号2
                   input$update_tracking_number3,  # 更新的运单号3
                   input$update_order_notes,       # 更新的备注
-                  order_image$uploaded_file()$datapath %||% order_image$pasted_file()$datapath,  # 图片路径
+                  image_order_manage$uploaded_file()$datapath %||% image_order_manage$pasted_file()$datapath,  # 图片路径
                   order_id  # 目标订单号
                 )
       )
@@ -1865,7 +1878,7 @@ server <- function(input, output, session) {
       updateTextInput(session, "update_tracking_number2", value = "")
       updateTextInput(session, "update_tracking_number3", value = "")
       updateTextAreaInput(session, "update_order_notes", value = "")
-      order_image$reset()  # 清空图片上传模块
+      image_order_manage$reset()  # 清空图片上传模块
       
       # 清空关联物品表
       output$associated_items_table <- renderDT({ NULL })
