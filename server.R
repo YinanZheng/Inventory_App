@@ -1710,6 +1710,117 @@ server <- function(input, output, session) {
   })
   
   
+  
+  ################################################################
+  ##                                                            ##
+  ## 订单管理分页                                               ##
+  ##                                                            ##
+  ################################################################
+  
+  # 搜索订单逻辑
+  observeEvent(input$search_order_btn, {
+    req(input$search_order_id)  # 检查是否输入订单号
+    
+    tryCatch({
+      # 查询订单信息
+      order_data <- dbGetQuery(con, "
+      SELECT UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, CustomerName, Platform, OrderNotes, OrderImagePath 
+      FROM orders 
+      WHERE OrderID = ?", 
+                               params = list(input$search_order_id)
+      )
+      
+      if (nrow(order_data) > 0) {
+        # 填充订单信息
+        updateTextInput(session, "update_customer_name", value = order_data$CustomerName[1])
+        updateSelectInput(session, "update_platform", selected = order_data$Platform[1])
+        updateTextInput(session, "update_tracking_number1", value = order_data$UsTrackingNumber1[1])
+        updateTextInput(session, "update_tracking_number2", value = order_data$UsTrackingNumber2[1])
+        updateTextInput(session, "update_tracking_number3", value = order_data$UsTrackingNumber3[1])
+        updateTextAreaInput(session, "update_order_notes", value = order_data$OrderNotes[1])
+        
+        # 显示订单图片
+        output$order_image_ui <- renderUI({
+          img(src = order_data$OrderImagePath[1], height = "200px", style = "border: 1px solid #ddd; margin-top: 10px;")
+        })
+        
+        # 查询关联物品
+        associated_items <- dbGetQuery(con, "
+        SELECT * 
+        FROM unique_items 
+        WHERE OrderID = ?", 
+                                       params = list(input$search_order_id)
+        )
+        
+        # 显示关联物品表
+        output$associated_items_table <- renderDT({
+          datatable(associated_items, options = list(pageLength = 10))
+        })
+      } else {
+        showNotification("未找到订单记录！", type = "warning")
+      }
+    }, error = function(e) {
+      showNotification(paste("搜索订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  # 更新订单逻辑
+  observeEvent(input$update_order_btn, {
+    req(input$search_order_id)  # 检查是否输入订单号
+    
+    tryCatch({
+      # 更新订单信息
+      dbExecute(con, "
+      UPDATE orders 
+      SET CustomerName = ?, 
+          Platform = ?, 
+          UsTrackingNumber1 = ?, 
+          UsTrackingNumber2 = ?, 
+          UsTrackingNumber3 = ?, 
+          OrderNotes = ?
+      WHERE OrderID = ?",
+                params = list(
+                  input$update_customer_name,
+                  input$update_platform,
+                  input$update_tracking_number1,
+                  input$update_tracking_number2,
+                  input$update_tracking_number3,
+                  input$update_order_notes,
+                  input$search_order_id
+                )
+      )
+      showNotification("订单信息已成功更新！", type = "message")
+    }, error = function(e) {
+      showNotification(paste("更新订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  # 删除订单逻辑
+  observeEvent(input$delete_order_btn, {
+    req(input$search_order_id)  # 检查是否输入订单号
+    
+    tryCatch({
+      # 删除订单及其关联物品
+      dbExecute(con, "DELETE FROM unique_items WHERE OrderID = ?", params = list(input$search_order_id))
+      dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(input$search_order_id))
+      
+      showNotification("订单已成功删除！", type = "message")
+      
+      # 清空表单内容
+      updateTextInput(session, "update_customer_name", value = "")
+      updateSelectInput(session, "update_platform", selected = "")
+      updateTextInput(session, "update_tracking_number1", value = "")
+      updateTextInput(session, "update_tracking_number2", value = "")
+      updateTextInput(session, "update_tracking_number3", value = "")
+      updateTextAreaInput(session, "update_order_notes", value = "")
+      output$order_image_ui <- renderUI({})
+      output$associated_items_table <- renderDT({ NULL })
+    }, error = function(e) {
+      showNotification(paste("删除订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  
   ################################################################
   ##                                                            ##
   ## 查询分页                                                   ##
