@@ -43,10 +43,12 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
         img_path <- data()[info$row, "OrderImagePath"]
         req(img_path)  # 确保图片路径存在
         
+        img_host_path <- paste0(host_url, "/images/", basename(img_path))
+        
         # 弹出窗口显示大图
         showModal(modalDialog(
           title = "订单图片预览",
-          img(src = img_path, height = "400px", style = "display: block; margin: 0 auto;"),
+          img(src = img_host_path, height = "400px", style = "display: block; margin: 0 auto;"),
           size = "l",
           easyClose = TRUE,
           footer = modalButton("关闭")
