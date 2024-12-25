@@ -1824,6 +1824,17 @@ server <- function(input, output, session) {
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     
+    # 获取当前订单的图片路径
+    existing_image_path <- selected_order$OrderImagePath
+    
+    # 处理图片上传或粘贴
+    updated_image_path <- process_image_upload(
+      sku = order_id,  # 使用订单号作为 SKU
+      file_data = image_order_manage$uploaded_file(),
+      pasted_data = image_order_manage$pasted_file(),
+      inventory_path = existing_image_path
+    )
+    
     tryCatch({
       # 更新订单信息
       dbExecute(con, "
@@ -1837,17 +1848,29 @@ server <- function(input, output, session) {
           OrderImagePath = ?
       WHERE OrderID = ?",
                 params = list(
-                  input$update_customer_name,  # 更新的顾客姓名
-                  input$update_platform,       # 更新的电商平台
-                  input$update_tracking_number1,  # 更新的运单号1
-                  input$update_tracking_number2,  # 更新的运单号2
-                  input$update_tracking_number3,  # 更新的运单号3
-                  input$update_order_notes,       # 更新的备注
-                  image_order_manage$uploaded_file()$datapath %||% image_order_manage$pasted_file()$datapath,  # 图片路径
-                  order_id  # 目标订单号
+                  input$update_customer_name,   # 更新的顾客姓名
+                  input$update_platform,        # 更新的电商平台
+                  input$update_tracking_number1, # 更新的运单号1
+                  input$update_tracking_number2, # 更新的运单号2
+                  input$update_tracking_number3, # 更新的运单号3
+                  input$update_order_notes,      # 更新的备注
+                  updated_image_path,           # 更新的图片路径
+                  order_id                      # 更新的订单号
                 )
       )
       showNotification("订单信息已成功更新！", type = "message")
+      
+      # 更新orders，触发表格刷新
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
+      
+      # 清空左侧输入栏
+      updateTextInput(session, "update_customer_name", value = "")
+      updateSelectInput(session, "update_platform", selected = "")
+      updateTextInput(session, "update_tracking_number1", value = "")
+      updateTextInput(session, "update_tracking_number2", value = "")
+      updateTextInput(session, "update_tracking_number3", value = "")
+      updateTextAreaInput(session, "update_order_notes", value = "")
+      image_order_manage$reset()  # 重置图片模块
     }, error = function(e) {
       showNotification(paste("更新订单时发生错误：", e$message), type = "error")
     })
