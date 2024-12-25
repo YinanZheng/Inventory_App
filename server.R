@@ -1592,7 +1592,8 @@ server <- function(input, output, session) {
           con = con,
           unique_id = unique_id,
           note_content = defect_notes,
-          status_label = "瑕疵"
+          status_label = "瑕疵",
+          refresh_trigger = unique_items_data_refresh_trigger
         )
       })
       
@@ -1636,7 +1637,8 @@ server <- function(input, output, session) {
           con = con,
           unique_id = unique_id,
           note_content = repair_notes,
-          status_label = "修复"
+          status_label = "修复",
+          refresh_trigger = unique_items_data_refresh_trigger
         )
       })
       
