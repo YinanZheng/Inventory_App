@@ -795,14 +795,14 @@ ui <- navbarPage(
         # 订单表
         div(
           style = "margin-bottom: 20px;",
-          tags$h4("订单数据", style = "color: #007BFF; font-weight: bold;"),
+          tags$h4("订单表", style = "color: #007BFF; font-weight: bold;"),
           orderTableUI("orders_table_module")  # 订单表模块
         ),
         
         # 关联物品表
         div(
           style = "margin-top: 20px;",
-          tags$h4("关联物品", style = "color: #007BFF; font-weight: bold;"),
+          tags$h4("所选订单物品", style = "color: #007BFF; font-weight: bold;"),
           uniqueItemsTableUI("associated_items_table_module")  # 关联物品表模块
         )
       )
