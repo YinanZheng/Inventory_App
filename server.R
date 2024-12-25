@@ -306,7 +306,8 @@ server <- function(input, output, session) {
     }
   })
   
-  # 订单页订单过滤
+  # 订单管理页订单过滤
+  # 订单管理页订单过滤
   filtered_orders <- reactive({
     req(orders())  # 确保数据存在
     
@@ -325,9 +326,18 @@ server <- function(input, output, session) {
       data <- data %>% filter(Platform == input$filter_platform)
     }
     
+    # 动态移除全空的列
+    if (all(data$UsTrackingNumber2 == "" | is.na(data$UsTrackingNumber2))) {
+      data <- data %>% select(-UsTrackingNumber2)
+    }
+    
+    if (all(data$UsTrackingNumber3 == "" | is.na(data$UsTrackingNumber3))) {
+      data <- data %>% select(-UsTrackingNumber3)
+    }
+    
     data
   })
-  
+
   
   
   # 渲染物品追踪数据表
