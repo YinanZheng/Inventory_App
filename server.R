@@ -12,6 +12,9 @@ server <- function(input, output, session) {
   # ReactiveVal 用于存储 inventory 数据
   inventory <- reactiveVal()
   
+  # ReactiveVal 用于存储 orders 数据
+  orders <- reactiveVal()
+  
   # ReactiveVal 用于存储 unique item 数据
   unique_item_for_report <- reactiveVal()
   
@@ -53,6 +56,16 @@ server <- function(input, output, session) {
     }, error = function(e) {
       inventory(NULL)  # 如果失败，设为空
       showNotification("Initiation: Failed to load inventory data.", type = "error")
+    })
+  })
+  
+  # 应用启动时加载数据: orders
+  observe({
+    tryCatch({
+      orders(dbGetQuery(con, "SELECT * FROM orders"))  # 存储到 reactiveVal
+    }, error = function(e) {
+      orders(NULL)  # 如果失败，设为空
+      showNotification("Initiation: Failed to load orders data.", type = "error")
     })
   })
   
@@ -353,6 +366,22 @@ server <- function(input, output, session) {
                                                            DomesticExitTime = "出库日期",
                                                            DomesticSoldTime = "售出日期")
                                                          ), data = filtered_unique_items_data_download)
+  
+  # 调用模块化的服务器逻辑
+  selected_order_row <- callModule(orderTableServer, "order_table_module",
+                                   column_mapping = list(
+                                     OrderID = "订单号",
+                                     CustomerName = "顾客姓名",
+                                     Platform = "平台",
+                                     UsTrackingNumber1 = "运单号1",
+                                     UsTrackingNumber2 = "运单号2",
+                                     UsTrackingNumber3 = "运单号3",
+                                     OrderNotes = "订单备注",
+                                     OrderImagePath = "订单图片"
+                                   ),
+                                   data = order,  # 数据源
+                                   selection = "single"  # 单选模式
+  )
   
   ####################################################################################################################################
   

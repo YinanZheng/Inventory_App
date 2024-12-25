@@ -746,7 +746,6 @@ ui <- navbarPage(
   
   
   # 订单管理分页
-  # 订单管理分页
   tabPanel(
     title = "订单管理",
     icon = icon("clipboard-list"),
@@ -784,16 +783,11 @@ ui <- navbarPage(
         )
       ),
       
-      # 右侧：主面板
       div(
         class = "main-panel",
         
         # 订单数据表渲染
-        div(
-          style = "margin-bottom: 20px;",
-          tags$h4("订单数据", style = "color: #007BFF; font-weight: bold;"),
-          DTOutput("orders_table")  # 显示订单数据表
-        ),
+        orderTableUI("order_table_module"),
         
         # 关联物品
         div(
