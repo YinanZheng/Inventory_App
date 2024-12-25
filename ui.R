@@ -186,7 +186,7 @@ ui <- navbarPage(
             style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
           ),
           
-          actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
+          actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
         ),
         
         fluidRow(
