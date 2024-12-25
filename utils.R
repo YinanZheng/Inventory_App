@@ -352,27 +352,38 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL, ship
   
   # 获取时间戳列
   timestamp_column <- status_columns[[new_status]]
-  timestamp_update <- if (update_timestamp) paste0(timestamp_column, " = NOW(), ") else ""
+  timestamp_update <- if (update_timestamp) paste0(timestamp_column, " = NOW()") else NULL
   
-  # 动态生成 SQL 查询
-  query <- paste0(
-    "UPDATE unique_items SET Status = ?, ",
+  # 动态构建 SET 部分
+  set_clauses <- c(
+    "Status = ?",
     timestamp_update,
-    if (!is.null(defect_status)) "Defect = ?, " else "",
-    if (!is.null(shipping_method)) "IntlShippingMethod = ?, " else "",
-    "WHERE UniqueID = ?"
+    if (!is.null(defect_status)) "Defect = ?" else NULL,
+    if (!is.null(shipping_method)) "IntlShippingMethod = ?" else NULL
+  )
+  
+  # 拼接 SET 子句
+  set_clause <- paste(set_clauses[!is.null(set_clauses)], collapse = ", ")
+  
+  # 完整 SQL 查询
+  query <- paste0(
+    "UPDATE unique_items SET ", set_clause, " WHERE UniqueID = ?"
   )
   
   # 构建参数列表
   params <- c(
     list(new_status),
+    if (!is.null(timestamp_update)) list() else NULL,
     if (!is.null(defect_status)) list(defect_status) else NULL,
     if (!is.null(shipping_method)) list(shipping_method) else NULL,
     list(unique_id)
   )
   
+  # 展平参数列表
+  params <- unlist(params)
+  
   # 执行 SQL 更新
-  dbExecute(con, query, params = unlist(params))
+  dbExecute(con, query, params = params)
   
   # 触发刷新
   if (!is.null(refresh_trigger)) {

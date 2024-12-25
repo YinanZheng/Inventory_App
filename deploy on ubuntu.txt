@@ -86,7 +86,6 @@ goldenbeanllc
 
 
 ## Set up image folder
-
 sudo mkdir -p /var/www/images
 sudo chown ubuntu:ubuntu /var/www/images
 sudo chmod 755 /var/www/images
@@ -97,5 +96,6 @@ sudo chown -R ubuntu:ubuntu /srv/shiny-server/<your-app>/www/images
 
 
 ## Restore database from a backup
-
 mysql inventory_system < /var/backups/backup_2024-12-25.sql
+
+
