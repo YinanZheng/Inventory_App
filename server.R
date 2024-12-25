@@ -1770,6 +1770,19 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  output$show_tracking_number2 <- reactive({
+    # 检查是否有运单号2
+    input$update_tracking_number2 != ""
+  })
+  
+  output$show_tracking_number3 <- reactive({
+    # 检查是否有运单号3
+    input$update_tracking_number3 != ""
+  })
+  
+  outputOptions(output, "show_tracking_number2", suspendWhenHidden = FALSE)
+  outputOptions(output, "show_tracking_number3", suspendWhenHidden = FALSE)
+  
   # 监听筛选条件变化
   observe({
     input$filter_order_id
@@ -1780,6 +1793,8 @@ server <- function(input, output, session) {
   
   # 订单图片处理模块
   image_order_manage <- imageModuleServer("image_order_manage")
+  
+
   
   # 选择某个订单后，渲染关联物品表
   observeEvent(selected_order_row(), {
