@@ -1231,8 +1231,12 @@ server <- function(input, output, session) {
         showNotification("订单已成功登记！", type = "message")
       }
       
+      # 更新订单表格
+      orders_data(dbGetQuery(con, "SELECT * FROM orders"))
+      
       # 清空表单内容
       image_sold$reset()  # 清空上传或粘贴的图片
+      
     }, error = function(e) {
       # 错误处理
       showNotification(paste("登记订单时发生错误：", e$message), type = "error")

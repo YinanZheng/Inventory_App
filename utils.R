@@ -404,7 +404,7 @@ update_order_id <- function(con, unique_id, order_id) {
     dbExecute(con, query, params = params)
     
     # 成功提示
-    showNotification(paste("订单号已成功更新，UniqueID:", unique_id), type = "message")
+    showNotification("订单号已成功更新！", type = "message")
   }, error = function(e) {
     # 错误提示
     showNotification(paste("更新订单号时发生错误：", e$message), type = "error")
