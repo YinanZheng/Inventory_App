@@ -1819,7 +1819,17 @@ server <- function(input, output, session) {
     
     # 渲染关联物品表
     associated_items <- reactive({
-      unique_items_data() %>% filter(OrderID == order_id)  # 根据订单号筛选关联物品
+      # 根据订单号筛选关联物品
+      items <- unique_items_data() %>% filter(OrderID == order_id)
+      
+      # 动态移除列
+      if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
+        items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
+      } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
+        items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
+      }
+      
+      items
     })
     
     # 使用 uniqueItemsTableServer 渲染关联物品表
