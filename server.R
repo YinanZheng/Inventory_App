@@ -2536,7 +2536,8 @@ server <- function(input, output, session) {
                                                         DomesticEntryTime = "入库日期",
                                                         DomesticExitTime = "出库日期",
                                                         DomesticSoldTime = "出售日期",
-                                                        IntlShippingMethod = "国际运输"
+                                                        IntlShippingMethod = "国际运输",
+                                                        OrderID = "订单号"
                                                       )), 
                                                       selection = "multiple", 
                                                       data = filtered_unique_items_data_admin)
@@ -2566,7 +2567,8 @@ server <- function(input, output, session) {
           con = con,
           unique_id = unique_id,
           new_status = new_status,
-          refresh_trigger = unique_items_data_refresh_trigger
+          refresh_trigger = unique_items_data_refresh_trigger,
+          update_timestamp = FALSE
         )
       })
       

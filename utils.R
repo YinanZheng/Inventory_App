@@ -344,7 +344,7 @@ render_table_with_images <- function(data,
 }
 
 
-update_status <- function(con, unique_id, new_status, defect_status = NULL, shipping_method = NULL, refresh_trigger = NULL) {
+update_status <- function(con, unique_id, new_status, defect_status = NULL, shipping_method = NULL, refresh_trigger = NULL, update_timestamp = TRUE) {
   if (!new_status %in% names(status_columns)) {
     showNotification("Invalid status provided", type = "error")
     return()
@@ -352,41 +352,34 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL, ship
   
   # 获取时间戳列
   timestamp_column <- status_columns[[new_status]]
+  timestamp_update <- if (update_timestamp) paste0(timestamp_column, " = NOW(), ") else ""
   
   # 动态生成 SQL 查询
-  if (!is.null(defect_status) && !is.null(shipping_method)) {
-    query <- paste0(
-      "UPDATE unique_items SET Status = ?, ", 
-      timestamp_column, " = NOW(), Defect = ?, IntlShippingMethod = ? WHERE UniqueID = ?"
-    )
-    params <- list(new_status, defect_status, shipping_method, unique_id)
-  } else if (!is.null(defect_status)) {
-    query <- paste0(
-      "UPDATE unique_items SET Status = ?, ", 
-      timestamp_column, " = NOW(), Defect = ? WHERE UniqueID = ?"
-    )
-    params <- list(new_status, defect_status, unique_id)
-  } else if (!is.null(shipping_method)) {
-    query <- paste0(
-      "UPDATE unique_items SET IntlShippingMethod = ? WHERE UniqueID = ?"
-    )
-    params <- list(shipping_method, unique_id)
-  } else {
-    query <- paste0(
-      "UPDATE unique_items SET Status = ?, ", 
-      timestamp_column, " = NOW() WHERE UniqueID = ?"
-    )
-    params <- list(new_status, unique_id)
-  }
+  query <- paste0(
+    "UPDATE unique_items SET Status = ?, ",
+    timestamp_update,
+    if (!is.null(defect_status)) "Defect = ?, " else "",
+    if (!is.null(shipping_method)) "IntlShippingMethod = ?, " else "",
+    "WHERE UniqueID = ?"
+  )
+  
+  # 构建参数列表
+  params <- c(
+    list(new_status),
+    if (!is.null(defect_status)) list(defect_status) else NULL,
+    if (!is.null(shipping_method)) list(shipping_method) else NULL,
+    list(unique_id)
+  )
   
   # 执行 SQL 更新
-  dbExecute(con, query, params = params)
+  dbExecute(con, query, params = unlist(params))
   
   # 触发刷新
   if (!is.null(refresh_trigger)) {
     refresh_trigger(!refresh_trigger())
   }
 }
+
 
 update_order_id <- function(con, unique_id, order_id) {
   tryCatch({
