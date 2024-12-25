@@ -2511,7 +2511,7 @@ server <- function(input, output, session) {
   })
   
   # 定义一个 reactiveVal 存储筛选后的数据
-  filtered_items_data <- reactiveVal()
+  filtered_unique_items_data_admin <- reactiveVal()
   
   # SKU 查询逻辑
   observeEvent(input$admin_search_sku, {
