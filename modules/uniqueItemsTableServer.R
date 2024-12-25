@@ -62,6 +62,32 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     table
   })
   
+  # 监听用户点击图片列
+  observeEvent(input$unique_items_table_cell_clicked, {
+    info <- input$unique_items_table_cell_clicked
+    
+    # 检查是否点击了图片列
+    if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
+      column_index <- which(names(data()) == "ItemImagePath")  # 图片列的索引
+      if (info$col == column_index) {
+        # 获取点击的图片路径
+        img_path <- data()[info$row, "ItemImagePath"]
+        req(img_path)  # 确保图片路径存在
+        
+        img_host_path <- paste0(host_url, "/images/", basename(img_path))
+        
+        # 弹出窗口显示大图
+        showModal(modalDialog(
+          title = "物品图片预览",
+          img(src = img_host_path, height = "400px", style = "display: block; margin: 0 auto;"),
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("关闭")
+        ))
+      }
+    }
+  })
+  
   # 返回选中行的索引
   reactive({
     input$unique_items_table_rows_selected
