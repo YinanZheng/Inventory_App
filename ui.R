@@ -745,6 +745,70 @@ ui <- navbarPage(
   ), # end of 国际物流管理 tab
   
   
+  # 订单管理分页
+  tabPanel(
+    title = "订单管理",
+    icon = icon("clipboard-list"),  # 可选图标
+    div(
+      class = "layout-container",  # Flexbox 容器
+      
+      # 左侧：搜索和操作区
+      div(
+        class = "sticky-sidebar",  # 固定侧边栏
+        style = "width: 400px;",
+        
+        # 搜索订单
+        textInput("search_order_id", "订单号", placeholder = "输入订单号进行搜索", width = "100%"),
+        actionButton("search_order_btn", "搜索订单", icon = icon("search"), class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
+        
+        # 删除订单
+        actionButton("delete_order_btn", "删除订单", icon = icon("trash"), class = "btn-danger", style = "width: 100%; margin-bottom: 10px;"),
+        
+        # 更新订单
+        fluidRow(
+          column(6, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
+          column(6, selectInput(
+            "update_platform", "电商平台",
+            choices = c("请选择平台" = "", "Etsy", "Shopify", "TikTok", "其他"), 
+            selected = NULL, width = "100%"
+          ))
+        ),
+        fluidRow(
+          column(6, textInput("update_tracking_number1", "运单号1", placeholder = "更新运单号1", width = "100%")),
+          column(6, textInput("update_tracking_number2", "运单号2", placeholder = "更新运单号2", width = "100%"))
+        ),
+        fluidRow(
+          column(6, textInput("update_tracking_number3", "运单号3", placeholder = "更新运单号3", width = "100%"))
+        ),
+        textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
+        actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 100%; margin-top: 10px;")
+      ),
+      
+      # 右侧：主面板
+      div(
+        class = "main-panel",
+        
+        tabsetPanel(
+          tabPanel(
+            title = "订单详情",
+            div(
+              style = "margin-bottom: 20px;",
+              tags$h4("订单图片", style = "color: #007BFF; font-weight: bold;"),
+              uiOutput("order_image_ui")  # 动态显示订单图片
+            )
+          ),
+          tabPanel(
+            title = "关联物品",
+            div(
+              style = "margin-top: 20px;",
+              tags$h4("关联物品", style = "color: #007BFF; font-weight: bold;"),
+              DTOutput("associated_items_table")  # 显示关联物品表
+            )
+          )
+        )
+      )
+    )
+  ), # end of 订单管理
   
   tabPanel(
     "查询", icon = icon("search"), 
