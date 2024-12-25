@@ -1884,49 +1884,52 @@ server <- function(input, output, session) {
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     
-    # 获取与订单关联的物品
-    associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
-    
-    if (nrow(associated_items) == 0) {
-      showNotification("未找到与订单关联的物品，直接删除订单。", type = "warning")
-    }
-    
     tryCatch({
-      # 遍历关联物品进行逆向操作
-      lapply(1:nrow(associated_items), function(i) {
-        item <- associated_items[i, ]
-        
-        # 逆向调整库存
-        adjust_inventory(
-          con = con,
-          sku = item$SKU,
-          adjustment = 1  # 增加库存数量
-        )
-        
-        # 恢复物品状态到“国内入库”
-        update_status(
-          con = con,
-          unique_id = item$UniqueID,
-          new_status = "国内入库"
-        )
-        
-        # 清空物品的 OrderID
-        update_order_id(
-          con = con,
-          unique_id = item$UniqueID,
-          order_id = NULL  # 清空订单号
-        )
-      })
+      # 获取与订单关联的物品
+      associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
+      
+      if (nrow(associated_items) > 0) {
+        # 遍历关联物品进行逆向操作
+        lapply(1:nrow(associated_items), function(i) {
+          item <- associated_items[i, ]
+          
+          # 逆向调整库存
+          adjust_inventory(
+            con = con,
+            sku = item$SKU,
+            adjustment = 1  # 增加库存数量
+          )
+          
+          # 恢复物品状态到“国内入库”
+          update_status(
+            con = con,
+            unique_id = item$UniqueID,
+            new_status = "国内入库"
+          )
+          
+          # 清空物品的 OrderID
+          update_order_id(
+            con = con,
+            unique_id = item$UniqueID,
+            order_id = NULL  # 清空订单号
+          )
+        })
+      }
       
       # 删除订单记录
       dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(order_id))
       
-      # 删除成功通知
-      showNotification(paste("订单", order_id, "已成功删除，订单物品已返回库存！"), type = "message")
+      # 通知用户操作结果
+      message <- if (nrow(associated_items) > 0) {
+        paste("订单", order_id, "已成功删除，订单内物品已返回库存！")
+      } else {
+        paste("订单", order_id, "已成功删除，没有关联的物品需要处理！")
+      }
+      showNotification(message, type = "message")
       
       # 刷新数据
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      unique_items_data(dbGetQuery(con, "SELECT * FROM unique_items"))
       orders(dbGetQuery(con, "SELECT * FROM orders"))
       
       # 清空左侧输入栏
@@ -1944,6 +1947,7 @@ server <- function(input, output, session) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")
     })
   })
+  
   
   
   
