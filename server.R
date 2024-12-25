@@ -379,7 +379,7 @@ server <- function(input, output, session) {
                                      OrderNotes = "订单备注",
                                      OrderImagePath = "订单图片"
                                    ),
-                                   data = order,  # 数据源
+                                   data = orders,  # 数据源
                                    selection = "single"  # 单选模式
   )
   
