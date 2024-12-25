@@ -21,13 +21,13 @@ library(tidyr)
 source("./modules/typeModuleUI.R", local = TRUE)
 source("./modules/uniqueItemsTableUI.R", local = TRUE)
 source("./modules/imageModuleUI.R", local = TRUE)
-source("./modules/itemFilterUI.R", local = TRUE)
+source("./modules/orderTableUI.R", local = TRUE)
 
 source("./modules/supplierModuleServer.R", local = TRUE)
 source("./modules/typeModuleServer.R", local = TRUE)
 source("./modules/uniqueItemsTableServer.R", local = TRUE)
 source("./modules/imageModuleServer.R", local = TRUE)
-source("./modules/itemFilterServer.R", local = TRUE)
+source("./modules/orderTableServer.R", local = TRUE)
 
 source("utils.R", local = TRUE)
 
