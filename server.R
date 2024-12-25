@@ -405,7 +405,7 @@ server <- function(input, output, session) {
   selected_order_row <- callModule(orderTableServer, "orders_table_module",
                                    column_mapping = list(
                                      OrderID = "订单号",
-                                     OrderImagePath = "图片",
+                                     OrderImagePath = "订单图",
                                      CustomerName = "姓名",
                                      Platform = "平台",
                                      UsTrackingNumber1 = "运单",
@@ -1780,12 +1780,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  output$show_tracking_number2 <- reactive({input$update_tracking_number2 != ""})
-  output$show_tracking_number3 <- reactive({input$update_tracking_number3 != ""})
-  
-  outputOptions(output, "show_tracking_number2", suspendWhenHidden = FALSE)
-  outputOptions(output, "show_tracking_number3", suspendWhenHidden = FALSE)
-  
   # 监听筛选条件变化
   observe({
     input$filter_order_id
@@ -1813,6 +1807,14 @@ server <- function(input, output, session) {
     updateTextInput(session, "update_tracking_number2", value = selected_order$UsTrackingNumber2)
     updateTextInput(session, "update_tracking_number3", value = selected_order$UsTrackingNumber3)
     updateTextAreaInput(session, "update_order_notes", value = selected_order$OrderNotes)
+    
+    # 动态更新标题
+    output$associated_items_title <- renderUI({
+      tags$h4(
+        sprintf("订单号：%s 顾客：%s 的订单物品", order_id, customer_name),
+        style = "color: #007BFF; font-weight: bold;"
+      )
+    })
     
     # 渲染关联物品表
     associated_items <- reactive({
@@ -1963,7 +1965,6 @@ server <- function(input, output, session) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")
     })
   })
-  
   
   
   

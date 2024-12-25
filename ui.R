@@ -780,11 +780,8 @@ ui <- navbarPage(
             width = "100%"
           ),
           textInput("update_tracking_number1", "运单号", placeholder = "更新运单号", width = "100%"),
-          conditionalPanel(
-            condition = "output.show_tracking_numbers",
-            textInput("update_tracking_number2", "运单号2", placeholder = "更新运单号2", width = "100%"),
-            textInput("update_tracking_number3", "运单号3", placeholder = "更新运单号3", width = "100%")
-          ),
+          textInput("update_tracking_number2", "运单号2", placeholder = "更新运单号2", width = "100%"),
+          textInput("update_tracking_number3", "运单号3", placeholder = "更新运单号3", width = "100%"),
           textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
           
           # 图片模块
@@ -816,7 +813,7 @@ ui <- navbarPage(
         div(
           class = "card",
           style = "flex: 1 0 65%; padding: 15px; border: 1px solid #ccc; border-radius: 8px;",  # 宽一些
-          tags$h4("所选订单物品", style = "color: #007BFF; font-weight: bold;"),
+          uiOutput("associated_items_title"),  # 动态标题
           uniqueItemsTableUI("associated_items_table_module")  # 关联物品表模块
         )
       )
