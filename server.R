@@ -2530,42 +2530,54 @@ server <- function(input, output, session) {
   })
   
   # 使用 uniqueItemsTableServer 渲染表格
-  callModule(uniqueItemsTableServer, "admin_items_table", 
-             column_mapping = c(
-               SKU = "条形码",
-               ItemName = "商品名",
-               Status = "当前状态",
-               ProductCost = "单价",
-               ItemImagePath = "图片"
-             ), 
-             selection = "single", 
-             data = filtered_unique_items_data_admin)
+  unique_items_table_admin_selected_row <- callModule(uniqueItemsTableServer, "admin_items_table", 
+                                                      column_mapping = c(common_columns, list(
+                                                        PurchaseTime = "采购日期",
+                                                        DomesticEntryTime = "入库日期",
+                                                        DomesticExitTime = "出库日期",
+                                                        DomesticSoldTime = "出售日期",
+                                                        IntlShippingMethod = "国际运输"
+                                                      )), 
+                                                      selection = "multiple", 
+                                                      data = filtered_unique_items_data_admin)
   
-  # 更新物品状态逻辑
+  # 监听更新状态按钮
   observeEvent(input$admin_update_status_btn, {
-    req(input$admin_target_status, input$admin_items_table_rows_selected)
+    req(input$admin_target_status, unique_items_table_admin_selected_row())
     
-    selected_row <- input$admin_items_table_rows_selected
-    selected_item <- filtered_unique_items_data_admin()[selected_row, ]
+    # 获取选中行的索引
+    selected_rows <- unique_items_table_admin_selected_row()
+    selected_items <- filtered_unique_items_data_admin()[selected_rows, ]
     
-    if (nrow(selected_item) > 0) {
-      tryCatch({
-        # 更新物品状态
-        dbExecute(
-          con,
-          "UPDATE unique_items SET Status = ? WHERE UniqueID = ?",
-          params = list(input$admin_target_status, selected_item$UniqueID)
-        )
-        showNotification("状态更新成功！", type = "message")
-        
-        # 刷新数据
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-      }, error = function(e) {
-        showNotification(paste("状态更新失败：", e$message), type = "error")
-      })
-    } else {
-      showNotification("未选择有效的物品！", type = "error")
+    # 确保有选中物品
+    if (nrow(selected_items) == 0) {
+      showNotification("请选择至少一个物品进行状态更新！", type = "error")
+      return()
     }
+    
+    tryCatch({
+      # 遍历选中物品
+      lapply(1:nrow(selected_items), function(i) {
+        unique_id <- selected_items$UniqueID[i]
+        new_status <- input$admin_target_status
+        
+        # 调用 update_status 更新物品状态
+        update_status(
+          con = con,
+          unique_id = unique_id,
+          new_status = new_status,
+          refresh_trigger = unique_items_data_refresh_trigger
+        )
+      })
+      
+      # 通知成功并刷新数据
+      showNotification("物品状态更新成功！", type = "message")
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("状态更新失败：", e$message), type = "error")
+    })
   })
   
   
