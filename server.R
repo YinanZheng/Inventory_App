@@ -1884,23 +1884,59 @@ server <- function(input, output, session) {
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     
+    # 获取与订单关联的物品
+    associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
+    
+    if (nrow(associated_items) == 0) {
+      showNotification("未找到与订单关联的物品，直接删除订单。", type = "warning")
+    }
+    
     tryCatch({
-      # 删除与订单关联的物品
-      dbExecute(con, "DELETE FROM unique_items WHERE OrderID = ?", params = list(order_id))
+      # 遍历关联物品进行逆向操作
+      lapply(1:nrow(associated_items), function(i) {
+        item <- associated_items[i, ]
+        
+        # 逆向调整库存
+        adjust_inventory(
+          con = con,
+          sku = item$SKU,
+          adjustment = 1  # 增加库存数量
+        )
+        
+        # 恢复物品状态到“国内入库”
+        update_status(
+          con = con,
+          unique_id = item$UniqueID,
+          new_status = "国内入库"
+        )
+        
+        # 清空物品的 OrderID
+        update_order_id(
+          con = con,
+          unique_id = item$UniqueID,
+          order_id = NULL  # 清空订单号
+        )
+      })
       
-      # 删除订单
+      # 删除订单记录
       dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(order_id))
       
-      showNotification("订单及其关联物品已成功删除！", type = "message")
+      # 删除成功通知
+      showNotification(paste("订单", order_id, "已成功删除，订单物品已返回库存！"), type = "message")
       
-      # 重置订单信息输入框
+      # 刷新数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
+      
+      # 清空左侧输入栏
       updateTextInput(session, "update_customer_name", value = "")
       updateSelectInput(session, "update_platform", selected = "")
       updateTextInput(session, "update_tracking_number1", value = "")
       updateTextInput(session, "update_tracking_number2", value = "")
       updateTextInput(session, "update_tracking_number3", value = "")
       updateTextAreaInput(session, "update_order_notes", value = "")
-      image_order_manage$reset()  # 清空图片上传模块
+      image_order_manage$reset()  # 重置图片模块
       
       # 清空关联物品表
       output$associated_items_table <- renderDT({ NULL })
@@ -1908,6 +1944,7 @@ server <- function(input, output, session) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")
     })
   })
+  
   
   
   ################################################################
