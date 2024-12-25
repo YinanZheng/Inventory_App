@@ -1009,11 +1009,5 @@ ui <- navbarPage(
         uniqueItemsTableUI("unique_items_table_download")
       )
     )
-  ), # End of 数据下载 tab
-  
-  # 添加全局底部
-  footer = tags$div(
-    style = "padding: 10px; background-color: #f8f9fa; text-align: center;",
-    tags$span("版权所有 © 2024 Golden Bean LLC")
-  )
+  ) # End of 数据下载 tab
 )
