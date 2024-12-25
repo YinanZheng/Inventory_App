@@ -1232,7 +1232,7 @@ server <- function(input, output, session) {
       }
       
       # 更新订单表格
-      orders_data(dbGetQuery(con, "SELECT * FROM orders"))
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
       
       # 清空表单内容
       image_sold$reset()  # 清空上传或粘贴的图片
