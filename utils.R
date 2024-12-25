@@ -746,53 +746,6 @@ handleOperation <- function(
   })
 }
 
-update_status <- function(
-    con, 
-    unique_id, 
-    new_status, 
-    defect_status = NULL, 
-    shipping_method = NULL, 
-    refresh_trigger = NULL
-) {
-  # 检查新状态是否有效
-  if (!new_status %in% names(status_columns)) {
-    showNotification("无效的状态更新！", type = "error")
-    return()
-  }
-  
-  # 获取对应的时间戳列
-  timestamp_column <- status_columns[[new_status]]
-  
-  # 构造动态 SQL 查询
-  query <- "UPDATE unique_items SET "
-  params <- list()
-  
-  if (!is.null(new_status)) {
-    query <- paste0(query, "Status = ?, ", timestamp_column, " = NOW()")
-    params <- append(params, new_status)
-  }
-  if (!is.null(defect_status)) {
-    query <- paste0(query, ", Defect = ?")
-    params <- append(params, defect_status)
-  }
-  if (!is.null(shipping_method)) {
-    query <- paste0(query, ", IntlShippingMethod = ?")
-    params <- append(params, shipping_method)
-  }
-  
-  # 添加 WHERE 条件
-  query <- paste0(query, " WHERE UniqueID = ?")
-  params <- append(params, unique_id)
-  
-  # 执行 SQL 更新
-  dbExecute(con, query, params = params)
-  
-  # 触发刷新机制
-  if (!is.null(refresh_trigger)) {
-    refresh_trigger(!refresh_trigger())
-  }
-}
-
 # 添加瑕疵备注
 add_defective_note <- function(con, unique_id, note_content, status_label = "瑕疵", refresh_trigger = NULL) {
   # 获取当前日期并格式化
