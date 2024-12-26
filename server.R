@@ -490,7 +490,7 @@ server <- function(input, output, session) {
     div(
       Label("商品名:", styles = list(
         root = list(
-          fontSize = 16,        # 设置字体大小为16px
+          fontSize = 14,        # 设置字体大小为16px
           fontWeight = "bold"   # 字体加粗
         )
       )),  # 添加标签
