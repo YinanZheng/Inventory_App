@@ -42,6 +42,10 @@ ui <- navbarPage(
         .navbar-brand {
           display: none !important;
         }
+        
+        .navbar-nav {
+          overflow-x: auto !important; /* 启用水平滚动条 */
+        }
       }
     
       /* 当屏幕宽度小于 768px 时，调整导航项的字体和间距 */
