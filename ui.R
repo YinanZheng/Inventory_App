@@ -948,19 +948,7 @@ ui <- navbarPage(
           tags$h4("表格筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           
           # 供应商筛选
-          selectizeInput(
-            inputId = "download_maker",
-            label = "选择供应商:",
-            choices = NULL,          # 动态加载供应商
-            selected = NULL,         # 默认全选
-            multiple = TRUE,         # 支持多选
-            options = list(          # 提供更好的交互体验
-              placeholder = "请选择供应商...",
-              allowEmptyOption = TRUE,
-              maxItems = 10          # 限制最多选中10个
-            ),
-            width = "100%"
-          ),
+          uiOutput("download_maker_ui"),  # 动态生成供应商筛选器,
           
           # 商品名称筛选
           selectizeInput(

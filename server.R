@@ -2333,15 +2333,18 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 初始化供应商筛选选项
-  observe({
-    # 加载供应商列表
+  # 动态生成供应商筛选器
+  output$download_maker_ui <- renderUI({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
+    maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
     
-    # 加载商品名称（初始时为空选项）
-    item_names <- c("")  # 仅包含空选项
-    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
+    Dropdown.shinyInput(
+      inputId = "download_maker",
+      label = "选择供应商:",
+      options = maker_options,
+      multiSelect = TRUE,
+      placeholder = "请选择供应商..."
+    )
   })
   
   # 监听供应商选择变化并动态更新商品名称
