@@ -129,16 +129,12 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(7, selectizeInput(
-            "new_name",                
-            label = "商品名:",         
-            choices = NULL,            
-            options = list(
-              placeholder = "请输入商品名...",
-              create = TRUE,            # 允许自定义输入值
-              persist = TRUE,            # 启用持久化，确保输入内容可编辑
-              allowEmptyOption = TRUE    # 允许选择空选项，避免意外清空
-            ),
+          column(7, autocomplete_input(
+            inputId = "new_name", 
+            label = "商品名:", 
+            value = "", 
+            placeholder = "请输入商品名...", 
+            options = NULL, # 初始为空，由server动态更新
             width = "100%"
           )),
           
