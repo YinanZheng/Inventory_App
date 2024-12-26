@@ -472,17 +472,23 @@ server <- function(input, output, session) {
   
   # 缓存商品名为 reactive 对象
   item_names <- reactive({
-    req(inventory())  # 确保 inventory() 不为空
-    c("", inventory()$ItemName)
+    inventory_data <- inventory()
+    if (is.null(inventory_data) || nrow(inventory_data) == 0) {
+      return(c(""))  # 如果没有数据，返回空选项
+    }
+    c("", inventory_data$ItemName)
   })
   
   # 商品名自动联想
   observe({
+    # 获取商品名列表
+    options <- lapply(item_names(), function(name) list(key = name, text = name))
+    
     # 动态更新选择列表
     updateComboBoxInput(
       session = session,
       inputId = "new_name",
-      options = lapply(item_names(), function(name) list(key = name, text = name))
+      options = options
     )
   })
   
