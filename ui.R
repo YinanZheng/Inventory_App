@@ -38,7 +38,7 @@ ui <- navbarPage(
       }
     
       /* 兼容小屏幕 */
-      @media (max-width: 768px) {
+      @media (max-width: 1500px) {
         .navbar-brand {
           display: none !important;
         }
