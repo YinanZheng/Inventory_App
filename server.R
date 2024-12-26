@@ -243,7 +243,7 @@ server <- function(input, output, session) {
     data <- unique_items_data()
     
     # 默认过滤条件：Status  为 “国内入库” 或 “国内出库”
-    data <- data[data$Status %in% c("国内出库", "国内入库"), ]
+    data <- data[data$Status %in% c("国内入库", "国内出库"), ]
     
     # 返回过滤后的数据
     data
@@ -251,8 +251,14 @@ server <- function(input, output, session) {
   
   # 售出页过滤
   filtered_unique_items_data_sold <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    # 默认过滤条件：Status  为 “国内入库” 或 “美国入库“ 或 "美国调货“ 或 “国内售出”
+    data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
+    
     filter_unique_items_data_by_inputs(
-      data = unique_items_data(),
+      data = data,
       input = input,
       maker_input_id = "sold_maker",
       item_name_input_id = "sold_name"
