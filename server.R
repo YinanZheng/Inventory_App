@@ -2461,13 +2461,9 @@ server <- function(input, output, session) {
       for (i in seq_len(nrow(final_data))) {
         image_path <- as.character(final_data[i, col_to_insert])
         
-        # 如果图片路径为空或文件不存在，跳过该图片
-        if (is.na(image_path) || !file.exists(image_path) || image_path == "") {
-          next
-        }
-        
         image_width_max <- 1
-        # if (!is.na(image_path) && file.exists(image_path)) {
+        
+        if (!is.na(image_path) && file.exists(image_path)) {
         
         # 获取图片的实际宽高比
         dims <- get_image_dimensions(image_path)
@@ -2497,9 +2493,9 @@ server <- function(input, output, session) {
         # 调整行高和列宽
         setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
         
-        # } else {
-        #   showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
-        # }
+        } else {
+          showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
+        }
       }
       
       # 最终设置列宽，保证所有图片适配最大宽度
