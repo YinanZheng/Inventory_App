@@ -2345,7 +2345,7 @@ server <- function(input, output, session) {
       placeholder = "请选择供应商...",
       styles = list(
         root = list(
-          fontSize = 15,        # 设置字号为15
+          fontSize = 16,        # 设置字号为15
           paddingTop = "6px",   # 设置顶部 padding 为6px
           paddingBottom = "6px" # 设置底部 padding 为6px
         )
