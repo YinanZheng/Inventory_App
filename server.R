@@ -2338,12 +2338,15 @@ server <- function(input, output, session) {
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
     
-    Dropdown.shinyInput(
-      inputId = "download_maker",
-      label = "选择供应商:",
-      options = maker_options,
-      multiSelect = TRUE,
-      placeholder = "请选择供应商..." # 增加内边距和调整字体大小
+    div(
+      style = "padding: 10px; font-size: 16px;", # 外层 div 设置内边距和字体大小
+      Dropdown.shinyInput(
+        inputId = "download_maker",
+        label = "选择供应商:",
+        options = maker_options,
+        multiSelect = TRUE,
+        placeholder = "请选择供应商..."
+      )
     )
   })
   
