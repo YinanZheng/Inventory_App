@@ -10,18 +10,34 @@ ui <- navbarPage(
     tags$head(
       tags$style(HTML("
       
-      /* 确保导航栏支持水平滚动 */
+      /* 强制导航栏水平滚动，禁止换行 */
       .navbar-nav {
-        display: flex;
-        flex-wrap: nowrap; /* 禁止换行 */
-        overflow-x: auto; /* 启用水平滚动 */
+        display: flex !important; /* 使用 Flex 布局 */
+        flex-wrap: nowrap !important; /* 禁止换行 */
+        overflow-x: auto !important; /* 启用水平滚动 */
+        white-space: nowrap !important; /* 确保内容不换行 */
       }
+    
+      /* 美化滚动条 */
       .navbar-nav::-webkit-scrollbar {
         height: 6px; /* 滚动条高度 */
       }
       .navbar-nav::-webkit-scrollbar-thumb {
         background: #007BFF; /* 滚动条颜色 */
         border-radius: 10px;
+      }
+    
+      /* 禁止导航栏高度扩展 */
+      .navbar {
+        white-space: nowrap !important; /* 确保所有子元素在单行内 */
+      }
+    
+      /* 兼容小屏幕 */
+      @media (max-width: 768px) {
+        .navbar-nav > li > a {
+          font-size: 12px !important; /* 调整字体大小适配小屏幕 */
+          padding: 6px 8px !important; /* 减少间距 */
+        }
       }
       
       body {
@@ -80,21 +96,6 @@ ui <- navbarPage(
       }
       .custom-selectize .selectize-dropdown-content {
         font-size: 12px !important; /* 设置下拉菜单字体大小 */
-      }
-
-      /* 响应式布局 */
-      @media (max-width: 768px) {
-        .layout-container {
-          flex-direction: column; /* 垂直排列 */
-        }
-        .sticky-sidebar {
-          position: static; /* 不再固定 */
-          width: 100%; /* 全宽 */
-          height: auto; /* 高度自适应 */
-        }
-        .main-panel {
-          margin-left: 0; /* 无偏移 */
-        }
       }
     ")),
       
