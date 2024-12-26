@@ -747,7 +747,7 @@ ui <- navbarPage(
       # 左侧：筛选条件和订单信息
       div(
         class = "sticky-sidebar",
-        style = "width: 300px;",  # 缩窄侧边栏宽度
+        style = "width: 250px;",  # 缩窄侧边栏宽度
         
         # 筛选条件 Card
         div(
