@@ -446,23 +446,23 @@ server <- function(input, output, session) {
   observeEvent({
     input[["type_module-new_major_type"]]
     input[["type_module-new_minor_type"]]
-    input$new_name
+    input$new_name$text
     input$new_maker
   }, {
     if (is.null(input$new_maker) || input$new_maker == "" || 
-        is.null(input$new_name) || input$new_name == "") {
+        is.null(input$new_name$text) || input$new_name$text == "") {
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       return()
     }
     
-    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name, input$new_maker)
+    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name$text, input$new_maker)
     
     # Dynamically generate SKU
     sku <- generate_sku(
       item_type_data = item_type_data(),
       major_type = input[["type_module-new_major_type"]],
       minor_type = input[["type_module-new_minor_type"]],
-      item_name = input$new_name,
+      item_name = input$new_name$text,
       maker = input$new_maker
     )
     
@@ -499,7 +499,7 @@ server <- function(input, output, session) {
   # Handle add item button click
   observeEvent(input$add_btn, {
     # 验证输入
-    if (is.null(input$new_name) || input$new_name == "") {
+    if (is.null(input$new_name$text) || input$new_name$text == "") {
       showNotification("请填写正确商品名称！", type = "error")
       return()
     }
@@ -550,7 +550,7 @@ server <- function(input, output, session) {
         Maker = input$new_maker,
         MajorType = input[["type_module-new_major_type"]],
         MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name,
+        ItemName = input$new_name$text,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = final_image_path,
@@ -565,14 +565,14 @@ server <- function(input, output, session) {
         Maker = input$new_maker,
         MajorType = input[["type_module-new_major_type"]],
         MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name,
+        ItemName = input$new_name$text,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
       added_items(bind_rows(existing_items, new_item))
-      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
+      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name$text), type = "message")
     }
     
     # 重置
