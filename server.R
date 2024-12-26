@@ -479,19 +479,14 @@ server <- function(input, output, session) {
     c("", inventory_data$ItemName)
   })
   
-  # 动态更新 ComboBox
-  observe({
-    # 确保 inventory 已初始化
-    req(item_names())
-    
-    # 准备 ComboBox 的选项
-    options <- lapply(item_names(), function(name) list(key = name, text = name))
-    
-    # 更新 ComboBox 选项
-    updateComboBoxInput(
-      session = session,
+  # 动态生成ComboBox组件
+  output$new_name_combo_box_ui <- renderUI({
+    ComboBox.shinyInput(
       inputId = "new_name",
-      options = options
+      value = list(text = ""),        # 默认初始值为空
+      options = item_names(),         # 动态加载的选项
+      allowFreeform = TRUE,           # 允许用户输入自定义值
+      placeholder = "请输入商品名..." # 提示文字
     )
   })
 
