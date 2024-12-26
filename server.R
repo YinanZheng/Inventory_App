@@ -482,7 +482,7 @@ server <- function(input, output, session) {
     updateComboBoxInput(
       session = session,
       inputId = "new_name",
-      options = item_names
+      options = lapply(item_names(), function(name) list(key = name, text = name))
     )
   })
   
