@@ -10,7 +10,7 @@ server <- function(input, output, session) {
   maker_list <- reactiveVal()
   
   # ReactiveVal 用于存储 inventory 数据
-  inventory <- reactiveVal()
+  inventory <- reactiveVal(data.frame(ItemName = character()))  # 初始为空数据框
   
   # ReactiveVal 用于存储 orders 数据
   orders <- reactiveVal()
