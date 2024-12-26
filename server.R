@@ -470,18 +470,19 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
+  # 缓存商品名为 reactive 对象
+  item_names <- reactive({
+    req(inventory())  # 确保 inventory() 不为空
+    c("", inventory()$ItemName)
+  })
+  
   # 商品名自动联想
   observe({
-    # 获取库存表的商品名
-    item_names <- c("", inventory()$ItemName)
-    
     # 动态更新选择列表
-    updateSelectizeInput(
-      session,
-      "new_name",
-      choices = item_names,
-      select = "", 
-      server = TRUE
+    updateComboBoxInput(
+      session = session,
+      inputId = "new_name",
+      options = item_names
     )
   })
   

@@ -5,6 +5,8 @@ library(shiny)
 library(shinyjs)
 library(shinyWidgets)
 library(shinythemes)
+library(shiny.fluent)
+
 library(dplyr)
 library(DT)
 library(stringi)
