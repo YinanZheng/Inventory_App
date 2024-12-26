@@ -14,13 +14,14 @@ ui <- navbarPage(
       .navbar-brand {
         display: inline-block !important;
       }
-  
-      /* 强制导航栏水平滚动，禁止换行 */
+    
+      /* 导航栏设置为水平滚动，禁止换行 */
       .navbar-nav {
         display: flex !important; /* 使用 Flex 布局 */
         flex-wrap: nowrap !important; /* 禁止换行 */
-        overflow-x: auto !important; /* 启用水平滚动 */
         white-space: nowrap !important; /* 确保内容不换行 */
+        overflow-x: auto !important; /* 启用水平滚动 */
+        -webkit-overflow-scrolling: touch; /* 平滑滚动（移动端支持） */
       }
     
       /* 美化滚动条 */
@@ -35,16 +36,13 @@ ui <- navbarPage(
       /* 禁止导航栏高度扩展 */
       .navbar {
         white-space: nowrap !important; /* 确保所有子元素在单行内 */
+        overflow: hidden !important; /* 隐藏导航栏外部滚动 */
       }
     
-     /* 当屏幕宽度小于 1450px 时，隐藏标题 */
+      /* 当屏幕宽度小于 1450px 时，隐藏标题 */
       @media (max-width: 1450px) {
         .navbar-brand {
           display: none !important;
-        }
-        
-        .navbar-nav {
-          overflow-x: auto !important; /* 启用水平滚动条 */
         }
       }
     
