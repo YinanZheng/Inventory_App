@@ -2343,8 +2343,7 @@ server <- function(input, output, session) {
       label = "选择供应商:",
       options = maker_options,
       multiSelect = TRUE,
-      placeholder = "请选择供应商...",
-      style = "padding: 10px; font-size: 16px;" # 增加内边距和调整字体大小
+      placeholder = "请选择供应商..." # 增加内边距和调整字体大小
     )
   })
   
