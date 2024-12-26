@@ -495,6 +495,7 @@ server <- function(input, output, session) {
       )),  # 添加标签
       ComboBox.shinyInput(
         inputId = "new_name",
+        value = "",        # 默认初始值为空字符串
         options = item_names(),         # 动态加载的选项
         allowFreeform = TRUE,           # 允许用户输入自定义值
         placeholder = "请输入商品名...",
