@@ -10,7 +10,7 @@ server <- function(input, output, session) {
   maker_list <- reactiveVal()
   
   # ReactiveVal 用于存储 inventory 数据
-  inventory <- reactiveVal(data.frame(ItemName = character()))  # 初始为空数据框
+  inventory <- reactiveVal(NULL)  # 初始为 NULL，安全处理未加载数据的情况
   
   # ReactiveVal 用于存储 orders 数据
   orders <- reactiveVal()
@@ -470,7 +470,7 @@ server <- function(input, output, session) {
     updateTextInput(session, "new_sku", value = sku)
   })
   
-  # 缓存商品名为 reactive 对象
+  # 缓存商品名，安全处理空值
   item_names <- reactive({
     inventory_data <- inventory()
     if (is.null(inventory_data) || nrow(inventory_data) == 0) {
@@ -479,19 +479,22 @@ server <- function(input, output, session) {
     c("", inventory_data$ItemName)
   })
   
-  # 商品名自动联想
+  # 动态更新 ComboBox
   observe({
-    # 获取商品名列表
+    # 确保 inventory 已初始化
+    req(item_names())
+    
+    # 准备 ComboBox 的选项
     options <- lapply(item_names(), function(name) list(key = name, text = name))
     
-    # 动态更新选择列表
+    # 更新 ComboBox 选项
     updateComboBoxInput(
       session = session,
       inputId = "new_name",
       options = options
     )
   })
-  
+
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
   
