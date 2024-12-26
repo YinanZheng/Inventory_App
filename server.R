@@ -490,7 +490,8 @@ server <- function(input, output, session) {
       Label("商品名:", styles = list(
         root = list(
           fontSize = 15,        # 设置字体大小为16px
-          fontWeight = "bold"   # 字体加粗
+          fontWeight = "bold",  # 字体加粗
+          padding-top = 0
         )
       )),  # 添加标签
       ComboBox.shinyInput(
