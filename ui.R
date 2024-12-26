@@ -43,6 +43,13 @@ ui <- navbarPage(
           display: none !important;
         }
       }
+      
+      /* 当屏幕宽度小于 1300px 时，强制显示滚动条 */
+      @media (max-width: 1300px) {
+        .navbar-nav {
+          overflow-x: scroll !important; /* 强制显示水平滚动条 */
+        }
+      }
     
       /* 当屏幕宽度小于 768px 时，调整导航项的字体和间距 */
       @media (max-width: 768px) {
