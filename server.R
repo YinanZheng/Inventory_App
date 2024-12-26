@@ -2339,7 +2339,7 @@ server <- function(input, output, session) {
     maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
     
     div(
-      style = "padding-bottom: 15px; font-size: 20px;", # 外层 div 设置内边距和字体大小
+      style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
       Dropdown.shinyInput(
         inputId = "download_maker",
         label = "选择供应商:",
