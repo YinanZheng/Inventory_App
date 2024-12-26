@@ -42,6 +42,11 @@ ui <- navbarPage(
         .navbar-brand {
           display: none !important;
         }
+        
+        .navbar-nav > li > a {
+          font-size: 14px !important; /* 调整字体大小适配小屏幕 */
+          padding: 6px 8px !important; /* 减少间距 */
+        }
       }
     
       /* 当屏幕宽度小于 768px 时，调整导航项的字体和间距 */
