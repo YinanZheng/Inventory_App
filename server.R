@@ -474,19 +474,22 @@ server <- function(input, output, session) {
   item_names <- reactive({
     inventory_data <- inventory()
     if (is.null(inventory_data) || nrow(inventory_data) == 0) {
-      return(c(""))  # 如果没有数据，返回空选项
+      return(list())  # 如果没有数据，返回空选项
     }
-    c("", inventory_data$ItemName)
+    lapply(inventory_data$ItemName, function(name) list(key = name, text = name))
   })
   
   # 动态生成ComboBox组件
   output$new_name_combo_box_ui <- renderUI({
-    ComboBox.shinyInput(
-      inputId = "new_name",
-      value = list(text = ""),        # 默认初始值为空
-      options = item_names(),         # 动态加载的选项
-      allowFreeform = TRUE,           # 允许用户输入自定义值
-      placeholder = "请输入商品名..." # 提示文字
+    div(
+      Text("商品名:"),  # 添加标签
+      ComboBox.shinyInput(
+        inputId = "new_name",
+        value = list(text = ""),        # 默认初始值为空字符串
+        options = item_names(),         # 动态加载的选项
+        allowFreeform = TRUE,           # 允许用户输入自定义值
+        placeholder = "请输入商品名..." # 提示文字
+      )
     )
   })
 
