@@ -845,8 +845,8 @@ filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item
   }
   
   # 按商品名称筛选
-  if (!is.null(input[[item_name_input_id]]) && input[[item_name_input_id]] != "") {
-    data <- data %>% filter(ItemName == input[[item_name_input_id]])
+  if (!is.null(input[[item_name_input_id]]$text) && input[[item_name_input_id]]$text != "") {
+    data <- data %>% filter(ItemName == input[[item_name_input_id]]$text)
   }
   
   # 按采购日期筛选
