@@ -845,8 +845,18 @@ filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item
   }
   
   # 按商品名称筛选
-  if (!is.null(input[[item_name_input_id]]$text) && input[[item_name_input_id]]$text != "") {
-    data <- data %>% filter(ItemName == input[[item_name_input_id]]$text)
+  if (!is.null(input[[item_name_input_id]])) {
+    # 如果是列表（如 ComboBox 返回值），提取 text 字段
+    item_name <- if (is.list(input[[item_name_input_id]]) && !is.null(input[[item_name_input_id]]$text)) {
+      input[[item_name_input_id]]$text
+    } else {
+      input[[item_name_input_id]]
+    }
+    
+    # 继续筛选
+    if (!is.null(item_name) && item_name != "") {
+      data <- data %>% filter(ItemName == item_name)
+    }
   }
   
   # 按采购日期筛选
