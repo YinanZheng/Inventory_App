@@ -58,3 +58,16 @@ SELECT * FROM unique_items;
 SELECT * FROM maker_list;
 SELECT * FROM item_type_data;
 
+
+
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'EA-GS-KB1Q';
+
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'EA-GS-LN93';
+
+
+
+

@@ -237,6 +237,18 @@ server <- function(input, output, session) {
     data
   })
   
+  # 出库页过滤
+  filtered_unique_items_data_outbound <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    # 默认过滤条件：Status 为“国内入库
+    data <- data[data$Status == "国内入库", ]
+    
+    # 返回过滤后的数据
+    data
+  })
+  
   # 售出页过滤
   filtered_unique_items_data_sold <- reactive({
     filter_unique_items_data_by_inputs(
@@ -373,7 +385,7 @@ server <- function(input, output, session) {
                                                            PurchaseTime = "采购日期",
                                                            DomesticEntryTime = "入库日期",
                                                            DomesticExitTime = "出库日期")
-                                                         ), data = unique_items_data)
+                                                         ), data = filtered_unique_items_data_outbound)
   
   unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
                                                      column_mapping <- c(common_columns, list(
@@ -984,7 +996,7 @@ server <- function(input, output, session) {
   # 监听选中行并更新出库 SKU
   observeEvent(unique_items_table_outbound_selected_row(), {
     if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
-      selected_sku <- unique_items_data()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
+      selected_sku <- filtered_unique_items_data_outbound()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
       updateTextInput(session, "outbound_sku", value = selected_sku)
     }
   })
