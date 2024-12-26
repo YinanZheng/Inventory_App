@@ -24,6 +24,11 @@ ui <- navbarPage(
         -webkit-overflow-scrolling: touch; /* 平滑滚动（移动端支持） */
       }
     
+      /* 父容器设置溢出可见 */
+      .navbar {
+        overflow: visible !important; /* 确保导航栏不会隐藏滚动条 */
+      }
+    
       /* 美化滚动条 */
       .navbar-nav::-webkit-scrollbar {
         height: 6px; /* 滚动条高度 */
@@ -33,16 +38,13 @@ ui <- navbarPage(
         border-radius: 10px;
       }
     
-      /* 禁止导航栏高度扩展 */
-      .navbar {
-        white-space: nowrap !important; /* 确保所有子元素在单行内 */
-        overflow: hidden !important; /* 隐藏导航栏外部滚动 */
-      }
-    
       /* 当屏幕宽度小于 1450px 时，隐藏标题 */
       @media (max-width: 1450px) {
         .navbar-brand {
           display: none !important;
+        }
+        .navbar-nav {
+          overflow-x: auto !important; /* 强制启用水平滚动条 */
         }
       }
     
