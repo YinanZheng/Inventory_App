@@ -9,6 +9,21 @@ ui <- navbarPage(
     
     tags$head(
       tags$style(HTML("
+      
+      /* 确保导航栏支持水平滚动 */
+      .navbar-nav {
+        display: flex;
+        flex-wrap: nowrap; /* 禁止换行 */
+        overflow-x: auto; /* 启用水平滚动 */
+      }
+      .navbar-nav::-webkit-scrollbar {
+        height: 6px; /* 滚动条高度 */
+      }
+      .navbar-nav::-webkit-scrollbar-thumb {
+        background: #007BFF; /* 滚动条颜色 */
+        border-radius: 10px;
+      }
+      
       body {
         padding-top: 70px; /* 为导航栏腾出空间 */
       }
