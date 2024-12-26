@@ -482,10 +482,15 @@ server <- function(input, output, session) {
   # 动态生成ComboBox组件
   output$new_name_combo_box_ui <- renderUI({
     div(
-      Label("商品名:"),  # 添加标签
+      Label("商品名:", styles = list(
+        root = list(
+          fontSize = 12,        # 设置字体大小为16px
+          fontWeight = "bold"   # 字体加粗
+        )
+      )),  # 添加标签
       ComboBox.shinyInput(
         inputId = "new_name",
-        value = list(text = ""),        # 默认初始值为空字符串
+        value = NULL,        # 默认初始值为空字符串
         options = item_names(),         # 动态加载的选项
         allowFreeform = TRUE,           # 允许用户输入自定义值
         placeholder = "请输入商品名...",
