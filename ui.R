@@ -37,15 +37,10 @@ ui <- navbarPage(
         white-space: nowrap !important; /* 确保所有子元素在单行内 */
       }
     
-     /* 当屏幕宽度小于 1450px 时，隐藏标题 */
-      @media (max-width: 1450px) {
+     /* 当屏幕宽度小于 1380px 时，隐藏标题 */
+      @media (max-width: 1380px) {
         .navbar-brand {
           display: none !important;
-        }
-        
-        .navbar-nav > li > a {
-          font-size: 14px !important; /* 调整字体大小适配小屏幕 */
-          padding: 6px 8px !important; /* 减少间距 */
         }
       }
     
