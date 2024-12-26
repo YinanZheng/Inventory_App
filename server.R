@@ -2347,8 +2347,8 @@ server <- function(input, output, session) {
       styles = list(
         root = list(
           fontSize = 16,        # 设置字号为15
-          paddingTop = "6px",   # 设置顶部 padding 为6px
-          paddingBottom = "6px" # 设置底部 padding 为6px
+          paddingTop = 6,   # 设置顶部 padding 为6px
+          paddingBottom = 6 # 设置底部 padding 为6px
         )
       )
     )
