@@ -14,25 +14,13 @@ ui <- navbarPage(
       .navbar-brand {
         display: inline-block !important;
       }
-    
-      /* 导航栏设置为水平滚动，禁止换行 */
+  
+      /* 强制导航栏水平滚动，禁止换行 */
       .navbar-nav {
         display: flex !important; /* 使用 Flex 布局 */
         flex-wrap: nowrap !important; /* 禁止换行 */
-        white-space: nowrap !important; /* 确保内容不换行 */
         overflow-x: auto !important; /* 启用水平滚动 */
-        -webkit-overflow-scrolling: touch; /* 平滑滚动（移动端支持） */
-      }
-    
-      /* 父容器的样式调整，确保不会隐藏内容 */
-      .navbar {
-        overflow: visible !important; /* 保证滚动条显示 */
-        max-width: 100%; /* 防止宽度被限制 */
-      }
-    
-      /* 强制导航项宽度 */
-      .navbar-nav > li {
-        min-width: 120px; /* 强制导航项宽度，触发滚动 */
+        white-space: nowrap !important; /* 确保内容不换行 */
       }
     
       /* 美化滚动条 */
@@ -44,17 +32,19 @@ ui <- navbarPage(
         border-radius: 10px;
       }
     
-      /* 当屏幕宽度小于 1450px 时，隐藏标题 */
+      /* 禁止导航栏高度扩展 */
+      .navbar {
+        white-space: nowrap !important; /* 确保所有子元素在单行内 */
+      }
+    
+     /* 当屏幕宽度小于 1450px 时，隐藏标题 */
       @media (max-width: 1450px) {
         .navbar-brand {
           display: none !important;
         }
-        .navbar-nav {
-          overflow-x: auto !important; /* 强制启用水平滚动条 */
-        }
       }
     
-      /* 调整小屏幕字体和间距 */
+      /* 当屏幕宽度小于 768px 时，调整导航项的字体和间距 */
       @media (max-width: 768px) {
         .navbar-nav > li > a {
           font-size: 12px !important; /* 调整字体大小适配小屏幕 */
