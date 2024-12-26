@@ -446,16 +446,22 @@ server <- function(input, output, session) {
   observeEvent({
     input[["type_module-new_major_type"]]
     input[["type_module-new_minor_type"]]
-    input$new_name$text
+    input$new_name
     input$new_maker
   }, {
+    # 安全检查 input$new_name 是否为列表，以及 text 字段是否存在
+    new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
+      input$new_name$text
+    } else {
+      NULL
+    }
+    
+    # 判断是否需要清空 SKU
     if (is.null(input$new_maker) || input$new_maker == "" || 
-        is.null(input$new_name$text) || input$new_name$text == "") {
+        is.null(new_name_text) || new_name_text == "") {
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       return()
     }
-    
-    req(input[["type_module-new_major_type"]], input[["type_module-new_minor_type"]], input$new_name$text, input$new_maker)
     
     # Dynamically generate SKU
     sku <- generate_sku(
@@ -484,13 +490,13 @@ server <- function(input, output, session) {
     div(
       Label("商品名:", styles = list(
         root = list(
-          fontSize = 12,        # 设置字体大小为16px
+          fontSize = 16,        # 设置字体大小为16px
           fontWeight = "bold"   # 字体加粗
         )
       )),  # 添加标签
       ComboBox.shinyInput(
         inputId = "new_name",
-        value = NULL,        # 默认初始值为空字符串
+        value = list(),        # 默认初始值为空字符串
         options = item_names(),         # 动态加载的选项
         allowFreeform = TRUE,           # 允许用户输入自定义值
         placeholder = "请输入商品名...",
@@ -506,8 +512,15 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
+    # 提取并验证商品名称
+    new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
+      input$new_name$text
+    } else {
+      NULL
+    }
+    
     # 验证输入
-    if (is.null(input$new_name$text) || input$new_name$text == "") {
+    if (is.null(new_name_text) || new_name_text == "") {
       showNotification("请填写正确商品名称！", type = "error")
       return()
     }
