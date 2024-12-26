@@ -307,7 +307,6 @@ server <- function(input, output, session) {
   })
   
   # 订单管理页订单过滤
-  # 订单管理页订单过滤
   filtered_orders <- reactive({
     req(orders())  # 确保数据存在
     
@@ -2343,7 +2342,14 @@ server <- function(input, output, session) {
       label = "选择供应商:",
       options = maker_options,
       multiSelect = TRUE,
-      placeholder = "请选择供应商..."
+      placeholder = "请选择供应商...",
+      styles = list(
+        root = list(
+          fontSize = 15,        # 设置字号为15
+          paddingTop = "6px",   # 设置顶部 padding 为6px
+          paddingBottom = "6px" # 设置底部 padding 为6px
+        )
+      )
     )
   })
   
