@@ -491,7 +491,7 @@ server <- function(input, output, session) {
         root = list(
           fontSize = 15,        # 设置字体大小为16px
           fontWeight = "bold",  # 字体加粗
-          padding-top = 0
+          paddingTop = 0
         )
       )),  # 添加标签
       ComboBox.shinyInput(
