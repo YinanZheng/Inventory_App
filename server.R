@@ -485,13 +485,13 @@ server <- function(input, output, session) {
       Label("商品名:"),  # 添加标签
       ComboBox.shinyInput(
         inputId = "new_name",
-        value = "",        # 默认初始值为空字符串
+        value = list(text = ""),        # 默认初始值为空字符串
         options = item_names(),         # 动态加载的选项
         allowFreeform = TRUE,           # 允许用户输入自定义值
         placeholder = "请输入商品名...",
         styles = list(
-          root = list(height = 43)           # 设置高度为43
-        )# 提示文字
+          root = list(height = 40)
+        )
       )
     )
   })
