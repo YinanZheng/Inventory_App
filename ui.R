@@ -24,9 +24,15 @@ ui <- navbarPage(
         -webkit-overflow-scrolling: touch; /* 平滑滚动（移动端支持） */
       }
     
-      /* 父容器设置溢出可见 */
+      /* 父容器的样式调整，确保不会隐藏内容 */
       .navbar {
-        overflow: visible !important; /* 确保导航栏不会隐藏滚动条 */
+        overflow: visible !important; /* 保证滚动条显示 */
+        max-width: 100%; /* 防止宽度被限制 */
+      }
+    
+      /* 强制导航项宽度 */
+      .navbar-nav > li {
+        min-width: 120px; /* 强制导航项宽度，触发滚动 */
       }
     
       /* 美化滚动条 */
@@ -48,7 +54,7 @@ ui <- navbarPage(
         }
       }
     
-      /* 当屏幕宽度小于 768px 时，调整导航项的字体和间距 */
+      /* 调整小屏幕字体和间距 */
       @media (max-width: 768px) {
         .navbar-nav > li > a {
           font-size: 12px !important; /* 调整字体大小适配小屏幕 */
