@@ -10,6 +10,11 @@ ui <- navbarPage(
     tags$head(
       tags$style(HTML("
       
+      /* 默认显示导航栏标题 */
+      .navbar-brand {
+        display: inline-block !important;
+      }
+  
       /* 强制导航栏水平滚动，禁止换行 */
       .navbar-nav {
         display: flex !important; /* 使用 Flex 布局 */
@@ -34,6 +39,10 @@ ui <- navbarPage(
     
       /* 兼容小屏幕 */
       @media (max-width: 768px) {
+        .navbar-brand {
+          display: none !important;
+        }
+        
         .navbar-nav > li > a {
           font-size: 12px !important; /* 调整字体大小适配小屏幕 */
           padding: 6px 8px !important; /* 减少间距 */
