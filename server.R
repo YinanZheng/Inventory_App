@@ -230,8 +230,8 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤条件：Defect 不为 NA 且 Status 为“国内入库”或“采购”
-    data <- data[!is.na(data$Defect) & data$Status %in% c("国内入库", "采购"), ]
+    # 默认过滤条件 Status 为 “采购” 或 “国内入库”
+    data <- data[data$Status %in% c("采购", "国内入库"), ]
     
     # 返回过滤后的数据
     data
@@ -242,8 +242,8 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤条件：Status 为“国内入库
-    data <- data[data$Status == "国内入库", ]
+    # 默认过滤条件：Status  为 “国内入库” 或 “国内出库”
+    data <- data[data$Status %in% c("国内出库", "国内入库"), ]
     
     # 返回过滤后的数据
     data
