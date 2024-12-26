@@ -61,8 +61,23 @@ sudo -u ubuntu touch /var/log/shiny-server/test.log
 cd /srv/shiny-server/inventory
 git clone https://github.com/YinanZheng/Inventory_App.git .
 
+
+
+
+
+
+### Pull Github code
 cd /srv/shiny-server/inventory
 git pull origin main
+
+### Restart shiny server
+sudo systemctl restart shiny-server
+
+
+
+
+
+
 
 
 ###
@@ -75,8 +90,6 @@ Rscript -e "shiny::runApp('/srv/shiny-server/inventory')"
 
 sudo rm /var/log/shiny-server/*.log
 
-### Restart shiny server
-sudo systemctl restart shiny-server
 
 
 ## Log in to MySQL:
