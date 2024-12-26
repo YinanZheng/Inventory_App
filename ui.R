@@ -38,7 +38,7 @@ ui <- navbarPage(
       }
     
      /* 当屏幕宽度小于 1300px 时，隐藏标题 */
-      @media (max-width: 1500px) {
+      @media (max-width: 1300px) {
         .navbar-brand {
           display: none !important;
         }
