@@ -528,13 +528,15 @@ ui <- navbarPage(
         height: 60px; 
         display: flex; 
         align-items: center; 
-        justify-content: space-between;
-        padding: 0 10px; /* 上下去除 padding，左右保留10px */
+        padding: 0 10px; 
         margin-top: 10px;
       ",
                          tags$div(
-                           style = "width: 100%; display: flex; align-items: center;",
-                           tags$label("选择国际运输方式:", style = "font-size: 14px; font-weight: bold; margin-right: 10px;"),
+                           style = "display: flex; align-items: center; justify-content: space-between; width: 100%;",
+                           tags$span(
+                             "选择国际运输方式:", 
+                             style = "font-size: 14px; font-weight: bold; white-space: nowrap; margin-right: 10px;"
+                           ),
                            radioButtons(
                              inputId = "sold_shipping_method",
                              label = NULL, # 去掉默认 label
@@ -546,6 +548,7 @@ ui <- navbarPage(
                        )
                      )
                    )
+                   
                    
                    
                  )
