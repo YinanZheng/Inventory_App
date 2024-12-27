@@ -241,12 +241,14 @@ ui <- navbarPage(
         
         itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745"),
         
+        tags$hr(), # 分隔线
+        
         fluidRow(
           column(
             12,
             div(
               class = "card shadow-sm", # 添加卡片样式
-              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+              style = "border: 1px solid #007BFF; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
               
               # 卡片标题
               div(
@@ -306,7 +308,7 @@ ui <- navbarPage(
           column(12,              
                  tags$div(
                    class = "card",
-                   style = "padding: 15px; margin-bottom: 20px; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
+                   style = "padding: 15px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 5px; box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);",
                    
                    # 卡片标题
                    div(
@@ -789,8 +791,8 @@ ui <- navbarPage(
         # 筛选条件 Card
         div(
           class = "card",
-          style = "padding: 15px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 15px;",
-          tags$h4("筛选条件", style = "color: #007BFF; font-weight: bold;"),
+          style = "padding: 15px; border: 1px solid #28A745; border-radius: 8px; margin-bottom: 15px;",
+          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
           textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
           textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
           selectInput(
@@ -805,8 +807,8 @@ ui <- navbarPage(
         # 订单信息 Card
         div(
           class = "card",
-          style = "padding: 15px; border: 1px solid #ccc; border-radius: 8px;",
-          tags$h4("订单信息修改", style = "color: #28A745; font-weight: bold;"),
+          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
           textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%"),
           selectInput(
             inputId = "update_platform", 
