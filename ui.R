@@ -190,7 +190,6 @@ ui <- navbarPage(
       div(
         class = "main-panel",
         div(
-          class = "sticky-info",
           div(
             "已添加商品",
             style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
