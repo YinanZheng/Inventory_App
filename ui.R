@@ -181,15 +181,20 @@ ui <- navbarPage(
           ),
           column(12, DTOutput("added_items_table")),
           
-          column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
-          column(6, div(
-            textOutput("total_cost"),
-            style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-          )),
-          column(3, div(
-            style = "text-align: right;",
-            actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
-          ))
+          div(
+            style = "padding: 20px 0;",  # 添加上下20px的padding
+            fluidRow(
+              column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
+              column(6, div(
+                textOutput("total_cost"),
+                style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+              )),
+              column(3, div(
+                style = "text-align: right;",
+                actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
+              ))
+            )
+          )
         ),
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
