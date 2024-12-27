@@ -16,7 +16,7 @@ update_maker_choices <- function(session, input_id, maker_data) {
     updateSelectizeInput(session, input_id, choices = NULL, server = TRUE)
   } else {
     choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
-    updateSelectizeInput(session, input_id, choices = choices, select = "", server = TRUE)
+    updateSelectizeInput(session, input_id, choices = choices, selected = "", server = TRUE)
   }
 }
 
