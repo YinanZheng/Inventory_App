@@ -78,14 +78,6 @@ server <- function(input, output, session) {
     shinyjs::disable("download_select_pdf")
   })
   
-  # 表的切换显示/隐藏 动态创建 observeEvent （在Global.R配置参数)
-  for (input_id in names(toggle_mappings)) {
-    container_id <- toggle_mappings[[input_id]]
-    observeEvent(input[[input_id]], {
-      shinyjs::toggle(container_id)
-    })
-  }
-  
   ####################################################################################################################################
   ###################################################                              ###################################################
   ###################################################             渲染             ###################################################

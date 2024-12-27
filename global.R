@@ -85,15 +85,5 @@ defect_statuses <<- c("瑕疵", "修复", "无瑕")
   if (!is.null(a)) a else b
 }
 
-# 表的收放：定义 input 和 container 对应关系
-toggle_mappings <- list(
-  "toggle_item_table_purchase" = "item_table_container_purchase",
-  "toggle_item_table_inbound" = "item_table_container_inbound",
-  "toggle_item_table_defect" = "item_table_container_defect",
-  "toggle_item_table_outbound" = "item_table_container_outbound",
-  "toggle_item_table_sold" = "item_table_container_sold",
-  "toggle_inventory_table" = "inventory_table_container"
-)
-
 # 定义管理员密码
 admin_password <- "zyn1029"
