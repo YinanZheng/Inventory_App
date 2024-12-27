@@ -5,13 +5,10 @@ itemFilterServer <- function(id, unique_items, makers, selected_row_reactive = N
     # 更新供应商名称
     observeEvent(makers(), {
       tryCatch({
-        showNotification(ns("maker"))
-        showNotification(paste(makers()$Maker, collapse = ";"))
-        
+        showNotification("observeEvent triggered for makers()")
+        showNotification(paste("Data received in makers():", paste(makers()$Maker, collapse = ";")))
         update_maker_choices(session, ns("maker"), makers())
       }, error = function(e) {
-        # 捕获并显示错误信息
-        message("Error in updating maker choices: ", e$message)
         showNotification(paste("Error: ", e$message), type = "error")
       })
     })
