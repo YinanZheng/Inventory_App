@@ -114,7 +114,13 @@ ui <- navbarPage(
               break;
             }
           }
-        });"))     
+        });")),
+      
+      tags$script('
+        Shiny.addCustomMessageHandler("navigate", function(url) {
+          window.location.href = url;
+        });
+      ')
       
     )
   ),

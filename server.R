@@ -2612,14 +2612,11 @@ server <- function(input, output, session) {
   redirect_uri <- "http://54.254.120.88:3838/inventory/callback"
   
   observeEvent(input$oauth_btn, {
-    # 构造 USPS 授权 URL
     auth_url <- paste0(
       usps_auth_url, "?response_type=code&client_id=", client_id,
       "&redirect_uri=", URLencode(redirect_uri)
     )
-    
-    # 强制浏览器打开 USPS 授权页面
-    shiny::browseURL(auth_url)
+    session$sendCustomMessage(type = "navigate", message = auth_url)
   })
   
   observe({
