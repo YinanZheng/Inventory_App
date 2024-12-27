@@ -334,8 +334,6 @@ ui <- navbarPage(
           column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
         ), 
         
-        tags$hr(), # 分隔线
-        
         fluidRow(
           column(12, actionButton("toggle_item_table_inbound", "物品状态表（点击显示/隐藏）",
                                   style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
