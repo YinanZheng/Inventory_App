@@ -450,7 +450,7 @@ ui <- navbarPage(
           tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
           
           # 订单图片上传
-          imageModuleUI("image_sold", label = "订单图片上传", label_color = "#28A745"),
+          imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
           
           # 订单备注
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
