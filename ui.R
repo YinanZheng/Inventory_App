@@ -402,7 +402,7 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
-        itemFilterUI(id = "sold", label = "sold", border_color = "#28A745", text_color = "#28A745"),
+        itemFilterUI(id = "sold", border_color = "#28A745", text_color = "#28A745"),
         
         # div(
         #   class = "card",

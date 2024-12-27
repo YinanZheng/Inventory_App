@@ -1,4 +1,4 @@
-itemFilterUI <- function(id, label, border_color = "#007BFF", text_color = "#28A745") {
+itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF") {
   ns <- NS(id)
   div(
     class = "card",
@@ -8,27 +8,32 @@ itemFilterUI <- function(id, label, border_color = "#007BFF", text_color = "#28A
     
     fluidRow(
       column(6, 
-             selectizeInput(ns(paste0(label, "_maker")), "供应商:", choices = NULL, width = "100%",
+             selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
                             options = list(placeholder = '供应商名称(或拼音)...', maxOptions = 500)),
              class = "custom-selectize"
       ),
-      column(6, selectizeInput(
-        ns(paste0(label, "_name")),                
-        label = "商品名:",         
-        choices = NULL,            
-        options = list(
-          placeholder = "商品名...",
-          create = TRUE            # 允许自定义输入值
-        ),
-        width = "100%"
-      ),class = "custom-selectize"
+      column(6, 
+             selectizeInput(
+               ns("name"),                
+               label = "商品名:",         
+               choices = NULL,            
+               options = list(
+                 placeholder = "商品名...",
+                 create = TRUE            # 允许自定义输入值
+               ),
+               width = "100%"
+             ),
+             class = "custom-selectize"
       )
     ),
     
     fluidRow(
-      column(9, textInput(ns(paste0(label, "_sku")), "输入或扫描条形码", placeholder = "请输入条形码", width = "100%")),
-      column(3, actionButton(ns(paste0(label, "_reset_btn")), "清空", icon = icon("snowplow"), class = "btn-danger", 
-                             style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;"))          
+      column(9, 
+             textInput(ns("sku"), "输入或扫描条形码", placeholder = "请输入条形码", width = "100%")),
+      column(3, 
+             actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
+                          style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
+      )
     )
   )
 }
