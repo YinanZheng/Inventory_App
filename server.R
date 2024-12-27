@@ -250,8 +250,8 @@ server <- function(input, output, session) {
   })
   
   # 售出页过滤
-  itemFilterServer("sold", unique_items, makers, selected_row = NULL)
-  filtered_unique_items_data_sold <- filteredUniqueItemsServer("sold", unique_items, status_filter = c("国内入库", "美国入库", "美国调货", "国内售出"))
+  itemFilterServer("sold", unique_items_data, makers, selected_row = NULL)
+  filtered_unique_items_data_sold <- filteredUniqueItemsServer("sold", unique_items_data, status_filter = c("国内入库", "美国入库", "美国调货", "国内售出"))
   
   # filtered_unique_items_data_sold <- reactive({
   #   req(unique_items_data())
@@ -1028,7 +1028,7 @@ server <- function(input, output, session) {
   
   ######
   
-  itemFilterServer("sold", unique_items, makers, unique_items_table_sold_selected_row)
+  itemFilterServer("sold", unique_items_data, makers, unique_items_table_sold_selected_row)
   
   # # 更新供应商名称
   # observeEvent(makers_df(), {
