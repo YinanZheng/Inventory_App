@@ -197,13 +197,13 @@ ui <- navbarPage(
              padding: 10px; text-align: center; border-radius: 4px;"
           ),
           column(12, DTOutput("added_items_table")),
-          column(4, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
-          column(8, div(
+          
+          column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
+          column(6, div(
             textOutput("total_cost"),
             style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
           )),
-          
-          div(
+          column(3, div(
             style = "text-align: center; margin-top: 15px;",  # 父容器的样式
             actionButton(
               inputId = "confirm_btn", 
@@ -212,7 +212,7 @@ ui <- navbarPage(
               class = "btn-info",
               style = "width: auto;"  # 保持按钮宽度为内容适配
             )
-          ),
+          )),
           
           tags$hr(), # 分隔线
           
