@@ -1062,8 +1062,8 @@ server <- function(input, output, session) {
   })
   
   # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input[["sold-sku"]], {
-    sku <- trimws(input[["sold-sku"]])  # 清理条形码输入空格
+  observeEvent(input[["sold_filter-sku"]], {
+    sku <- trimws(input[["sold_filter-sku"]])  # 清理条形码输入空格
     if (is.null(sku) || sku == "") {
       return()
     }
