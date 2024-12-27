@@ -323,6 +323,7 @@ ui <- navbarPage(
         class = "main-panel",
         
         div(
+          class = "sticky-info",  
           column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 10px;") # 动态渲染物品信息
         ), 
         
