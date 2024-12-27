@@ -211,12 +211,12 @@ ui <- navbarPage(
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         
-        fluidRow(
-          column(12, div(
-            id = "item_table_container_purchase",  # 容器 ID
-            style = "margin-bottom: 100px;",
+        div(
+          style = "height: calc(100vh - 250px); overflow-y: auto;",  # 设置高度和滚动
+          div(
+            id = "item_table_container_purchase",
             uniqueItemsTableUI("unique_items_table_purchase")
-          ))
+          )
         )
       )
     )

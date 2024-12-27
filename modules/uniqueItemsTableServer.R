@@ -5,7 +5,14 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
       data = data(),                 # 使用传递的 reactive 数据源
       column_mapping = column_mapping, # 映射用户友好的列名
       selection = selection, 
-      image_column = "ItemImagePath"
+      image_column = "ItemImagePath",
+      options = list(
+        scrollY = "calc(100vh - 300px)",  # 根据内容动态调整滚动高度
+        scrollX = TRUE,  # 支持水平滚动
+        fixedHeader = TRUE,  # 启用表头固定
+        paging = TRUE,  # 支持分页
+        searching = TRUE  # 支持搜索
+      )
     )
     
     # 获取数据列名
