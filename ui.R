@@ -541,16 +541,26 @@ ui <- navbarPage(
       display: flex; 
       align-items: center; 
       height: 100%; 
+      margin-bottom: 0; /* 移除底部间距 */
     ",
+                           tags$style(HTML("
+      #sold_shipping_method .radio {
+        margin-bottom: 0 !important; /* 移除默认的 margin */
+      }
+      #sold_shipping_method {
+        margin-bottom: 0 !important; /* 避免容器本身多余间距 */
+      }
+    ")),
                            radioButtons(
                              inputId = "sold_shipping_method",
-                             label = NULL, # 去掉默认的 label
+                             label = NULL, # 去掉默认 label
                              choices = list("空运" = "空运", "海运" = "海运"),
                              selected = "空运",  # 默认选择空运
                              inline = TRUE       # 设置为横向排布
                            )
                          )
                        )
+                       
                        
                        
                      )
