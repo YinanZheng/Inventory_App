@@ -418,11 +418,11 @@ ui <- navbarPage(
           
           fluidRow(
             column(
-              9,  # 占页面宽度的 6/12，即 50%
+              8,  # 占页面宽度的 6/12，即 50%
               textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
             ),
             column(
-              3,  # 占页面宽度的 6/12，即 50%
+              4,  # 占页面宽度的 6/12，即 50%
               selectInput(
                 inputId = "platform",
                 label = "电商平台",
