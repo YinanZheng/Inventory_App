@@ -416,16 +416,27 @@ ui <- navbarPage(
           # 订单录入表单标题
           tags$h4("订单登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           
-          # 订单号
-          textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%"),
-          
-          # 电商平台选择
-          selectInput(
-            inputId = "platform",
-            label = "电商平台",
-            choices = c("请选择平台" = "", "Etsy" = "Etsy", "Shopify" = "Shopify", "TikTok" = "TikTok", "其他" = "其他"),
-            selected = "",
-            width = "100%"
+          fluidRow(
+            column(
+              9,  # 占页面宽度的 6/12，即 50%
+              textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
+            ),
+            column(
+              3,  # 占页面宽度的 6/12，即 50%
+              selectInput(
+                inputId = "platform",
+                label = "电商平台",
+                choices = c(
+                  "请选择平台" = "", 
+                  "Etsy" = "Etsy", 
+                  "Shopify" = "Shopify", 
+                  "TikTok" = "TikTok", 
+                  "其他" = "其他"
+                ),
+                selected = "",
+                width = "100%"
+              )
+            )
           ),
           
           # 顾客姓名
