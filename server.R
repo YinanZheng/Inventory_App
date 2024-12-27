@@ -260,8 +260,8 @@ server <- function(input, output, session) {
     filter_unique_items_data_by_inputs(
       data = data,
       input = input,
-      maker_input_id = "sold-maker",
-      item_name_input_id = "sold-name"
+      maker_input_id = "sold_filter-maker",
+      item_name_input_id = "sold_filter-name"
     )
   })
   

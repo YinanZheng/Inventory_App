@@ -2,7 +2,7 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
   moduleServer(id, function(input, output, session) {
     # 更新 makers 控件
     observeEvent(makers_df(), {
-      updateSelectizeInput(session, "maker", choices = makers_df(), selected = "")
+      update_maker_choices(session, session$ns("maker"), makers_df())
     })
     
     # 动态更新商品名称
@@ -33,7 +33,7 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
     # 清空输入
     observeEvent(input$reset_btn, {
       tryCatch({
-        updateSelectizeInput(session, "maker", choices = makers_df(), selected = "")
+        update_maker_choices(session, session$ns("maker"), makers_df())
         updateSelectizeInput(session, "name", choices = c(""), selected = "")
         updateTextInput(session, "sku", value = "")
         showNotification("筛选条件已重置！", type = "message")
