@@ -219,6 +219,7 @@ ui <- navbarPage(
               uniqueItemsTableUI("unique_items_table_purchase")
             ))
           )
+        )
       )
     )
   ), # end of 采购登记 tab
