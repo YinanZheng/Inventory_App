@@ -204,7 +204,6 @@ ui <- navbarPage(
             style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
           )),
           column(3, div(
-            style = "text-align: center; margin-top: 15px;",  # 父容器的样式
             actionButton(
               inputId = "confirm_btn", 
               label = "确认登记采购货品", 
