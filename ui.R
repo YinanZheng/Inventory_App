@@ -528,14 +528,16 @@ ui <- navbarPage(
         height: 60px; 
         display: flex; 
         align-items: center; 
+        justify-content: space-between;
         padding: 0 10px; /* 上下去除 padding，左右保留10px */
         margin-top: 10px;
       ",
                          tags$div(
-                           style = "flex: 1;", # 占满宽度，保证内容居中
+                           style = "width: 100%; display: flex; align-items: center;",
+                           tags$label("选择国际运输方式:", style = "font-size: 14px; font-weight: bold; margin-right: 10px;"),
                            radioButtons(
                              inputId = "sold_shipping_method",
-                             label = tags$span("选择国际运输方式:", style = "font-size: 14px; font-weight: bold;"), # 调整标题样式
+                             label = NULL, # 去掉默认 label
                              choices = list("空运" = "空运", "海运" = "海运"),
                              selected = "空运",  # 默认选择空运
                              inline = TRUE       # 设置为横向排布
@@ -544,6 +546,7 @@ ui <- navbarPage(
                        )
                      )
                    )
+                   
                    
                  )
           )
