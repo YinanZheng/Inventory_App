@@ -512,6 +512,18 @@ server <- function(input, output, session) {
     )
   })
 
+  observeEvent(input$new_name, {
+    if (is.null(input$new_name) || input$new_name == "") {
+      # 用户删除了所有内容，重置输入框为默认值
+      updateComboBox.shinyInput(
+        session,
+        inputId = "new_name",
+        value = "",
+        placeholder = "请输入商品名..."
+      )
+    }
+  })
+  
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
   
