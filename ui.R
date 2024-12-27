@@ -328,7 +328,7 @@ ui <- navbarPage(
         ), 
         
         div(
-          style = "display: flex; flex-direction: column; height: 100%;",
+          style = "display: flex; flex-direction: column;",
           div(
             style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
             div(
@@ -383,7 +383,7 @@ ui <- navbarPage(
         ), 
         
         div(
-          style = "display: flex; flex-direction: column; height: 100%;",
+          style = "display: flex; flex-direction: column;",
           div(
             style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
             div(
@@ -520,7 +520,7 @@ ui <- navbarPage(
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         
         div(
-          style = "display: flex; flex-direction: column; height: 100%;",
+          style = "display: flex; flex-direction: column;",
           div(
             style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
             div(
