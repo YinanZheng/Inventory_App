@@ -1119,6 +1119,18 @@ server <- function(input, output, session) {
   #   })
   # })
   
+  # 清空输入
+  observeEvent(input$sold_reset_btn, {
+    tryCatch({
+      update_maker_choices(session, "sold-maker", makers_df())
+      updateTextInput(session, "sold-name", value = "")
+      updateTextInput(session, "sold-sku", value = "")
+
+      showNotification("筛选条件已重置！", type = "message")
+    }, error = function(e) {
+      showNotification("重置输入时发生错误，请重试！", type = "error")
+    })
+  })
   
   ######
   
