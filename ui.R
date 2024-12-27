@@ -517,14 +517,17 @@ ui <- navbarPage(
           )
         ),
         
-        fluidRow(
-          column(12, actionButton("toggle_item_table_sold", "物品状态表（点击显示/隐藏）",
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
-          column(12, div(
-            id = "item_table_container_sold",  # 容器 ID
-            style = "margin-bottom: 100px;",
-            uniqueItemsTableUI("unique_items_table_sold")
-          ))
+        tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
+        
+        div(
+          style = "display: flex; flex-direction: column; height: 100%;",
+          div(
+            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
+            div(
+              id = "item_table_container_sold",
+              uniqueItemsTableUI("unique_items_table_sold")
+            )
+          )
         )
       )
     )
