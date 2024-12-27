@@ -209,6 +209,8 @@ ui <- navbarPage(
           ))
         ),
         
+        tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
+        
         fluidRow(
           column(12, div(
             id = "item_table_container_purchase",  # 容器 ID
