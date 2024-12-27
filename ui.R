@@ -510,7 +510,7 @@ ui <- navbarPage(
                    
                    fluidRow(
                      column(
-                       width = 7, # 左侧按钮宽度
+                       width = 8, # 左侧按钮宽度
                        actionButton(
                          "confirm_order_btn",
                          "确认售出",
@@ -520,7 +520,7 @@ ui <- navbarPage(
                        )
                      ),
                      column(
-                       width = 5, # 右侧选择框宽度
+                       width = 4, # 右侧选择框宽度
                        tags$div(
                          style = "
                             border: 1px solid #007BFF; 
@@ -529,6 +529,8 @@ ui <- navbarPage(
                             display: flex; 
                             align-items: center; 
                             padding-left: 10px;
+                            padding-top: 2px;
+                            padding-bottom: 2px;
                             margin-top: 10px;
                           ",
                          radioButtons(
