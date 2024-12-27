@@ -712,10 +712,10 @@ server <- function(input, output, session) {
       # Update input fields in the sidebar
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
-      shinyjs::delay(300, {  # 延迟 300 毫秒
+      shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateComboBox.shinyInput(session, "new_name", value = selected_data$ItemName)
+      updateComboBox.shinyInput(session, "new_name", value = list(key = selected_data$ItemName, text = selected_data$ItemName))
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
