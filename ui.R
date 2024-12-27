@@ -215,12 +215,16 @@ ui <- navbarPage(
               class = "btn-info",
               style = "width: auto;"  # 保持按钮宽度为内容适配
             )
+          ),
+          
+          div(
+            "物品状态表",
+            style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
+             padding: 10px; text-align: center; border-radius: 4px;"
           )
         ),
         
         fluidRow(
-          column(12, actionButton("toggle_item_table_purchase", "物品状态表（点击显示/隐藏）",
-                                  style = "font-weight: bold; width: 100%; font-size: 18px; background-color: #c3d8fa; color: black;")),  # 折叠按钮
           column(12, div(
             id = "item_table_container_purchase",  # 容器 ID
             style = "margin-bottom: 100px;",
