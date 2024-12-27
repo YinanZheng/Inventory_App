@@ -523,29 +523,31 @@ ui <- navbarPage(
                        width = 6, # 右侧选择框宽度
                        tags$div(
                          style = "
-                            display: flex; 
-                            align-items: center; 
-                            border: 1px solid #007BFF;
-                            height: 50px;
-                            border-radius: 8px; 
-                            padding: 10px; 
-                            margin-top: 10px;
-                          ",
+    display: flex; 
+    align-items: center; 
+    justify-content: flex-start; 
+    border: 1px solid #007BFF; 
+    border-radius: 8px; 
+    padding: 0 10px; 
+    height: 50px; 
+    margin-top: 10px;
+  ",
                          tags$label(
                            "国际运输:", 
-                           style = "margin-right: 15px; font-size: 14px; font-weight: bold;"
+                           style = "font-size: 14px; font-weight: bold; margin-right: 15px;"
                          ),
                          tags$div(
                            style = "display: flex; align-items: center;",
                            radioButtons(
                              inputId = "sold_shipping_method",
-                             label = NULL, # 去掉内部默认 label
+                             label = NULL, # 去掉默认 label
                              choices = list("空运" = "空运", "海运" = "海运"),
                              selected = "空运",  # 默认选择空运
                              inline = TRUE       # 设置为横向排布
                            )
                          )
                        )
+                       
                      )
                    )
                  )
