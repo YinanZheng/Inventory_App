@@ -722,24 +722,24 @@ server <- function(input, output, session) {
     }
   })
   
-  # 监听采购页选中added_items_table
-  # observeEvent(input$added_items_table_rows_selected, {
-  #   selected_row <- input$added_items_table_rows_selected
-  #   
-  #   if (length(selected_row) > 0) {
-  #     # 仅处理最后一个选择的行
-  #     last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
-  #     selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
-  #     
-  #     # 更新侧边栏的输入字段
-  #     updateSelectInput(session, "new_maker", selected = selected_data$Maker)
-  #     updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
-  #     updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
-  #     updateTextInput(session, "new_name", value = selected_data$ItemName)
-  #     updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
-  #     updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
-  #   }
-  # })
+  # 监听采购页选中added_items_table 用来更改添加数据
+  observeEvent(input$added_items_table_rows_selected, {
+    selected_row <- input$added_items_table_rows_selected
+
+    if (length(selected_row) > 0) {
+      # 仅处理最后一个选择的行
+      last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
+      selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
+
+      # 更新侧边栏的输入字段
+      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
+      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+      updateComboBox.shinyInput(session, "new_name", value = list(key = selected_data$ItemName, text = selected_data$ItemName))
+      updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
+      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
+    }
+  })
   
   # Delete selected item
   observeEvent(input$delete_btn, {
