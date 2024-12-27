@@ -871,16 +871,16 @@ ui <- navbarPage(
                   tags$h4("瑕疵情况图表", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
                   plotlyOutput("defect_status_chart", height = "400px") # 使用 plotlyOutput
                 )
-              ),
-              
+              )
+            ),
+            
+            div(
+              style = "display: flex; flex-direction: column;",
               div(
-                style = "display: flex; flex-direction: column;",
+                style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
                 div(
-                  style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-                  div(
-                    id = "inventory_table_container_query",
-                    DTOutput("filtered_inventory_table_query")
-                  )
+                  id = "inventory_table_container_query",
+                  DTOutput("filtered_inventory_table_query")
                 )
               )
             )
