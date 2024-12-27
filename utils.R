@@ -12,17 +12,13 @@ db_connection <- function() {
 
 # 更新供应商下拉选项函数
 update_maker_choices <- function(session, input_id, maker_data) {
-  # 清空现有选项
-  updateSelectizeInput(session, input_id, choices = NULL, selected = NULL)
-  
-  if (!is.null(maker_data) && nrow(maker_data) > 0) {
-    # 添加选项
-    choices <- c("", as.character(maker_data$Maker))
-    showNotification(paste("Choices sent to client:", paste(choices, collapse = ";")))
-    updateSelectizeInput(session, input_id, choices = choices, selected = "")
+  if (is.null(maker_data) || nrow(maker_data) == 0) {
+    updateSelectizeInput(session, input_id, choices = NULL, server = TRUE)
+  } else {
+    choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
+    updateSelectizeInput(session, input_id, choices = choices, select = "", server = TRUE)
   }
 }
-
 
 
 # Generate Code 128 barcode PDF

@@ -4,14 +4,12 @@ itemFilterServer <- function(id, unique_items, makers, selected_row_reactive = N
     
     # 更新供应商名称
     observeEvent(makers(), {
-      tryCatch({
-        showNotification("observeEvent triggered for makers()")
-        showNotification(paste("Data received in makers():", paste(makers()$Maker, collapse = ";")))
-        shinyjs::delay(100, {
+      shinyjs::delay(100, {  # 延迟100ms，确保控件初始化完成
+        tryCatch({
           update_maker_choices(session, ns("maker"), makers())
+        }, error = function(e) {
+          showNotification(paste("Error: ", e$message), type = "error")
         })
-      }, error = function(e) {
-        showNotification(paste("Error: ", e$message), type = "error")
       })
     })
     
