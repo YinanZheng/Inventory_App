@@ -1035,6 +1035,7 @@ server <- function(input, output, session) {
   # })
   # 
   observeEvent(makers_df(), {
+    ns <- NS("sold")
     tryCatch({
       update_maker_choices(session, ns("maker"), makers_df())
     }, error = function(e) {
