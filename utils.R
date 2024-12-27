@@ -11,14 +11,28 @@ db_connection <- function() {
 }
 
 # 更新供应商下拉选项函数
+# update_maker_choices <- function(session, input_id, maker_data) {
+#   if (is.null(maker_data) || nrow(maker_data) == 0) {
+#     updateSelectizeInput(session, input_id, choices = NULL, server = TRUE)
+#   } else {
+#     choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
+#     updateSelectizeInput(session, input_id, choices = choices, select = "", server = TRUE)
+#   }
+# }
+
 update_maker_choices <- function(session, input_id, maker_data) {
   if (is.null(maker_data) || nrow(maker_data) == 0) {
-    updateSelectizeInput(session, input_id, choices = NULL, server = TRUE)
+    showNotification("maker_data is NULL or empty.")
+    updateSelectizeInput(session, input_id, choices = NULL, selected = NULL)
   } else {
-    choices <- c("", setNames(maker_data$Maker, paste0(maker_data$Maker, "(", maker_data$Pinyin, ")")))
-    updateSelectizeInput(session, input_id, choices = choices, select = "", server = TRUE)
+    choices <- c("", maker_data$Maker)
+    showNotification(paste("Choices generated:", paste(choices, collapse = ";")))
+    updateSelectizeInput(session, input_id, choices = choices, selected = NULL)
   }
 }
+
+
+
 
 # Generate Code 128 barcode PDF
 export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
