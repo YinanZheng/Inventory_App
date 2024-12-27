@@ -176,7 +176,7 @@ ui <- navbarPage(
         class = "main-panel",
         div(
           div(
-            "已添加商品",
+            "采购箱", icon = icon("shopping-cart"),
             style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
              padding: 10px; text-align: center; border-radius: 4px;"
           ),
