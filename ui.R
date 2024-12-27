@@ -205,22 +205,8 @@ ui <- navbarPage(
           )),
           column(3, div(
             style = "text-align: right;",
-            actionButton(
-              inputId = "confirm_btn", 
-              label = "确认登记采购货品", 
-              icon = icon("check"), 
-              class = "btn-info",
-              style = "width: auto;"  # 保持按钮宽度为内容适配
-            )
+            actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
           )),
-          
-          tags$hr(), # 分隔线
-          
-          div(
-            "物品状态表",
-            style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
-             padding: 10px; text-align: center; border-radius: 4px;"
-          )
         ),
         
         fluidRow(
