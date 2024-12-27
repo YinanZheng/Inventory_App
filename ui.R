@@ -510,22 +510,23 @@ ui <- navbarPage(
                    
                    fluidRow(
                      column(
-                       width = 8, # 左侧按钮宽度
+                       width = 6, # 左侧按钮宽度
                        actionButton(
                          "confirm_order_btn",
                          "确认售出",
                          icon = icon("check"),
                          class = "btn-success",
-                         style = "font-size: 16px; width: 100%; height: 65px; margin-top: 10px;"
+                         style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
                        )
                      ),
                      column(
-                       width = 4, # 右侧选择框宽度
+                       width = 6, # 右侧选择框宽度
                        tags$div(
                          style = "
                             display: flex; 
                             align-items: center; 
-                            border: 1px solid #007BFF; 
+                            border: 1px solid #007BFF;
+                            height: 50px;
                             border-radius: 8px; 
                             padding: 10px; 
                             margin-top: 10px;
