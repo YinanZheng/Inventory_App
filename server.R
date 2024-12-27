@@ -2523,7 +2523,7 @@ server <- function(input, output, session) {
         # 更新选中物品状态
         actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
         
-        actionButton("oauth_btn", "登录并授权 USPS", icon = icon("sign-in-alt"))
+        actionButton("oauth_btn", "登录并授权 USPS", icon = icon("sign-in-alt")),
         h4("授权结果"),
         verbatimTextOutput("oauth_status")
         
