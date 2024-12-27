@@ -7,7 +7,9 @@ itemFilterServer <- function(id, unique_items, makers, selected_row_reactive = N
       tryCatch({
         showNotification("observeEvent triggered for makers()")
         showNotification(paste("Data received in makers():", paste(makers()$Maker, collapse = ";")))
-        update_maker_choices(session, ns("maker"), makers())
+        shinyjs::delay(100, {
+          update_maker_choices(session, ns("maker"), makers())
+        })
       }, error = function(e) {
         showNotification(paste("Error: ", e$message), type = "error")
       })

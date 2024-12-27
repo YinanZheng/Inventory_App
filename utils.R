@@ -20,19 +20,6 @@ update_maker_choices <- function(session, input_id, maker_data) {
   }
 }
 
-# update_maker_choices <- function(session, input_id, maker_data) {
-#   if (is.null(maker_data) || nrow(maker_data) == 0) {
-#     showNotification("maker_data is NULL or empty.")
-#     updateSelectizeInput(session, input_id, choices = NULL, selected = NULL)
-#   } else {
-#     choices <- c("", maker_data$Maker)
-#     showNotification(paste("Choices generated:", paste(choices, collapse = ";")))
-#     updateSelectizeInput(session, input_id, choices = choices, selected = NULL)
-#   }
-# }
-
-
-
 
 # Generate Code 128 barcode PDF
 export_barcode_pdf <- function(sku, page_width, page_height, unit = "in") {
