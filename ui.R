@@ -510,7 +510,7 @@ ui <- navbarPage(
                    
                    fluidRow(
                      column(
-                       width = 6, # 左侧按钮宽度
+                       width = 7, # 左侧按钮宽度
                        actionButton(
                          "confirm_order_btn",
                          "确认售出",
@@ -520,7 +520,7 @@ ui <- navbarPage(
                        )
                      ),
                      column(
-                       width = 6, # 右侧选择框宽度
+                       width = 5, # 右侧选择框宽度
                        tags$div(
                          style = "
                             border: 1px solid #007BFF; 
@@ -533,7 +533,7 @@ ui <- navbarPage(
                           ",
                          radioButtons(
                            inputId = "sold_shipping_method",
-                           label = NULL, # 去掉内部的默认 label
+                           label = "选择国际运输方式:", # 去掉内部的默认 label
                            choices = list("空运" = "空运", "海运" = "海运"),
                            selected = "空运",  # 默认选择空运
                            inline = TRUE       # 设置为横向排布
