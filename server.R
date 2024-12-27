@@ -233,8 +233,12 @@ server <- function(input, output, session) {
     # 默认过滤条件 Status 为 “采购” 或 “国内入库”
     data <- data[data$Status %in% c("采购", "国内入库"), ]
     
-    # 返回过滤后的数据
-    data
+    filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "inbound_filter-maker",
+      item_name_input_id = "inbound_filter-name"
+    )
   })
   
   # 出库页过滤
@@ -796,6 +800,15 @@ server <- function(input, output, session) {
   ## 入库分页                                                   ##
   ##                                                            ##
   ################################################################
+  
+  itemFilterServer(
+    id = "inbound_filter",
+    makers_df = makers_df,
+    unique_items_data = unique_items_data,
+    filtered_unique_items_data = filtered_unique_items_data_inbound,
+    unique_items_table_selected_row = unique_items_table_inbound_selected_row
+  )
+  
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
