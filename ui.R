@@ -86,7 +86,7 @@ ui <- navbarPage(
         background-color: white; 
         padding: 10px; 
         border-bottom: 1px solid #ddd; 
-        margin-bottom: 40px; 
+        margin-bottom: 0px; 
         max-width: 100%;
         max-height: 450px; 
         overflow-x: hidden; /* 防止水平滚动 */
@@ -331,7 +331,7 @@ ui <- navbarPage(
         
         div(
           class = "sticky-info",  
-          column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
+          column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 10px;") # 动态渲染物品信息
         ), 
         
         fluidRow(
@@ -384,7 +384,7 @@ ui <- navbarPage(
         class = "main-panel",
         div(
           class = "sticky-info",
-          column(12, uiOutput("outbound_item_info"), style = "margin-bottom: 40px;") # 动态渲染物品信息
+          column(12, uiOutput("outbound_item_info"), style = "margin-bottom: 10px;") # 动态渲染物品信息
         ),
         
         fluidRow(
