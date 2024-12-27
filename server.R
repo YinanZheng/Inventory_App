@@ -250,20 +250,26 @@ server <- function(input, output, session) {
   })
   
   # 售出页过滤
-  filtered_unique_items_data_sold <- reactive({
-    req(unique_items_data())
-    data <- unique_items_data()
-    
-    # 默认过滤条件：Status  为 “国内入库” 或 “美国入库“ 或 "美国调货“ 或 “国内售出”
-    data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
-    
-    filter_unique_items_data_by_inputs(
-      data = data,
-      input = input,
-      maker_input_id = "sold_maker",
-      item_name_input_id = "sold_name"
-    )
-  })
+  itemFilterServer("sold", unique_items, makers, selected_row = NULL)
+  filtered_unique_items_data_sold <- filteredUniqueItemsServer("sold", unique_items, status_filter = c("国内入库", "美国入库", "美国调货", "国内售出"))
+  
+  # filtered_unique_items_data_sold <- reactive({
+  #   req(unique_items_data())
+  #   data <- unique_items_data()
+  #   
+  #   # 默认过滤条件：Status  为 “国内入库” 或 “美国入库“ 或 "美国调货“ 或 “国内售出”
+  #   data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
+  #   
+  #   filter_unique_items_data_by_inputs(
+  #     data = data,
+  #     input = input,
+  #     maker_input_id = "sold_maker",
+  #     item_name_input_id = "sold_name"
+  #   )
+  # })
+  
+  
+  
   
   # 瑕疵品管理页过滤
   filtered_unique_items_data_defect <- reactive({
@@ -312,7 +318,7 @@ server <- function(input, output, session) {
   })
   
   
-  # 缓存 makers_df
+  # 缓存目前数据库已有物品的makers：makers_df
   makers_df <- reactive({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     
@@ -1022,56 +1028,58 @@ server <- function(input, output, session) {
   
   ######
   
-  # 更新供应商名称
-  observeEvent(makers_df(), {
-    update_maker_choices(session, "sold_maker", makers_df())
-  })
+  itemFilterServer("sold", unique_items, makers, unique_items_table_sold_selected_row)
   
-  # 监听供应商选择变化并动态更新商品名称
-  observe({
-    req(unique_items_data())  # 确保数据存在
-    
-    # 获取用户选择的供应商
-    selected_makers <- input$sold_maker
-    
-    # 筛选商品名称
-    if (!is.null(selected_makers) && length(selected_makers) > 0) {
-      filtered_data <- unique_items_data() %>% filter(Maker %in% selected_makers)
-    } else {
-      filtered_data <- unique_items_data()
-    }
-    
-    # 提取对应的商品名称，并在前面加一个空选项
-    item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
-    
-    # 更新商品名称选项，默认选中空选项
-    updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
-  })
-  
-  # 监听选中行并更新 maker, item name, SKU
-  observeEvent(unique_items_table_sold_selected_row(), {
-    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
-      selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
-      updateSelectInput(session, "sold_maker", selected = selected_data$Maker)
-      shinyjs::delay(300, {  # 延迟 300 毫秒
-        updateTextInput(session, "sold_name", value = selected_data$ItemName)
-      })
-      updateTextInput(session, "sold_sku", value = selected_data$SKU)
-    }
-  })
-  
-  # 清空输入
-  observeEvent(input$sold_reset_btn, {
-    tryCatch({
-      update_maker_choices(session, "sold_maker", makers_df())
-      updateTextInput(session, "sold_name", value = "")
-      updateTextInput(session, "sold_sku", value = "")
-      
-      showNotification("筛选条件已重置！", type = "message")
-    }, error = function(e) {
-      showNotification("重置输入时发生错误，请重试！", type = "error")
-    })
-  })
+  # # 更新供应商名称
+  # observeEvent(makers_df(), {
+  #   update_maker_choices(session, "sold_maker", makers_df())
+  # })
+  # 
+  # # 监听供应商选择变化并动态更新商品名称
+  # observe({
+  #   req(unique_items_data())  # 确保数据存在
+  #   
+  #   # 获取用户选择的供应商
+  #   selected_makers <- input$sold_maker
+  #   
+  #   # 筛选商品名称
+  #   if (!is.null(selected_makers) && length(selected_makers) > 0) {
+  #     filtered_data <- unique_items_data() %>% filter(Maker %in% selected_makers)
+  #   } else {
+  #     filtered_data <- unique_items_data()
+  #   }
+  #   
+  #   # 提取对应的商品名称，并在前面加一个空选项
+  #   item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
+  #   
+  #   # 更新商品名称选项，默认选中空选项
+  #   updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
+  # })
+  # 
+  # # 监听选中行并更新 maker, item name, SKU
+  # observeEvent(unique_items_table_sold_selected_row(), {
+  #   if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+  #     selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
+  #     updateSelectInput(session, "sold_maker", selected = selected_data$Maker)
+  #     shinyjs::delay(300, {  # 延迟 300 毫秒
+  #       updateTextInput(session, "sold_name", value = selected_data$ItemName)
+  #     })
+  #     updateTextInput(session, "sold_sku", value = selected_data$SKU)
+  #   }
+  # })
+  # 
+  # # 清空输入
+  # observeEvent(input$sold_reset_btn, {
+  #   tryCatch({
+  #     update_maker_choices(session, "sold_maker", makers_df())
+  #     updateTextInput(session, "sold_name", value = "")
+  #     updateTextInput(session, "sold_sku", value = "")
+  #     
+  #     showNotification("筛选条件已重置！", type = "message")
+  #   }, error = function(e) {
+  #     showNotification("重置输入时发生错误，请重试！", type = "error")
+  #   })
+  # })
   
   
   ######
@@ -1106,8 +1114,8 @@ server <- function(input, output, session) {
   })
   
   # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input$sold_sku, {
-    sku <- trimws(input$sold_sku)  # 清理条形码输入空格
+  observeEvent(input[["sold-sku"]], {
+    sku <- trimws(input[["sold-sku"]])  # 清理条形码输入空格
     if (is.null(sku) || sku == "") {
       return()
     }
