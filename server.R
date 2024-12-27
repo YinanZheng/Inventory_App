@@ -1041,7 +1041,7 @@ server <- function(input, output, session) {
     update_maker_choices(session, "sold-maker", makers_df())
   })
   
-  # 
+  
   # # 监听供应商选择变化并动态更新商品名称
   # observe({
   #   req(unique_items_data())  # 确保数据存在
@@ -1062,6 +1062,30 @@ server <- function(input, output, session) {
   #   # 更新商品名称选项，默认选中空选项
   #   updateSelectizeInput(session, "sold_name", choices = item_names, selected = "")
   # })
+  
+  # 监听供应商选择变化并动态更新商品名称
+  observe({
+    req(unique_items_data())  # 确保数据已加载
+    
+    # 获取用户选择的供应商
+    selected_makers <- input$`sold-maker`  # 引号处理连字符
+    
+    # 筛选商品名称
+    if (!is.null(selected_makers) && length(selected_makers) > 0) {
+      filtered_data <- unique_items_data() %>% 
+        filter(Maker %in% as.character(selected_makers))  # 确保类型一致
+    } else {
+      filtered_data <- unique_items_data()
+    }
+    
+    # 提取对应的商品名称，并在前面加一个空选项
+    item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
+    
+    # 更新商品名称选项，默认选中空选项
+    updateSelectizeInput(session, "sold-name", choices = item_names, selected = "")
+  })
+  
+  
   # 
   # # 监听选中行并更新 maker, item name, SKU
   # observeEvent(unique_items_table_sold_selected_row(), {
