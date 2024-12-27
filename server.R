@@ -1034,6 +1034,16 @@ server <- function(input, output, session) {
   #   update_maker_choices(session, ns("maker"), makers_df())
   # })
   # 
+  observeEvent(makers_df(), {
+    tryCatch({
+      update_maker_choices(session, ns("maker"), makers_df())
+    }, error = function(e) {
+      # 或者用 Shiny 的 showNotification 显示到界面
+      showNotification(paste("Error: ", e$message), type = "error")
+    })
+  })
+  
+  # 
   # # 监听供应商选择变化并动态更新商品名称
   # observe({
   #   req(unique_items_data())  # 确保数据存在
