@@ -251,6 +251,12 @@ server <- function(input, output, session) {
   
   # 售出页过滤
   filtered_unique_items_data_sold <- filteredUniqueItemsServer("sold", unique_items_data, status_filter = c("国内入库", "美国入库", "美国调货", "国内售出"))
+  # 监听过滤后的数据并显示
+  observe({
+    req(filtered_unique_items_data_sold())
+    showNotification("Filtered Data Updated:")
+    showNotification(paste(filtered_unique_items_data_sold()$ItemName, collapse = ", "))
+  })
   
   # filtered_unique_items_data_sold <- reactive({
   #   req(unique_items_data())
