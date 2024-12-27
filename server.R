@@ -127,7 +127,7 @@ server <- function(input, output, session) {
   })
   
   # Render filtered inventory with column name mapping
-  output$filtered_inventory_table <- renderDT({
+  output$filtered_inventory_table_query <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
       ItemName = "商品名",
@@ -2288,8 +2288,8 @@ server <- function(input, output, session) {
   })
   
   # 监听查询页选中inventory table (for SKU query and chart summary)
-  observeEvent(input$filtered_inventory_table_rows_selected, {
-    selected_row <- input$filtered_inventory_table_rows_selected
+  observeEvent(input$filtered_inventory_table_query_rows_selected, {
+    selected_row <- input$filtered_inventory_table_query_rows_selected
     if (length(selected_row) > 0) {
       selected_data <- filtered_inventory()[selected_row, ]
       # 更新 SKU 输入框(生成库存图表用)
