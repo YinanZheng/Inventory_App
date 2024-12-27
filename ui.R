@@ -323,7 +323,7 @@ ui <- navbarPage(
         class = "main-panel",
         
         div(
-          style = "height: auto; margin-bottom: 10px;",
+          style = "height: 300px; margin-bottom: 10px;",
           column(12, uiOutput("inbound_item_info"), style = "margin-bottom: 10px;") # 动态渲染物品信息
         ), 
         
