@@ -1027,7 +1027,10 @@ server <- function(input, output, session) {
   
   ######
   
-  itemFilterServer("sold", unique_items_data, makers_df, unique_items_table_sold_selected_row)
+  itemFilterServer("sold", 
+                   unique_items = unique_items_data, 
+                   makers = makers_df, 
+                   selected_row_reactive = unique_items_table_sold_selected_row)
   
   # 更新供应商名称
   # observeEvent(makers_df(), {

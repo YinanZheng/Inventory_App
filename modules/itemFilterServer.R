@@ -1,4 +1,4 @@
-itemFilterServer <- function(id, unique_items_data, makers, selected_row_reactive = NULL) {
+itemFilterServer <- function(id, unique_items, makers, selected_row_reactive = NULL) {
   moduleServer(id, function(input, output, session) {
     ns <- session$ns  # 动态生成命名空间
     
@@ -18,16 +18,16 @@ itemFilterServer <- function(id, unique_items_data, makers, selected_row_reactiv
     # 动态更新商品名称
     observe({
       tryCatch({
-        req(unique_items_data())  # 确保数据存在
+        req(unique_items())  # 确保数据存在
         
         # 获取用户选择的供应商
         selected_maker <- input$maker
         
         # 根据供应商筛选商品名称
         filtered_data <- if (!is.null(selected_maker) && selected_maker != "") {
-          unique_items_data() %>% filter(Maker %in% selected_maker)
+          unique_items() %>% filter(Maker %in% selected_maker)
         } else {
-          unique_items_data()
+          unique_items()
         }
         
         item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())  # 添加空选项
@@ -46,7 +46,7 @@ itemFilterServer <- function(id, unique_items_data, makers, selected_row_reactiv
       tryCatch({
         selected_row <- selected_row_reactive()
         if (!is.null(selected_row) && length(selected_row) > 0) {
-          selected_data <- unique_items_data()[selected_row, ]
+          selected_data <- unique_items()[selected_row, ]
           updateSelectizeInput(session, ns("maker"), selected = selected_data$Maker)
           shinyjs::delay(300, {
             updateTextInput(session, ns("name"), value = selected_data$ItemName)
