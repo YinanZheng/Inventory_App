@@ -1120,7 +1120,7 @@ server <- function(input, output, session) {
   # })
   
   # 清空输入
-  observeEvent(input$sold-reset_btn, {
+  observeEvent(input$`sold-reset_btn`, {
     tryCatch({
       update_maker_choices(session, "sold-maker", makers_df())
       updateTextInput(session, "sold-name", value = "")
