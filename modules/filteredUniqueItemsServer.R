@@ -1,27 +1,53 @@
-filteredUniqueItemsServer <- function(id, unique_items_data, status_filter = NULL) {
+# filteredUniqueItemsServer <- function(id, unique_items_data, status_filter = NULL) {
+#   moduleServer(id, function(input, output, session) {
+#     ns <- session$ns
+#     
+#     # 创建过滤后的数据
+#     filtered_data <- reactive({
+#       req(unique_items_data())
+#       data <- unique_items_data()
+#       
+#       # 应用状态过滤条件（如果有）
+#       if (!is.null(status_filter)) {
+#         data <- data[data$Status %in% status_filter, ]
+#       }
+#       
+#       # 使用 itemFilterServer 的输入进行动态筛选
+#       filter_unique_items_data_by_inputs(
+#         data = data,
+#         input = input,
+#         maker_input_id = ns("maker"),
+#         item_name_input_id = ns("name")
+#       )
+#     })
+#     
+#     # 返回过滤后的数据
+#     return(filtered_data)
+#   })
+# }
+
+filteredUniqueItemsServer <- function(id, unique_items, status_filter) {
   moduleServer(id, function(input, output, session) {
-    ns <- session$ns
-    
-    # 创建过滤后的数据
-    filtered_data <- reactive({
-      req(unique_items_data())
-      data <- unique_items_data()
+    reactive({
+      req(unique_items())  # 确保数据存在
       
-      # 应用状态过滤条件（如果有）
-      if (!is.null(status_filter)) {
-        data <- data[data$Status %in% status_filter, ]
-      }
+      # 使用 showNotification 显示调试信息
+      showNotification("Status Filter Received:")
+      showNotification(paste(status_filter, collapse = ", "))
       
-      # 使用 itemFilterServer 的输入进行动态筛选
-      filter_unique_items_data_by_inputs(
-        data = data,
-        input = input,
-        maker_input_id = ns("maker"),
-        item_name_input_id = ns("name")
-      )
+      showNotification("Unique Items Data Received:")
+      showNotification(paste(unique_items()$Status, collapse = ", "))
+      
+      # 执行过滤
+      filtered_data <- unique_items() %>% 
+        filter(Status %in% as.character(status_filter))  # 确保类型一致
+      
+      # 打印过滤后的数据到通知
+      showNotification("Filtered Data:")
+      showNotification(paste(filtered_data$Status, collapse = ", "))
+      
+      filtered_data
     })
-    
-    # 返回过滤后的数据
-    return(filtered_data)
   })
 }
+
