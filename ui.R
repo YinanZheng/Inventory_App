@@ -342,32 +342,35 @@ ui <- navbarPage(
         
         tags$hr(), # 分隔线
         
-        div(
+        tags$div(
           class = "card",
-          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-          tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
-          
-          tags$div(
-            class = "card",
-            style = "padding: 15px; border: 2px solid #007BFF; border-radius: 8px; background-color: #f9f9f9; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-            tags$h4("选择国际运输方式:", style = "font-size: 18px; font-weight: bold; margin-bottom: 15px;"),
-            radioButtons(
-              inputId = "outbound_shipping_method",
-              label = NULL, # 将标签移到卡片标题
-              choices = list("空运" = "空运", "海运" = "海运"),
-              selected = "空运",  # 默认选择空运
-              inline = TRUE       # 设置为横向排布
-            )
+          style = "padding: 15px; border: 2px solid #007BFF; border-radius: 8px; background-color: #f9f9f9; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          tags$h4("选择国际运输方式:", style = "font-size: 18px; font-weight: bold; margin-bottom: 15px;"),
+          radioButtons(
+            inputId = "outbound_shipping_method",
+            label = NULL, # 将标签移到卡片标题
+            choices = list("空运" = "空运", "海运" = "海运"),
+            selected = "空运",  # 默认选择空运
+            inline = TRUE       # 设置为横向排布
           ),
-          
-          actionButton(
-            "confirm_outbound_btn", 
-            "确认出库", 
-            icon = icon("check"), 
-            class = "btn-primary", 
-            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
-          )
+          tags$style(HTML("
+            #outbound_shipping_method .radio input[type='radio'] {
+              transform: scale(1.5); /* 放大 radio 按钮 */
+              margin-right: 10px; /* 调整圆圈和文本的间距 */
+            }
+            #outbound_shipping_method .radio label {
+              font-size: 16px; /* 调整文字大小 */
+            }
+          "))
+        ),
+        
+        
+        actionButton(
+          "confirm_outbound_btn", 
+          "确认出库", 
+          icon = icon("check"), 
+          class = "btn-primary", 
+          style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
         )
       ),
       
