@@ -472,7 +472,7 @@ server <- function(input, output, session) {
       item_type_data = item_type_data(),
       major_type = input[["type_module-new_major_type"]],
       minor_type = input[["type_module-new_minor_type"]],
-      item_name = input$new_name$text,
+      item_name = new_name_text,
       maker = input$new_maker
     )
     
@@ -719,7 +719,6 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
-      updateTextInput(session, "new_sku", value = selected_data$SKU)
     }
   })
   
