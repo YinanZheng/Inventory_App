@@ -1,74 +1,54 @@
-itemFilterServer <- function(id, unique_items, makers, selected_row_reactive = NULL) {
+itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_items_data_sold, update_maker_choices, unique_items_table_sold_selected_row) {
   moduleServer(id, function(input, output, session) {
-    ns <- session$ns  # 动态生成命名空间
-    
-    # 更新供应商名称
-    observeEvent(makers(), {
-      shinyjs::delay(100, {  # 延迟100ms，确保控件初始化完成
-        tryCatch({
-          update_maker_choices(session, ns("maker"), makers())
-        }, error = function(e) {
-          showNotification(paste("Error: ", e$message), type = "error")
-        })
-      })
+    # 更新 `makers` 控件
+    observeEvent(makers_df(), {
+      update_maker_choices(session, paste0(id, "-maker"), makers_df())
     })
     
-    # 动态更新商品名称
+    # 监听供应商选择变化并动态更新商品名称
     observe({
-      tryCatch({
-        req(unique_items())  # 确保数据存在
-        
-        # 获取用户选择的供应商
-        selected_maker <- input$maker
-        
-        # 根据供应商筛选商品名称
-        filtered_data <- if (!is.null(selected_maker) && selected_maker != "") {
-          unique_items() %>% filter(Maker %in% selected_maker)
-        } else {
-          unique_items()
-        }
-        
-        item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())  # 添加空选项
-        
-        # 更新商品名称输入框
-        updateSelectizeInput(session, ns("name"), choices = item_names, selected = "")
-      }, error = function(e) {
-        # 捕获并显示错误信息
-        message("Error in updating item names: ", e$message)
-        showNotification(paste("Error: ", e$message), type = "error")
-      })
+      req(unique_items_data())  # 确保数据已加载
+      
+      # 获取用户选择的供应商
+      selected_makers <- input[[paste0(id, "-maker")]]  # 使用模块化命名空间
+      
+      # 筛选商品名称
+      if (!is.null(selected_makers) && length(selected_makers) > 0) {
+        filtered_data <- unique_items_data() %>% 
+          filter(Maker %in% as.character(selected_makers))  # 确保类型一致
+      } else {
+        filtered_data <- unique_items_data()
+      }
+      
+      # 提取对应的商品名称，并在前面加一个空选项
+      item_names <- c("", filtered_data %>% pull(ItemName) %>% unique())
+      
+      # 更新商品名称选项，默认选中空选项
+      updateSelectizeInput(session, paste0(id, "-name"), choices = item_names, selected = "")
     })
     
-    # 监听选中行并更新 Maker、商品名称和 SKU
-    observeEvent(selected_row_reactive(), {
-      tryCatch({
-        selected_row <- selected_row_reactive()
-        if (!is.null(selected_row) && length(selected_row) > 0) {
-          selected_data <- unique_items()[selected_row, ]
-          updateSelectizeInput(session, ns("maker"), selected = selected_data$Maker)
-          shinyjs::delay(300, {
-            updateTextInput(session, ns("name"), value = selected_data$ItemName)
-          })
-          updateTextInput(session, ns("sku"), value = selected_data$SKU)
-        }
-      }, error = function(e) {
-        # 捕获并显示错误信息
-        message("Error in updating selected row: ", e$message)
-        showNotification(paste("Error: ", e$message), type = "error")
-      })
+    # 监听选中行并更新 maker, item name, SKU
+    observeEvent(unique_items_table_sold_selected_row(), {
+      if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+        selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
+        updateSelectInput(session, paste0(id, "-maker"), selected = selected_data$Maker)
+        shinyjs::delay(300, {  # 延迟 300 毫秒
+          updateTextInput(session, paste0(id, "-name"), value = selected_data$ItemName)
+        })
+        updateTextInput(session, paste0(id, "-sku"), value = selected_data$SKU)
+      }
     })
     
-    # 清空筛选条件
-    observeEvent(input$reset_btn, {
+    # 清空输入
+    observeEvent(input[[paste0(id, "-reset_btn")]], {
       tryCatch({
-        updateSelectizeInput(session, ns("maker"), choices = makers(), selected = NULL)
-        updateTextInput(session, ns("name"), value = "")
-        updateTextInput(session, ns("sku"), value = "")
+        update_maker_choices(session, paste0(id, "-maker"), makers_df())
+        updateTextInput(session, paste0(id, "-name"), value = "")
+        updateTextInput(session, paste0(id, "-sku"), value = "")
+        
         showNotification("筛选条件已重置！", type = "message")
       }, error = function(e) {
-        # 捕获并显示错误信息
-        message("Error in resetting filters: ", e$message)
-        showNotification(paste("Error: ", e$message), type = "error")
+        showNotification("重置输入时发生错误，请重试！", type = "error")
       })
     })
   })
