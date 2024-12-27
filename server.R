@@ -2521,7 +2521,12 @@ server <- function(input, output, session) {
         checkboxInput("admin_record_timestamp", "记录修改时间", value = FALSE),
         
         # 更新选中物品状态
-        actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;")
+        actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        
+        actionButton("oauth_btn", "登录并授权 USPS", icon = icon("sign-in-alt"))
+        h4("授权结果"),
+        verbatimTextOutput("oauth_status")
+        
       )
     } else {
       div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
