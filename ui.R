@@ -198,9 +198,6 @@ ui <- navbarPage(
           ),
           column(12, DTOutput("added_items_table")),
           
-          tags$hr(), # 分隔线
-          
-          
           column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
           column(6, div(
             textOutput("total_cost"),
@@ -209,15 +206,15 @@ ui <- navbarPage(
           column(3, div(
             style = "text-align: right;",
             actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
-          )),
-          
-          fluidRow(
-            column(12, div(
-              id = "item_table_container_purchase",  # 容器 ID
-              style = "margin-bottom: 100px;",
-              uniqueItemsTableUI("unique_items_table_purchase")
-            ))
-          )
+          ))
+        ),
+        
+        fluidRow(
+          column(12, div(
+            id = "item_table_container_purchase",  # 容器 ID
+            style = "margin-bottom: 100px;",
+            uniqueItemsTableUI("unique_items_table_purchase")
+          ))
         )
       )
     )
