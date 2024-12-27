@@ -6,6 +6,7 @@ itemFilterServer <- function(id, unique_items, makers, selected_row_reactive = N
     observeEvent(makers(), {
       tryCatch({
         showNotification(ns("maker"))
+        showNotification(makers()$Maker)
         
         update_maker_choices(session, ns("maker"), makers())
       }, error = function(e) {
