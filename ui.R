@@ -204,6 +204,7 @@ ui <- navbarPage(
             style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
           )),
           column(3, div(
+            style = "text-align: right;",
             actionButton(
               inputId = "confirm_btn", 
               label = "确认登记采购货品", 
