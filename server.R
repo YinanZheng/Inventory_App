@@ -27,6 +27,10 @@ server <- function(input, output, session) {
   # 存储条形码是否已生成的状态
   barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
   
+  # 初始化货架和箱子内物品（售出分页）
+  shelf_items <- reactiveVal(create_empty_shelf_box())
+  box_items <- reactiveVal(create_empty_shelf_box())
+  
   ####################################################################################################################################
   
   # 应用启动时加载数据: item_type_data
@@ -74,30 +78,13 @@ server <- function(input, output, session) {
     shinyjs::disable("download_select_pdf")
   })
   
-  # 切换显示/隐藏
-  observeEvent(input$toggle_item_table_purchase, {
-    shinyjs::toggle("item_table_container_purchase")
-  })
-  
-  observeEvent(input$toggle_item_table_inbound, {
-    shinyjs::toggle("item_table_container_inbound")
-  })
-  
-  observeEvent(input$toggle_item_table_defect, {
-    shinyjs::toggle("item_table_container_defect")
-  })
-  
-  observeEvent(input$toggle_item_table_outbound, {
-    shinyjs::toggle("item_table_container_outbound")
-  })
-  
-  observeEvent(input$toggle_item_table_sold, {
-    shinyjs::toggle("item_table_container_sold")
-  })
-  
-  observeEvent(input$toggle_inventory_table, {
-    shinyjs::toggle("inventory_table_container")  
-  })
+  # 表的切换显示/隐藏 动态创建 observeEvent （在Global.R配置参数)
+  for (input_id in names(toggle_mappings)) {
+    container_id <- toggle_mappings[[input_id]]
+    observeEvent(input[[input_id]], {
+      shinyjs::toggle(container_id)
+    })
+  }
   
   ####################################################################################################################################
   ###################################################                              ###################################################
@@ -805,6 +792,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 物品表过滤模块
   itemFilterServer(
     id = "inbound_filter",
     makers_df = makers_df,
@@ -812,7 +800,6 @@ server <- function(input, output, session) {
     filtered_unique_items_data = filtered_unique_items_data_inbound,
     unique_items_table_selected_row = unique_items_table_inbound_selected_row
   )
-  
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
@@ -906,7 +893,6 @@ server <- function(input, output, session) {
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
   })
   
-  
   # 监听选中行并更新 SKU
   observeEvent(unique_items_table_inbound_selected_row(), {
     selected_row <- unique_items_table_inbound_selected_row()
@@ -984,6 +970,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 物品表过滤模块
   itemFilterServer(
     id = "outbound_filter",
     makers_df = makers_df,
@@ -1039,14 +1026,8 @@ server <- function(input, output, session) {
   ## 售出分页                                                   ##
   ##                                                            ##
   ################################################################
-  
-  # 初始化货架和箱子内物品
-  shelf_items <- reactiveVal(create_empty_shelf_box())
-  box_items <- reactiveVal(create_empty_shelf_box())
-  
-  
-  ######
 
+  # 物品表过滤模块
   itemFilterServer(
     id = "sold_filter",
     makers_df = makers_df,
@@ -1298,7 +1279,6 @@ server <- function(input, output, session) {
     
     showNotification("已清空所有输入！", type = "message")
   })
-  
   
   ######
   
@@ -1700,7 +1680,6 @@ server <- function(input, output, session) {
       updateSwitchInput(session, "show_perfects_only", value = FALSE)
     }
   })
-  
   
   
   
