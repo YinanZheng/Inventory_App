@@ -515,7 +515,7 @@ ui <- navbarPage(
                          "confirm_order_btn",
                          "确认售出",
                          icon = icon("check"),
-                         class = "btn-success",
+                         class = "btn-primary", 
                          style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
                        )
                      ),
