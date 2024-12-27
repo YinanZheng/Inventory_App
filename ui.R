@@ -516,7 +516,7 @@ ui <- navbarPage(
                          "确认售出",
                          icon = icon("check"),
                          class = "btn-success",
-                         style = "font-size: 16px; width: 100%; height: 60px; margin-top: 10px;"
+                         style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
                        )
                      ),
                      column(
@@ -528,7 +528,7 @@ ui <- navbarPage(
     justify-content: flex-start; 
     border: 1px solid #007BFF; 
     border-radius: 8px; 
-    height: 60px; 
+    height: 50px; 
     padding: 0 10px; 
     margin-top: 10px;
   ",
