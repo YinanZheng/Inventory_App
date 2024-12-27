@@ -879,12 +879,10 @@ ui <- navbarPage(
                   style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
                   div(
                     id = "inventory_table_container_query",
-                    uniqueItemsTableUI("filtered_inventory_table_query")
+                    DTOutput("filtered_inventory_table_query")
                   )
                 )
               )
-              
-              
             )
           ), # end of 商品状态
           
