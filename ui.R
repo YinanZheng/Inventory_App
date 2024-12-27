@@ -51,13 +51,7 @@ ui <- navbarPage(
           padding: 6px 8px !important; /* 减少间距 */
         }
       }
-      
-      input {
-        height: 34px !important;  /* 统一设置高度为 34px */
-        line-height: 34px !important;  /* 确保文字垂直居中 */
-        padding: 5px;  /* 增加内边距，优化显示 */
-        box-sizing: border-box;  /* 确保边框和填充不影响整体大小 */
-      }
+    
     
       body {
         padding-top: 70px; /* 为导航栏腾出空间 */
@@ -83,22 +77,6 @@ ui <- navbarPage(
         padding: 20px;
         background-color: #f9f9f9;
         flex-shrink: 0; /* 防止压缩 */
-      }
-      
-     /* Sticky info area */
-      .sticky-info {
-        position: sticky; 
-        top: 70px; 
-        z-index: 105;
-        background-color: white; 
-        padding: 10px; 
-        border-bottom: 1px solid #ddd; 
-        margin-bottom: 0px; 
-        max-width: 100%;
-        max-height: 450px; 
-        overflow-x: hidden; /* 防止水平滚动 */
-        overflow-y: auto; /* 垂直滚动 */
-        box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 添加阴影以确保视觉分隔 */
       }
     
       /* 主面板 */
