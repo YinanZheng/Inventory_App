@@ -31,6 +31,8 @@ source("./modules/typeModuleServer.R", local = TRUE)
 source("./modules/uniqueItemsTableServer.R", local = TRUE)
 source("./modules/imageModuleServer.R", local = TRUE)
 source("./modules/orderTableServer.R", local = TRUE)
+source("./modules/itemFilterServer.R", local = TRUE)
+source("./modules/filteredUniqueItemsServer.R", local = TRUE)
 
 source("utils.R", local = TRUE)
 
