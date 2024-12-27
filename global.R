@@ -24,6 +24,7 @@ source("./modules/typeModuleUI.R", local = TRUE)
 source("./modules/uniqueItemsTableUI.R", local = TRUE)
 source("./modules/imageModuleUI.R", local = TRUE)
 source("./modules/orderTableUI.R", local = TRUE)
+source("./modules/itemFilterUI.R", local = TRUE)
 
 source("./modules/supplierModuleServer.R", local = TRUE)
 source("./modules/typeModuleServer.R", local = TRUE)
