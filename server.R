@@ -1029,7 +1029,6 @@ server <- function(input, output, session) {
     unique_items_data = unique_items_data,
     filtered_unique_items_data = filtered_unique_items_data_sold,
     unique_items_table_selected_row = unique_items_table_sold_selected_row,
-    update_maker_choices = update_maker_choices
   )
   
   # # 更新makers控件  

@@ -1,8 +1,8 @@
-itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_items_data, unique_items_table_selected_row, update_maker_choices) {
+itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_items_data, unique_items_table_selected_row) {
   moduleServer(id, function(input, output, session) {
     # 更新 makers 控件
     observeEvent(makers_df(), {
-      update_maker_choices(session, session$ns("maker"), makers_df())
+      updateSelectizeInput(session, "maker", choices = choices, select = "", server = TRUE)
     })
     
     # 动态更新商品名称
