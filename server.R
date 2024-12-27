@@ -250,7 +250,6 @@ server <- function(input, output, session) {
   })
   
   # 售出页过滤
-  itemFilterServer("sold", unique_items_data, makers_df, selected_row = NULL)
   filtered_unique_items_data_sold <- filteredUniqueItemsServer("sold", unique_items_data, status_filter = c("国内入库", "美国入库", "美国调货", "国内售出"))
   
   # filtered_unique_items_data_sold <- reactive({
