@@ -191,7 +191,7 @@ ui <- navbarPage(
               )),
               column(3, div(
                 style = "text-align: right;",
-                actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-info")
+                actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary")
               ))
             )
           )
