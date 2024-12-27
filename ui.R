@@ -176,9 +176,8 @@ ui <- navbarPage(
         class = "main-panel",
         div(
           div(
-            "采购箱", icon = icon("shopping-cart"),
-            style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; 
-             padding: 10px; text-align: center; border-radius: 4px;"
+            tags$span(icon("shopping-cart"), style = "margin-right: 5px;"),  # 使用 span 包裹图标
+            "采购箱", style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
           ),
           column(12, DTOutput("added_items_table")),
           
