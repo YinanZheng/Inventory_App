@@ -24,8 +24,8 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
     observeEvent(unique_items_table_selected_row(), {
       if (!is.null(unique_items_table_selected_row()) && length(unique_items_table_selected_row()) > 0) {
         selected_data <- filtered_unique_items_data()[unique_items_table_selected_row(), ]
-        update_maker_choices(session, session$ns("maker"), makers_df())
-        shinyjs::delay(300, {
+        updateSelectizeInput(session, "maker", selected = selected_data$Maker)
+        shinyjs::delay(100, {
           updateTextInput(session, "name", value = selected_data$ItemName)
         })
         updateTextInput(session, "sku", value = selected_data$SKU)
