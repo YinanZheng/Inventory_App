@@ -723,23 +723,23 @@ server <- function(input, output, session) {
   })
   
   # 监听采购页选中added_items_table
-  observeEvent(input$added_items_table_rows_selected, {
-    selected_row <- input$added_items_table_rows_selected
-    
-    if (length(selected_row) > 0) {
-      # 仅处理最后一个选择的行
-      last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
-      selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
-      
-      # 更新侧边栏的输入字段
-      updateSelectInput(session, "new_maker", selected = selected_data$Maker)
-      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
-      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
-      updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
-      updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
-    }
-  })
+  # observeEvent(input$added_items_table_rows_selected, {
+  #   selected_row <- input$added_items_table_rows_selected
+  #   
+  #   if (length(selected_row) > 0) {
+  #     # 仅处理最后一个选择的行
+  #     last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
+  #     selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
+  #     
+  #     # 更新侧边栏的输入字段
+  #     updateSelectInput(session, "new_maker", selected = selected_data$Maker)
+  #     updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
+  #     updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+  #     updateTextInput(session, "new_name", value = selected_data$ItemName)
+  #     updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
+  #     updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
+  #   }
+  # })
   
   # Delete selected item
   observeEvent(input$delete_btn, {
@@ -759,7 +759,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       update_maker_choices(session, "new_maker", maker_list())
-      updateSelectizeInput(session, "new_name", choices = c("", inventory()$ItemName), selected = "")
+      updateComboBox.shinyInput(session, "new_name", value = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
