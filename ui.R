@@ -407,6 +407,7 @@ ui <- navbarPage(
       # 左侧订单信息录入
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        style = "width: 400px;", # override 宽度
         
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745"),
         
