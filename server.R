@@ -733,8 +733,10 @@ server <- function(input, output, session) {
 
       # 更新侧边栏的输入字段
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
-      updateSelectInput(session, "new_major_type", selected = selected_data$MajorType)
-      updateSelectInput(session, "new_minor_type", selected = selected_data$MinorType)
+      updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
+      shinyjs::delay(100, {  # 延迟 100 毫秒
+        updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
+      })
       updateComboBox.shinyInput(session, "new_name", value = list(key = selected_data$ItemName, text = selected_data$ItemName))
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
