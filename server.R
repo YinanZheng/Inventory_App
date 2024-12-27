@@ -521,7 +521,7 @@ server <- function(input, output, session) {
     new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
       input$new_name$text
     } else {
-      input$new_name
+      NULL
     }
     
     # 验证输入
