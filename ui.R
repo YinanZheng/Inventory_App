@@ -516,7 +516,7 @@ ui <- navbarPage(
                          "确认售出",
                          icon = icon("check"),
                          class = "btn-success",
-                         style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
+                         style = "font-size: 16px; width: 100%; height: 60px; margin-top: 10px;"
                        )
                      ),
                      column(
@@ -528,25 +528,30 @@ ui <- navbarPage(
     justify-content: flex-start; 
     border: 1px solid #007BFF; 
     border-radius: 8px; 
+    height: 60px; 
     padding: 0 10px; 
-    height: 50px; 
     margin-top: 10px;
   ",
-                         tags$label(
+                         tags$span(
                            "国际运输:", 
-                           style = "font-size: 14px; font-weight: bold; margin-right: 15px;"
+                           style = "font-size: 16px; font-weight: bold; margin-right: 15px; line-height: 1;"
                          ),
                          tags$div(
-                           style = "display: flex; align-items: center;",
+                           style = "
+      display: flex; 
+      align-items: center; 
+      height: 100%; 
+    ",
                            radioButtons(
                              inputId = "sold_shipping_method",
-                             label = NULL, # 去掉默认 label
+                             label = NULL, # 去掉默认的 label
                              choices = list("空运" = "空运", "海运" = "海运"),
                              selected = "空运",  # 默认选择空运
                              inline = TRUE       # 设置为横向排布
                            )
                          )
                        )
+                       
                        
                      )
                    )
