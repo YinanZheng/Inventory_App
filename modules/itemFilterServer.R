@@ -5,6 +5,8 @@ itemFilterServer <- function(id, unique_items_data, makers, selected_row_reactiv
     # 更新供应商名称
     observeEvent(makers(), {
       tryCatch({
+        showNotification(ns("maker"))
+        
         update_maker_choices(session, ns("maker"), makers())
       }, error = function(e) {
         # 捕获并显示错误信息
