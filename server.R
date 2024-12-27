@@ -249,8 +249,12 @@ server <- function(input, output, session) {
     # 默认过滤条件：Status  为 “国内入库” 或 “国内出库”
     data <- data[data$Status %in% c("国内入库", "国内出库"), ]
     
-    # 返回过滤后的数据
-    data
+    filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "outbound_filter-maker",
+      item_name_input_id = "outbound_filter-name"
+    )
   })
   
   # 售出页过滤
@@ -979,6 +983,14 @@ server <- function(input, output, session) {
   ## 出库分页                                                   ##
   ##                                                            ##
   ################################################################
+  
+  itemFilterServer(
+    id = "outbound_filter",
+    makers_df = makers_df,
+    unique_items_data = unique_items_data,
+    filtered_unique_items_data = filtered_unique_items_data_outbound,
+    unique_items_table_selected_row = unique_items_table_outbound_selected_row
+  )
   
   # 监听出库 SKU 输入
   observeEvent(input$outbound_sku, {
