@@ -510,7 +510,7 @@ ui <- navbarPage(
                    
                    fluidRow(
                      column(
-                       width = 8, # 左侧按钮宽度
+                       width = 7.5, # 左侧按钮宽度
                        actionButton(
                          "confirm_order_btn",
                          "确认售出",
@@ -520,7 +520,7 @@ ui <- navbarPage(
                        )
                      ),
                      column(
-                       width = 4, # 右侧选择框宽度
+                       width = 4.5, # 右侧选择框宽度
                        tags$div(
                          style = "
     display: flex; 
