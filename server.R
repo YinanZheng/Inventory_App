@@ -1098,7 +1098,19 @@ server <- function(input, output, session) {
   #     updateTextInput(session, "sold_sku", value = selected_data$SKU)
   #   }
   # })
-  # 
+  
+  # 监听选中行并更新 maker, item name, SKU
+  observeEvent(unique_items_table_sold_selected_row(), {
+    if (!is.null(unique_items_table_sold_selected_row()) && length(unique_items_table_sold_selected_row()) > 0) {
+      selected_data <- filtered_unique_items_data_sold()[unique_items_table_sold_selected_row(), ]
+      updateSelectInput(session, "sold-maker", selected = selected_data$Maker)
+      shinyjs::delay(300, {  # 延迟 300 毫秒
+        updateTextInput(session, "sold-name", value = selected_data$ItemName)
+      })
+      updateTextInput(session, "sold-sku", value = selected_data$SKU)
+    }
+  })
+  
   # # 清空输入
   # observeEvent(input$sold_reset_btn, {
   #   tryCatch({
