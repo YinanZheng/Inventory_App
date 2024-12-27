@@ -239,6 +239,8 @@ ui <- navbarPage(
         class = "sticky-sidebar",  # sticky 侧边栏
         style = "width: 400px;", # override 宽度
         
+        itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745"),
+        
         fluidRow(
           column(
             12,
