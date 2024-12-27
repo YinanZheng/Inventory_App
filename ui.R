@@ -353,6 +353,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        style = "width: 400px;", # override 宽度
         
         itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745"),
         
