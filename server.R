@@ -719,6 +719,7 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
+      updateTextInputInput(session, "new_sku", value = selected_data$SKU)
     }
   })
   
