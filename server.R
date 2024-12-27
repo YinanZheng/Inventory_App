@@ -250,31 +250,20 @@ server <- function(input, output, session) {
   })
   
   # 售出页过滤
-  filtered_unique_items_data_sold <- filteredUniqueItemsServer("sold", unique_items_data, status_filter = c("国内入库", "美国入库", "美国调货", "国内售出"))
-  # 监听过滤后的数据并显示
-  observe({
-    req(filtered_unique_items_data_sold())
-    showNotification("Filtered Data Updated:")
-    showNotification(paste(filtered_unique_items_data_sold()$ItemName, collapse = ", "))
+  filtered_unique_items_data_sold <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+
+    # 默认过滤条件：Status  为 “国内入库” 或 “美国入库“ 或 "美国调货“ 或 “国内售出”
+    data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
+
+    filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "sold-maker",
+      item_name_input_id = "sold-name"
+    )
   })
-  
-  # filtered_unique_items_data_sold <- reactive({
-  #   req(unique_items_data())
-  #   data <- unique_items_data()
-  #   
-  #   # 默认过滤条件：Status  为 “国内入库” 或 “美国入库“ 或 "美国调货“ 或 “国内售出”
-  #   data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
-  #   
-  #   filter_unique_items_data_by_inputs(
-  #     data = data,
-  #     input = input,
-  #     maker_input_id = "sold_maker",
-  #     item_name_input_id = "sold_name"
-  #   )
-  # })
-  
-  
-  
   
   # 瑕疵品管理页过滤
   filtered_unique_items_data_defect <- reactive({
