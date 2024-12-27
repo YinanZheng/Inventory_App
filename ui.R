@@ -419,7 +419,7 @@ ui <- navbarPage(
           fluidRow(
             column(
               7,  # 占页面宽度的 6/12，即 50%
-              textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
+              textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%", style = "height: 34px;")
             ),
             column(
               5,  # 占页面宽度的 6/12，即 50%
