@@ -574,7 +574,7 @@ renderItemInfo <- function(output, output_name, item_info, img_path, count_label
         8,
         div(
           style = "padding: 20px; background-color: #f7f7f7; border: 1px solid #e0e0e0; border-radius: 8px;
-                             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 100%;",
+                             box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1); height: 300px;",
           tags$h4(
             "商品信息",
             style = "border-bottom: 3px solid #4CAF50; margin-bottom: 15px; padding-bottom: 8px; font-weight: bold; color: #333;"
