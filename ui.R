@@ -52,6 +52,13 @@ ui <- navbarPage(
         }
       }
       
+      input {
+        height: 34px !important;  /* 统一设置高度为 34px */
+        line-height: 34px !important;  /* 确保文字垂直居中 */
+        padding: 5px;  /* 增加内边距，优化显示 */
+        box-sizing: border-box;  /* 确保边框和填充不影响整体大小 */
+      }
+    
       body {
         padding-top: 70px; /* 为导航栏腾出空间 */
       }
