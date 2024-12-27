@@ -1027,22 +1027,22 @@ server <- function(input, output, session) {
   
   ######
   
-  # itemFilterServer("sold", unique_items_data, makers_df, unique_items_table_sold_selected_row)
+  itemFilterServer("sold", unique_items_data, makers_df, unique_items_table_sold_selected_row)
   
   # 更新供应商名称
   # observeEvent(makers_df(), {
   #   update_maker_choices(session, ns("maker"), makers_df())
   # })
   # 
-  observeEvent(makers_df(), {
-    ns <- NS("sold")
-    tryCatch({
-      update_maker_choices(session, ns("maker"), makers_df())
-    }, error = function(e) {
-      # 或者用 Shiny 的 showNotification 显示到界面
-      showNotification(paste("Error: ", e$message), type = "error")
-    })
-  })
+  # observeEvent(makers_df(), {
+  #   ns <- NS("sold")
+  #   tryCatch({
+  #     update_maker_choices(session, ns("maker"), makers_df())
+  #   }, error = function(e) {
+  #     # 或者用 Shiny 的 showNotification 显示到界面
+  #     showNotification(paste("Error: ", e$message), type = "error")
+  #   })
+  # })
   
   # 
   # # 监听供应商选择变化并动态更新商品名称
