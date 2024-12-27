@@ -1,11 +1,10 @@
-# 物品筛选模块 UI
-itemFilterUI <- function(id, label) {
+itemFilterUI <- function(id, label, border_color = "#007BFF", text_color = "#28A745") {
   ns <- NS(id)
   div(
     class = "card",
-    style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+    style = sprintf("margin-bottom: 5px; padding: 5px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);", border_color),
     
-    tags$h4("物品筛选", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+    tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; margin-bottom: 15px;", text_color)),
     
     fluidRow(
       column(6, 
