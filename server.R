@@ -1023,14 +1023,7 @@ server <- function(input, output, session) {
   ######
 
   # 调用模块
-  itemFilterServer(
-    id = "sold_filter",
-    makers_df = makers_df,
-    unique_items_data = unique_items_data,
-    filtered_unique_items_data_sold = filtered_unique_items_data_sold,
-    update_maker_choices = update_maker_choices,
-    unique_items_table_sold_selected_row = unique_items_table_sold_selected_row
-  )
+  itemFilterServer(id = "sold_filter", makers_df, unique_items_data, filtered_unique_items_data_sold, unique_items_table_sold_selected_row)
   
   # # 更新makers控件  
   # observeEvent(makers_df(), {
