@@ -715,7 +715,7 @@ server <- function(input, output, session) {
       shinyjs::delay(300, {  # 延迟 300 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateComboBox.shinyInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
