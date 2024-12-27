@@ -1,53 +1,33 @@
-# filteredUniqueItemsServer <- function(id, unique_items_data, status_filter = NULL) {
-#   moduleServer(id, function(input, output, session) {
-#     ns <- session$ns
-#     
-#     # 创建过滤后的数据
-#     filtered_data <- reactive({
-#       req(unique_items_data())
-#       data <- unique_items_data()
-#       
-#       # 应用状态过滤条件（如果有）
-#       if (!is.null(status_filter)) {
-#         data <- data[data$Status %in% status_filter, ]
-#       }
-#       
-#       # 使用 itemFilterServer 的输入进行动态筛选
-#       filter_unique_items_data_by_inputs(
-#         data = data,
-#         input = input,
-#         maker_input_id = ns("maker"),
-#         item_name_input_id = ns("name")
-#       )
-#     })
-#     
-#     # 返回过滤后的数据
-#     return(filtered_data)
-#   })
-# }
-
 filteredUniqueItemsServer <- function(id, unique_items, status_filter) {
   moduleServer(id, function(input, output, session) {
+    ns <- session$ns
+    
     reactive({
       req(unique_items())  # 确保数据存在
       
-      # 使用 showNotification 显示调试信息
-      showNotification("Status Filter Received:")
-      showNotification(paste(status_filter, collapse = ", "))
+      # 显示过滤器和用户输入的调试信息
+      showNotification("Filtering based on user inputs and status...")
+      showNotification(paste("Status Filter:", paste(status_filter, collapse = ", ")))
       
-      showNotification("Unique Items Data Received:")
-      showNotification(paste(unique_items()$Status, collapse = ", "))
+      # 执行过滤逻辑
+      filtered_data <- unique_items() %>%
+        filter(Status %in% as.character(status_filter)) %>%
+        filter_unique_items_data_by_inputs(
+          data = .,
+          input = input,
+          maker_input_id = ns("maker"),
+          item_name_input_id = ns("name")
+        )
       
-      # 执行过滤
-      filtered_data <- unique_items() %>% 
-        filter(Status %in% as.character(status_filter))  # 确保类型一致
-      
-      # 打印过滤后的数据到通知
-      showNotification("Filtered Data:")
-      showNotification(paste(filtered_data$Status, collapse = ", "))
+      # 显示过滤结果
+      if (nrow(filtered_data) > 0) {
+        showNotification("Filtered Data Updated:")
+        showNotification(paste(filtered_data$ItemName, collapse = ", "))
+      } else {
+        showNotification("No data found matching the filter.")
+      }
       
       filtered_data
     })
   })
 }
-
