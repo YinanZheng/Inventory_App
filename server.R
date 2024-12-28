@@ -405,7 +405,7 @@ server <- function(input, output, session) {
                                                            DomesticSoldTime = "售出日期")
                                                          ), data = filtered_unique_items_data_download)
   
-  # 调用模块化的服务器逻辑
+  # 订单管理分页订单表
   selected_order_row <- callModule(orderTableServer, "orders_table_module",
                                    column_mapping = list(
                                      OrderID = "订单号",
@@ -415,6 +415,7 @@ server <- function(input, output, session) {
                                      UsTrackingNumber1 = "运单",
                                      UsTrackingNumber2 = "运单2",
                                      UsTrackingNumber3 = "运单3",
+                                     OrderStatus = "状态",
                                      OrderNotes = "备注"
                                    ),
                                    data = filtered_orders,  # 数据源
@@ -1228,8 +1229,8 @@ server <- function(input, output, session) {
       } else {
         # 如果订单号不存在，插入新订单记录
         dbExecute(con, "
-      INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, CustomerName, Platform, OrderImagePath)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                   params = list(
                     input$order_id,
                     tracking_number1,
@@ -1238,7 +1239,8 @@ server <- function(input, output, session) {
                     order_notes,
                     customer_name,
                     platform,
-                    order_image_path
+                    order_image_path,
+                    "备货"  # 设置初始状态为“备货”
                   )
         )
         showNotification("订单已成功登记！", type = "message")
