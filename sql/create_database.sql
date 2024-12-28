@@ -76,7 +76,7 @@ ALTER TABLE orders
 ADD COLUMN OrderStatus ENUM('备货', '发货') NOT NULL AFTER OrderNotes;
 
 ALTER TABLE orders MODIFY COLUMN OrderStatus ENUM(
-    '备货', '装箱', '在途', '送达'
+    '备货', '装箱', '发出', '在途', '送达'
 ) NOT NULL;
 
 DESCRIBE orders;
