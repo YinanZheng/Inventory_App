@@ -834,8 +834,12 @@ ui <- navbarPage(
         div(
           class = "card",
           style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
-          tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
-          textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%"),
+          
+          fluidRow(
+            column(8, tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;")),
+            column(4, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%"))
+          ),
+          
           selectInput(
             inputId = "update_platform", 
             label = "电商平台",
