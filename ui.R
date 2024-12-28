@@ -838,8 +838,8 @@ ui <- navbarPage(
           tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
           
           fluidRow(
-            column(8, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
-            column(4, selectInput(
+            column(7, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
+            column(5, selectInput(
               inputId = "update_platform", 
               label = "电商平台",
               choices = c("Etsy", "Shopify", "TikTok", "其他"),
