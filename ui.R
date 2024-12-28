@@ -835,18 +835,19 @@ ui <- navbarPage(
           class = "card",
           style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
           
+          tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
+          
           fluidRow(
-            column(8, tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;")),
-            column(4, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%"))
+            column(8, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
+            column(4, selectInput(
+              inputId = "update_platform", 
+              label = "电商平台",
+              choices = c("Etsy", "Shopify", "TikTok", "其他"),
+              selected = NULL, 
+              width = "100%"
+            ))
           ),
           
-          selectInput(
-            inputId = "update_platform", 
-            label = "电商平台",
-            choices = c("Etsy", "Shopify", "TikTok", "其他"),
-            selected = NULL, 
-            width = "100%"
-          ),
           textInput("update_tracking_number1", "运单号", placeholder = "更新运单号", width = "100%"),
           textInput("update_tracking_number2", "运单号2", placeholder = "更新运单号2", width = "100%"),
           textInput("update_tracking_number3", "运单号3", placeholder = "更新运单号3", width = "100%"),
