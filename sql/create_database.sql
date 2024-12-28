@@ -72,6 +72,13 @@ ADD COLUMN CustomerName VARCHAR(50) AFTER UsTrackingNumber3,
 ALTER TABLE orders
 ADD COLUMN Platform ENUM('Etsy', 'Shopify', 'TikTok', '其他') NOT NULL AFTER CustomerName;
 
+ALTER TABLE orders
+ADD COLUMN OrderStatus ENUM('备货', '发货') NOT NULL AFTER OrderNotes;
+
+ALTER TABLE orders MODIFY COLUMN OrderStatus ENUM(
+    '备货', '装箱', '在途', '送达'
+) NOT NULL;
+
 DESCRIBE orders;
 
 SELECT * FROM orders;
@@ -105,7 +112,11 @@ ADD COLUMN DefectNotes VARCHAR(255) AFTER Defect;
 ALTER TABLE unique_items
 DROP COLUMN DefectNote;
 
+ALTER TABLE unique_items
+DROP COLUMN UsCheckTime;
 
+ALTER TABLE unique_items
+ADD COLUMN UsShippingTime DATE AFTER UsEntryTime
 
 DESCRIBE unique_items;
 
@@ -117,7 +128,7 @@ ALTER TABLE unique_items MODIFY COLUMN Status ENUM(
     '国内售出', 
     '美国入库', 
     '美国售出', 
-    '美国核对',
+    '美国发货',
     '美国调货',
     '退货'
 ) NOT NULL;
