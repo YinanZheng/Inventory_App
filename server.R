@@ -1231,8 +1231,8 @@ server <- function(input, output, session) {
     updateTextInput(session, "tracking_number", value = "")
     
     # 清空备注和图片模块
-    updateTextAreaInput(session, "order_notes", value = "")
     image_sold$reset()
+    updateTextAreaInput(session, "order_notes", value = "")
     
     showNotification("已清空所有输入！", type = "message")
   })
