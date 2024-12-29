@@ -451,8 +451,15 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(6, checkboxInput("is_transfer_order", "调货单", value = FALSE)),
-            column(6, checkboxInput("is_preorder", "预订单", value = FALSE))
+            column(3, checkboxInput("is_transfer_order", "调货单", value = FALSE)),
+            column(3, checkboxInput("is_preorder", "预订单", value = FALSE)),
+            column(6, selectizeInput(
+              "preorder_supplier",
+              "供应商:",
+              choices = NULL,
+              width = "100%",
+              options = list(placeholder = '填选供应商...', maxOptions = 500)
+            ))
           ),
           
           # 运单号

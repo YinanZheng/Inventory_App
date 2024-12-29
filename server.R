@@ -1168,6 +1168,18 @@ server <- function(input, output, session) {
     }
   })
   
+  # 控制预订单供应商选择器的显示
+  observeEvent(input$is_preorder, {
+    if (input$is_preorder) {
+      # 显示供应商选择器
+      shinyjs::show("preorder_supplier")
+    } else {
+      # 隐藏供应商选择器并清空选择
+      shinyjs::hide("preorder_supplier")
+      updateSelectizeInput(session, "preorder_supplier", selected = NULL)
+    }
+  })
+  
   # 登记订单逻辑
   observeEvent(input$register_order_btn, {
     if (is.null(input$order_id) || input$order_id == "") {
