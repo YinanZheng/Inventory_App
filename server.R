@@ -1062,16 +1062,25 @@ server <- function(input, output, session) {
   })
   
   # 响应输入或扫描的 SKU，更新货架上的物品
-  observeEvent(input[["sold_filter-sku"]], {
-    sku <- trimws(input[["sold_filter-sku"]])  # 清理条形码输入空格
-    if (is.null(sku) || sku == "") {
+  # 响应点击物品表的行，更新货架上的物品
+  observeEvent(unique_items_table_sold_selected_row(), {
+    selected_row <- unique_items_table_sold_selected_row()  # 获取选中的行
+    if (is.null(selected_row) || length(selected_row) == 0) {
       return()
     }
     
     tryCatch({
+      # 获取选中行对应的 SKU
+      selected_sku <- filtered_unique_items_data_sold()[selected_row, "SKU", drop = TRUE]
+      
+      if (is.null(selected_sku) || selected_sku == "") {
+        showNotification("未找到有效的 SKU！", type = "error")
+        return()
+      }
+      
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
-        filter(SKU == sku, Status == "国内入库", Defect != "瑕疵") %>%
+        filter(SKU == selected_sku, Status == "国内入库", Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
@@ -1082,7 +1091,7 @@ server <- function(input, output, session) {
       
       # 从箱子中获取当前 SKU 的已选数量
       box_data <- box_items()
-      box_sku_count <- sum(box_data$SKU == sku)
+      box_sku_count <- sum(box_data$SKU == selected_sku)
       
       # 扣除已移入箱子的物品
       if (box_sku_count > 0) {
@@ -1092,7 +1101,7 @@ server <- function(input, output, session) {
       
       # 更新货架
       shelf_items(all_shelf_items)
-      showNotification(paste("已加载 SKU:", sku, "的货架物品！"), type = "message")
+      showNotification(paste("已加载 SKU:", selected_sku, "的货架物品！"), type = "message")
     }, error = function(e) {
       showNotification(paste("加载货架时发生错误：", e$message), type = "error")
     })
