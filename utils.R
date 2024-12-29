@@ -794,45 +794,73 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-# 清理未被记录的图片 (每天运行一次)
-clean_untracked_images <- function() {
-  # 数据库连接信息
-  con <- db_connection()
-  
+register_order <- function(order_id, customer_name, platform, order_notes, tracking_number, image_data, con) {
   tryCatch({
-    # 1. 获取数据库中记录的图片路径（包括 inventory 和 orders 表）
-    inventory_query <- "SELECT ItemImagePath FROM inventory WHERE ItemImagePath IS NOT NULL"
-    orders_query <- "SELECT OrderImagePath FROM orders WHERE OrderImagePath IS NOT NULL"
+    # 查询是否已有相同订单号的记录
+    existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(order_id))
     
-    inventory_paths <- normalizePath(dbGetQuery(con, inventory_query)$ItemImagePath, mustWork = FALSE)
-    orders_paths <- normalizePath(dbGetQuery(con, orders_query)$OrderImagePath, mustWork = FALSE)
+    # 确定库存路径（若已有订单记录）
+    existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
     
-    # 合并所有记录路径
-    recorded_paths <- unique(c(inventory_paths, orders_paths))
+    # 处理订单图片
+    order_image_path <- process_image_upload(
+      sku = order_id,
+      file_data = image_data$uploaded_file(),
+      pasted_data = image_data$pasted_file(),
+      inventory_path = existing_orders_path
+    )
     
-    # 2. 列出目录中所有图片文件，并规范化路径
-    all_files <- normalizePath(list.files("/var/www/images/", full.names = TRUE), mustWork = FALSE)
+    # 使用 %||% 确保所有参数为长度为 1 的值
+    tracking_number <- tracking_number %||% NA
+    order_notes <- order_notes %||% NA
+    customer_name <- customer_name %||% NA
+    platform <- platform  # 此时 platform 已验证非空，无需使用 %||%
     
-    # 3. 检查哪些文件未被记录
-    untracked_files <- setdiff(all_files, recorded_paths)
-    
-    # 4. 删除未被记录的文件
-    if (length(untracked_files) > 0) {
-      sapply(untracked_files, file.remove)
-      message("以下文件已被删除：")
-      print(untracked_files)
+    if (nrow(existing_order) > 0) {
+      # 如果订单号已存在，更新图片和其他信息
+      dbExecute(con, "
+        UPDATE orders 
+        SET OrderImagePath = COALESCE(?, OrderImagePath), 
+            TrackingNumber = COALESCE(?, TrackingNumber), 
+            OrderNotes = COALESCE(?, OrderNotes),
+            CustomerName = COALESCE(?, CustomerName),
+            Platform = COALESCE(?, Platform)
+        WHERE OrderID = ?",
+                params = list(
+                  order_image_path, 
+                  tracking_number,
+                  order_notes,
+                  customer_name,
+                  platform,
+                  order_id
+                )
+      )
+      showNotification("订单信息已更新！", type = "message")
     } else {
-      message("没有未被记录的文件需要清理。")
+      # 如果订单号不存在，插入新订单记录
+      dbExecute(con, "
+        INSERT INTO orders (OrderID, TrackingNumber, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
+        VALUES (?, ?, ?, ?, ?, ?, ?)",
+                params = list(
+                  order_id,
+                  tracking_number,
+                  order_notes,
+                  customer_name,
+                  platform,
+                  order_image_path,
+                  "备货"  # 设置初始状态为“备货”
+                )
+      )
+      showNotification("订单已成功登记！", type = "message")
     }
+    
+    # 更新订单表格
+    orders(dbGetQuery(con, "SELECT * FROM orders"))
   }, error = function(e) {
-    message("清理过程中出现错误：", e$message)
+    # 错误处理
+    showNotification(paste("登记订单时发生错误：", e$message), type = "error")
   })
-  
-  # 断开数据库连接
-  dbDisconnect(con)
 }
-
-
 
 
 
@@ -948,4 +976,45 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
 }
 
 
+
+
+
+
+# 清理未被记录的图片 (每天运行一次)
+clean_untracked_images <- function() {
+  # 数据库连接信息
+  con <- db_connection()
+  
+  tryCatch({
+    # 1. 获取数据库中记录的图片路径（包括 inventory 和 orders 表）
+    inventory_query <- "SELECT ItemImagePath FROM inventory WHERE ItemImagePath IS NOT NULL"
+    orders_query <- "SELECT OrderImagePath FROM orders WHERE OrderImagePath IS NOT NULL"
+    
+    inventory_paths <- normalizePath(dbGetQuery(con, inventory_query)$ItemImagePath, mustWork = FALSE)
+    orders_paths <- normalizePath(dbGetQuery(con, orders_query)$OrderImagePath, mustWork = FALSE)
+    
+    # 合并所有记录路径
+    recorded_paths <- unique(c(inventory_paths, orders_paths))
+    
+    # 2. 列出目录中所有图片文件，并规范化路径
+    all_files <- normalizePath(list.files("/var/www/images/", full.names = TRUE), mustWork = FALSE)
+    
+    # 3. 检查哪些文件未被记录
+    untracked_files <- setdiff(all_files, recorded_paths)
+    
+    # 4. 删除未被记录的文件
+    if (length(untracked_files) > 0) {
+      sapply(untracked_files, file.remove)
+      message("以下文件已被删除：")
+      print(untracked_files)
+    } else {
+      message("没有未被记录的文件需要清理。")
+    }
+  }, error = function(e) {
+    message("清理过程中出现错误：", e$message)
+  })
+  
+  # 断开数据库连接
+  dbDisconnect(con)
+}
 

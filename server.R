@@ -412,9 +412,7 @@ server <- function(input, output, session) {
                                      OrderImagePath = "订单图",
                                      CustomerName = "姓名",
                                      Platform = "平台",
-                                     UsTrackingNumber1 = "运单",
-                                     UsTrackingNumber2 = "运单2",
-                                     UsTrackingNumber3 = "运单3",
+                                     UsTrackingNumber = "运单"
                                      OrderStatus = "状态",
                                      OrderNotes = "备注"
                                    ),
@@ -1046,10 +1044,7 @@ server <- function(input, output, session) {
   )
   
   ######
-  
-  # 定义存储运单号动态行数的 reactiveVal，初始值为 1
-  tracking_rows <- reactiveVal(1)
-  
+
   # 动态生成运单号输入框
   output$additional_tracking_numbers <- renderUI({
     rows <- tracking_rows()
@@ -1124,7 +1119,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
-      SELECT CustomerName, Platform, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes 
+      SELECT CustomerName, Platform, UsTrackingNumber, OrderNotes 
       FROM orders 
       WHERE OrderID = ?", 
                                    params = list(input$order_id)
@@ -1137,40 +1132,16 @@ server <- function(input, output, session) {
         # 填充各字段信息
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
-        updateTextInput(session, "tracking_number1", value = existing_order$UsTrackingNumber1[1])
+        updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
-        
-        # 根据是否存在运单号动态调整输入框显示
-        tracking_numbers <- c(
-          existing_order$UsTrackingNumber1[1],
-          existing_order$UsTrackingNumber2[1],
-          existing_order$UsTrackingNumber3[1]
-        )
-        
-        # 动态调整运单号输入栏的数量
-        valid_tracking_count <- sum(!is.na(tracking_numbers) & tracking_numbers != "")
-        tracking_rows(max(valid_tracking_count, 1))  # 至少显示一个运单号输入框
-        
-        # 更新运单号 2 和 3
-        if (valid_tracking_count > 1) {
-          updateTextInput(session, "tracking_number2", value = tracking_numbers[2])
-        }
-        if (valid_tracking_count > 2) {
-          updateTextInput(session, "tracking_number3", value = tracking_numbers[3])
-        }
       } else {
         # 如果订单记录不存在，清空所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
         
         updateTextInput(session, "customer_name", value = "")
         updateSelectInput(session, "platform", selected = "")
-        updateTextInput(session, "tracking_number1", value = "")
-        updateTextInput(session, "tracking_number2", value = "")
-        updateTextInput(session, "tracking_number3", value = "")
+        updateTextInput(session, "tracking_number", value = "")
         updateTextAreaInput(session, "order_notes", value = "")
-        
-        # 隐藏动态运单号输入框
-        tracking_rows(1)
       }
     }, error = function(e) {
       # 捕获错误并通知用户
@@ -1180,96 +1151,26 @@ server <- function(input, output, session) {
   
   # 登记订单逻辑
   observeEvent(input$register_order_btn, {
-    # 检查订单号是否为空
     if (is.null(input$order_id) || input$order_id == "") {
       showNotification("订单号不能为空！", type = "error")
       return()
     }
     
-    # 检查电商平台是否为空
     if (is.null(input$platform) || input$platform == "") {
       showNotification("电商平台不能为空，请选择一个平台！", type = "error")
       return()
     }
     
-    tryCatch({
-      # 查询是否已有相同订单号的记录
-      existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(input$order_id))
-      
-      # 确定库存路径（若已有订单记录）
-      existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
-      
-      # 处理订单图片
-      order_image_path <- process_image_upload(
-        sku = input$order_id,
-        file_data = image_sold$uploaded_file(),
-        pasted_data = image_sold$pasted_file(),
-        inventory_path = existing_orders_path
-      )
-      print(paste("订单图片路径:", order_image_path))  # 调试信息
-      
-      # 使用 %||% 确保所有参数为长度为 1 的值
-      tracking_number1 <- input$tracking_number1 %||% NA
-      tracking_number2 <- input$tracking_number2 %||% NA
-      tracking_number3 <- input$tracking_number3 %||% NA
-      order_notes <- input$order_notes %||% NA
-      customer_name <- input$customer_name %||% NA
-      platform <- input$platform  # 此时 platform 已验证非空，无需使用 %||%
-      
-      if (nrow(existing_order) > 0) {
-        # 如果订单号已存在，更新图片和其他信息
-        dbExecute(con, "
-      UPDATE orders 
-      SET OrderImagePath = COALESCE(?, OrderImagePath), 
-          UsTrackingNumber1 = COALESCE(?, UsTrackingNumber1), 
-          UsTrackingNumber2 = COALESCE(?, UsTrackingNumber2),
-          UsTrackingNumber3 = COALESCE(?, UsTrackingNumber3),
-          OrderNotes = COALESCE(?, OrderNotes),
-          CustomerName = COALESCE(?, CustomerName),
-          Platform = COALESCE(?, Platform)
-      WHERE OrderID = ?",
-                  params = list(
-                    order_image_path, 
-                    tracking_number1, 
-                    tracking_number2,
-                    tracking_number3,
-                    order_notes,
-                    customer_name,
-                    platform,
-                    input$order_id
-                  )
-        )
-        showNotification("订单信息已更新！", type = "message")
-      } else {
-        # 如果订单号不存在，插入新订单记录
-        dbExecute(con, "
-        INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  params = list(
-                    input$order_id,
-                    tracking_number1,
-                    tracking_number2,
-                    tracking_number3,
-                    order_notes,
-                    customer_name,
-                    platform,
-                    order_image_path,
-                    "备货"  # 设置初始状态为“备货”
-                  )
-        )
-        showNotification("订单已成功登记！", type = "message")
-      }
-      
-      # 更新订单表格
-      orders(dbGetQuery(con, "SELECT * FROM orders"))
-      
-      # 清空表单内容
-      image_sold$reset()  # 清空上传或粘贴的图片
-      
-    }, error = function(e) {
-      # 错误处理
-      showNotification(paste("登记订单时发生错误：", e$message), type = "error")
-    })
+    # 调用封装函数登记订单
+    register_order(
+      order_id = input$order_id,
+      customer_name = input$customer_name,
+      platform = input$platform,
+      order_notes = input$order_notes,
+      tracking_number = input$tracking_number,
+      image_data = image_sold,
+      con = con
+    )
   })
   
   # 监听清空按钮的点击事件
@@ -1278,10 +1179,7 @@ server <- function(input, output, session) {
     updateSelectInput(session, "platform", selected = "")
     updateTextInput(session, "order_id", value = "")
     updateTextInput(session, "customer_name", value = "")
-    updateTextInput(session, "tracking_number1", value = "")
-    
-    # 动态隐藏运单号 2 和 3
-    tracking_rows(1)  # 重置动态行数
+    updateTextInput(session, "tracking_number", value = "")
     
     # 清空备注和图片模块
     updateTextAreaInput(session, "order_notes", value = "")
@@ -1368,27 +1266,16 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      # 检查订单是否已登记
-      existing_order <- dbGetQuery(con, "SELECT COUNT(*) AS count FROM orders WHERE OrderID = ?", params = list(input$order_id))
-      if (existing_order$count == 0) {
-        # 自动登记订单
-        dbExecute(con, "
-        INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  params = list(
-                    input$order_id,
-                    tracking_number1,
-                    tracking_number2,
-                    tracking_number3,
-                    order_notes,
-                    customer_name,
-                    platform,
-                    order_image_path,
-                    "备货"  # 设置初始状态为“备货”
-                  )
-        )
-        showNotification("订单未登记，已自动登记订单。", type = "message")
-      }
+      # 确保订单已登记
+      register_order(
+        order_id = input$order_id,
+        customer_name = input$customer_name,
+        platform = input$platform,
+        order_notes = input$order_notes,
+        tracking_number = input$tracking_number,
+        image_data = image_sold,
+        con = con
+      )
       
       # 遍历箱子内物品，减库存并更新物品状态
       lapply(1:nrow(box_items()), function(i) {
@@ -1438,10 +1325,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "platform", selected = "")
       updateTextInput(session, "order_id", value = "")
       updateTextInput(session, "customer_name", value = "")
-      updateTextInput(session, "tracking_number1", value = "")
-      
-      # 动态隐藏运单号 2 和 3
-      tracking_rows(1)  # 重置动态行数
+      updateTextInput(session, "tracking_number", value = "")
       
       # 清空备注和图片模块
       updateTextAreaInput(session, "order_notes", value = "")
@@ -1450,7 +1334,6 @@ server <- function(input, output, session) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
-  
   
   
   ###################################################################################################################
@@ -1843,9 +1726,7 @@ server <- function(input, output, session) {
     # 填充左侧订单信息栏
     updateTextInput(session, "update_customer_name", value = customer_name)
     updateSelectInput(session, "update_platform", selected = selected_order$Platform)
-    updateTextInput(session, "update_tracking_number1", value = selected_order$UsTrackingNumber1)
-    updateTextInput(session, "update_tracking_number2", value = selected_order$UsTrackingNumber2)
-    updateTextInput(session, "update_tracking_number3", value = selected_order$UsTrackingNumber3)
+    updateTextInput(session, "update_tracking_number", value = selected_order$UsTrackingNumber)
     updateTextAreaInput(session, "update_order_notes", value = selected_order$OrderNotes)
     
     # 动态更新标题
@@ -1916,18 +1797,14 @@ server <- function(input, output, session) {
       UPDATE orders 
       SET CustomerName = ?, 
           Platform = ?, 
-          UsTrackingNumber1 = ?, 
-          UsTrackingNumber2 = ?, 
-          UsTrackingNumber3 = ?, 
+          UsTrackingNumber = ?, 
           OrderNotes = ?, 
           OrderImagePath = ?
       WHERE OrderID = ?",
                 params = list(
                   input$update_customer_name,   # 更新的顾客姓名
                   input$update_platform,        # 更新的电商平台
-                  input$update_tracking_number1, # 更新的运单号1
-                  input$update_tracking_number2, # 更新的运单号2
-                  input$update_tracking_number3, # 更新的运单号3
+                  input$update_tracking_number, # 更新的运单号
                   input$update_order_notes,      # 更新的备注
                   updated_image_path,           # 更新的图片路径
                   order_id                      # 更新的订单号
@@ -1941,9 +1818,7 @@ server <- function(input, output, session) {
       # 清空左侧输入栏
       updateTextInput(session, "update_customer_name", value = "")
       updateSelectInput(session, "update_platform", selected = "")
-      updateTextInput(session, "update_tracking_number1", value = "")
-      updateTextInput(session, "update_tracking_number2", value = "")
-      updateTextInput(session, "update_tracking_number3", value = "")
+      updateTextInput(session, "update_tracking_number", value = "")
       updateTextAreaInput(session, "update_order_notes", value = "")
       image_order_manage$reset()  # 重置图片模块
     }, error = function(e) {
@@ -2011,9 +1886,7 @@ server <- function(input, output, session) {
       # 清空左侧输入栏
       updateTextInput(session, "update_customer_name", value = "")
       updateSelectInput(session, "update_platform", selected = "")
-      updateTextInput(session, "update_tracking_number1", value = "")
-      updateTextInput(session, "update_tracking_number2", value = "")
-      updateTextInput(session, "update_tracking_number3", value = "")
+      updateTextInput(session, "update_tracking_number", value = "")
       updateTextAreaInput(session, "update_order_notes", value = "")
       image_order_manage$reset()  # 重置图片模块
       
