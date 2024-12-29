@@ -428,7 +428,7 @@ server <- function(input, output, session) {
                                      paging = FALSE,  # 禁用分页
                                      searching = FALSE,  # 禁用搜索
                                      list(
-                                       targets = which(names(your_data_frame) == "备注"),
+                                       targets = which(names(filtered_orders()) == "备注"),
                                        render = JS(
                                          "function(data, type, row, meta) {",
                                          "  if (type === 'display') {",
