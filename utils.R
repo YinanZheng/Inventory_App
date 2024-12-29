@@ -794,34 +794,75 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders) {
+register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders, box_items) {
   tryCatch({
     # 查询是否已有相同订单号的记录
     existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(order_id))
     
-    # 确定库存路径（若已有订单记录）
-    existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
+    # 初始化订单图片路径
+    order_image_path <- NULL
     
-    # 获取当前订单的物品图片路径
-    order_items <- dbGetQuery(con, "SELECT ItemImagePath FROM unique_items WHERE OrderID = ? OR (OrderID IS NULL AND Status = '国内入库')", 
-                              params = list(order_id))
-    image_paths <- order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
+    # 获取发货箱中的物品图片路径
+    box_data <- box_items()
+    box_image_paths <- box_data$ItemImagePath[!is.na(box_data$ItemImagePath)]
     
-    # 如果没有上传图片并且有物品图片，则生成拼接图片
-    if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file()) && length(image_paths) > 0) {
-      # 定义拼接图片路径
-      montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+    # 获取订单内关联物品的图片路径
+    order_items <- dbGetQuery(con, "SELECT ItemImagePath FROM unique_items WHERE OrderID = ?", params = list(order_id))
+    order_image_paths <- order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
+    
+    # 合并订单关联物品和发货箱的图片路径
+    combined_image_paths <- unique(c(order_image_paths, box_image_paths))
+    
+    if (nrow(existing_order) > 0) {
+      # 如果订单已存在
+      existing_orders_path <- existing_order$OrderImagePath[1]
+      is_montage <- grepl("_montage\\.jpg$", basename(existing_orders_path))
       
-      # 动态生成拼接图片
-      order_image_path <- generate_montage(image_paths, montage_path)
+      if (is.null(existing_orders_path)) {
+        # 情况 1：订单没有订单图且没有上传订单图片
+        if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file())) {
+          if (length(combined_image_paths) > 0) {
+            montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+            order_image_path <- generate_montage(combined_image_paths, montage_path)
+          }
+        } else {
+          # 使用上传的图片
+          order_image_path <- process_image_upload(
+            sku = order_id,
+            file_data = image_data$uploaded_file(),
+            pasted_data = image_data$pasted_file(),
+            inventory_path = NULL
+          )
+        }
+      } else if (is_montage) {
+        # 情况 2：订单有拼贴图，更新为新拼贴图
+        if (length(combined_image_paths) > 0) {
+          montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+          order_image_path <- generate_montage(combined_image_paths, montage_path)
+        } else {
+          order_image_path <- existing_orders_path
+        }
+      } else {
+        # 情况 3：订单有非拼贴图，保持现有图片
+        order_image_path <- existing_orders_path
+      }
     } else {
-      # 处理订单图片
-      order_image_path <- process_image_upload(
-        sku = order_id,
-        file_data = image_data$uploaded_file(),
-        pasted_data = image_data$pasted_file(),
-        inventory_path = existing_orders_path
-      )
+      # 如果订单不存在
+      if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file())) {
+        # 没有上传图片，根据订单内关联的物品生成拼贴图
+        if (length(combined_image_paths) > 0) {
+          montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+          order_image_path <- generate_montage(combined_image_paths, montage_path)
+        }
+      } else {
+        # 使用上传的图片
+        order_image_path <- process_image_upload(
+          sku = order_id,
+          file_data = image_data$uploaded_file(),
+          pasted_data = image_data$pasted_file(),
+          inventory_path = NULL
+        )
+      }
     }
     
     # 使用 %||% 确保所有参数为长度为 1 的值
@@ -879,6 +920,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     showNotification(paste("登记订单时发生错误：", e$message), type = "error")
   })
 }
+
 
 
 
