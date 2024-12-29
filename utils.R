@@ -797,7 +797,7 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders, box_items) {
   tryCatch({
     # 查询是否已有相同订单号的记录
-    existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(order_id))
+    existing_order <- orders %>% filter(OrderID == order_id)
     
     # 初始化订单图片路径
     order_image_path <- NULL
@@ -807,7 +807,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     box_image_paths <- box_data$ItemImagePath[!is.na(box_data$ItemImagePath)]
     
     # 获取订单内关联物品的图片路径
-    order_items <- dbGetQuery(con, "SELECT ItemImagePath FROM unique_items WHERE OrderID = ?", params = list(order_id))
+    order_items <- unique_items_data() %>% filter(OrderID == order_id)
     order_image_paths <- order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
     
     # 合并订单关联物品和发货箱的图片路径
