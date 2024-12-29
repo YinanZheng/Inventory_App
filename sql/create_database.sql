@@ -67,7 +67,7 @@ ALTER TABLE orders
 DROP COLUMN Platform;
 
 ALTER TABLE orders
-ADD COLUMN CustomerName VARCHAR(50) AFTER UsTrackingNumber3,
+ADD COLUMN CustomerNetName VARCHAR(50) AFTER CustomerName;
 
 ALTER TABLE orders
 ADD COLUMN Platform ENUM('Etsy', 'Shopify', 'TikTok', '其他') NOT NULL AFTER CustomerName;
