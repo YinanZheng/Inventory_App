@@ -1061,7 +1061,6 @@ server <- function(input, output, session) {
     }
   })
   
-  # 响应输入或扫描的 SKU，更新货架上的物品
   # 响应点击物品表的行，更新货架上的物品
   observeEvent(unique_items_table_sold_selected_row(), {
     selected_row <- unique_items_table_sold_selected_row()  # 获取选中的行
@@ -1204,7 +1203,12 @@ server <- function(input, output, session) {
                              ), 
                              selection = "single",
                              image_column = "ItemImagePath",
-                             options = list(fixedHeader = TRUE))$datatable
+                             options = list(
+                               fixedHeader = TRUE,      # 固定表头
+                               paging = FALSE,          # 禁用分页
+                               searching = FALSE,       # 禁用搜索框
+                               info = FALSE             # 禁用 "Showing x of y entries"
+                             ))$datatable
   })
   
   # 渲染箱子
@@ -1218,7 +1222,12 @@ server <- function(input, output, session) {
                              ), 
                              selection = "single",
                              image_column = "ItemImagePath",
-                             options = list(fixedHeader = TRUE))$datatable
+                             options = list(
+                               fixedHeader = TRUE,      # 固定表头
+                               paging = FALSE,          # 禁用分页
+                               searching = FALSE,       # 禁用搜索框
+                               info = FALSE             # 禁用 "Showing x of y entries"
+                             ))$datatable
   })
   
   # 点击货架物品，移入箱子
