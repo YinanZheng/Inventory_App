@@ -1108,10 +1108,9 @@ server <- function(input, output, session) {
     tryCatch({
       # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
-      SELECT CustomerName, Platform, UsTrackingNumber, OrderNotes 
+      SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderNotes 
       FROM orders 
-      WHERE OrderID = ?", 
-                                   params = list(input$order_id)
+      WHERE OrderID = ?", params = list(input$order_id)
       )
       
       # 如果订单存在，填充对应字段
@@ -1120,6 +1119,7 @@ server <- function(input, output, session) {
         
         # 填充各字段信息
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
+        updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1])
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
@@ -1894,16 +1894,6 @@ server <- function(input, output, session) {
     }, error = function(e) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")
     })
-  })
-  
-  # 弹出对话框显示完整备注
-  observeEvent(input$show_note, {
-    showModal(modalDialog(
-      title = "完整备注",
-      tags$pre(input$show_note),
-      easyClose = TRUE,
-      footer = modalButton("关闭")
-    ))
   })
   
   
