@@ -1209,7 +1209,8 @@ server <- function(input, output, session) {
       box_items = box_items,
       unique_items_data = unique_items_data,
       is_transfer_order = input$is_transfer_order,
-      is_preorder = input$is_preorder
+      is_preorder = input$is_preorder,
+      preorder_supplier = input$preorder_supplier
     )
   })
   
@@ -1341,7 +1342,8 @@ server <- function(input, output, session) {
         box_items = box_items,
         unique_items_data = unique_items_data,
         is_transfer_order = input$is_transfer_order,
-        is_preorder = input$is_preorder
+        is_preorder = input$is_preorder,
+        preorder_supplier = input$preorder_supplier
       )
       
       # 遍历箱子内物品，减库存并更新物品状态

@@ -455,7 +455,7 @@ ui <- navbarPage(
             column(3, checkboxInput("is_preorder", "预订", value = FALSE)),
             column(6, selectizeInput(
               "preorder_supplier",
-              "供应商:",
+              "预订单供应商:",
               choices = NULL,
               width = "100%",
               options = list(placeholder = '填选供应商...', maxOptions = 500)
