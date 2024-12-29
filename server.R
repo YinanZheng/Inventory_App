@@ -1,5 +1,8 @@
 # Define server logic
 server <- function(input, output, session) {
+  
+  source("utils.R", local = TRUE)
+  
   # Database
   con <- db_connection()
   
@@ -1160,7 +1163,8 @@ server <- function(input, output, session) {
       order_notes = input$order_notes,
       tracking_number = input$tracking_number,
       image_data = image_sold,
-      con = con
+      con = con,
+      orders = orders
     )
   })
   
@@ -1265,7 +1269,8 @@ server <- function(input, output, session) {
         order_notes = input$order_notes,
         tracking_number = input$tracking_number,
         image_data = image_sold,
-        con = con
+        con = con,
+        orders = orders
       )
       
       # 遍历箱子内物品，减库存并更新物品状态

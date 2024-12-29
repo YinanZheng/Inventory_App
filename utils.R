@@ -794,7 +794,7 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-register_order <- function(order_id, customer_name, platform, order_notes, tracking_number, image_data, con) {
+register_order <- function(order_id, customer_name, platform, order_notes, tracking_number, image_data, con, orders) {
   tryCatch({
     # 查询是否已有相同订单号的记录
     existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(order_id))
