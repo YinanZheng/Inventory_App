@@ -427,20 +427,22 @@ server <- function(input, output, session) {
                                      dom = 't',  # 隐藏搜索框和分页等控件
                                      paging = FALSE,  # 禁用分页
                                      searching = FALSE,  # 禁用搜索
-                                     list(
-                                       targets = which(names(filtered_orders()) == "备注"),
-                                       render = JS(
-                                         "function(data, type, row, meta) {",
-                                         "  if (type === 'display') {",
-                                         "    if (data.length > 20) {",  # 限制长度
-                                         "      return '<span title=\"点击查看完整内容\" style=\"cursor:pointer; color:blue;\" onclick=\"Shiny.setInputValue(\'show_note\', data);\">' + data.substr(0, 20) + '...</span>';",
-                                         "    } else {",
-                                         "      return data;",
-                                         "    }",
-                                         "  } else {",
-                                         "    return data;",
-                                         "  }",
-                                         "}"
+                                     columnDefs = list(
+                                       list(
+                                         targets = which(names(filtered_orders()) == "备注"),  # 替换为备注栏对应的列索引或名称
+                                         render = JS(
+                                           "function(data, type, row, meta) {",
+                                           "  if (type === 'display') {",
+                                           "    if (data.length > 20) {",  # 限制长度
+                                           "      return '<span title=\"点击查看完整内容\" style=\"cursor:pointer; color:blue;\" onclick=\"Shiny.setInputValue(\'show_note\', data);\">' + data.substr(0, 20) + '...</span>';",
+                                           "    } else {",
+                                           "      return data;",
+                                           "    }",
+                                           "  } else {",
+                                           "    return data;",
+                                           "  }",
+                                           "}"
+                                         )
                                        )
                                      )
                                    )# 单选模式
