@@ -1168,10 +1168,10 @@ server <- function(input, output, session) {
     }
   })
   
-  # # 动态填充供应商选择器
-  # observe({
-  #   update_maker_choices(session, "preorder_supplier", maker_data())
-  # })
+  # 动态填充供应商选择器
+  observe({
+    update_maker_choices(session, "preorder_supplier", maker_list())
+  })
   
   # 控制预订单供应商选择器的显示
   observeEvent(input$is_preorder, {
