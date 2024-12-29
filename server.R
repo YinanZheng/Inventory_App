@@ -1225,6 +1225,9 @@ server <- function(input, output, session) {
     updateSelectInput(session, "platform", selected = "")
     updateTextInput(session, "order_id", value = "")
     updateTextInput(session, "customer_name", value = "")
+    updateTextInput(session, "customer_netname", value = "")
+    updateCheckboxInput(session, "is_preorder", value = FALSE)
+    updateCheckboxInput(session, "is_transfer_order", value = FALSE)
     updateTextInput(session, "tracking_number", value = "")
     
     # 清空备注和图片模块
