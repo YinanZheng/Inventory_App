@@ -1161,7 +1161,8 @@ server <- function(input, output, session) {
       image_data = image_sold,
       con = con,
       orders = orders,
-      box_items = box_items
+      box_items = box_items,
+      unique_items_data = unique_items_data
     )
   })
   
@@ -1275,7 +1276,8 @@ server <- function(input, output, session) {
         image_data = image_sold,
         con = con,
         orders = orders,
-        box_items = box_items
+        box_items = box_items,
+        unique_items_data = unique_items_data
       )
       
       # 遍历箱子内物品，减库存并更新物品状态

@@ -794,10 +794,10 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders, box_items) {
+register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders, box_items, unique_items_data) {
   tryCatch({
     # 查询是否已有相同订单号的记录
-    existing_order <- orders %>% filter(OrderID == order_id)
+    existing_order <- orders() %>% filter(OrderID == order_id)
     
     # 初始化订单图片路径
     order_image_path <- NULL
