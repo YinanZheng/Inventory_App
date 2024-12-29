@@ -802,13 +802,27 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 确定库存路径（若已有订单记录）
     existing_orders_path <- if (nrow(existing_order) > 0) existing_order$OrderImagePath[1] else NULL
     
-    # 处理订单图片
-    order_image_path <- process_image_upload(
-      sku = order_id,
-      file_data = image_data$uploaded_file(),
-      pasted_data = image_data$pasted_file(),
-      inventory_path = existing_orders_path
-    )
+    # 获取当前订单的物品图片路径
+    order_items <- dbGetQuery(con, "SELECT ItemImagePath FROM unique_items WHERE OrderID = ? OR (OrderID IS NULL AND Status = '国内入库')", 
+                              params = list(order_id))
+    image_paths <- order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
+    
+    # 如果没有上传图片并且有物品图片，则生成拼接图片
+    if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file()) && length(image_paths) > 0) {
+      # 定义拼接图片路径
+      montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+      
+      # 动态生成拼接图片
+      order_image_path <- generate_montage(image_paths, montage_path)
+    } else {
+      # 处理订单图片
+      order_image_path <- process_image_upload(
+        sku = order_id,
+        file_data = image_data$uploaded_file(),
+        pasted_data = image_data$pasted_file(),
+        inventory_path = existing_orders_path
+      )
+    }
     
     # 使用 %||% 确保所有参数为长度为 1 的值
     tracking_number <- tracking_number %||% NA
@@ -980,7 +994,33 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
 }
 
 
-
+# 动态拼接图片函数（接近正方形布局）
+generate_montage <- function(image_paths, output_path, geometry = "+5+5") {
+  if (length(image_paths) == 0) {
+    showNotification("无图片可供拼贴！", type = "error")
+  }
+  
+  # 计算行列数，保持接近正方形
+  n_images <- length(image_paths)
+  n_cols <- ceiling(sqrt(n_images))
+  n_rows <- ceiling(n_images / n_cols)
+  tile <- paste0(n_rows, "x", n_cols)  # 拼接行列数，例如 "3x3"
+  
+  # 加载所有图片
+  images <- lapply(image_paths, magick::image_read)
+  
+  # 拼接图片
+  montage <- magick::image_montage(
+    do.call(c, images),
+    tile = tile,      # 动态行列布局
+    geometry = geometry # 图片间距
+  )
+  
+  # 保存拼接图片
+  magick::image_write(montage, path = output_path)
+  
+  return(output_path)
+}
 
 
 
