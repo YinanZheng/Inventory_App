@@ -202,11 +202,10 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤条件 Status 为 “采购”
     data <- data[data$Status %in% c("采购"), ]
     
     filter_unique_items_data_by_inputs(
-      data = unique_items_data(),
+      data = data,
       input = input,
       maker_input_id = "new_maker",
       item_name_input_id = "new_name"
@@ -218,7 +217,6 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤条件 Status 为 “采购” 或 “国内入库”
     data <- data[data$Status %in% c("采购", "国内入库"), ]
     
     filter_unique_items_data_by_inputs(
@@ -234,7 +232,6 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # 默认过滤条件：Status  为 “国内入库” 或 “国内出库”
     data <- data[data$Status %in% c("国内入库", "国内出库"), ]
     
     filter_unique_items_data_by_inputs(
@@ -250,7 +247,6 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
 
-    # 默认过滤条件：Status  为 “国内入库” 或 “美国入库“ 或 "美国调货“ 或 “国内售出”
     data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
 
     filter_unique_items_data_by_inputs(
