@@ -1160,7 +1160,8 @@ server <- function(input, output, session) {
       tracking_number = input$tracking_number,
       image_data = image_sold,
       con = con,
-      orders = orders
+      orders = orders,
+      box_items = box_items
     )
   })
   
@@ -1273,7 +1274,8 @@ server <- function(input, output, session) {
         tracking_number = input$tracking_number,
         image_data = image_sold,
         con = con,
-        orders = orders
+        orders = orders,
+        box_items = box_items
       )
       
       # 遍历箱子内物品，减库存并更新物品状态
