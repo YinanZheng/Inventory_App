@@ -95,8 +95,8 @@ ui <- navbarPage(
         font-size: 12px !important; /* 设置下拉菜单字体大小 */
       }
       
-      .nowrap-header {
-        white-space: nowrap;
+      table.dataTable thead th {
+        white-space: nowrap; /* 表头内容强制不换行 */
       }
     ")),
       

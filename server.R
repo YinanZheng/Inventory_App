@@ -419,11 +419,7 @@ server <- function(input, output, session) {
                                      fixedHeader = TRUE,  # 启用表头固定
                                      dom = 't',  # 隐藏搜索框和分页等控件
                                      paging = FALSE,  # 禁用分页
-                                     searching = FALSE,
-                                     columnDefs = list(
-                                       list(targets = "_all", className = "dt-center"), # 表头居中
-                                       list(targets = "_all", className = "nowrap-header") # 强制不换行
-                                     )
+                                     searching = FALSE
                                    )
   )
   
