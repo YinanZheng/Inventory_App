@@ -101,9 +101,11 @@ ADD COLUMN IntlSeaTracking VARCHAR(50) AFTER IntlAirTracking,
 ADD COLUMN OrderID VARCHAR(50) AFTER IntlSeaTracking;
 
 ALTER TABLE unique_items
-ADD CONSTRAINT fk_orders_orderid
-FOREIGN KEY (OrderID) REFERENCES orders(OrderID)
+ADD CONSTRAINT fk_orderid FOREIGN KEY (OrderID)
+REFERENCES orders(OrderID)
+ON UPDATE CASCADE
 ON DELETE SET NULL;
+
 
 -- 在 Defect 之后增加列
 ALTER TABLE unique_items

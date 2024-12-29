@@ -1115,11 +1115,14 @@ server <- function(input, output, session) {
     req(input$order_id)  # 如果订单号为空，停止执行
     
     tryCatch({
+      # 去除空格和#号
+      sanitized_order_id <- gsub("#", "", trimws(input$order_id))
+      
       # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
       SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderNotes 
       FROM orders 
-      WHERE OrderID = ?", params = list(input$order_id)
+      WHERE OrderID = ?", params = list(sanitized_order_id)
       )
       
       # 如果订单存在，填充对应字段
@@ -1159,9 +1162,12 @@ server <- function(input, output, session) {
       return()
     }
     
+    # 去除空格和#号
+    sanitized_order_id <- gsub("#", "", trimws(input$order_id))
+    
     # 调用封装函数登记订单
     register_order(
-      order_id = input$order_id,
+      order_id = sanitized_order_id,
       customer_name = input$customer_name,
       customer_netname = input$customer_netname,
       platform = input$platform,
@@ -1286,9 +1292,12 @@ server <- function(input, output, session) {
         return()
       }
       
+      # 去除空格和#号
+      sanitized_order_id <- gsub("#", "", trimws(input$order_id))
+      
       # 确保订单已登记
       register_order(
-        order_id = input$order_id,
+        order_id = sanitized_order_id,
         customer_name = input$customer_name,
         customer_netname = input$customer_netname,
         platform = input$platform,
@@ -1333,7 +1342,7 @@ server <- function(input, output, session) {
         update_order_id(
           con = con,
           unique_id = item$UniqueID,
-          order_id = input$order_id
+          order_id = sanitized_order_id
         )
       })
       
