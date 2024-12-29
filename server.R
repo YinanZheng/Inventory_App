@@ -1154,6 +1154,20 @@ server <- function(input, output, session) {
     })
   })
   
+  # 确保调货和预定两个勾选框互斥
+  observeEvent(input$is_transfer_order, {
+    if (input$is_transfer_order) {
+      updateCheckboxInput(session, "is_preorder", value = FALSE)
+    }
+  })
+  
+  # 确保调货和预定两个勾选框互斥
+  observeEvent(input$is_preorder, {
+    if (input$is_preorder) {
+      updateCheckboxInput(session, "is_transfer_order", value = FALSE)
+    }
+  })
+  
   # 登记订单逻辑
   observeEvent(input$register_order_btn, {
     if (is.null(input$order_id) || input$order_id == "") {
@@ -1181,7 +1195,9 @@ server <- function(input, output, session) {
       con = con,
       orders = orders,
       box_items = box_items,
-      unique_items_data = unique_items_data
+      unique_items_data = unique_items_data,
+      is_transfer_order = input$is_transfer_order,
+      is_preorder = input$is_preorder,
     )
   })
   
@@ -1311,7 +1327,9 @@ server <- function(input, output, session) {
         con = con,
         orders = orders,
         box_items = box_items,
-        unique_items_data = unique_items_data
+        unique_items_data = unique_items_data,
+        is_transfer_order = input$is_transfer_order,
+        is_preorder = input$is_preorder,
       )
       
       # 遍历箱子内物品，减库存并更新物品状态

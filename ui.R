@@ -424,11 +424,11 @@ ui <- navbarPage(
           
           fluidRow(
             column(
-              7,  # 占页面宽度的 6/12，即 50%
+              7,
               textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
             ),
             column(
-              5,  # 占页面宽度的 6/12，即 50%
+              5,  
               selectInput(
                 inputId = "platform",
                 label = "电商平台",
@@ -449,7 +449,12 @@ ui <- navbarPage(
             column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入", width = "100%")),
             column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
           ),
-                   
+          
+          fluidRow(
+            column(6, checkboxInput("is_transfer_order", "调货单", value = FALSE)),
+            column(6, checkboxInput("is_preorder", "预订单", value = FALSE))
+          ),
+          
           # 运单号
           textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
           

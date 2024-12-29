@@ -794,13 +794,21 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders, box_items, unique_items_data) {
+register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders, box_items, unique_items_data, is_transfer_order, is_preorder) {
   tryCatch({
     # 查询是否已有相同订单号的记录
     existing_order <- orders() %>% filter(OrderID == order_id)
     
     # 初始化订单图片路径
     order_image_path <- NULL
+    
+    # 确定订单状态
+    order_status <- "备货"  # 默认状态
+    if (is_transfer_order && !is_preorder) {
+      order_status <- "调货"
+    } else if (is_preorder && !is_transfer_order) {
+      order_status <- "预定"
+    }
     
     # 获取发货箱中的物品图片路径
     box_data <- box_items()
@@ -813,7 +821,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 合并订单关联物品和发货箱的图片路径
     combined_image_paths <- unique(c(order_image_paths, box_image_paths))
     
-    showNotification(paste0("正在拼贴 ", length(combined_image_paths), " 张物品图"), type = "message")
+    if(length(combined_image_paths) > 0) showNotification(paste0("正在拼贴 ", length(combined_image_paths), " 张物品图"), type = "message")
     
     if (nrow(existing_order) > 0) {
       # 如果订单已存在
@@ -883,7 +891,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
             OrderNotes = COALESCE(?, OrderNotes),
             CustomerName = COALESCE(?, CustomerName),
             CustomerNetName = COALESCE(?, CustomerNetName),
-            Platform = COALESCE(?, Platform)
+            Platform = COALESCE(?, Platform),
+            OrderStatus = ?
         WHERE OrderID = ?",
                 params = list(
                   order_image_path, 
@@ -892,6 +901,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
                   customer_name,
                   customer_netname,
                   platform,
+                  order_status,  # 更新订单状态
                   order_id
                 )
       )
@@ -909,7 +919,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
                   customer_netname,
                   platform,
                   order_image_path,
-                  "备货"  # 设置初始状态为“备货”
+                  order_status  # 插入订单状态
                 )
       )
       showNotification("订单已成功登记！", type = "message")
@@ -922,8 +932,6 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     showNotification(paste("登记订单时发生错误：", e$message), type = "error")
   })
 }
-
-
 
 
 # 从输入数据中筛选数据
