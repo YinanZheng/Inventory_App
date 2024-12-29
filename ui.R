@@ -446,8 +446,6 @@ ui <- navbarPage(
             column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
           ),
                    
-          textInput("customer_netname", "顾客姓名", placeholder = "请输入顾客网名", width = "100%"),
-          
           # 运单号
           textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
           
