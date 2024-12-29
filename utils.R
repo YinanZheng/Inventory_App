@@ -821,7 +821,7 @@ register_order <- function(order_id, customer_name, platform, order_notes, track
       dbExecute(con, "
         UPDATE orders 
         SET OrderImagePath = COALESCE(?, OrderImagePath), 
-            TrackingNumber = COALESCE(?, TrackingNumber), 
+            UsTrackingNumber = COALESCE(?, UsTrackingNumber), 
             OrderNotes = COALESCE(?, OrderNotes),
             CustomerName = COALESCE(?, CustomerName),
             Platform = COALESCE(?, Platform)
@@ -839,7 +839,7 @@ register_order <- function(order_id, customer_name, platform, order_notes, track
     } else {
       # 如果订单号不存在，插入新订单记录
       dbExecute(con, "
-        INSERT INTO orders (OrderID, TrackingNumber, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
+        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
         VALUES (?, ?, ?, ?, ?, ?, ?)",
                 params = list(
                   order_id,

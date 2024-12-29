@@ -403,7 +403,7 @@ server <- function(input, output, session) {
                                      OrderImagePath = "订单图",
                                      CustomerName = "姓名",
                                      Platform = "平台",
-                                     UsTrackingNumber = "运单"
+                                     UsTrackingNumber = "运单",
                                      OrderStatus = "状态",
                                      OrderNotes = "备注"
                                    ),
