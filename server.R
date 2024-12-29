@@ -419,7 +419,11 @@ server <- function(input, output, session) {
                                      fixedHeader = TRUE,  # 启用表头固定
                                      dom = 't',  # 隐藏搜索框和分页等控件
                                      paging = FALSE,  # 禁用分页
-                                     searching = FALSE
+                                     searching = FALSE,
+                                     columnDefs = list(
+                                       list(targets = "_all", className = "dt-center"), # 表头居中
+                                       list(targets = "_all", className = "nowrap-header") # 强制不换行
+                                     )
                                    )
   )
   
@@ -1258,11 +1262,6 @@ server <- function(input, output, session) {
     
     tryCatch({
       # 确保订单已登记
-      
-      if (is.null(input$order_id) || input$order_id == "") {
-        showNotification("订单号不能为空！", type = "error")
-        return()
-      }
       
       if (is.null(input$platform) || input$platform == "") {
         showNotification("电商平台不能为空，请选择一个平台！", type = "error")

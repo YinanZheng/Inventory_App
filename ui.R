@@ -94,6 +94,10 @@ ui <- navbarPage(
       .custom-selectize .selectize-dropdown-content {
         font-size: 12px !important; /* 设置下拉菜单字体大小 */
       }
+      
+      .nowrap-header {
+        white-space: nowrap;
+      }
     ")),
       
       tags$script(HTML("
