@@ -405,6 +405,7 @@ server <- function(input, output, session) {
                                      OrderID = "订单号",
                                      OrderImagePath = "订单图",
                                      CustomerName = "姓名",
+                                     CustomerNetName = "网名",
                                      Platform = "平台",
                                      UsTrackingNumber = "运单",
                                      OrderStatus = "状态",
