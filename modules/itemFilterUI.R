@@ -29,7 +29,8 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF") {
     
     fluidRow(
       column(9, 
-             textInput(ns("sku"), "输入或扫描条形码", placeholder = "请输入条形码", width = "100%")),
+             dateRangeInput(ns("purchase_date_range"), "采购日期范围", 
+                            start = Sys.Date() - 30, end = Sys.Date(), width = "100%")),
       column(3, 
              actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
                           style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
