@@ -33,7 +33,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF") {
                             start = Sys.Date() - 30, end = Sys.Date(), width = "100%")),
       column(3, 
              actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
-                          style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
+                          style = "font-size: 14px; width: 100%; height: 35px; padding: 0px; margin-top: 26px;")
       )
     )
   )
