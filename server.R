@@ -199,6 +199,12 @@ server <- function(input, output, session) {
   
   # 采购页过滤
   filtered_unique_items_data_purchase <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    # 默认过滤条件 Status 为 “采购”
+    data <- data[data$Status %in% c("采购"), ]
+    
     filter_unique_items_data_by_inputs(
       data = unique_items_data(),
       input = input,
