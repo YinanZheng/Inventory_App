@@ -864,8 +864,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
           montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
           order_image_path <- generate_montage(combined_image_paths, montage_path)
         } else {
-          # 没有关联物品，使用占位图片
-          order_image_path <- placeholder_50px_path
+          # 没有关联物品，设为空，渲染时会使用占位图
+          order_image_path <- NULL
           showNotification("未找到上传图片或关联物品，使用默认占位图片！", type = "warning")
         }
       } else {
