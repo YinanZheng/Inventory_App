@@ -451,8 +451,8 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(3, checkboxInput("is_transfer_order", "调货单", value = FALSE)),
-            column(3, checkboxInput("is_preorder", "预订单", value = FALSE)),
+            column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
+            column(3, checkboxInput("is_preorder", "预订", value = FALSE)),
             column(6, selectizeInput(
               "preorder_supplier",
               "供应商:",
