@@ -1159,6 +1159,7 @@ server <- function(input, output, session) {
     register_order(
       order_id = input$order_id,
       customer_name = input$customer_name,
+      customer_netname = input$customer_netname,
       platform = input$platform,
       order_notes = input$order_notes,
       tracking_number = input$tracking_number,
@@ -1265,6 +1266,7 @@ server <- function(input, output, session) {
       register_order(
         order_id = input$order_id,
         customer_name = input$customer_name,
+        customer_netname = input$customer_netname,
         platform = input$platform,
         order_notes = input$order_notes,
         tracking_number = input$tracking_number,

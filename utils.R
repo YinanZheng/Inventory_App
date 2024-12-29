@@ -794,7 +794,7 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-register_order <- function(order_id, customer_name, platform, order_notes, tracking_number, image_data, con, orders) {
+register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, image_data, con, orders) {
   tryCatch({
     # 查询是否已有相同订单号的记录
     existing_order <- dbGetQuery(con, "SELECT OrderImagePath FROM orders WHERE OrderID = ?", params = list(order_id))
@@ -814,6 +814,7 @@ register_order <- function(order_id, customer_name, platform, order_notes, track
     tracking_number <- tracking_number %||% NA
     order_notes <- order_notes %||% NA
     customer_name <- customer_name %||% NA
+    customer_netname <- customer_netname %||% NA
     platform <- platform  # 此时 platform 已验证非空，无需使用 %||%
     
     if (nrow(existing_order) > 0) {
@@ -824,6 +825,7 @@ register_order <- function(order_id, customer_name, platform, order_notes, track
             UsTrackingNumber = COALESCE(?, UsTrackingNumber), 
             OrderNotes = COALESCE(?, OrderNotes),
             CustomerName = COALESCE(?, CustomerName),
+            CustomerNetName = COALESCE(?, CustomerNetName),
             Platform = COALESCE(?, Platform)
         WHERE OrderID = ?",
                 params = list(
@@ -831,6 +833,7 @@ register_order <- function(order_id, customer_name, platform, order_notes, track
                   tracking_number,
                   order_notes,
                   customer_name,
+                  customer_netname,
                   platform,
                   order_id
                 )
@@ -839,13 +842,14 @@ register_order <- function(order_id, customer_name, platform, order_notes, track
     } else {
       # 如果订单号不存在，插入新订单记录
       dbExecute(con, "
-        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
-        VALUES (?, ?, ?, ?, ?, ?, ?)",
+        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, CustomerNetName, Platform, OrderImagePath, OrderStatus)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
                 params = list(
                   order_id,
                   tracking_number,
                   order_notes,
                   customer_name,
+                  customer_netname,
                   platform,
                   order_image_path,
                   "备货"  # 设置初始状态为“备货”
