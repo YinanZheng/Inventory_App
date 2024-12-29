@@ -1058,6 +1058,8 @@ generate_montage <- function(image_paths, output_path, geometry = "+5+5") {
     geometry = geometry # 图片间距
   )
   
+  montage <- magick::image_convert(montage, format = "jpeg")
+  
   # 保存拼接图片
   magick::image_write(montage, path = output_path)
   
