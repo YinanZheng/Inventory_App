@@ -794,23 +794,6 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
 }
 
 
-# 生成或更新供应商备注
-generate_supplier_note <- function(existing_notes, supplier_name) {
-  supplier_prefix <- "【供应商】"
-  new_note <- paste0(supplier_prefix, supplier_name, "；")
-  
-  # 检查是否已有供应商字段
-  if (grepl(supplier_prefix, existing_notes)) {
-    # 更新供应商名字
-    updated_notes <- gsub(paste0(supplier_prefix, ".*?；"), new_note, existing_notes)
-  } else {
-    # 添加供应商字段到最前面
-    updated_notes <- paste0(new_note, existing_notes)
-  }
-  return(updated_notes)
-}
-
-
 register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, 
                            image_data, con, orders, box_items, unique_items_data, 
                            is_transfer_order, is_preorder, preorder_supplier = NULL) {
@@ -827,6 +810,27 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       order_status <- "调货"
     } else if (is_preorder && !is_transfer_order) {
       order_status <- "预定"
+    }
+    
+    # 如果为预订单，生成或更新供应商备注
+    if (is_preorder && !is.null(preorder_supplier)) {
+      supplier_prefix <- "【供应商】"
+      new_supplier_note <- paste0(supplier_prefix, preorder_supplier, "；")
+      
+      # 更新备注逻辑
+      if (nrow(existing_order) > 0) {
+        # 检查现有备注是否包含供应商信息
+        if (grepl(supplier_prefix, existing_order$OrderNotes[1])) {
+          # 更新供应商名字
+          order_notes <- gsub(paste0(supplier_prefix, ".*?；"), new_supplier_note, existing_order$OrderNotes[1])
+        } else {
+          # 添加供应商备注到最前面
+          order_notes <- paste0(new_supplier_note, existing_order$OrderNotes[1])
+        }
+      } else {
+        # 对于新订单，直接生成备注
+        order_notes <- paste0(new_supplier_note, order_notes %||% "")
+      }
     }
     
     # 获取发货箱中的物品图片路径
@@ -895,15 +899,6 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
           pasted_data = image_data$pasted_file(),
           inventory_path = NULL
         )
-      }
-    }
-    
-    if (is_preorder && !is.null(preorder_supplier)) {
-      # 如果已有订单，更新备注；否则生成新备注
-      if (nrow(existing_order) > 0) {
-        order_notes <- generate_supplier_note(existing_order$OrderNotes[1], preorder_supplier)
-      } else {
-        order_notes <- generate_supplier_note(order_notes %||% "", preorder_supplier)
       }
     }
     
