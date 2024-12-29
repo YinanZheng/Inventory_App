@@ -419,13 +419,7 @@ server <- function(input, output, session) {
                                      fixedHeader = TRUE,  # 启用表头固定
                                      dom = 't',  # 隐藏搜索框和分页等控件
                                      paging = FALSE,  # 禁用分页
-                                     searching = FALSE,
-                                     columnDefs = list(
-                                       list(
-                                         targets = which(names(filtered_orders()) == "备注") - 1,  # 动态获取“备注”列的索引（减1以匹配JavaScript的索引从0开始）
-                                         width = "400px"  # 设置宽度
-                                       )
-                                     )
+                                     searching = FALSE
                                    )
   )
   
@@ -1264,6 +1258,17 @@ server <- function(input, output, session) {
     
     tryCatch({
       # 确保订单已登记
+      
+      if (is.null(input$order_id) || input$order_id == "") {
+        showNotification("订单号不能为空！", type = "error")
+        return()
+      }
+      
+      if (is.null(input$platform) || input$platform == "") {
+        showNotification("电商平台不能为空，请选择一个平台！", type = "error")
+        return()
+      }
+      
       register_order(
         order_id = input$order_id,
         customer_name = input$customer_name,
