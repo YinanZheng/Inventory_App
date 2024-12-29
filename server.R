@@ -1253,19 +1253,21 @@ server <- function(input, output, session) {
   
   # 确认售出
   observeEvent(input$confirm_order_btn, {
-    if (is.null(input$order_id) || nrow(box_items()) == 0) {
-      showNotification("订单号或箱子内容不能为空！", type = "error")
-      return()
-    }
+    req(input$order_id)
     
     tryCatch({
-      # 确保订单已登记
+      
+      if (nrow(box_items()) == 0) {
+        showNotification("箱子内容不能为空！", type = "error")
+        return()
+      }
       
       if (is.null(input$platform) || input$platform == "") {
         showNotification("电商平台不能为空，请选择一个平台！", type = "error")
         return()
       }
       
+      # 确保订单已登记
       register_order(
         order_id = input$order_id,
         customer_name = input$customer_name,
