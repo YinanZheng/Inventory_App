@@ -1368,6 +1368,28 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
+      # 检查订单是否已登记
+      existing_order <- dbGetQuery(con, "SELECT COUNT(*) AS count FROM orders WHERE OrderID = ?", params = list(input$order_id))
+      if (existing_order$count == 0) {
+        # 自动登记订单
+        dbExecute(con, "
+        INSERT INTO orders (OrderID, UsTrackingNumber1, UsTrackingNumber2, UsTrackingNumber3, OrderNotes, CustomerName, Platform, OrderImagePath, OrderStatus)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                  params = list(
+                    input$order_id,
+                    tracking_number1,
+                    tracking_number2,
+                    tracking_number3,
+                    order_notes,
+                    customer_name,
+                    platform,
+                    order_image_path,
+                    "备货"  # 设置初始状态为“备货”
+                  )
+        )
+        showNotification("订单未登记，已自动登记订单。", type = "message")
+      }
+      
       # 遍历箱子内物品，减库存并更新物品状态
       lapply(1:nrow(box_items()), function(i) {
         item <- box_items()[i, ]

@@ -61,12 +61,10 @@ SELECT * FROM item_type_data;
 
 
 UPDATE inventory
-SET Quantity = 1
-WHERE SKU = 'AA-H5-8CF0';
+SET Quantity = 2
+WHERE SKU = 'GM-EA-TSWH	';
 
-UPDATE inventory
-SET Quantity = 1
-WHERE SKU = 'EA-GS-LN93';
+
 
 
 
