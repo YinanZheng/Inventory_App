@@ -334,6 +334,8 @@ server <- function(input, output, session) {
       data <- data %>% filter(Platform == input$filter_platform)
     }
     
+    data <- data %>% arrange(desc(updated_at))
+    
     data
   })
 
