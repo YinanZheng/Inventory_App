@@ -873,7 +873,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       } else if (is_montage) {
         # 情况 2：订单有拼贴图，更新为新拼贴图
         if (length(combined_image_paths) > 0) {
-          montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+          montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           order_image_path <- generate_montage(combined_image_paths, montage_path)
         } else {
           order_image_path <- existing_orders_path
@@ -887,7 +887,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file())) {
         # 没有上传图片，根据订单内关联的物品生成拼贴图
         if (length(combined_image_paths) > 0) {
-          montage_path <- paste0("/var/www/images/", order_id, "_montage.jpg")
+          montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
           order_image_path <- generate_montage(combined_image_paths, montage_path)
         } else {
           # 没有关联物品，设为空，渲染时会使用占位图
