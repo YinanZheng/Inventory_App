@@ -1169,17 +1169,17 @@ server <- function(input, output, session) {
   cache <- reactiveVal(list())
   
   # 使用 debounce 避免频繁触发查询
-  customer_name_delayed <- debounce(reactive(input$customer_name), 500)
+  customer_name_delayed <- debounce(reactive(input$customer_name), 300)
   
   # 网名自动填写
   observeEvent(customer_name_delayed(), {
-    req(customer_name_delayed())  # 确保用户输入不为空
-    
-    # 忽略空字符串
+    # 如果用户清空了 customer_name，则清空 customer_netname
     if (customer_name_delayed() == "") {
       updateTextInput(session, "customer_netname", value = "")
       return()
     }
+    
+    req(customer_name_delayed())  # 确保用户输入不为空
     
     cache_data <- cache()
     
