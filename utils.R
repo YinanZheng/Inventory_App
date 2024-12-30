@@ -317,7 +317,10 @@ render_table_with_images <- function(data,
                                      column_mapping, 
                                      selection = "single",
                                      image_column = NULL,
-                                     options = list()) {
+                                     options = list(fixedHeader = TRUE,  # 启用表头固定
+                                                    dom = 't',  # 隐藏搜索框和分页等控件
+                                                    paging = FALSE,  # 禁用分页
+                                                    searching = FALSE)) {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(data[[image_column]], host_url)
