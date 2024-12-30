@@ -870,7 +870,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
             montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg") 
             order_image_path <- generate_montage(combined_image_paths, montage_path)
             showNotification("订单没有订单图且没有上传订单图片，已自动生成拼贴图", type = "message")
-          } else{
+          } else {
             # 没有关联物品图片，保留现状
             order_image_path <- NA
             showNotification("订单没有订单图且没有关联物品图片", type = "warning")
