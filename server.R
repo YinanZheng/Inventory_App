@@ -1265,7 +1265,7 @@ server <- function(input, output, session) {
       
       # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
-      SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderNotes 
+      SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderStatus, OrderNotes 
       FROM orders 
       WHERE OrderID = ?", params = list(sanitized_order_id)
       )
