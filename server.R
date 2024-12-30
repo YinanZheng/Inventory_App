@@ -1137,28 +1137,28 @@ server <- function(input, output, session) {
   # 使用 debounce 避免频繁触发查询
   customer_name_delayed <- debounce(reactive(input$customer_name), 500)
 
-  # # 网名自动填写
-  # observeEvent(customer_name_delayed, {
-  #   req(customer_name_delayed)  # 确保用户输入不为空
-  #   cache_data <- cache()
-  #   
-  #   # 检查缓存是否已有数据
-  #   if (customer_name_delayed %in% names(cache_data)) {
-  #     netname <- cache_data[[customer_name_delayed]]
-  #   } else {
-  #     # 查询数据库
-  #     netname <- matching_customer()
-  #     
-  #     # 如果有结果，更新缓存
-  #     if (!is.null(netname)) {
-  #       cache_data[[customer_name_delayed]] <- netname
-  #       cache(cache_data)  # 更新缓存
-  #     }
-  #   }
-  #   
-  #   # 更新网名输入框
-  #   updateTextInput(session, "customer_netname", value = netname %||% "")
-  # })
+  # 网名自动填写
+  observeEvent(customer_name_delayed, {
+    req(customer_name_delayed)  # 确保用户输入不为空
+    cache_data <- cache()
+
+    # 检查缓存是否已有数据
+    if (customer_name_delayed %in% names(cache_data)) {
+      netname <- cache_data[[customer_name_delayed]]
+    } else {
+      # 查询数据库
+      netname <- matching_customer()
+
+      # 如果有结果，更新缓存
+      if (!is.null(netname)) {
+        cache_data[[customer_name_delayed]] <- netname
+        cache(cache_data)  # 更新缓存
+      }
+    }
+
+    # 更新网名输入框
+    updateTextInput(session, "customer_netname", value = netname %||% "")
+  })
   
   ######
   
