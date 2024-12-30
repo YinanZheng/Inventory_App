@@ -614,7 +614,7 @@ server <- function(input, output, session) {
         ItemName = input$new_name$text,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
-        ItemImagePath = final_image_path,
+        ItemImagePath = as.character(final_image_path),
         stringsAsFactors = FALSE
       )
       added_items(existing_items)
