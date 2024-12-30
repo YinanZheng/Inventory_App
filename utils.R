@@ -861,6 +861,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
         is_montage <- grepl("_montage\\.jpg$", basename(existing_orders_path))
       }
       
+      showNotification(is_montage)
+      
       if (is.null(existing_orders_path)) {
         # 情况 1：订单没有订单图且没有上传订单图片
         if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file())) {
