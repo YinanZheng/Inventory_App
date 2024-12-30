@@ -1028,24 +1028,51 @@ server <- function(input, output, session) {
   ## 售出分页                                                   ##
   ##                                                            ##
   ################################################################
-
-  # 动态绑定物品表过滤模块
-  observeEvent(input$main_tabs, {
+  
+  # 动态更新侧边栏内容
+  observe({
+    req(input$main_tabs)  # 确保主面板选项存在
+    
     if (input$main_tabs == "sold") {
-      # 售出分页：绑定 itemFilterServer
-      callModule(
-        itemFilterServer,
+      # 售出分页：显示物品筛选区
+      output$dynamic_sidebar <- renderUI({
+        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+      })
+      
+      # 物品表过滤模块
+      itemFilterServer(
         id = "sold_filter",
         makers_df = makers_df,
         unique_items_data = unique_items_data,
         filtered_unique_items_data = filtered_unique_items_data_sold,
         unique_items_table_selected_row = unique_items_table_sold_selected_row
       )
+      
+    } else if (input$main_tabs == "order_management") {
+      # 订单管理分页：显示订单筛选区
+      output$dynamic_sidebar <- renderUI({
+        div(
+          class = "card",
+          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+          textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
+          selectInput(
+            inputId = "filter_platform",
+            label = "电商平台",
+            choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+            selected = "",
+            width = "100%"
+          ),
+          actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "margin-top: 15px; width: 100%;")
+        )
+      })
     }
   })
   
-  ######
-
+  
+  
+  
   # 动态生成运单号输入框
   output$additional_tracking_numbers <- renderUI({
     rows <- tracking_rows()
@@ -1482,41 +1509,6 @@ server <- function(input, output, session) {
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
-  })
-  
-  
-  
-  
-  
-  # 动态更新侧边栏内容
-  observe({
-    req(input$main_tabs)  # 确保主面板选项存在
-    
-    if (input$main_tabs == "sold") {
-      # 售出分页：显示物品筛选区
-      output$dynamic_sidebar <- renderUI({
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
-      })
-    } else if (input$main_tabs == "order_management") {
-      # 订单管理分页：显示订单筛选区
-      output$dynamic_sidebar <- renderUI({
-        div(
-          class = "card",
-          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
-          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-          textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
-          selectInput(
-            inputId = "filter_platform",
-            label = "电商平台",
-            choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
-            selected = "",
-            width = "100%"
-          ),
-          actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "margin-top: 15px; width: 100%;")
-        )
-      })
-    }
   })
   
   
