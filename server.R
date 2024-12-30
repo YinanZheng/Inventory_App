@@ -580,8 +580,7 @@ server <- function(input, output, session) {
     })
     
     existing_inventory_path <- if (nrow(inventory_item) > 0) inventory_item$ItemImagePath[1] else NULL
-    showNotification(paste0("existing_inventory_path: ", existing_inventory_path))
-    
+
     # 上传或粘贴图片处理
     new_image_path <- process_image_upload(
       sku = input$new_sku,
@@ -589,8 +588,6 @@ server <- function(input, output, session) {
       pasted_data = image_purchase$pasted_file(),
       inventory_path = existing_inventory_path
     )
-    
-    showNotification(paste0("new_image_path: ", new_image_path))
     
     # 添加或更新记录
     existing_items <- added_items()
@@ -604,8 +601,6 @@ server <- function(input, output, session) {
         current_image_path
       }
       
-      showNotification(paste0("final_image_path: ", final_image_path))
-      
       existing_items[sku_index, "SKU"] <- input$new_sku
       existing_items[sku_index, "Maker"] <- input$new_maker
       existing_items[sku_index, "MajorType"] <- input[["type_module-new_major_type"]]
@@ -615,13 +610,8 @@ server <- function(input, output, session) {
       existing_items[sku_index, "ProductCost"] <- round(input$new_product_cost, 2)
       existing_items[sku_index, "ItemImagePath"] <- as.character(final_image_path)
       
-      showNotification(paste0("existing_items after update: ", existing_items$ItemImagePath[sku_index]))
-      
       added_items(existing_items)
-      
-      showNotification(paste0("added_items: ", added_items()$ItemImagePath))
-      
-      
+
       showNotification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
       # 添加新记录
