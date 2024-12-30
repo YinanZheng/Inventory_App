@@ -851,8 +851,12 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     
     if (nrow(existing_order) > 0) {
       # 如果订单已存在
-      existing_orders_path <- existing_order$OrderImagePath[1]
-      is_montage <- grepl("_montage\\.jpg$", basename(existing_orders_path))
+      # 检查是否为 NULL，如果是 NULL 则设置为默认值
+      if (is.null(existing_orders_path)) {
+        is_montage <- FALSE  # 如果没有图片路径，则认为不是拼接图
+      } else {
+        is_montage <- grepl("_montage\\.jpg$", basename(existing_orders_path))
+      }
       
       if (is.null(existing_orders_path)) {
         # 情况 1：订单没有订单图且没有上传订单图片
