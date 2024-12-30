@@ -325,13 +325,15 @@ server <- function(input, output, session) {
     data <- orders()  # 获取所有订单数据
     
     # 根据订单号筛选
-    if (!is.null(input$filter_order_id) && input$filter_order_id != "") {
-      data <- data %>% filter(grepl(input$filter_order_id, OrderID, ignore.case = TRUE))
+    cleaned_filter_order_id <- trimws(input$filter_order_id)
+    if (!is.null(cleaned_filter_order_id) && cleaned_filter_order_id != "") {
+      data <- data %>% filter(grepl(cleaned_filter_order_id, OrderID, ignore.case = TRUE))
     }
     
     # 根据运单号筛选
-    if (!is.null(input$filter_tracking_id) && input$filter_tracking_id != "") {
-      data <- data %>% filter(grepl(input$filter_tracking_id, TrackingNumber, ignore.case = TRUE))
+    cleaned_filter_tracking_id <- trimws(input$filter_tracking_id)
+    if (!is.null(cleaned_filter_tracking_id) && cleaned_filter_tracking_id != "") {
+      data <- data %>% filter(grepl(cleaned_filter_tracking_id, UsTrackingNumber, ignore.case = TRUE))
     }
     
     # 根据顾客姓名筛选
