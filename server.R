@@ -676,7 +676,6 @@ server <- function(input, output, session) {
       
       # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       # 同时添加信息到 unique_items 表中
       purchase_date <- format(as.Date(input$purchase_date), "%Y-%m-%d")
@@ -716,11 +715,12 @@ server <- function(input, output, session) {
         }
         dbCommit(con)
         showNotification("所有采购货物已成功登记！", type = "message")
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       }, error = function(e) {
         dbRollback(con)
         showNotification(paste("采购登记失败:", e$message), type = "error")
       })
+      
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       # Clear added items and reset input fields
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
