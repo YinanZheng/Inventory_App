@@ -1064,16 +1064,38 @@ server <- function(input, output, session) {
           class = "card",
           style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
           tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+          
           textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-          textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
-          selectInput(
-            inputId = "filter_platform",
-            label = "电商平台",
-            choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
-            selected = "",
-            width = "100%"
+          
+          fluidRow(
+            column(6, 
+                   textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
+            column(6, 
+                   textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
           ),
+          
+          fluidRow(
+            column(6, 
+                   selectInput(
+                     inputId = "filter_platform",
+                     label = "电商平台",
+                     choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+                     selected = "",
+                     width = "100%"
+                   )),
+            column(6, 
+                   selectInput(
+                     inputId = "filter_order_status",
+                     label = "订单状态",
+                     choices = c("所有状态" = "", "未发货" = "未发货", "已发货" = "已发货", "已完成" = "已完成", "取消" = "取消"),
+                     selected = "",
+                     width = "100%"
+                   ))
+          ),
+          
+          # 删除订单按钮
           actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "margin-top: 15px; width: 100%;")
+          
         )
       })
     }
