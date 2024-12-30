@@ -1511,67 +1511,61 @@ server <- function(input, output, session) {
   #####   订单管理子页   ##### 
   ############################ 
   
+  # 选择某个订单后，渲染关联物品表
+  observeEvent(selected_order_row(), {
+    selected_row <- selected_order_row()
+    req(selected_row)  # 确保用户选择了一行
 
-  # # 选择某个订单后，渲染关联物品表
-  # observeEvent(selected_order_row(), {
-  #   selected_row <- selected_order_row()
-  #   req(selected_row)  # 确保用户选择了一行
-  # 
-  #   # 获取选中的订单数据
-  #   selected_order <- filtered_orders()[selected_row, ]
-  #   order_id <- selected_order$OrderID
-  #   customer_name <- selected_order$CustomerName
-  # 
-  #   # 填充左侧订单信息栏
-  #   updateTextInput(session, "update_customer_name", value = customer_name)
-  #   updateSelectInput(session, "update_platform", selected = selected_order$Platform)
-  #   updateTextInput(session, "update_tracking_number", value = selected_order$UsTrackingNumber)
-  #   updateTextAreaInput(session, "update_order_notes", value = selected_order$OrderNotes)
-  # 
-  #   # 动态更新标题
-  #   output$associated_items_title <- renderUI({
-  #     tags$h4(
-  #       sprintf("#%s - %s 的订单物品", order_id, customer_name),
-  #       style = "color: #007BFF; font-weight: bold;"
-  #     )
-  #   })
-  # 
-  #   # 渲染关联物品表
-  #   associated_items <- reactive({
-  #     # 根据订单号筛选关联物品
-  #     items <- unique_items_data() %>% filter(OrderID == order_id)
-  # 
-  #     # 动态移除列
-  #     if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
-  #       items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
-  #     } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
-  #       items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
-  #     }
-  # 
-  #     items
-  #   })
-  # 
-  #   # 使用 uniqueItemsTableServer 渲染关联物品表
-  #   callModule(uniqueItemsTableServer, "associated_items_table_module",
-  #              column_mapping = c(common_columns, list(
-  #                PurchaseTime = "采购日期",
-  #                IntlShippingMethod = "国际运输",
-  #                IntlAirTracking = "国际空运单号",
-  #                IntlSeaTracking = "国际海运单号"
-  #              )),
-  #              data = associated_items,
-  #              options = list(
-  #                scrollY = "235px",  # 根据内容动态调整滚动高度
-  #                scrollX = TRUE,  # 支持水平滚动
-  #                fixedHeader = TRUE,  # 启用表头固定
-  #                dom = 't',  # 隐藏搜索框和分页等控件
-  #                paging = FALSE,  # 禁用分页
-  #                searching = FALSE  # 禁用搜索
-  #              ))
-  # })
-  # 
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+    customer_name <- selected_order$CustomerName
+
+    # 填充左侧订单信息栏
+    updateTextInput(session, "order_id", value = order_id)
+
+    # 动态更新标题
+    output$associated_items_title <- renderUI({
+      tags$h4(
+        sprintf("#%s - %s 的订单物品", order_id, customer_name),
+        style = "color: #007BFF; font-weight: bold;"
+      )
+    })
+
+    # 渲染关联物品表
+    associated_items <- reactive({
+      # 根据订单号筛选关联物品
+      items <- unique_items_data() %>% filter(OrderID == order_id)
+
+      # 动态移除列
+      if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
+        items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
+      } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
+        items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
+      }
+
+      items
+    })
+
+    # 使用 uniqueItemsTableServer 渲染关联物品表
+    callModule(uniqueItemsTableServer, "associated_items_table_module",
+               column_mapping = c(common_columns, list(
+                 PurchaseTime = "采购日期",
+                 IntlShippingMethod = "国际运输",
+                 IntlAirTracking = "国际空运单号",
+                 IntlSeaTracking = "国际海运单号"
+               )),
+               data = associated_items,
+               options = list(
+                 scrollY = "235px",  # 根据内容动态调整滚动高度
+                 scrollX = TRUE,  # 支持水平滚动
+                 fixedHeader = TRUE,  # 启用表头固定
+                 dom = 't',  # 隐藏搜索框和分页等控件
+                 paging = FALSE,  # 禁用分页
+                 searching = FALSE  # 禁用搜索
+               ))
+  })
  
-  
   # 删除订单逻辑
   observeEvent(input$delete_order_btn, {
     req(selected_order_row())  # 确保用户选择了一行订单
