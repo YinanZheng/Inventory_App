@@ -607,7 +607,6 @@ ui <- navbarPage(
             div(
               class = "card",
               style = "height: 490px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-              tags$h4("订单表", style = "color: #007BFF; font-weight: bold;"),
               orderTableUI("orders_table_module")
             ),
             div(
