@@ -2,6 +2,7 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
   moduleServer(id, function(input, output, session) {
     # 更新 makers 控件
     observeEvent(makers_df(), {
+      req(makers_df())  # 确保 makers_df 已加载
       updateSelectizeInput(session, "maker", 
                            choices = c("", setNames(makers_df()$Maker, paste0(makers_df()$Maker, "(", makers_df()$Pinyin, ")"))), 
                            selected = "", server = TRUE)

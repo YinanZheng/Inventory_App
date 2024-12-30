@@ -1034,21 +1034,22 @@ server <- function(input, output, session) {
     req(input$main_tabs)  # 确保主面板选项存在
     
     if (input$main_tabs == "sold") {
-      req(makers_df())  # 确保 makers_df 已加载
-      
+
       # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
-      # 动态绑定物品表过滤模块
-      itemFilterServer(
-        id = "sold_filter",
-        makers_df = makers_df,
-        unique_items_data = unique_items_data,
-        filtered_unique_items_data = filtered_unique_items_data_sold,
-        unique_items_table_selected_row = unique_items_table_sold_selected_row
-      )
+      # 确保侧边栏渲染后绑定服务器逻辑
+      session$onFlushed(function() {
+        itemFilterServer(
+          id = "sold_filter",
+          makers_df = makers_df,
+          unique_items_data = unique_items_data,
+          filtered_unique_items_data = filtered_unique_items_data_sold,
+          unique_items_table_selected_row = unique_items_table_sold_selected_row
+        )
+      })
       
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
