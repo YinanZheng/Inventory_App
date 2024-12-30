@@ -108,7 +108,7 @@ server <- function(input, output, session) {
       column_mapping = column_mapping,
       selection = "multiple",
       options = list(fixedHeader = TRUE),
-      image_column = "ItemImagePath"  # Specify the correct image column
+      image_column = "ItemImagePath"
     )$datatable
   })
   
@@ -145,7 +145,10 @@ server <- function(input, output, session) {
     
     render_table_with_images(
       data = filtered_inventory(),
-      options = list(fixedHeader = TRUE),
+      options = list(fixedHeader = TRUE,  # 启用表头固定
+                     dom = 't',  # 隐藏搜索框和分页等控件
+                     paging = FALSE,  # 禁用分页
+                     searching = FALSE),
       column_mapping = column_mapping,
       image_column = "ItemImagePath"  # Specify the image column
     )$datatable
