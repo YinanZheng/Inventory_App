@@ -842,6 +842,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       box_items()$ItemImagePath %>% na.omit()
     ))
     
+    showNotification(paste("combined_image_paths: ", paste(combined_image_paths, collapse = ", ")), type = "message")
+    
     if (length(combined_image_paths) > 0) {
       montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
       order_image_path <- generate_montage(combined_image_paths, montage_path)
