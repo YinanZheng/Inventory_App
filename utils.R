@@ -861,14 +861,14 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
         is_montage <- grepl("_montage\\.jpg$", basename(existing_orders_path))
       }
       
-      showNotification(is_montage)
       
       if (is.null(existing_orders_path)) {
         # 情况 1：订单没有订单图且没有上传订单图片
         if (is.null(image_data$uploaded_file()) && is.null(image_data$pasted_file())) {
           if (length(combined_image_paths) > 0) {
-            montage_path <- paste0("/var/www/images/", order_id,"_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg") 
+            montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg") 
             order_image_path <- generate_montage(combined_image_paths, montage_path)
+            showNotification("情况 1：订单没有订单图且没有上传订单图片")
           }
         } else {
           # 使用上传的图片
