@@ -1315,7 +1315,7 @@ server <- function(input, output, session) {
         
         showNotification("已找到订单信息！字段已自动填充。", type = "message")
       } else {
-        # 如果订单记录不存在，清空所有相关字段
+        # 如果订单记录不存在，清空出order ID以外所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
         
         # 重置所有输入框
@@ -1397,21 +1397,13 @@ server <- function(input, output, session) {
       is_preorder = input$is_preorder,
       preorder_supplier = input$preorder_supplier
     )
+    
+    reset_order_form(session, image_sold)
   })
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
-    # 重置所有输入框
-    updateTextInput(session, "order_id", value = "")
-    updateSelectInput(session, "platform", selected = "")
-    updateTextInput(session, "customer_name", value = "")
-    updateTextInput(session, "customer_netname", value = "")
-    updateCheckboxInput(session, "is_preorder", value = FALSE)
-    updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-    updateTextInput(session, "tracking_number", value = "")
-    image_sold$reset()
-    updateTextAreaInput(session, "order_notes", value = "")
-    
+    reset_order_form(session, image_sold)
     showNotification("已清空所有输入！", type = "message")
   })
   
@@ -1577,14 +1569,8 @@ server <- function(input, output, session) {
       box_items(create_empty_shelf_box())
       
       # 重置所有输入框
-      updateSelectInput(session, "platform", selected = "")
-      updateTextInput(session, "order_id", value = "")
-      updateTextInput(session, "customer_name", value = "")
-      updateTextInput(session, "tracking_number", value = "")
+      reset_order_form(session, image_sold)
       
-      # 清空备注和图片模块
-      updateTextAreaInput(session, "order_notes", value = "")
-      image_sold$reset()
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
@@ -1691,7 +1677,6 @@ server <- function(input, output, session) {
     )
   })
   
-  
   observeEvent(input$confirm_delete_order_btn, {
     removeModal()  # 关闭确认弹窗
     
@@ -1750,12 +1735,8 @@ server <- function(input, output, session) {
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       orders(dbGetQuery(con, "SELECT * FROM orders"))
 
-      # 清空左侧输入栏
-      updateTextInput(session, "update_customer_name", value = "")
-      updateSelectInput(session, "update_platform", selected = "")
-      updateTextInput(session, "update_tracking_number", value = "")
-      updateTextAreaInput(session, "update_order_notes", value = "")
-      image_sold$reset()  # 重置图片模块
+      # 重置输入
+      reset_order_form(session, image_sold)
 
       # 清空关联物品表
       output$associated_items_table <- renderDT({ NULL })
