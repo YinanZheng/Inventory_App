@@ -200,14 +200,17 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    data <- data[data$Status %in% c("采购"), ]
-    
-    filter_unique_items_data_by_inputs(
+    # 根据输入进行进一步过滤
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "new_maker",
       item_name_input_id = "new_name"
     )
+    
+    # 将 "采购" 状态的商品放到最前
+    data <- data %>%
+      arrange(desc(Status == "采购"))
   })
   
   # 入库页过滤
