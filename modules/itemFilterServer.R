@@ -28,7 +28,7 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
                              choices = c("", setNames(makers_df()$Maker, paste0(makers_df()$Maker, "(", makers_df()$Pinyin, ")"))), 
                              selected = "", server = TRUE)        
         updateSelectizeInput(session, "name", choices = c(""), selected = "")
-        updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 30, end = Sys.Date())
+        updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
         showNotification("筛选条件已重置！", type = "message")
       }, error = function(e) {
         showNotification("重置输入时发生错误，请重试！", type = "error")
