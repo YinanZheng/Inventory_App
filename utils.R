@@ -847,7 +847,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 合并订单关联物品和发货箱的图片路径
     combined_image_paths <- unique(c(order_image_paths, box_image_paths))
     
-    if(length(combined_image_paths) > 0) showNotification(paste0("正在拼贴 ", length(combined_image_paths), " 张物品图"), type = "message")
+    if (length(combined_image_paths) > 0) showNotification(paste0("正在拼贴 ", length(combined_image_paths), " 张物品图"), type = "message")
     
     if (nrow(existing_order) > 0) {
       # 如果订单已存在
