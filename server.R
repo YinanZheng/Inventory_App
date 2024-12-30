@@ -1029,6 +1029,9 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 初始化模块绑定状态
+  sold_filter_initialized <- reactiveVal(FALSE)
+  
   # 动态更新侧边栏内容
   observe({
     req(input$main_tabs)  # 确保主面板选项存在
@@ -1040,17 +1043,20 @@ server <- function(input, output, session) {
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
-      # 确保侧边栏渲染后绑定服务器逻辑
-      session$onFlushed(function() {
-        itemFilterServer(
-          id = "sold_filter",
-          makers_df = makers_df,
-          unique_items_data = unique_items_data,
-          filtered_unique_items_data = filtered_unique_items_data_sold,
-          unique_items_table_selected_row = unique_items_table_sold_selected_row
-        )
-      })
-      
+      # 确保模块仅绑定一次
+      if (!sold_filter_initialized()) {
+        sold_filter_initialized(TRUE)  # 标记模块已绑定
+        # 确保侧边栏渲染后绑定服务器逻辑
+        session$onFlushed(function() {
+          itemFilterServer(
+            id = "sold_filter",
+            makers_df = makers_df,
+            unique_items_data = unique_items_data,
+            filtered_unique_items_data = filtered_unique_items_data_sold,
+            unique_items_table_selected_row = unique_items_table_sold_selected_row
+          )
+        })
+      }
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
       output$dynamic_sidebar <- renderUI({
