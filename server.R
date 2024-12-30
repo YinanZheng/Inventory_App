@@ -1272,8 +1272,6 @@ server <- function(input, output, session) {
       
       # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
-        showNotification("已找到订单信息！字段已自动填充。", type = "message")
-        
         # 填充各字段信息
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
         
@@ -1312,9 +1310,10 @@ server <- function(input, output, session) {
           updateSelectizeInput(session, "preorder_supplier", selected = NULL)
         }
         
-        
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
+        
+        showNotification("已找到订单信息！字段已自动填充。", type = "message")
       } else {
         # 如果订单记录不存在，清空所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
