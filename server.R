@@ -1111,40 +1111,18 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  matching_customer <- reactive({
-    req(input$customer_name)  # 确保用户输入了顾客姓名
-    
-    # 查询数据库，模糊匹配顾客姓名
-    query <- sprintf(
-      "SELECT CustomerName, CustomerNetName 
-     FROM orders 
-     WHERE CustomerName LIKE '%%%s%%' 
-     LIMIT 1", 
-      dbEscapeStrings(con, input$customer_name)
-    )
-    result <- dbGetQuery(con, query)
-    
-    if (nrow(result) > 0) {
-      return(result$CustomerNetName[1])  # 返回第一个匹配的网名
-    } else {
-      return(NULL)  # 如果没有匹配结果，返回 NULL
-    }
-  })
+  #####
   
   # 按需查询 orders 数据库中匹配的 CustomerName 和 CustomerNetName：
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
     
-    # 查询数据库，模糊匹配顾客姓名
-    query <- sprintf(
-      "SELECT CustomerName, CustomerNetName 
-     FROM orders 
-     WHERE CustomerName LIKE '%%%s%%' 
-     LIMIT 1", 
-      dbEscapeStrings(con, input$customer_name)
-    )
-    result <- dbGetQuery(con, query)
+    # 安全查询数据库，模糊匹配顾客姓名
+    query <- "SELECT CustomerName, CustomerNetName 
+            FROM orders 
+            WHERE CustomerName LIKE ?
+            LIMIT 1"
+    result <- dbGetQuery(con, query, params = list(paste0("%", input$customer_name, "%")))
     
     if (nrow(result) > 0) {
       return(result$CustomerNetName[1])  # 返回第一个匹配的网名
@@ -1153,24 +1131,36 @@ server <- function(input, output, session) {
     }
   })
   
-  #将最近查询过的姓名与网名保存在一个临时的缓存中
+  # 缓存最近查询过的顾客姓名与网名
   cache <- reactiveVal(list())
-  observeEvent(input$customer_name, {
+  
+  # 使用 debounce 避免频繁触发查询
+  customer_name_delayed <- debounce(reactive(input$customer_name), 500)
+  
+  # 网名自动填写
+  observeEvent(customer_name_delayed, {
+    req(customer_name_delayed)  # 确保用户输入不为空
     cache_data <- cache()
     
-    if (input$customer_name %in% names(cache_data)) {
-      # 如果缓存中已有数据，直接使用
-      netname <- cache_data[[input$customer_name]]
+    # 检查缓存是否已有数据
+    if (customer_name_delayed %in% names(cache_data)) {
+      netname <- cache_data[[customer_name_delayed]]
     } else {
-      # 如果缓存中没有，查询数据库
+      # 查询数据库
       netname <- matching_customer()
-      cache_data[[input$customer_name]] <- netname  # 更新缓存
-      cache(cache_data)  # 保存到缓存
+      
+      # 如果有结果，更新缓存
+      if (!is.null(netname)) {
+        cache_data[[customer_name_delayed]] <- netname
+        cache(cache_data)  # 更新缓存
+      }
     }
     
     # 更新网名输入框
     updateTextInput(session, "customer_netname", value = netname %||% "")
   })
+  
+  ######
   
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
