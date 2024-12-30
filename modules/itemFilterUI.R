@@ -30,7 +30,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF") {
     fluidRow(
       column(9, 
              dateRangeInput(ns("purchase_date_range"), "采购日期范围", 
-                            start = Sys.Date() - 30, end = Sys.Date(), width = "100%")),
+                            start = Sys.Date() - 365, end = Sys.Date(), width = "100%")),
       column(3, 
              actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
                           style = "font-size: 14px; width: 100%; height: 35px; padding: 0px; margin-top: 26px;")
