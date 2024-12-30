@@ -1131,12 +1131,12 @@ server <- function(input, output, session) {
     }
   })
   
-  # # 缓存最近查询过的顾客姓名与网名
-  # cache <- reactiveVal(list())
-  # 
-  # # 使用 debounce 避免频繁触发查询
-  # customer_name_delayed <- debounce(reactive(input$customer_name), 500)
-  # 
+  # 缓存最近查询过的顾客姓名与网名
+  cache <- reactiveVal(list())
+
+  # 使用 debounce 避免频繁触发查询
+  customer_name_delayed <- debounce(reactive(input$customer_name), 500)
+
   # # 网名自动填写
   # observeEvent(customer_name_delayed, {
   #   req(customer_name_delayed)  # 确保用户输入不为空
