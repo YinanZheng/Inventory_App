@@ -62,17 +62,25 @@ SELECT * FROM item_type_data;
 USE inventory_system;
 
 UPDATE inventory
-SET Quantity = 3
-WHERE SKU = 'AN-PR-KDB1';
+SET Quantity = 1
+WHERE SKU = 'AN-UP-OTVX';
 
 UPDATE inventory
 SET Quantity = 1
-WHERE SKU = 'AN-PR-QWZU	';
+WHERE SKU = 'GM-EA-WU3M';
 
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'GM-EA-Q1TE';
 
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'AA-0I-77N2';
 
-UPDATE orders
-SET OrderID = '1563'
-WHERE OrderID = '#1563';
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'AN-UP-T1E9';
 
-SHOW CREATE TABLE orders;
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'GM-EA-IODT';
