@@ -618,6 +618,10 @@ server <- function(input, output, session) {
         stringsAsFactors = FALSE
       )
       added_items(existing_items)
+      
+      showNotification(paste0("added_items: ", added_items()$ItemImagePath))
+      
+      
       showNotification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
       # 添加新记录
