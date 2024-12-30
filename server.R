@@ -1113,7 +1113,6 @@ server <- function(input, output, session) {
   
   #####
   
-  # 按需查询 orders 数据库中匹配的 CustomerName 和 CustomerNetName：
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
     
@@ -1122,43 +1121,58 @@ server <- function(input, output, session) {
             FROM orders 
             WHERE CustomerName LIKE ?
             LIMIT 1"
-    result <- dbGetQuery(con, query, params = list(paste0("%", input$customer_name, "%")))
     
-    if (nrow(result) > 0) {
-      return(result$CustomerNetName[1])  # 返回第一个匹配的网名
-    } else {
-      return(NULL)  # 如果没有匹配结果，返回 NULL
-    }
+    # 捕获错误，防止崩溃
+    tryCatch({
+      result <- dbGetQuery(con, query, params = list(paste0("%", input$customer_name, "%")))
+      
+      if (nrow(result) > 0) {
+        return(result$CustomerNetName[1])  # 返回第一个匹配的网名
+      } else {
+        return(NULL)  # 如果没有匹配结果，返回 NULL
+      }
+    }, error = function(e) {
+      showNotification("查询数据库时出错，请检查连接或输入值。", type = "error")
+      return(NULL)
+    })
   })
   
   # 缓存最近查询过的顾客姓名与网名
   cache <- reactiveVal(list())
-
+  
   # 使用 debounce 避免频繁触发查询
   customer_name_delayed <- debounce(reactive(input$customer_name), 500)
-
+  
   # 网名自动填写
-  observeEvent(customer_name_delayed, {
-    req(customer_name_delayed)  # 确保用户输入不为空
+  observeEvent(customer_name_delayed(), {
+    req(customer_name_delayed())  # 确保用户输入不为空
+    
+    # 忽略空字符串
+    if (customer_name_delayed() == "") {
+      updateTextInput(session, "customer_netname", value = "")
+      return()
+    }
+    
     cache_data <- cache()
-
+    
     # 检查缓存是否已有数据
-    if (customer_name_delayed %in% names(cache_data)) {
-      netname <- cache_data[[customer_name_delayed]]
+    if (customer_name_delayed() %in% names(cache_data)) {
+      netname <- cache_data[[customer_name_delayed()]]
     } else {
       # 查询数据库
       netname <- matching_customer()
-
+      
       # 如果有结果，更新缓存
       if (!is.null(netname)) {
-        cache_data[[customer_name_delayed]] <- netname
+        cache_data[[customer_name_delayed()]] <- netname
         cache(cache_data)  # 更新缓存
       }
     }
-
+    
     # 更新网名输入框
     updateTextInput(session, "customer_netname", value = netname %||% "")
   })
+  
   
   ######
   
