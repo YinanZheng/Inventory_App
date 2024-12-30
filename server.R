@@ -1034,13 +1034,16 @@ server <- function(input, output, session) {
     req(input$main_tabs)  # 确保主面板选项存在
     
     if (input$main_tabs == "sold") {
-      # 售出分页：显示物品筛选区
+      req(makers_df())  # 确保 makers_df 已加载
+      
+      # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
-      # 物品表过滤模块
-      itemFilterServer(
+      # 动态绑定物品表过滤模块
+      callModule(
+        itemFilterServer,
         id = "sold_filter",
         makers_df = makers_df,
         unique_items_data = unique_items_data,
@@ -1070,25 +1073,7 @@ server <- function(input, output, session) {
     }
   })
   
-  
-  
-  
-  # 动态生成运单号输入框
-  output$additional_tracking_numbers <- renderUI({
-    rows <- tracking_rows()
-    
-    # 确保至少返回一个空的 UI，否则初始时页面可能为空
-    if (rows < 2) {
-      return(tagList())
-    }
-    
-    # 动态生成从运单号2开始的输入框
-    tracking_inputs <- lapply(2:rows, function(i) {
-      textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
-    })
-    do.call(tagList, tracking_inputs)
-  })
-  
+
   # 监听增加运单号按钮点击
   observeEvent(input$add_tracking_btn, {
     rows <- tracking_rows()
