@@ -1087,7 +1087,7 @@ server <- function(input, output, session) {
                    selectInput(
                      inputId = "filter_order_status",
                      label = "订单状态",
-                     choices = c("所有状态" = "", "未发货" = "未发货", "已发货" = "已发货", "已完成" = "已完成", "取消" = "取消"),
+                     choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
                      selected = "",
                      width = "100%"
                    ))
