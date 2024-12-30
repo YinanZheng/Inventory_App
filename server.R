@@ -1056,7 +1056,7 @@ server <- function(input, output, session) {
       output$dynamic_sidebar <- renderUI({
         div(
           class = "card",
-          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          style = "margin: 15px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
           tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
           textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
           textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
