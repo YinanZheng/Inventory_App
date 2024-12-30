@@ -59,13 +59,20 @@ SELECT * FROM maker_list;
 SELECT * FROM item_type_data;
 
 
+USE inventory_system;
 
 UPDATE inventory
-SET Quantity = 2
-WHERE SKU = 'GM-EA-TSWH	';
+SET Quantity = 3
+WHERE SKU = 'AN-PR-KDB1';
+
+UPDATE inventory
+SET Quantity = 1
+WHERE SKU = 'AN-PR-QWZU	';
 
 
 
+UPDATE orders
+SET OrderID = '1563'
+WHERE OrderID = '#1563';
 
-
-
+SHOW CREATE TABLE orders;
