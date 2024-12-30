@@ -550,291 +550,287 @@ ui <- navbarPage(
     )
   ),
   
-  
-  
-  
-  
-  tabPanel(
-    "售出", icon = icon("dollar-sign"),
-    div(
-      class = "layout-container",  # Flexbox 容器
-      
-      # 左侧订单信息录入
-      div(
-        class = "sticky-sidebar",  # sticky 侧边栏
-        style = "width: 400px;", # override 宽度
-        
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745"),
-        
-        div(
-          class = "card",
-          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-          
-          # 订单录入表单标题
-          tags$h4("订单登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          
-          fluidRow(
-            column(
-              7,
-              textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
-            ),
-            column(
-              5,  
-              selectInput(
-                inputId = "platform",
-                label = "电商平台",
-                choices = c(
-                  "请选择" = "", 
-                  "Etsy" = "Etsy", 
-                  "Shopify" = "Shopify", 
-                  "TikTok" = "TikTok", 
-                  "其他" = "其他"
-                ),
-                selected = "",
-                width = "100%"
-              )
-            )
-          ),
-          
-          fluidRow(
-            column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入", width = "100%")),
-            column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
-          ),
-          
-          fluidRow(
-            column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
-            column(3, checkboxInput("is_preorder", "预订", value = FALSE)),
-            column(6, selectizeInput(
-              "preorder_supplier",
-              "预订单供应商:",
-              choices = NULL,
-              width = "100%",
-              options = list(placeholder = '填选供应商...', maxOptions = 500)
-            ))
-          ),
-          
-          # 运单号
-          textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
-          
-          tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
-          
-          # 订单图片上传
-          imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
-          
-          # 订单备注
-          textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
-          
-          # 按钮区
-          div(
-            style = "margin-top: 10px; display: flex; justify-content: space-between;",
-            actionButton(
-              "register_order_btn",
-              "登记/更新订单",
-              icon = icon("save"),
-              class = "btn-primary",
-              style = "font-size: 16px; width: 48%; height: 42px;"
-            ),
-            actionButton(
-              "clear_order_btn",
-              "清空订单输入",
-              icon = icon("eraser"),
-              class = "btn-warning",
-              style = "font-size: 16px; width: 48%; height: 42px;"
-            )
-          )
-        )
-      ),
-      
-      # 主面板：右侧物品选择和已选物品列表
-      div(
-        class = "main-panel",
-        
-        fluidRow(
-          # 货架部分
-          column(6,
-                 div(
-                   class = "card",
-                   style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                   tags$h4(
-                     HTML(paste0(as.character(icon("warehouse")), "  货架")), 
-                     style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
-                   ),
-                   DTOutput("shelf_table")  # 显示货架上的物品
-                 )
-          ),
-          
-          # 箱子部分
-          column(6,
-                 div(
-                   class = "card",
-                   style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                   tags$h4(
-                     HTML(paste0(as.character(icon("box")), "  发货箱")), 
-                     style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
-                   ),
-                   DTOutput("box_table"),  # 显示已放入箱子的物品
-                   
-                   fluidRow(
-                     column(
-                       width = 7, # 左侧按钮宽度
-                       actionButton(
-                         "confirm_order_btn",
-                         "确认售出",
-                         icon = icon("check"),
-                         class = "btn-primary", 
-                         style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
-                       )
-                     ),
-                     column(
-                       width = 5, # 右侧选择框宽度
-                       tags$div(
-                         style = "
-    display: flex; 
-    align-items: center; 
-    justify-content: flex-start; 
-    border: 1px solid #007BFF; 
-    border-radius: 8px; 
-    height: 50px; 
-    padding: 0 10px; 
-    margin-top: 10px;
-  ",
-                         tags$span(
-                           "国际运输:", 
-                           style = "font-size: 16px; font-weight: bold; margin-right: 15px; line-height: 1;"
-                         ),
-                         tags$div(
-                           style = "
-      display: flex; 
-      align-items: center; 
-      height: 100%; 
-      margin-bottom: 0; /* 移除底部间距 */
-    ",
-                           tags$style(HTML("
-      #sold_shipping_method .radio {
-        margin-bottom: 0 !important; /* 移除默认的 margin */
-      }
-      #sold_shipping_method {
-        margin-bottom: 0 !important; /* 避免容器本身多余间距 */
-      }
-    ")),
-                           radioButtons(
-                             inputId = "sold_shipping_method",
-                             label = NULL, # 去掉默认 label
-                             choices = list("空运" = "空运", "海运" = "海运"),
-                             selected = "空运",  # 默认选择空运
-                             inline = TRUE       # 设置为横向排布
-                           )
-                         )
-                       )
-                       
-                       
-                       
-                     )
-                   )
-                 )
-          )
-        ),
-        
-        tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
-        
-        div(
-          style = "display: flex; flex-direction: column;",
-          div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_sold",
-              uniqueItemsTableUI("unique_items_table_sold")
-            )
-          )
-        )
-      )
-    )
-  ), # end of 售出 tab
-  
-  # 订单管理分页
-  tabPanel(
-    title = "订单管理",
-    icon = icon("clipboard-list"),
-    div(
-      class = "layout-container",
-      
-      # 左侧：筛选条件和订单信息
-      div(
-        class = "sticky-sidebar",
-        style = "width: 400px;",  # 缩窄侧边栏宽度
-        
-        # 筛选条件 Card
-        div(
-          class = "card",
-          style = "padding: 15px; border: 1px solid #28A745; border-radius: 8px; margin-bottom: 15px;",
-          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-          textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
-          selectInput(
-            inputId = "filter_platform", 
-            label = "电商平台",
-            choices = c("所有平台" = "", "Etsy" = "Etsy", "Shopify" = "Shopify", "TikTok" = "TikTok", "其他" = "其他"),
-            selected = "", 
-            width = "100%"
-          )
-        ),
-        
-        # 订单信息 Card
-        div(
-          class = "card",
-          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
-          
-          tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
-          
-          fluidRow(
-            column(7, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
-            column(5, selectInput(
-              inputId = "update_platform", 
-              label = "电商平台",
-              choices = c("Etsy", "Shopify", "TikTok", "其他"),
-              selected = NULL, 
-              width = "100%"
-            ))
-          ),
-          
-          textInput("update_tracking_number", "运单号", placeholder = "更新运单号", width = "100%"),
-          textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
-          
-          # 图片模块
-          imageModuleUI("image_order_manage", label = "订单图片上传", label_color = "#007BFF"),
-          
-          # 更新和删除按钮
-          div(
-            style = "margin-top: 20px; display: flex; justify-content: space-between;",
-            actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 48%;"),
-            actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 48%;")
-          )
-        )
-      ),
-      
-      # 右侧：主面板
-      div(
-        class = "main-panel",
-        style = "display: flex; flex-direction: column; gap: 10px;", # 修改为纵向排列
-        
-        # 订单表
-        div(
-          class = "card",
-          style = "height: 490px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-          tags$h4("订单表", style = "color: #007BFF; font-weight: bold;"),
-          orderTableUI("orders_table_module")  # 订单表模块
-        ),
-        
-        # 关联物品表
-        div(
-          class = "card",
-          style = "height: 325px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-          uiOutput("associated_items_title"),  # 动态标题
-          uniqueItemsTableUI("associated_items_table_module")  # 关联物品表模块
-        )
-      )
-    )
-  ), # end of 订单管理
+  # tabPanel(
+  #   "售出", icon = icon("dollar-sign"),
+  #   div(
+  #     class = "layout-container",  # Flexbox 容器
+  #     
+  #     # 左侧订单信息录入
+  #     div(
+  #       class = "sticky-sidebar",  # sticky 侧边栏
+  #       style = "width: 400px;", # override 宽度
+  #       
+  #       itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745"),
+  #       
+  #       div(
+  #         class = "card",
+  #         style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+  #         
+  #         # 订单录入表单标题
+  #         tags$h4("订单登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+  #         
+  #         fluidRow(
+  #           column(
+  #             7,
+  #             textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
+  #           ),
+  #           column(
+  #             5,  
+  #             selectInput(
+  #               inputId = "platform",
+  #               label = "电商平台",
+  #               choices = c(
+  #                 "请选择" = "", 
+  #                 "Etsy" = "Etsy", 
+  #                 "Shopify" = "Shopify", 
+  #                 "TikTok" = "TikTok", 
+  #                 "其他" = "其他"
+  #               ),
+  #               selected = "",
+  #               width = "100%"
+  #             )
+  #           )
+  #         ),
+  #         
+  #         fluidRow(
+  #           column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入", width = "100%")),
+  #           column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
+  #         ),
+  #         
+  #         fluidRow(
+  #           column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
+  #           column(3, checkboxInput("is_preorder", "预订", value = FALSE)),
+  #           column(6, selectizeInput(
+  #             "preorder_supplier",
+  #             "预订单供应商:",
+  #             choices = NULL,
+  #             width = "100%",
+  #             options = list(placeholder = '填选供应商...', maxOptions = 500)
+  #           ))
+  #         ),
+  #         
+  #         # 运单号
+  #         textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
+  #         
+  #         tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
+  #         
+  #         # 订单图片上传
+  #         imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
+  #         
+  #         # 订单备注
+  #         textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
+  #         
+  #         # 按钮区
+  #         div(
+  #           style = "margin-top: 10px; display: flex; justify-content: space-between;",
+  #           actionButton(
+  #             "register_order_btn",
+  #             "登记/更新订单",
+  #             icon = icon("save"),
+  #             class = "btn-primary",
+  #             style = "font-size: 16px; width: 48%; height: 42px;"
+  #           ),
+  #           actionButton(
+  #             "clear_order_btn",
+  #             "清空订单输入",
+  #             icon = icon("eraser"),
+  #             class = "btn-warning",
+  #             style = "font-size: 16px; width: 48%; height: 42px;"
+  #           )
+  #         )
+  #       )
+  #     ),
+  #     
+  #     # 主面板：右侧物品选择和已选物品列表
+  #     div(
+  #       class = "main-panel",
+  #       
+  #       fluidRow(
+  #         # 货架部分
+  #         column(6,
+  #                div(
+  #                  class = "card",
+  #                  style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+  #                  tags$h4(
+  #                    HTML(paste0(as.character(icon("warehouse")), "  货架")), 
+  #                    style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
+  #                  ),
+  #                  DTOutput("shelf_table")  # 显示货架上的物品
+  #                )
+  #         ),
+  #         
+  #         # 箱子部分
+  #         column(6,
+  #                div(
+  #                  class = "card",
+  #                  style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+  #                  tags$h4(
+  #                    HTML(paste0(as.character(icon("box")), "  发货箱")), 
+  #                    style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
+  #                  ),
+  #                  DTOutput("box_table"),  # 显示已放入箱子的物品
+  #                  
+  #                  fluidRow(
+  #                    column(
+  #                      width = 7, # 左侧按钮宽度
+  #                      actionButton(
+  #                        "confirm_order_btn",
+  #                        "确认售出",
+  #                        icon = icon("check"),
+  #                        class = "btn-primary", 
+  #                        style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
+  #                      )
+  #                    ),
+  #                    column(
+  #                      width = 5, # 右侧选择框宽度
+  #                      tags$div(
+  #                        style = "
+  #   display: flex; 
+  #   align-items: center; 
+  #   justify-content: flex-start; 
+  #   border: 1px solid #007BFF; 
+  #   border-radius: 8px; 
+  #   height: 50px; 
+  #   padding: 0 10px; 
+  #   margin-top: 10px;
+  # ",
+  #                        tags$span(
+  #                          "国际运输:", 
+  #                          style = "font-size: 16px; font-weight: bold; margin-right: 15px; line-height: 1;"
+  #                        ),
+  #                        tags$div(
+  #                          style = "
+  #     display: flex; 
+  #     align-items: center; 
+  #     height: 100%; 
+  #     margin-bottom: 0; /* 移除底部间距 */
+  #   ",
+  #                          tags$style(HTML("
+  #     #sold_shipping_method .radio {
+  #       margin-bottom: 0 !important; /* 移除默认的 margin */
+  #     }
+  #     #sold_shipping_method {
+  #       margin-bottom: 0 !important; /* 避免容器本身多余间距 */
+  #     }
+  #   ")),
+  #                          radioButtons(
+  #                            inputId = "sold_shipping_method",
+  #                            label = NULL, # 去掉默认 label
+  #                            choices = list("空运" = "空运", "海运" = "海运"),
+  #                            selected = "空运",  # 默认选择空运
+  #                            inline = TRUE       # 设置为横向排布
+  #                          )
+  #                        )
+  #                      )
+  #                      
+  #                      
+  #                      
+  #                    )
+  #                  )
+  #                )
+  #         )
+  #       ),
+  #       
+  #       tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
+  #       
+  #       div(
+  #         style = "display: flex; flex-direction: column;",
+  #         div(
+  #           style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
+  #           div(
+  #             id = "item_table_container_sold",
+  #             uniqueItemsTableUI("unique_items_table_sold")
+  #           )
+  #         )
+  #       )
+  #     )
+  #   )
+  # ), # end of 售出 tab
+  # 
+  # # 订单管理分页
+  # tabPanel(
+  #   title = "订单管理",
+  #   icon = icon("clipboard-list"),
+  #   div(
+  #     class = "layout-container",
+  #     
+  #     # 左侧：筛选条件和订单信息
+  #     div(
+  #       class = "sticky-sidebar",
+  #       style = "width: 400px;",  # 缩窄侧边栏宽度
+  #       
+  #       # 筛选条件 Card
+  #       div(
+  #         class = "card",
+  #         style = "padding: 15px; border: 1px solid #28A745; border-radius: 8px; margin-bottom: 15px;",
+  #         tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+  #         textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+  #         textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
+  #         selectInput(
+  #           inputId = "filter_platform", 
+  #           label = "电商平台",
+  #           choices = c("所有平台" = "", "Etsy" = "Etsy", "Shopify" = "Shopify", "TikTok" = "TikTok", "其他" = "其他"),
+  #           selected = "", 
+  #           width = "100%"
+  #         )
+  #       ),
+  #       
+  #       # 订单信息 Card
+  #       div(
+  #         class = "card",
+  #         style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+  #         
+  #         tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
+  #         
+  #         fluidRow(
+  #           column(7, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
+  #           column(5, selectInput(
+  #             inputId = "update_platform", 
+  #             label = "电商平台",
+  #             choices = c("Etsy", "Shopify", "TikTok", "其他"),
+  #             selected = NULL, 
+  #             width = "100%"
+  #           ))
+  #         ),
+  #         
+  #         textInput("update_tracking_number", "运单号", placeholder = "更新运单号", width = "100%"),
+  #         textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
+  #         
+  #         # 图片模块
+  #         imageModuleUI("image_order_manage", label = "订单图片上传", label_color = "#007BFF"),
+  #         
+  #         # 更新和删除按钮
+  #         div(
+  #           style = "margin-top: 20px; display: flex; justify-content: space-between;",
+  #           actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 48%;"),
+  #           actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 48%;")
+  #         )
+  #       )
+  #     ),
+  #     
+  #     # 右侧：主面板
+  #     div(
+  #       class = "main-panel",
+  #       style = "display: flex; flex-direction: column; gap: 10px;", # 修改为纵向排列
+  #       
+  #       # 订单表
+  #       div(
+  #         class = "card",
+  #         style = "height: 490px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+  #         tags$h4("订单表", style = "color: #007BFF; font-weight: bold;"),
+  #         orderTableUI("orders_table_module")  # 订单表模块
+  #       ),
+  #       
+  #       # 关联物品表
+  #       div(
+  #         class = "card",
+  #         style = "height: 325px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+  #         uiOutput("associated_items_title"),  # 动态标题
+  #         uniqueItemsTableUI("associated_items_table_module")  # 关联物品表模块
+  #       )
+  #     )
+  #   )
+  # ), # end of 订单管理
   
   tabPanel(
     "物品管理", icon = icon("list-check"),
