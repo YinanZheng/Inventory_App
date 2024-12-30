@@ -836,18 +836,40 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       }
     }
     
-    # 获取订单内关联物品的图片路径和发货箱图片路径
-    combined_image_paths <- unique(c(
-      unique_items_data() %>% filter(OrderID == order_id) %>% pull(ItemImagePath) %>% na.omit(),
-      box_items()$ItemImagePath %>% na.omit()
-    ))
+    # 获取发货箱中的物品图片路径
+    box_data <- box_items()
+    box_image_paths <- if (nrow(box_data) > 0) {
+      box_data$ItemImagePath[!is.na(box_data$ItemImagePath)]
+    } else {
+      character(0)  # 如果为空，返回空字符向量
+    }
     
-    # showNotification(paste("combined_image_paths: ", paste(combined_image_paths, collapse = ", ")), type = "message")
+    # 获取订单内关联物品的图片路径
+    order_items <- unique_items_data() %>% filter(OrderID == order_id)
+    order_image_paths <- if (nrow(order_items) > 0) {
+      order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
+    } else {
+      character(0)  # 如果为空，返回空字符向量
+    }
     
+    # 合并订单关联物品和发货箱的图片路径
+    combined_image_paths <- unique(c(order_image_paths, box_image_paths))
+    
+    # 如果图片路径为空，设置 order_image_path 为 NA
     if (length(combined_image_paths) > 0) {
       montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
       order_image_path <- generate_montage(combined_image_paths, montage_path)
+    } else {
+      order_image_path <- NA  # 确保为长度为 1 的 NA
     }
+    
+    # 确保所有参数为长度为 1 的值
+    tracking_number <- tracking_number %||% NA
+    order_notes <- order_notes %||% NA
+    customer_name <- customer_name %||% NA
+    customer_netname <- customer_netname %||% NA
+    order_image_path <- as.character(order_image_path %||% NA)
+    platform <- platform %||% ""
     
     # 插入或更新订单
     if (nrow(existing_order) > 0) {
