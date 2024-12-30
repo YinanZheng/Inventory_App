@@ -820,18 +820,18 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       supplier_prefix <- "【供应商】"
       new_supplier_note <- paste0(supplier_prefix, preorder_supplier, "；")
       
-      # 更新备注逻辑
       if (nrow(existing_order) > 0) {
-        # 检查现有备注是否包含供应商信息
-        if (grepl(supplier_prefix, existing_order$OrderNotes[1])) {
-          # 更新供应商名字
-          order_notes <- gsub(paste0(supplier_prefix, ".*?；"), new_supplier_note, existing_order$OrderNotes[1])
+        existing_notes <- existing_order$OrderNotes[1] %||% ""  # 确保为长度为 1 的字符
+        if (grepl(supplier_prefix, existing_notes)) {
+          order_notes <- gsub(
+            paste0(supplier_prefix, ".*?；"),
+            new_supplier_note,
+            existing_notes
+          )
         } else {
-          # 添加供应商备注到最前面
-          order_notes <- paste0(new_supplier_note, existing_order$OrderNotes[1])
+          order_notes <- paste0(new_supplier_note, existing_notes)
         }
       } else {
-        # 对于新订单，直接生成备注
         order_notes <- paste0(new_supplier_note, order_notes %||% "")
       }
     }
@@ -862,7 +862,6 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       } else {
         is_montage <- grepl("_montage\\.jpg$", basename(existing_orders_path))
       }
-      
       
       if (is.null(existing_orders_path)) {
         # 情况 1：订单没有订单图且没有上传订单图片
