@@ -1319,7 +1319,6 @@ server <- function(input, output, session) {
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
         
         # 重置所有输入框
-        updateTextInput(session, "order_id", value = "")
         updateSelectInput(session, "platform", selected = "")
         updateTextInput(session, "customer_name", value = "")
         updateTextInput(session, "customer_netname", value = "")
@@ -1400,7 +1399,7 @@ server <- function(input, output, session) {
     )
   })
   
-  # 清空按钮
+  # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
     # 重置所有输入框
     updateTextInput(session, "order_id", value = "")
@@ -1651,8 +1650,51 @@ server <- function(input, output, session) {
                ))
   })
  
+  # 清空筛选条件逻辑
+  observeEvent(input$reset_filter_btn, {
+    tryCatch({
+      # 重置所有输入框和选择框
+      updateTextInput(session, "filter_order_id", value = "")
+      updateTextInput(session, "filter_tracking_id", value = "")
+      updateTextInput(session, "filter_customer_name", value = "")
+      updateTextInput(session, "filter_customer_netname", value = "")
+      updateSelectInput(session, "filter_platform", selected = "")
+      updateSelectInput(session, "filter_order_status", selected = "")
+      
+      # 显示成功通知
+      showNotification("筛选条件已清空！", type = "message")
+    }, error = function(e) {
+      # 捕获错误并显示通知
+      showNotification(paste("清空筛选条件时发生错误：", e$message), type = "error")
+    })
+  })
+  
   # 删除订单逻辑
   observeEvent(input$delete_order_btn, {
+    req(selected_order_row())  # 确保用户选择了一行订单
+    selected_row <- selected_order_row()
+    
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+    
+    # 显示确认弹窗
+    showModal(
+      modalDialog(
+        title = "确认删除订单",
+        paste0("您确定要删除订单 ", order_id, " 吗？此操作无法撤销！"),
+        footer = tagList(
+          modalButton("取消"),  # 关闭弹窗按钮
+          actionButton("confirm_delete_order_btn", "确认删除", class = "btn-danger")
+        )
+      )
+    )
+  })
+  
+  
+  observeEvent(input$confirm_delete_order_btn, {
+    removeModal()  # 关闭确认弹窗
+    
     req(selected_order_row())  # 确保用户选择了一行订单
     selected_row <- selected_order_row()
 
