@@ -402,6 +402,128 @@ ui <- navbarPage(
     )
   ), # end of 出库 tab
   
+  tabPanel(
+    "售出与订单管理", icon = icon("dollar-sign"),
+    div(
+      class = "layout-container",
+      
+      # 左侧：动态筛选和订单登记
+      div(
+        class = "sticky-sidebar",
+        style = "width: 400px;",
+        tabsetPanel(
+          id = "sidebar_tabs",
+          tabPanel(
+            title = "物品筛选",
+            value = "sold_filter",
+            itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+          ),
+          tabPanel(
+            title = "订单筛选",
+            value = "order_filter",
+            div(
+              class = "card",
+              style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+              tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+              textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+              textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
+              selectInput(
+                inputId = "filter_platform",
+                label = "电商平台",
+                choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+                selected = "",
+                width = "100%"
+              ),
+              actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "margin-top: 15px; width: 100%;")
+            )
+          )
+        ),
+        tags$hr(),
+        div(
+          class = "card",
+          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          tags$h4("订单登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+          fluidRow(
+            column(7, textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")),
+            column(5, selectInput(
+              inputId = "platform",
+              label = "电商平台",
+              choices = c("请选择" = "", "Etsy", "Shopify", "TikTok", "其他"),
+              selected = "",
+              width = "100%"
+            ))
+          ),
+          fluidRow(
+            column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入", width = "100%")),
+            column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
+          ),
+          textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
+          imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
+          textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
+          div(
+            style = "margin-top: 10px; display: flex; justify-content: space-between;",
+            actionButton("register_order_btn", "登记/更新订单", icon = icon("save"), class = "btn-primary", style = "width: 48%;"),
+            actionButton("clear_order_btn", "清空订单输入", icon = icon("eraser"), class = "btn-warning", style = "width: 48%;")
+          )
+        )
+      ),
+      
+      # 主面板：售出和订单管理的分页
+      div(
+        class = "main-panel",
+        tabsetPanel(
+          id = "main_tabs",
+          tabPanel(
+            title = "售出",
+            value = "sold",
+            fluidRow(
+              column(6,
+                     div(
+                       class = "card",
+                       style = "padding: 20px; border: 1px solid #007BFF; border-radius: 10px;",
+                       tags$h4("货架", style = "color: #007BFF; font-weight: bold;"),
+                       DTOutput("shelf_table")
+                     )),
+              column(6,
+                     div(
+                       class = "card",
+                       style = "padding: 20px; border: 1px solid #28A745; border-radius: 10px;",
+                       tags$h4("发货箱", style = "color: #28A745; font-weight: bold;"),
+                       DTOutput("box_table"),
+                       actionButton("confirm_order_btn", "确认售出", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
+                     ))
+            ),
+            tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),
+            div(
+              class = "card",
+              style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+              tags$h4("已选物品列表", style = "color: #007BFF; font-weight: bold;"),
+              uniqueItemsTableUI("unique_items_table_sold")
+            )
+          ),
+          tabPanel(
+            title = "订单管理",
+            value = "order_management",
+            div(
+              class = "card",
+              style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+              tags$h4("订单表", style = "color: #007BFF; font-weight: bold;"),
+              orderTableUI("orders_table_module")
+            ),
+            div(
+              class = "card",
+              style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+              uiOutput("associated_items_title"),
+              uniqueItemsTableUI("associated_items_table_module")
+            )
+          )
+        )
+      )
+    )
+  ),
+  
+  
+  
   
   tabPanel(
     "售出", icon = icon("dollar-sign"),
