@@ -41,12 +41,12 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
         formatStyle(
           "状态",
           backgroundColor = styleEqual(
-            c('备货','装箱','发出','在途','送达'),
-            c("#bfa6ff", "#a6beff", "#a6ffde", "#fae589", "#65d463")  # 不同平台的背景颜色
+            c('备货', '调货', '预定', '装箱', '发出', '在途', '送达'),
+            c("#7881ff", "#a97afa", "#ff99ee", "#65d463", "#a6ffde", "#fae589", "#f7fcf8")  # 不同订单的背景颜色
           ),
           color = styleEqual(
-            c('备货','装箱','发出','在途','送达'),
-            c("black", "black", "black", "black", "black")  # 字体颜色
+            c('备货', '调货', '预定', '装箱', '发出', '在途', '送达'),
+            c("black", "black", "black", "black", "black", "black", "black")  # 字体颜色
           )
         )
     }
