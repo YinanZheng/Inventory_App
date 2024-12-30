@@ -606,17 +606,17 @@ server <- function(input, output, session) {
       
       showNotification(paste0("final_image_path: ", final_image_path))
       
-      existing_items[sku_index, ] <- data.frame(
-        SKU = input$new_sku,
-        Maker = input$new_maker,
-        MajorType = input[["type_module-new_major_type"]],
-        MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name$text,
-        Quantity = input$new_quantity,
-        ProductCost = round(input$new_product_cost, 2),
-        ItemImagePath = as.character(final_image_path),
-        stringsAsFactors = FALSE
-      )
+      existing_items[sku_index, "SKU"] <- input$new_sku
+      existing_items[sku_index, "Maker"] <- input$new_maker
+      existing_items[sku_index, "MajorType"] <- input[["type_module-new_major_type"]]
+      existing_items[sku_index, "MinorType"] <- input[["type_module-new_minor_type"]]
+      existing_items[sku_index, "ItemName"] <- input$new_name$text
+      existing_items[sku_index, "Quantity"] <- input$new_quantity
+      existing_items[sku_index, "ProductCost"] <- round(input$new_product_cost, 2)
+      existing_items[sku_index, "ItemImagePath"] <- as.character(final_image_path)
+      
+      showNotification(paste0("existing_items after update: ", existing_items$ItemImagePath[sku_index]))
+      
       added_items(existing_items)
       
       showNotification(paste0("added_items: ", added_items()$ItemImagePath))
