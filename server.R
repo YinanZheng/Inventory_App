@@ -1042,8 +1042,7 @@ server <- function(input, output, session) {
       })
       
       # 动态绑定物品表过滤模块
-      callModule(
-        itemFilterServer,
+      itemFilterServer(
         id = "sold_filter",
         makers_df = makers_df,
         unique_items_data = unique_items_data,
