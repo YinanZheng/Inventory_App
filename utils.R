@@ -847,6 +847,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 合并订单关联物品和发货箱的图片路径
     combined_image_paths <- unique(c(order_image_paths, box_image_paths))
     
+    showNotification(combined_image_paths)
+    
     if (length(combined_image_paths) > 0) showNotification(paste0("正在拼贴 ", length(combined_image_paths), " 张物品图"), type = "message")
     
     if (nrow(existing_order) > 0) {
@@ -868,7 +870,11 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
           if (length(combined_image_paths) > 0) {
             montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg") 
             order_image_path <- generate_montage(combined_image_paths, montage_path)
-            showNotification("情况 1：订单没有订单图且没有上传订单图片")
+            showNotification("订单没有订单图且没有上传订单图片，已自动生成拼贴图", type = "message")
+          } else{
+            # 没有关联物品图片，保留现状
+            order_image_path <- NA
+            showNotification("订单没有订单图且没有关联物品图片", type = "warning")
           }
         } else {
           # 使用上传的图片
