@@ -1755,7 +1755,7 @@ server <- function(input, output, session) {
       updateSelectInput(session, "update_platform", selected = "")
       updateTextInput(session, "update_tracking_number", value = "")
       updateTextAreaInput(session, "update_order_notes", value = "")
-      image_order_manage$reset()  # 重置图片模块
+      image_sold$reset()  # 重置图片模块
 
       # 清空关联物品表
       output$associated_items_table <- renderDT({ NULL })
