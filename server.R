@@ -420,7 +420,7 @@ server <- function(input, output, session) {
                                    data = filtered_orders,  # 数据源
                                    selection = "single", # 单选模式
                                    options = list(
-                                     scrollY = "400px",  # 根据内容动态调整滚动高度
+                                     scrollY = "405px",  # 根据内容动态调整滚动高度
                                      scrollX = TRUE,  # 支持水平滚动
                                      fixedHeader = TRUE,  # 启用表头固定
                                      dom = 't',  # 隐藏搜索框和分页等控件
