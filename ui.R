@@ -606,7 +606,7 @@ ui <- navbarPage(
             value = "order_management",
             div(
               class = "card",
-              style = "height: 470px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+              style = "height: 460px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
               orderTableUI("orders_table_module")
             ),
             div(
