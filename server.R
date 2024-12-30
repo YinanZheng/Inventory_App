@@ -320,27 +320,46 @@ server <- function(input, output, session) {
   
   # 订单管理页订单过滤
   filtered_orders <- reactive({
-    req(orders())  # 确保数据存在
+    req(orders())  # 确保订单数据存在
     
-    data <- orders()
+    data <- orders()  # 获取所有订单数据
     
-    # 根据筛选条件动态过滤
-    if (input$filter_order_id != "") {
+    # 根据订单号筛选
+    if (!is.null(input$filter_order_id) && input$filter_order_id != "") {
       data <- data %>% filter(grepl(input$filter_order_id, OrderID, ignore.case = TRUE))
     }
     
-    if (input$filter_customer_name != "") {
+    # 根据运单号筛选
+    if (!is.null(input$filter_tracking_id) && input$filter_tracking_id != "") {
+      data <- data %>% filter(grepl(input$filter_tracking_id, TrackingNumber, ignore.case = TRUE))
+    }
+    
+    # 根据顾客姓名筛选
+    if (!is.null(input$filter_customer_name) && input$filter_customer_name != "") {
       data <- data %>% filter(grepl(input$filter_customer_name, CustomerName, ignore.case = TRUE))
     }
     
-    if (input$filter_platform != "") {
+    # 根据顾客网名筛选
+    if (!is.null(input$filter_customer_netname) && input$filter_customer_netname != "") {
+      data <- data %>% filter(grepl(input$filter_customer_netname, CustomerNetName, ignore.case = TRUE))
+    }
+    
+    # 根据电商平台筛选
+    if (!is.null(input$filter_platform) && input$filter_platform != "") {
       data <- data %>% filter(Platform == input$filter_platform)
     }
     
+    # 根据订单状态筛选
+    if (!is.null(input$filter_order_status) && input$filter_order_status != "") {
+      data <- data %>% filter(OrderStatus == input$filter_order_status)
+    }
+    
+    # 按更新时间倒序排列
     data <- data %>% arrange(desc(updated_at))
     
     data
   })
+  
 
   
   
@@ -1066,6 +1085,7 @@ server <- function(input, output, session) {
           tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
           
           textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+          textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
           
           fluidRow(
             column(6, 
@@ -1253,18 +1273,34 @@ server <- function(input, output, session) {
         showNotification("已找到订单信息！字段已自动填充。", type = "message")
         
         # 填充各字段信息
+        updateSelectInput(session, "platform", selected = existing_order$Platform[1])
+        
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
         updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1])
-        updateSelectInput(session, "platform", selected = existing_order$Platform[1])
+        
+        if(existing_order$OrderStatus[1] == "调货") updateCheckboxInput(session, "is_transfer_order", value = TRUE)
+        if(existing_order$OrderStatus[1] == "预定") updateCheckboxInput(session, "is_preorder", value = TRUE)
+        
+        if(!existing_order$OrderStatus[1] %in% c("预定", "调货")){
+          updateCheckboxInput(session, "is_transfer_order", value = FALSE)
+          updateCheckboxInput(session, "is_preorder", value = FALSE)
+        } 
+        
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
       } else {
         # 如果订单记录不存在，清空所有相关字段
         showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
         
-        updateTextInput(session, "customer_name", value = "")
+        # 重置所有输入框
+        updateTextInput(session, "order_id", value = "")
         updateSelectInput(session, "platform", selected = "")
+        updateTextInput(session, "customer_name", value = "")
+        updateTextInput(session, "customer_netname", value = "")
+        updateCheckboxInput(session, "is_preorder", value = FALSE)
+        updateCheckboxInput(session, "is_transfer_order", value = FALSE)
         updateTextInput(session, "tracking_number", value = "")
+        image_sold$reset()
         updateTextAreaInput(session, "order_notes", value = "")
       }
     }, error = function(e) {
@@ -1338,18 +1374,16 @@ server <- function(input, output, session) {
     )
   })
   
-  # 监听清空按钮的点击事件
+  # 清空按钮
   observeEvent(input$clear_order_btn, {
     # 重置所有输入框
-    updateSelectInput(session, "platform", selected = "")
     updateTextInput(session, "order_id", value = "")
+    updateSelectInput(session, "platform", selected = "")
     updateTextInput(session, "customer_name", value = "")
     updateTextInput(session, "customer_netname", value = "")
     updateCheckboxInput(session, "is_preorder", value = FALSE)
     updateCheckboxInput(session, "is_transfer_order", value = FALSE)
     updateTextInput(session, "tracking_number", value = "")
-    
-    # 清空备注和图片模块
     image_sold$reset()
     updateTextAreaInput(session, "order_notes", value = "")
     
