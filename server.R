@@ -1029,14 +1029,20 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
 
-  # 物品表过滤模块
-  itemFilterServer(
-    id = "sold_filter",
-    makers_df = makers_df,
-    unique_items_data = unique_items_data,
-    filtered_unique_items_data = filtered_unique_items_data_sold,
-    unique_items_table_selected_row = unique_items_table_sold_selected_row
-  )
+  # 动态绑定物品表过滤模块
+  observeEvent(input$main_tabs, {
+    if (input$main_tabs == "sold") {
+      # 售出分页：绑定 itemFilterServer
+      callModule(
+        itemFilterServer,
+        id = "sold_filter",
+        makers_df = makers_df,
+        unique_items_data = unique_items_data,
+        filtered_unique_items_data = filtered_unique_items_data_sold,
+        unique_items_table_selected_row = unique_items_table_sold_selected_row
+      )
+    }
+  })
   
   ######
 
