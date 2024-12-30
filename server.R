@@ -1479,6 +1479,41 @@ server <- function(input, output, session) {
   })
   
   
+  
+  
+  
+  # 动态更新侧边栏内容
+  observe({
+    req(input$main_tabs)  # 确保主面板选项存在
+    
+    if (input$main_tabs == "sold") {
+      # 售出分页：显示物品筛选区
+      output$dynamic_sidebar <- renderUI({
+        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+      })
+    } else if (input$main_tabs == "order_management") {
+      # 订单管理分页：显示订单筛选区
+      output$dynamic_sidebar <- renderUI({
+        div(
+          class = "card",
+          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+          textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
+          selectInput(
+            inputId = "filter_platform",
+            label = "电商平台",
+            choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+            selected = "",
+            width = "100%"
+          ),
+          actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "margin-top: 15px; width: 100%;")
+        )
+      })
+    }
+  })
+  
+  
   ###################################################################################################################
   ###################################################################################################################
   ###################################################################################################################
