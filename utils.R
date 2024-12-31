@@ -317,10 +317,13 @@ render_table_with_images <- function(data,
                                      column_mapping, 
                                      selection = "single",
                                      image_column = NULL,
-                                     options = list(fixedHeader = TRUE,  # 启用表头固定
+                                     options = list(scrollY = "770px",  # 根据内容动态调整滚动高度
+                                                    scrollX = TRUE,  # 支持水平滚动
+                                                    fixedHeader = TRUE,  # 启用表头固定
                                                     dom = 't',  # 隐藏搜索框和分页等控件
-                                                    paging = FALSE,  # 禁用分页
-                                                    searching = FALSE)) {
+                                                    paging = FALSE,  # 禁止分页
+                                                    searching = FALSE  # 禁止搜索
+                                                    )) {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(data[[image_column]], host_url)

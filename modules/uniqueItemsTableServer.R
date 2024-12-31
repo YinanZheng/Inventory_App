@@ -4,7 +4,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
   fixedHeader = TRUE,  # 启用表头固定
   dom = 't',  # 隐藏搜索框和分页等控件
   paging = FALSE,  # 禁止分页
-  searching = FALSE  # 支持搜索
+  searching = FALSE  # 禁止搜索
 )) {
   output$unique_items_table <- renderDT({
     # 初始化渲染表

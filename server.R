@@ -113,7 +113,7 @@ server <- function(input, output, session) {
   
   ####################################################################################################################################
   
-  # 库存表 （过滤）
+  # 查询页-库存表 （过滤）
   filtered_inventory <- reactive({
     
     result <- inventory()
@@ -128,7 +128,7 @@ server <- function(input, output, session) {
     return(result)
   })
   
-  # Render filtered inventory with column name mapping
+  # 查询页-库存表渲染
   output$filtered_inventory_table_query <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
