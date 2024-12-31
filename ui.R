@@ -200,11 +200,11 @@ ui <- navbarPage(
           fluidRow(
             column(2, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
             column(2, style = "text-align: left;", actionButton("add_btn", "添加/更新采购", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-            column(5, div(
+            column(4, div(
               textOutput("total_cost"),
               style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
             )),
-            column(3, div(
+            column(4, div(
               style = "text-align: right;",
               actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
             ))
