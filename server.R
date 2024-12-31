@@ -107,7 +107,12 @@ server <- function(input, output, session) {
       data = added_items(),
       column_mapping = column_mapping,
       selection = "multiple",
-      image_column = "ItemImagePath"
+      image_column = "ItemImagePath",
+      options = list(fixedHeader = TRUE,  # 启用表头固定
+                     dom = 't',  # 隐藏搜索框和分页等控件
+                     paging = FALSE,  # 禁止分页
+                     searching = FALSE  # 禁止搜索
+      )
     )$datatable
   })
   
