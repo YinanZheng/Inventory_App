@@ -484,6 +484,16 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 物品表过滤模块
+  itemFilterServer(
+    id = "purchase_filter",
+    makers_df = makers_df,
+    unique_items_data = unique_items_data,
+    filtered_unique_items_data = filtered_unique_items_data_inbound,
+    unique_items_table_selected_row = unique_items_table_inbound_selected_row
+  )
+  
+  
   # 供应商模块
   supplierModuleServer(input, output, session, con, maker_list)
   
