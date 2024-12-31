@@ -743,6 +743,7 @@ handleOperation <- function(
       con = con,
       unique_id = sku_items$UniqueID[1],
       new_status = update_status_value,
+      defect_status = defect_status,
       shipping_method = shipping_method,    # 设置运输方式
       clear_shipping_method = clear_shipping_method, # 是否清空运输方式
       refresh_trigger = refresh_trigger
