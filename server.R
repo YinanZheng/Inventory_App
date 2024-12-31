@@ -2437,15 +2437,24 @@ server <- function(input, output, session) {
   }
   
   options_with_search <- function(opt) {
+    if (is.null(opt) || length(opt) == 0) {
+      opt <- list(list(key = "no-data", text = "无数据"))
+    }
+    
     filter_header <- list(
       key = "__FilterHeader__",
       text = "-",
       itemType = DropdownMenuItemType("Header")
     )
+    
     append(list(filter_header), opt)
   }
   
   SearchableDropdown <- function(id, opt, ...) {
+    if (is.null(opt) || length(opt) == 0) {
+      opt <- list(list(key = "no-data", text = "无数据"))  # 设置默认选项
+    }
+    
     render_search_box <- JS(paste0("(option) => {
     if (option.key !== '__FilterHeader__') {
       return option.text;
@@ -2473,12 +2482,12 @@ server <- function(input, output, session) {
       inputId = id,
       multiSelect = TRUE,
       placeholder = "请选择供应商...",
-      options = options_with_search(opt),
+      options = options_with_search(opt),  # 确保传递非空选项
       ...,
       onRenderOption = render_search_box
     )
   }
-
+  
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
