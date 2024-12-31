@@ -549,7 +549,7 @@ server <- function(input, output, session) {
     if (is_from_table) {
       # 如果 SKU 来源于表格，直接更新输入字段
       updateTextInput(session, "new_sku", value = sku)
-      showNotification("SKU 已生成（来源于表格选择）。", type = "message")
+      showNotification("SKU 已生成（来源于表格选择）", type = "message")
     } else {
       # 如果 SKU 不是来源于表格，检查是否冲突
       existing_sku <- inventory() %>% filter(SKU == sku)
@@ -1294,7 +1294,7 @@ server <- function(input, output, session) {
         return(NULL)  # 如果没有匹配结果，返回 NULL
       }
     }, error = function(e) {
-      showNotification("查询数据库时出错，请检查连接或输入值。", type = "error")
+      showNotification("查询数据库时出错，请检查连接或输入值", type = "error")
       return(NULL)
     })
   })
@@ -1399,10 +1399,10 @@ server <- function(input, output, session) {
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
         
-        showNotification("已找到订单信息！字段已自动填充。", type = "message")
+        showNotification("已找到订单信息！字段已自动填充", type = "message")
       } else {
         # 如果订单记录不存在，清空出order ID以外所有相关字段
-        showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
+        showNotification("未找到对应订单记录，可登记新订单", type = "warning")
         
         # 重置所有输入框
         updateSelectInput(session, "platform", selected = "")
