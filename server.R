@@ -2446,7 +2446,22 @@ server <- function(input, output, session) {
       list(list(key = "no-data", text = "无供应商数据"))
     }
     
-    # 定义搜索框逻辑
+    # 定义 DropdownMenuItemType
+    DropdownMenuItemType <- function(type) {
+      JS(paste0("jsmodule['@fluentui/react'].DropdownMenuItemType.", type))
+    }
+    
+    # 包含搜索框的选项列表
+    options_with_search <- function(opt) {
+      filter_header <- list(
+        key = "__FilterHeader__", 
+        text = "-", 
+        itemType = DropdownMenuItemType("Header") # 添加一个 Header 类型选项用于搜索框
+      )
+      append(list(filter_header), opt)
+    }
+    
+    # 定义搜索框渲染逻辑
     render_search_box <- JS(paste0("(option) => {
     if (option.key !== '__FilterHeader__') {
       return option.text;
@@ -2465,7 +2480,11 @@ server <- function(input, output, session) {
         }
       });
     };
-    const props = { placeholder: '搜索供应商...', underlined: true, onChange };
+    const props = { 
+      placeholder: '搜索供应商...', 
+      underlined: true, 
+      onChange 
+    };
     return React.createElement(jsmodule['@fluentui/react'].SearchBox, props);
   }"))
     
@@ -2475,16 +2494,14 @@ server <- function(input, output, session) {
       Dropdown.shinyInput(
         inputId = "download_maker",
         label = "选择供应商:",
-        options = append(
-          list(list(key = "__FilterHeader__", text = "-", itemType = DropdownMenuItemType("Header"))),
-          maker_options
-        ),
+        options = options_with_search(maker_options), # 添加搜索框到选项列表中
         multiSelect = TRUE,
         placeholder = "请选择供应商...",
-        onRenderOption = render_search_box
+        onRenderOption = render_search_box # 自定义渲染逻辑
       )
     )
   })
+  
   
   
   # 监听供应商选择变化并动态更新商品名称
