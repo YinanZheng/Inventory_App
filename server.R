@@ -500,25 +500,38 @@ server <- function(input, output, session) {
   # 物品大小类模块
   typeModuleServer("type_module", con, item_type_data)
   
-  # Automatically generate SKU when relevant inputs change
-  observeEvent({
-    input[["type_module-new_major_type"]]
-    input[["type_module-new_minor_type"]]
-    input$new_name
-    input$new_maker
-  }, {
+  
+  ### SKU冲撞检查
+  
+  # 合并依赖变量
+  combined_inputs <- reactive({
+    list(
+      major_type = input[["type_module-new_major_type"]],
+      minor_type = input[["type_module-new_minor_type"]],
+      new_name = input$new_name,
+      new_maker = input$new_maker
+    )
+  })
+  
+  # 使用 debounce 延迟触发，避免短时间多次调用
+  debounced_inputs <- debounce(combined_inputs, millis = 300)
+  
+  observeEvent(debounced_inputs(), {
+    inputs <- debounced_inputs()
+    
     # 安全检查 input$new_name 是否为列表，以及 text 字段是否存在
-    new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
-      input$new_name$text
+    new_name_text <- if (is.list(inputs$new_name) && !is.null(inputs$new_name$text)) {
+      inputs$new_name$text
     } else {
       NULL
     }
     
     # 检查 SKU 的来源
-    is_from_table <- !is.null(input$selected_row) && input$selected_row != ""
+    is_from_table <- !is.null(unique_items_table_purchase_selected_row()) && 
+      length(unique_items_table_purchase_selected_row()) > 0
     
     # 判断是否需要清空 SKU
-    if (is.null(input$new_maker) || input$new_maker == "" || 
+    if (is.null(inputs$new_maker) || inputs$new_maker == "" || 
         is.null(new_name_text) || new_name_text == "") {
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       return()
@@ -527,13 +540,11 @@ server <- function(input, output, session) {
     # Dynamically generate SKU
     sku <- generate_sku(
       item_type_data = item_type_data(),
-      major_type = input[["type_module-new_major_type"]],
-      minor_type = input[["type_module-new_minor_type"]],
+      major_type = inputs$major_type,
+      minor_type = inputs$minor_type,
       item_name = new_name_text,
-      maker = input$new_maker
+      maker = inputs$new_maker
     )
-    # 检查 SKU 的来源
-    is_from_table <- !is.null(unique_items_table_purchase_selected_row()) && length(unique_items_table_purchase_selected_row()) > 0
     
     if (is_from_table) {
       # 如果 SKU 来源于表格，直接更新输入字段
@@ -561,6 +572,7 @@ server <- function(input, output, session) {
       }
     }
   })
+  
   
   
   # 缓存商品名，安全处理空值
