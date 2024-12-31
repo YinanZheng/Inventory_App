@@ -184,43 +184,47 @@ ui <- navbarPage(
       
       div(
         class = "main-panel",
+        style = "display: flex; flex-direction: column; height: 100%;", # 确保主面板使用 flex 布局，并填充剩余空间
         div(
+          style = "flex-shrink: 0;", # 防止标题区域被压缩
           div(
             tags$span(icon("shopping-cart"), style = "margin-right: 5px;"),  # 使用 span 包裹图标
-            "采购箱", style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
-          ),
-          
-          column(12, DTOutput("added_items_table")),
-          
-          div(
-            style = "padding: 20px 13px;",  # 添加上下20px的padding
-            fluidRow(
-              column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
-              column(6, div(
-                textOutput("total_cost"),
-                style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-              )),
-              column(3, div(
-                style = "text-align: right;",
-                actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary")
-              ))
-            )
+            "采购箱", 
+            style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
+          )
+        ),
+        
+        div(
+          style = "flex-shrink: 0; padding-bottom: 20px;", # 确保表格不会被压缩
+          column(12, DTOutput("added_items_table"))
+        ),
+        
+        div(
+          style = "flex-shrink: 0; padding: 20px 13px;",  # 按钮区域的固定高度
+          fluidRow(
+            column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
+            column(6, div(
+              textOutput("total_cost"),
+              style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+            )),
+            column(3, div(
+              style = "text-align: right;",
+              actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary")
+            ))
           )
         ),
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         
         div(
-          style = "display: flex; flex-direction: column;",
+          style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 使表格内容填充剩余空间并支持滚动
           div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_purchase",
-              uniqueItemsTableUI("unique_items_table_purchase")
-            )
+            id = "item_table_container_purchase",
+            uniqueItemsTableUI("unique_items_table_purchase")
           )
         )
       )
+      
     )
   ), # end of 采购登记 tab
   
