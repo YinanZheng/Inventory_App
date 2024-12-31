@@ -2764,10 +2764,11 @@ server <- function(input, output, session) {
   output$admin_controls <- renderUI({
     if (admin_logged_in()) {
       tagList(
-        tags$h4("物品状态管理", style = "font-weight: bold; color: #007BFF;"),
+        
+        tags$h4("修改库存状态", style = "font-weight: bold; color: #007BFF;"),
         
         # 目标状态选择
-        selectInput("admin_target_status", "目标状态改为：", 
+        selectInput("admin_target_status", "目标库存状态改为：", 
                     choices = c("采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "退货"), 
                     selected = NULL, width = "100%"),
         
@@ -2775,7 +2776,19 @@ server <- function(input, output, session) {
         checkboxInput("admin_record_timestamp", "记录修改时间", value = FALSE),
         
         # 更新选中物品状态
-        actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        actionButton("admin_update_status_btn", "更新选中物品库存状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        
+        tags$hr(),
+        
+        tags$h4("修改瑕疵品状态", style = "font-weight: bold; color: #007BFF;"),
+        
+        # 目标状态选择
+        selectInput("admin_target_defect", "目标下次状态改为：", 
+                    choices = c('未知','无瑕','瑕疵','修复'), 
+                    selected = NULL, width = "100%"),
+        
+        # 更新选中物品瑕疵品状态
+        actionButton("admin_update_defect_btn", "更新选中物品瑕疵品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
         
         tags$hr(),
         
@@ -2805,7 +2818,7 @@ server <- function(input, output, session) {
                                                       selection = "multiple", 
                                                       data = unique_items_data)
   
-  # 更新状态按钮
+  # 更新库存状态按钮
   observeEvent(input$admin_update_status_btn, {
     req(input$admin_target_status, unique_items_table_admin_selected_row())
     
@@ -2839,14 +2852,54 @@ server <- function(input, output, session) {
       })
       
       # 通知成功并刷新数据
-      showNotification("物品状态更新成功！", type = "message")
+      showNotification("库存状态更新成功！", type = "message")
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
     }, error = function(e) {
       # 捕获错误并通知用户
-      showNotification(paste("状态更新失败：", e$message), type = "error")
+      showNotification(paste("库存状态更新失败：", e$message), type = "error")
     })
   })
+  
+  observeEvent(input$admin_update_defect_btn, {
+    req(input$admin_target_defect, unique_items_table_admin_selected_row())
+    
+    # 获取选中行的索引
+    selected_rows <- unique_items_table_admin_selected_row()
+    selected_items <- unique_items_data()[selected_rows, ]
+    
+    # 确保有选中物品
+    if (nrow(selected_items) == 0) {
+      showNotification("请选择至少一个物品进行瑕疵品状态更新！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 遍历选中物品
+      lapply(1:nrow(selected_items), function(i) {
+        unique_id <- selected_items$UniqueID[i]
+        target_defect <- input$admin_target_defect  # 获取目标瑕疵品状态
+        
+        # 调用 update_status 更新瑕疵品状态
+        update_status(
+          con = con,
+          unique_id = unique_id,
+          new_status = NULL,  # 不更新物品状态
+          defect_status = target_defect,  # 更新瑕疵品状态
+          refresh_trigger = unique_items_data_refresh_trigger
+        )
+      })
+      
+      # 通知成功并刷新数据
+      showNotification("瑕疵品状态更新成功！", type = "message")
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("瑕疵品状态更新失败：", e$message), type = "error")
+    })
+  })
+  
   
   # 更新总库存数按钮
   observeEvent(input$admin_update_inventory_btn, {
