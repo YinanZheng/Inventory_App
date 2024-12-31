@@ -964,6 +964,12 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
     # 查询现有库存
     existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
     
+    # 从 unique_items 表获取历史总数量
+    historical_quantity <- dbGetQuery(con, "
+      SELECT COUNT(*) AS TotalQuantity 
+      FROM unique_items 
+      WHERE SKU = ?", params = list(sku))$TotalQuantity[1]
+    
     if (nrow(existing_item) > 0) {
       # SKU 已存在，计算新的库存和成本
       new_quantity <- existing_item$Quantity + adjustment
@@ -973,11 +979,17 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
       
       # 更新平均成本和运费
       if (needs_cost_update) {
-        # 使用 existing_item$Quantity 计算平均成本和运费
-        new_ave_product_cost <- ((existing_item$ProductCost * existing_item$Quantity) + 
-                                   (product_cost * quantity)) / (existing_item$Quantity + quantity)
-        new_ave_shipping_cost <- ((existing_item$ShippingCost * existing_item$Quantity) + 
-                                    (unit_shipping_cost * quantity)) / (existing_item$Quantity + quantity)
+        # 如果历史总数量为 0，直接使用新的采购成本
+        if (historical_quantity == 0) {
+          new_ave_product_cost <- product_cost
+          new_ave_shipping_cost <- unit_shipping_cost
+        } else {
+          # 基于 unique_items 的历史总数量计算加权平均成本
+          new_ave_product_cost <- ((existing_item$ProductCost * historical_quantity) + 
+                                     (product_cost * quantity)) / (historical_quantity + quantity)
+          new_ave_shipping_cost <- ((existing_item$ShippingCost * historical_quantity) + 
+                                      (unit_shipping_cost * quantity)) / (historical_quantity + quantity)
+        }
       } else {
         # 如果不需要更新成本，保持原有成本不变
         new_ave_product_cost <- existing_item$ProductCost
