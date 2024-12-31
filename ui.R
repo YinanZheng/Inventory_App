@@ -380,6 +380,13 @@ ui <- navbarPage(
             icon = icon("check"), 
             class = "btn-primary", 
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
+          ),
+          actionButton(
+            "revert_outbound_btn",
+            "撤回出库",
+            icon = icon("undo"),
+            class = "btn-warning",
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
           )
         )
       ),
