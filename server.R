@@ -531,14 +531,11 @@ server <- function(input, output, session) {
         easyClose = TRUE,
         footer = modalButton("关闭")
       ))
-      
-      # 清空 SKU 输入字段
-      updateTextInput(session, "new_sku", value = "")
     } else {
-      # 如果 SKU 不冲突，更新输入字段
-      updateTextInput(session, "new_sku", value = sku)
+      # 如果 SKU 不冲突，弹出提示信息
       showNotification("SKU 生成成功！", type = "message")
     }
+    updateTextInput(session, "new_sku", value = sku)
   })
   
   # 缓存商品名，安全处理空值
