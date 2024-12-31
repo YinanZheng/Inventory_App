@@ -190,13 +190,10 @@ ui <- navbarPage(
             "采购箱", style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
           ),
           
-          div(
-            column(12, DTOutput("added_items_table")),
-            style = "margin-bottom: 30px;"  # 为表格底部添加间距
-          ),
+          column(12, DTOutput("added_items_table")),
           
           div(
-            style = "padding: 20px 0;",  # 添加上下20px的padding
+            style = "padding: 20px 5px;",  # 添加上下20px的padding
             fluidRow(
               column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
               column(6, div(
