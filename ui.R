@@ -263,7 +263,14 @@ ui <- navbarPage(
                   label = NULL, 
                   placeholder = "请扫描或输入SKU",
                   width = "100%"
-                )
+                ),
+                tags$script(HTML("
+                $(document).on('keypress', '#inbound_sku', function(e) {
+                    if(e.which === 13) {  // 检测回车键
+                      $('#confirm_inbound_btn').click();  // 模拟点击按钮
+                    }
+                  });
+                "))
               ),
               
               numericInput(
