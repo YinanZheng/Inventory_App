@@ -14,7 +14,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
       column(3,
              div(
                style = "text-align: right; padding-right: 10px;",
-               actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
+               actionButton(ns("reset_btn"), "重置", icon = icon("snowplow"), class = "btn-danger", 
                             style = "font-size: 14px; width: auto; height: 35px; padding: 5px 10px; margin-right: 5px;")
              )
       )

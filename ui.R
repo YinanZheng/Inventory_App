@@ -172,14 +172,15 @@ ui <- navbarPage(
           column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
         ),
         fluidRow(
-          column(9,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%")),
-          column(3,actionButton("reset_btn", "重置", icon = icon("snowplow"), class = "btn-danger", 
-                                style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;"))
+          column(12,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%"))
         ),
         
         imageModuleUI("image_purchase"),
         
-        tags$hr(style = "margin: 5px 0; border: none;")
+        tags$hr(style = "margin: 5px 0; border: none;"),
+        
+        actionButton("reset_btn", "重置", icon = icon("snowplow"), class = "btn-danger", 
+                     style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
       ),
       
       div(
