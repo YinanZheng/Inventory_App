@@ -189,10 +189,14 @@ ui <- navbarPage(
             tags$span(icon("shopping-cart"), style = "margin-right: 5px;"),  # 使用 span 包裹图标
             "采购箱", style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
           ),
-          column(12, DTOutput("added_items_table")),
           
           div(
-            style = "margin-top: 10px; padding: 20px 0;",  # 添加上下20px的padding
+            column(12, DTOutput("added_items_table")),
+            style = "margin-bottom: 10px;"  # 为表格底部添加间距
+          ),
+          
+          div(
+            style = "padding: 20px 0;",  # 添加上下20px的padding
             fluidRow(
               column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
               column(6, div(
