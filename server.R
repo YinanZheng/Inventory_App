@@ -581,38 +581,50 @@ server <- function(input, output, session) {
   })
   
   
-  
-  # 缓存商品名，安全处理空值
   item_names <- reactive({
-    inventory_data <- inventory()
-    if (is.null(inventory_data) || nrow(inventory_data) == 0) {
-      return(list())  # 如果没有数据，返回空选项
-    }
-    lapply(inventory_data$ItemName, function(name) list(key = name, text = name))
+    req(inventory())
+    unique(inventory()$ItemName)  # 提取唯一的商品名
   })
   
-  # 动态生成ComboBox组件
-  output$new_name_combo_box_ui <- renderUI({
-    div(
-      Label("商品名:", styles = list(
-        root = list(
-          fontSize = 15,        # 设置字体大小为16px
-          fontWeight = "bold",  # 字体加粗
-          paddingTop = 0
-        )
-      )),  # 添加标签
-      ComboBox.shinyInput(
-        inputId = "new_name",
-        value = input$new_name %||% "",        # 默认初始值为空字符串
-        options = item_names(),         # 动态加载的选项
-        allowFreeform = TRUE,           # 允许用户输入自定义值
-        placeholder = "请输入商品名...",
-        styles = list(
-          root = list(height = 42)
-        )
-      )
-    )
+  observeEvent(input$new_name, {
+    current_input <- trimws(input$new_name)
+    suggestions <- item_names()[grepl(current_input, item_names(), ignore.case = TRUE)]
+    if (length(suggestions) == 1) {
+      updateTextInput(session, "new_name", value = suggestions[1]) # 自动补全
+    }
   })
+  
+  # # 缓存商品名，安全处理空值
+  # item_names <- reactive({
+  #   inventory_data <- inventory()
+  #   if (is.null(inventory_data) || nrow(inventory_data) == 0) {
+  #     return(list())  # 如果没有数据，返回空选项
+  #   }
+  #   lapply(inventory_data$ItemName, function(name) list(key = name, text = name))
+  # })
+  # 
+  # # 动态生成ComboBox组件
+  # output$new_name_combo_box_ui <- renderUI({
+  #   div(
+  #     Label("商品名:", styles = list(
+  #       root = list(
+  #         fontSize = 15,        # 设置字体大小为16px
+  #         fontWeight = "bold",  # 字体加粗
+  #         paddingTop = 0
+  #       )
+  #     )),  # 添加标签
+  #     ComboBox.shinyInput(
+  #       inputId = "new_name",
+  #       value = input$new_name %||% "",        # 默认初始值为空字符串
+  #       options = item_names(),         # 动态加载的选项
+  #       allowFreeform = TRUE,           # 允许用户输入自定义值
+  #       placeholder = "请输入商品名...",
+  #       styles = list(
+  #         root = list(height = 42)
+  #       )
+  #     )
+  #   )
+  # })
   
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")

@@ -156,8 +156,12 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(7, uiOutput("new_name_combo_box_ui")),  # 动态生成ComboBox
-          
+          column(7,   textInput(
+            inputId = "new_name",
+            label = "商品名：",
+            placeholder = "请输入商品名...",
+            width = "100%"
+          )),  
           column(5, dateInput(
             inputId = "purchase_date",
             label = "采购日期:",
