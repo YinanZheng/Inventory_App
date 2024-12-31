@@ -192,7 +192,7 @@ ui <- navbarPage(
           column(12, DTOutput("added_items_table")),
           
           div(
-            style = "padding: 20px 0;",  # 添加上下20px的padding
+            style = "margin-top: 10px; padding: 20px 0;",  # 添加上下20px的padding
             fluidRow(
               column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
               column(6, div(
