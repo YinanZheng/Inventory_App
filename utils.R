@@ -709,9 +709,19 @@ handleOperation <- function(
     } else NULL
     
     # 动态设置运输方式
-    shipping_method <- if (!is.null(input) && operation_name %in% c("出库", "售出")) {
-      ifelse(operation_name == "出库", input$outbound_shipping_method, input$sold_shipping_method)
-    } else NULL
+    shipping_method <- if (!is.null(input)) {
+      if (operation_name == "撤回") {
+        NULL  # 清空运输方式
+      } else if (operation_name == "出库") {
+        input$outbound_shipping_method  # 出库时的运输方式
+      } else if (operation_name == "售出") {
+        input$sold_shipping_method  # 售出时的运输方式
+      } else {
+        NULL  # 默认情况
+      }
+    } else {
+      NULL
+    }
     
     # 动态清空字段逻辑
     if (!is.null(clear_field)) {
