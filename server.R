@@ -2769,7 +2769,7 @@ server <- function(input, output, session) {
         
         # 目标状态选择
         selectInput("admin_target_status", "目标库存状态改为：", 
-                    choices = c("采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "退货"), 
+                    choices = c('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国发货','美国调货','退货'), 
                     selected = NULL, width = "100%"),
         
         # 是否记录修改时间
