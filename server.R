@@ -2776,7 +2776,7 @@ server <- function(input, output, session) {
         checkboxInput("admin_record_timestamp", "记录修改时间", value = FALSE),
         
         # 更新选中物品状态
-        actionButton("admin_update_status_btn", "更新选中物品库存状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        actionButton("admin_update_status_btn", "更新库存状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
         
         tags$hr(),
         
@@ -2788,7 +2788,7 @@ server <- function(input, output, session) {
                     selected = NULL, width = "100%"),
         
         # 更新选中物品瑕疵品状态
-        actionButton("admin_update_defect_btn", "更新选中物品瑕疵品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        actionButton("admin_update_defect_btn", "更新瑕疵品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
         
         tags$hr(),
         
