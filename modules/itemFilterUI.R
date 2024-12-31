@@ -3,22 +3,23 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
   
   div(
     class = "card",
-    style = sprintf("margin-bottom: 5px; padding: 5px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);", border_color),
+    style = sprintf("margin-bottom: 5px; padding: 5px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); overflow: hidden;", border_color),
     
-    # 物品筛选标题和清空按钮
+    # 标题和清空按钮在同一行
     fluidRow(
       column(9, 
-             tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; margin-bottom: 15px;", text_color))
+             tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; margin-bottom: 0;", text_color))
       ),
       column(3,
              div(
-               style = "text-align: right;",
+               style = "text-align: right; padding-right: 10px;",
                actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
-                            style = "font-size: 14px; width: auto; height: 35px; padding: 5px 10px; margin-bottom: 10px;")
+                            style = "font-size: 14px; width: auto; height: 35px; padding: 5px 10px;")
              )
       )
     ),
     
+    # 供应商和商品名筛选行
     fluidRow(
       column(6, 
              selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
