@@ -224,7 +224,8 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "inbound_filter-maker",
-      item_name_input_id = "inbound_filter-name"
+      item_name_input_id = "inbound_filter-name",
+      date_range_input_id = "inbound_filter-purchase_date_range"
     )
   })
   
@@ -239,7 +240,8 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "outbound_filter-maker",
-      item_name_input_id = "outbound_filter-name"
+      item_name_input_id = "outbound_filter-name",
+      date_range_input_id = "outbound_filter-purchase_date_range"
     )
   })
   
