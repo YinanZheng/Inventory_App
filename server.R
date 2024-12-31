@@ -209,8 +209,8 @@ server <- function(input, output, session) {
     data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
-      maker_input_id = "new_maker",
-      item_name_input_id = "new_name"
+      maker_input_id = "purchase_filter-maker",
+      item_name_input_id = "purchase_filter-name"
     )
     
     # 将 "采购" 状态的商品放到最前
