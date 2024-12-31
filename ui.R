@@ -138,6 +138,8 @@ ui <- navbarPage(
         
         itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE),
         
+        tags$hr(style = "margin: 5px 0; border: none;"),
+        
         fluidRow(
           column(10, 
                  selectizeInput("new_maker", "供应商:", choices = NULL, width = "100%",
