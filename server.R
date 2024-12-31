@@ -2432,20 +2432,77 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  DropdownMenuItemType <- function(type) {
+    JS(paste0("jsmodule['@fluentui/react'].DropdownMenuItemType.", type))
+  }
+  
+  options_with_search <- function(opt) {
+    filter_header <- list(
+      key = "__FilterHeader__",
+      text = "-",
+      itemType = DropdownMenuItemType("Header")
+    )
+    append(list(filter_header), opt)
+  }
+  
+  SearchableDropdown <- function(id, opt, ...) {
+    render_search_box <- JS(paste0("(option) => {
+    if (option.key !== '__FilterHeader__') {
+      return option.text;
+    }
+    const onChange = (event, newValue) => {
+      const query = newValue.toLocaleLowerCase();
+      const checkboxLabels = document.querySelectorAll(
+        '#", id, "-list .ms-Checkbox-label'
+      );
+      checkboxLabels.forEach(label => {
+        const text = label.innerText.replace('\\n', '').replace('', '').toLocaleLowerCase();
+        if (query === '' || text.startsWith(query)) {
+          label.parentElement.style.display = 'flex';
+        } else {
+          label.parentElement.style.display = 'none';
+        }
+      });
+    };
+    const props = { placeholder: 'Start typing', underlined: true, onChange };
+    const element = React.createElement(jsmodule['@fluentui/react'].SearchBox, props);
+    return element;
+  }"))
+    
+    Dropdown.shinyInput(
+      inputId = id,
+      multiSelect = TRUE,
+      placeholder = "请选择供应商...",
+      options = options_with_search(opt),
+      ...,
+      onRenderOption = render_search_box
+    )
+  }
+  
+  
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
     
+    # div(
+    #   style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
+    #   Dropdown.shinyInput(
+    #     inputId = "download_maker",
+    #     label = "选择供应商:",
+    #     options = maker_options,
+    #     multiSelect = TRUE,
+    #     placeholder = "请选择供应商...",
+    #     searchable = TRUE              # 启用搜索功能
+    #   )
+    # )
+    
     div(
-      style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
-      Dropdown.shinyInput(
-        inputId = "download_maker",
-        label = "选择供应商:",
-        options = maker_options,
-        multiSelect = TRUE,
-        placeholder = "请选择供应商...",
-        searchable = TRUE              # 启用搜索功能
+      style = "padding-bottom: 15px;", # 外层 div 设置内边距
+      SearchableDropdown(
+        id = "download_maker",        # 下拉菜单 ID
+        opt = maker_options,          # 供应商选项
+        label = "选择供应商:"
       )
     )
   })
