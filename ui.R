@@ -513,7 +513,7 @@ ui <- navbarPage(
                          HTML(paste0(
                            as.character(icon("warehouse")), 
                            "  货架 ",
-                           span(style = "float: right; color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
+                           span(style = "color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
                          )),
                          style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
                        ),
@@ -530,7 +530,7 @@ ui <- navbarPage(
                          HTML(paste0(
                            as.character(icon("box")), 
                            "  发货箱 ",
-                           span(style = "float: right; color: #28A745; font-size: 18px;", textOutput("box_count")) # 动态显示数量
+                           span(style = "color: #28A745; font-size: 18px;", textOutput("box_count")) # 动态显示数量
                          )),
                          style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
                        ),
