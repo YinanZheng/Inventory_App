@@ -2440,8 +2440,7 @@ server <- function(input, output, session) {
     
     # 转换为 Dropdown 所需格式
     maker_options <- if (length(makers) > 0) {
-      lapply(makers, function(maker) list(key = paste0(maker, remove_tone(stringi::stri_trans_general(maker, "Latin"))), 
-                                          text = maker))
+      lapply(makers, function(maker) list(key = maker, text = maker))
     } else {
       # 提供默认值避免空选项
       list(list(key = "no-data", text = "无供应商数据"))
@@ -2505,7 +2504,7 @@ server <- function(input, output, session) {
         inputId = "download_maker",
         label = "选择供应商:",
         options = options_with_search(maker_options), # 添加搜索框到选项列表中
-        multiSelect = TRUE,
+        multiSelect = FALSE,
         placeholder = "请选择供应商...",
         onRenderOption = render_search_box, # 自定义渲染逻辑
         styles = dropdown_styles            # 应用样式控制下拉菜单高度
