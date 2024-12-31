@@ -351,7 +351,9 @@ render_table_with_images <- function(data,
 }
 
 
-update_status <- function(con, unique_id, new_status, defect_status = NULL, shipping_method = NULL, refresh_trigger = NULL, update_timestamp = TRUE) {
+update_status <- function(con, unique_id, new_status, defect_status = NULL, 
+                          shipping_method = NULL, clear_shipping_method = FALSE, 
+                          refresh_trigger = NULL, update_timestamp = TRUE) {
   if (!new_status %in% names(status_columns)) {
     showNotification("Invalid status provided", type = "error")
     return()
@@ -366,7 +368,8 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL, ship
     "Status = ?",
     timestamp_update,
     if (!is.null(defect_status)) "Defect = ?" else NULL,
-    if (!is.null(shipping_method)) "IntlShippingMethod = ?" else NULL
+    if (!is.null(shipping_method)) "IntlShippingMethod = ?" else NULL,
+    if (clear_shipping_method) "IntlShippingMethod = NULL" else NULL # 显式清空运输方式
   )
   
   # 拼接 SET 子句
@@ -397,6 +400,7 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL, ship
     refresh_trigger(!refresh_trigger())
   }
 }
+
 
 
 update_order_id <- function(con, unique_id, order_id) {
@@ -678,7 +682,8 @@ handleOperation <- function(
     refresh_trigger,      # 数据刷新触发器
     session,              # 当前会话对象
     input = NULL,          # 显式传递的 input 对象
-    clear_field = NULL    # 需要清空的字段
+    clear_field = NULL,    # 需要清空的字段
+    clear_shipping_method = FALSE
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -738,8 +743,8 @@ handleOperation <- function(
       con = con,
       unique_id = sku_items$UniqueID[1],
       new_status = update_status_value,
-      defect_status = defect_status,
-      shipping_method = shipping_method,
+      shipping_method = shipping_method,    # 设置运输方式
+      clear_shipping_method = clear_shipping_method, # 是否清空运输方式
       refresh_trigger = refresh_trigger
     )
     

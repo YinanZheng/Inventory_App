@@ -1064,7 +1064,8 @@ server <- function(input, output, session) {
       refresh_trigger = unique_items_data_refresh_trigger,
       session = session,
       input = input,
-      clear_field = "DomesticExitTime" # 清空出库日期字段
+      clear_field = "DomesticExitTime", # 清空出库日期字段
+      clear_shipping_method = TRUE # 清空出库国际运输方式
     )
   })
   
