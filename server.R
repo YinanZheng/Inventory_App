@@ -214,8 +214,7 @@ server <- function(input, output, session) {
     )
     
     # 将 "采购" 状态的商品放到最前
-    data <- data %>%
-      arrange(desc(Status == "采购"))
+    data %>% arrange(desc(Status == "采购"))
   })
   
   # 入库页过滤
@@ -225,13 +224,16 @@ server <- function(input, output, session) {
     
     data <- data[data$Status %in% c("采购", "国内入库"), ]
     
-    filter_unique_items_data_by_inputs(
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "inbound_filter-maker",
       item_name_input_id = "inbound_filter-name",
       date_range_input_id = "inbound_filter-purchase_date_range"
     )
+    
+    # 将 "采购" 状态的商品放到最前
+    data %>% arrange(desc(Status == "采购"))
   })
   
   # 出库页过滤
@@ -241,13 +243,16 @@ server <- function(input, output, session) {
     
     data <- data[data$Status %in% c("国内入库", "国内出库"), ]
     
-    filter_unique_items_data_by_inputs(
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "outbound_filter-maker",
       item_name_input_id = "outbound_filter-name",
       date_range_input_id = "outbound_filter-purchase_date_range"
     )
+    
+    # 将 "国内出库" 状态的商品放到最前
+    data %>% arrange(desc(Status == "国内出库"))
   })
   
   # 售出页过滤
@@ -257,13 +262,16 @@ server <- function(input, output, session) {
 
     data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
 
-    filter_unique_items_data_by_inputs(
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "sold_filter-maker",
       item_name_input_id = "sold_filter-name",
       date_range_input_id = "sold_filter-purchase_date_range"
     )
+    
+    # 将 "国内出库" 状态的商品放到最前
+    data %>% arrange(desc(Status == "国内出库"))
   })
   
   # 瑕疵品管理页过滤
