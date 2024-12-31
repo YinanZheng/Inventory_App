@@ -1,5 +1,5 @@
 uniqueItemsTableServer <- function(input, output, session, column_mapping, selection = "single", data, options = list(
-  scrollY = "730px",  # 根据内容动态调整滚动高度
+  scrollY = "770px",  # 根据内容动态调整滚动高度
   scrollX = TRUE,  # 支持水平滚动
   fixedHeader = TRUE,  # 启用表头固定
   dom = 't',  # 隐藏搜索框和分页等控件
