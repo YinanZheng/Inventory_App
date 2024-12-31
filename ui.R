@@ -175,10 +175,6 @@ ui <- navbarPage(
         
         imageModuleUI("image_purchase"),
         
-        fluidRow(
-          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-        ),
-        
         tags$hr(style = "margin: 5px 0; border: none;")
       ),
       
@@ -202,8 +198,9 @@ ui <- navbarPage(
         div(
           style = "flex-shrink: 0; padding: 20px 13px;",  # 固定按钮区域的高度
           fluidRow(
-            column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
-            column(6, div(
+            column(2, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
+            column(2, style = "text-align: left;", actionButton("add_btn", "添加/更新采购", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+            column(5, div(
               textOutput("total_cost"),
               style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
             )),
