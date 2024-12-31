@@ -504,6 +504,9 @@ server <- function(input, output, session) {
       NULL
     }
     
+    # 检查 SKU 的来源
+    is_from_table <- !is.null(input$selected_row) && input$selected_row != ""
+    
     # 判断是否需要清空 SKU
     if (is.null(input$new_maker) || input$new_maker == "" || 
         is.null(new_name_text) || new_name_text == "") {
@@ -519,24 +522,36 @@ server <- function(input, output, session) {
       item_name = new_name_text,
       maker = input$new_maker
     )
+    # 检查 SKU 的来源
+    is_from_table <- !is.null(unique_items_table_purchase_selected_row()) && length(unique_items_table_purchase_selected_row()) > 0
     
-    # 检查 SKU 是否冲突
-    existing_sku <- inventory() %>% filter(SKU == sku)
-    
-    if (nrow(existing_sku) > 0) {
-      # 如果 SKU 冲突，弹出模态窗口提醒用户
-      showModal(modalDialog(
-        title = "SKU 冲突",
-        paste0("注意：生成的 SKU '", sku, "' 已存在于库存中！"),
-        easyClose = TRUE,
-        footer = modalButton("关闭")
-      ))
+    if (is_from_table) {
+      # 如果 SKU 来源于表格，直接更新输入字段
+      updateTextInput(session, "new_sku", value = sku)
+      showNotification("SKU 已生成（来源于表格选择）。", type = "message")
     } else {
-      # 如果 SKU 不冲突，弹出提示信息
-      showNotification("SKU 生成成功！", type = "message")
+      # 如果 SKU 不是来源于表格，检查是否冲突
+      existing_sku <- inventory() %>% filter(SKU == sku)
+      
+      if (nrow(existing_sku) > 0) {
+        # 如果 SKU 冲突，弹出模态窗口提醒用户
+        showModal(modalDialog(
+          title = "SKU 冲突",
+          paste0("生成的 SKU '", sku, "' 已存在于库存中，请重新生成 SKU！"),
+          easyClose = TRUE,
+          footer = modalButton("关闭")
+        ))
+        
+        # 清空 SKU 输入字段
+        updateTextInput(session, "new_sku", value = "")
+      } else {
+        # 如果 SKU 不冲突，更新输入字段
+        updateTextInput(session, "new_sku", value = sku)
+        showNotification("SKU 生成成功！", type = "message")
+      }
     }
-    updateTextInput(session, "new_sku", value = sku)
   })
+  
   
   # 缓存商品名，安全处理空值
   item_names <- reactive({
