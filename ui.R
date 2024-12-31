@@ -626,6 +626,23 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        
+        div(
+          class = "card shadow-sm", # 添加卡片样式
+          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+          # 卡片标题
+          div(
+            style = "margin-bottom: 10px; padding-bottom: 8px;",
+            tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+            
+            imageModuleUI("image_manage", label = ""),
+            
+            actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
+          ),
+        ),
+
+        tags$hr(), # 分隔线
+        
         fluidRow(
           column(
             12,
@@ -649,22 +666,6 @@ ui <- navbarPage(
               )
             )
           )
-        ),
-        
-        tags$hr(), # 分隔线
-        
-        div(
-          class = "card shadow-sm", # 添加卡片样式
-          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-          # 卡片标题
-          div(
-            style = "margin-bottom: 10px; padding-bottom: 8px;",
-            tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-            
-            imageModuleUI("image_manage", label = ""),
-            
-            actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
-          ),
         )
       ),
       
