@@ -2488,6 +2488,14 @@ server <- function(input, output, session) {
     return React.createElement(jsmodule['@fluentui/react'].SearchBox, props);
   }"))
     
+    # 定义样式，控制下拉菜单的高度
+    dropdown_styles <- JS("{
+    callout: {
+      maxHeight: '200px', // 设置下拉菜单最大高度
+      overflowY: 'auto'   // 启用垂直滚动条
+    }
+  }")
+    
     # 创建 UI
     div(
       style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
@@ -2497,7 +2505,8 @@ server <- function(input, output, session) {
         options = options_with_search(maker_options), # 添加搜索框到选项列表中
         multiSelect = TRUE,
         placeholder = "请选择供应商...",
-        onRenderOption = render_search_box # 自定义渲染逻辑
+        onRenderOption = render_search_box, # 自定义渲染逻辑
+        styles = dropdown_styles            # 应用样式控制下拉菜单高度
       )
     )
   })
