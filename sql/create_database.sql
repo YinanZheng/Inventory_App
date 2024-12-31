@@ -1,141 +1,78 @@
 CREATE DATABASE inventory_system;
 USE inventory_system;
 
-CREATE TABLE maker_list (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  Name VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  Pinyin VARCHAR(255)
-);
+CREATE TABLE `maker_list` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `Name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Pinyin` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=202 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
-CREATE TABLE item_type_data (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  MajorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  MajorTypeSKU VARCHAR(50),
-  MinorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-  MinorTypeSKU VARCHAR(50)
-);
+CREATE TABLE `item_type_data` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `MajorType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `MajorTypeSKU` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `MinorType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `MinorTypeSKU` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=167 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
-CREATE TABLE inventory (
-  SKU VARCHAR(50) PRIMARY KEY,  -- SKU must be unique
-  Maker VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Supplier/Maker name
-  MajorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Major category
-  MinorType VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Minor category
-  ItemName VARCHAR(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL, -- Name of the item
-  ProductCost DECIMAL(10, 2) NOT NULL DEFAULT 0.00, -- Average cost with 2 decimal places
-  ShippingCost DECIMAL(10, 2) NOT NULL DEFAULT 0.00, -- Average shipping cost with 2 decimal places
-  Quantity INT NOT NULL DEFAULT 0, -- Quantity in stock, default is 0
-  ItemImagePath VARCHAR(255), -- Path or URL to item image
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Automatically track creation time
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- Automatically track last update time
-);
+CREATE TABLE `inventory` (
+  `SKU` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Maker` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `MajorType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `MinorType` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ItemName` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ProductCost` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `ShippingCost` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `Quantity` int NOT NULL DEFAULT '0',
+  `ItemImagePath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`SKU`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
-CREATE TABLE unique_items (
-    UniqueID VARCHAR(36) PRIMARY KEY,             -- Unique identifier for each item
-    SKU VARCHAR(50) NOT NULL,                     -- Foreign key referencing inventory table
-    ProductCost DECIMAL(10, 2) NOT NULL,          -- unit product cost with 2 decimal places
-    DomesticShippingCost DECIMAL(10, 2) NOT NULL, -- unit domestic shipping cost with 2 decimal places
-    Status ENUM('采购', '国内入库', '国内出库', '国内售出', '美国入库', '美国售出', '退货') NOT NULL, -- status
-    Defect ENUM('未知', '无瑕', '瑕疵', '修复') NOT NULL,
-    PurchaseTime DATE,                        -- Timestamp for '采购'
-    DomesticEntryTime DATE,                   -- Timestamp for '国内入库'
-    DomesticExitTime DATE,                    -- Timestamp for '国内出库'
-    DomesticSoldTime DATE,                    -- Timestamp for '国内售出'
-    UsEntryTime DATE,                         -- Timestamp for '美国入库'
-    UsSoldTime DATE,                          -- Timestamp for '美国售出'
-    ReturnTime DATE,                          -- Timestamp for '退货'
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Creation timestamp
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP, -- Last update timestamp
-    FOREIGN KEY (SKU) REFERENCES inventory(SKU)  -- Relationship with inventory table
-);
+CREATE TABLE `unique_items` (
+  `UniqueID` varchar(36) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `SKU` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ProductCost` decimal(10,2) NOT NULL,
+  `DomesticShippingCost` decimal(10,2) NOT NULL,
+  `Status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国发货','美国调货','退货') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Defect` enum('未知','无瑕','瑕疵','修复') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `DefectNotes` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `PurchaseTime` date DEFAULT NULL,
+  `DomesticEntryTime` date DEFAULT NULL,
+  `DomesticExitTime` date DEFAULT NULL,
+  `DomesticSoldTime` date DEFAULT NULL,
+  `UsEntryTime` date DEFAULT NULL,
+  `UsShippingTime` date DEFAULT NULL,
+  `UsRelocationTime` date DEFAULT NULL,
+  `UsSoldTime` date DEFAULT NULL,
+  `ReturnTime` date DEFAULT NULL,
+  `IntlShippingMethod` enum('海运','空运') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `IntlAirTracking` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `IntlSeaTracking` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `OrderID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`UniqueID`),
+  KEY `SKU` (`SKU`),
+  KEY `fk_orders_orderid` (`OrderID`),
+  CONSTRAINT `fk_orderid` FOREIGN KEY (`OrderID`) REFERENCES `orders` (`OrderID`) ON DELETE SET NULL ON UPDATE CASCADE,
+  CONSTRAINT `unique_items_ibfk_1` FOREIGN KEY (`SKU`) REFERENCES `inventory` (`SKU`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
-
-CREATE TABLE orders (
-    OrderID VARCHAR(50) PRIMARY KEY,         -- 订单号，作为主键
-    UsTrackingNumber1 VARCHAR(50),            -- 运单号1
-    UsTrackingNumber2 VARCHAR(50),            -- 运单号2
-    UsTrackingNumber3 VARCHAR(50),            -- 运单号3
-    OrderImagePath VARCHAR(255),            -- 订单图片路径
-    OrderNotes TEXT,                        -- 订单备注
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,  -- 创建时间
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP -- 更新时间
-);
-
--- 在 UsTrackingNumber3 之后增加列
-USE inventory_system;
-
-ALTER TABLE orders
-DROP COLUMN Platform;
-
-ALTER TABLE orders
-ADD COLUMN CustomerNetName VARCHAR(50) AFTER CustomerName;
-
-ALTER TABLE orders
-ADD COLUMN Platform ENUM('Etsy', 'Shopify', 'TikTok', '其他') NOT NULL AFTER CustomerName;
-
-ALTER TABLE orders
-ADD COLUMN OrderStatus ENUM('备货', '发货') NOT NULL AFTER OrderNotes;
-
-ALTER TABLE orders MODIFY COLUMN OrderStatus ENUM(
-    '备货', '预定', '调货', '装箱', '发出', '在途', '送达'
-) NOT NULL;
-
-DESCRIBE orders;
-
-SELECT * FROM orders;
-
---
-
-
-USE inventory_system;
-
--- 在 UsEntryTime 之后增加 Time 列
-ALTER TABLE unique_items
-ADD COLUMN UsCheckTime DATE AFTER UsEntryTime,
-ADD COLUMN UsRelocationTime DATE AFTER UsCheckTime;
-
--- 在 ReturnTime 之后增加列
-ALTER TABLE unique_items
-ADD COLUMN IntlShippingMethod ENUM('海运', '空运') AFTER ReturnTime,
-ADD COLUMN IntlAirTracking VARCHAR(50) AFTER IntlShippingMethod,
-ADD COLUMN IntlSeaTracking VARCHAR(50) AFTER IntlAirTracking,
-ADD COLUMN OrderID VARCHAR(50) AFTER IntlSeaTracking;
-
-ALTER TABLE unique_items
-ADD CONSTRAINT fk_orderid FOREIGN KEY (OrderID)
-REFERENCES orders(OrderID)
-ON UPDATE CASCADE
-ON DELETE SET NULL;
-
-
--- 在 Defect 之后增加列
-ALTER TABLE unique_items
-ADD COLUMN DefectNotes VARCHAR(255) AFTER Defect;
-
-ALTER TABLE unique_items
-DROP COLUMN DefectNote;
-
-ALTER TABLE unique_items
-DROP COLUMN UsCheckTime;
-
-ALTER TABLE unique_items
-ADD COLUMN UsShippingTime DATE AFTER UsEntryTime
-
-DESCRIBE unique_items;
-
--- 修改 Status 列的枚举值
-ALTER TABLE unique_items MODIFY COLUMN Status ENUM(
-    '采购', 
-    '国内入库', 
-    '国内出库', 
-    '国内售出', 
-    '美国入库', 
-    '美国售出', 
-    '美国发货',
-    '美国调货',
-    '退货'
-) NOT NULL;
-
-
-
-
-
+CREATE TABLE `orders` (
+  `OrderID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `UsTrackingNumber` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `CustomerName` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `CustomerNetName` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Platform` enum('Etsy','Shopify','TikTok','其他') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `OrderImagePath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `OrderNotes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `OrderStatus` enum('备货','预定','调货','装箱','发出','在途','送达') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`OrderID`),
+  KEY `idx_customer_name` (`CustomerName`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
