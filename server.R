@@ -2471,11 +2471,16 @@ server <- function(input, output, session) {
   observeEvent(input$download_reset_filters, {
     # 重置供应商筛选为全选
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
+    updateDropdown.shinyInput(
+      session = session,
+      inputId = "download_maker",
+      options = lapply(makers, function(maker) list(key = maker, text = maker)), # 更新选项
+      value = NULL # 重置为未选中状态
+    )
     
     # 重置商品名称筛选为空选项
-    item_names <- c("")  # 仅包含空选项
-    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
+    updateSelectizeInput(session, "download_item_name", choices = "", selected = "")
+    updateDateRangeInput(session, "download_date_range", start = Sys.Date() - 365, end = Sys.Date())
   })
   
   # 下载物品表为 Excel
