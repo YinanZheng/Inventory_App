@@ -2504,7 +2504,7 @@ server <- function(input, output, session) {
         inputId = "download_maker",
         label = "选择供应商:",
         options = options_with_search(maker_options), # 添加搜索框到选项列表中
-        multiSelect = FALSE,
+        multiSelect = TRUE,
         placeholder = "请选择供应商...",
         onRenderOption = render_search_box, # 自定义渲染逻辑
         styles = dropdown_styles            # 应用样式控制下拉菜单高度
