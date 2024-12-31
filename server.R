@@ -2435,85 +2435,16 @@ server <- function(input, output, session) {
   
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
-    # 获取供应商列表
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     
-    # 转换为 Dropdown 所需格式
-    maker_options <- if (length(makers) > 0) {
-      lapply(makers, function(maker) list(key = maker, text = maker))
-    } else {
-      # 提供默认值避免空选项
-      list(list(key = "no-data", text = "无供应商数据"))
-    }
-    
-    # 定义 DropdownMenuItemType
-    DropdownMenuItemType <- function(type) {
-      JS(paste0("jsmodule['@fluentui/react'].DropdownMenuItemType.", type))
-    }
-    
-    # 包含搜索框的选项列表
-    options_with_search <- function(opt) {
-      filter_header <- list(
-        key = "__FilterHeader__", 
-        text = "-", 
-        itemType = DropdownMenuItemType("Header") # 添加一个 Header 类型选项用于搜索框
-      )
-      append(list(filter_header), opt)
-    }
-    
-    # 定义模糊搜索渲染逻辑
-    render_search_box <- JS(paste0("(option) => {
-    if (option.key !== '__FilterHeader__') {
-      return option.text;
-    }
-    const onChange = (event, newValue) => {
-      const query = newValue.toLocaleLowerCase();
-      const checkboxLabels = document.querySelectorAll(
-        '#download_maker-list .ms-Checkbox-label'
-      );
-      checkboxLabels.forEach(label => {
-        const text = label.innerText.replace('\\n', '').replace('', '').toLocaleLowerCase();
-        // 使用 indexOf 实现模糊匹配
-        if (query === '' || text.indexOf(query) !== -1) {
-          label.parentElement.style.display = 'flex';
-        } else {
-          label.parentElement.style.display = 'none';
-        }
-      });
-    };
-    const props = { 
-      placeholder: '搜索供应商...', 
-      underlined: true, 
-      onChange 
-    };
-    return React.createElement(jsmodule['@fluentui/react'].SearchBox, props);
-  }"))
-    
-    # 定义样式，控制下拉菜单的高度
-    dropdown_styles <- JS("{
-    callout: {
-      maxHeight: '200px', // 设置下拉菜单最大高度
-      overflowY: 'auto'   // 启用垂直滚动条
-    }
-  }")
-    
-    # 创建 UI
-    div(
-      style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
-      Dropdown.shinyInput(
-        inputId = "download_maker",
-        label = "选择供应商:",
-        options = options_with_search(maker_options), # 添加搜索框到选项列表中
-        multiSelect = TRUE,
-        placeholder = "请选择供应商...",
-        onRenderOption = render_search_box, # 自定义渲染逻辑
-        styles = dropdown_styles            # 应用样式控制下拉菜单高度
-      )
+    createSearchableDropdown(
+      input_id = "download_maker",
+      label = "选择供应商:",
+      data = makers,
+      placeholder = "搜索供应商..."
     )
   })
-  
-  
-  
+
   
   # 监听供应商选择变化并动态更新商品名称
   observe({
