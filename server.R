@@ -278,23 +278,31 @@ server <- function(input, output, session) {
       data <- data[data$Defect == "无瑕", ]
     }
     
-    # 返回过滤后的数据
     data
   })
   
   
   
-  # 根据物流方式筛选物品数据
+  # 数据下载页筛选
   filtered_unique_items_data_logistics <- reactive({
     data <- unique_items_data()
-    shipping_method <- input$intl_shipping_method 
+    shipping_method <- input$intl_shipping_method
     
+    # 判断并根据物流方式筛选
     if (!is.null(shipping_method) && shipping_method != "全部") {
       data <- data %>% filter(IntlShippingMethod == shipping_method)
+      
+      # 动态移除不相关的运单号列
+      if (shipping_method == "海运") {
+        data <- data %>% select(-IntlAirTracking) # 移除空运运单号列
+      } else if (shipping_method == "空运") {
+        data <- data %>% select(-IntlSeaTracking) # 移除海运运单号列
+      }
     }
     
     data
   })
+  
   
   # 下载页过滤
   filtered_unique_items_data_download <- reactive({
