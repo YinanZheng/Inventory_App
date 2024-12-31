@@ -2444,7 +2444,8 @@ server <- function(input, output, session) {
         label = "选择供应商:",
         options = maker_options,
         multiSelect = TRUE,
-        placeholder = "请选择供应商..."
+        placeholder = "请选择供应商...",
+        searchable = TRUE              # 启用搜索功能
       )
     )
   })
