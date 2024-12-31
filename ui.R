@@ -379,6 +379,13 @@ ui <- navbarPage(
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
+          tags$script(HTML("
+          $(document).on('keypress', '#outbound_sku', function(e) {
+              if(e.which === 13) {  // 检测回车键
+                $('#confirm_outbound_btn').click();  // 模拟点击按钮
+              }
+            });
+          ")),
           
           tags$div(
             class = "card",
@@ -435,22 +442,22 @@ ui <- navbarPage(
     "售出", icon = icon("dollar-sign"),
     div(
       class = "layout-container",
-
+      
       # 左侧：动态变化的筛选区和订单登记
       div(
         class = "sticky-sidebar",
         style = "width: 400px;",
-
+        
         # 动态显示筛选区
         uiOutput("dynamic_sidebar"),
-
+        
         # 订单登记区（共用）
         div(
           class = "card",
           style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-
+          
           tags$h4("订单登记与更新", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-
+          
           fluidRow(
             column(
               7,
@@ -473,12 +480,12 @@ ui <- navbarPage(
               )
             )
           ),
-
+          
           fluidRow(
             column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入", width = "100%")),
             column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
           ),
-
+          
           fluidRow(
             column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
             column(3, checkboxInput("is_preorder", "预订", value = FALSE)),
@@ -490,18 +497,18 @@ ui <- navbarPage(
               options = list(placeholder = '填选供应商...', maxOptions = 500)
             ))
           ),
-
+          
           # 运单号
           textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
-
+          
           tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
-
+          
           # 订单图片上传
           imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
-
+          
           # 订单备注
           textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
-
+          
           # 按钮区
           div(
             style = "margin-top: 10px; display: flex; justify-content: space-between;",
@@ -522,7 +529,7 @@ ui <- navbarPage(
           )
         )
       ),
-
+      
       # 主面板：售出和订单管理的分页
       div(
         class = "main-panel",
@@ -655,7 +662,7 @@ ui <- navbarPage(
     )
   ), # End of 售出
   
-
+  
   tabPanel(
     "物品管理", icon = icon("list-check"),
     div(
@@ -676,7 +683,7 @@ ui <- navbarPage(
             actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
           ),
         ),
-
+        
         tags$hr(), # 分隔线
         
         fluidRow(
