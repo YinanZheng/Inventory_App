@@ -1582,7 +1582,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
   ############################ 
   #####   订单管理子页   ##### 
   ############################ 
@@ -1683,6 +1682,7 @@ server <- function(input, output, session) {
     )
   })
   
+  # 确认删除订单逻辑
   observeEvent(input$confirm_delete_order_btn, {
     removeModal()  # 关闭确认弹窗
     
