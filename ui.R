@@ -184,7 +184,7 @@ ui <- navbarPage(
       
       div(
         class = "main-panel",
-        style = "display: flex; flex-direction: column; height: 100%;", # 确保主面板使用 flex 布局，并填充剩余空间
+        style = "display: flex; flex-direction: column; height: 100%;", # 主面板填充剩余空间
         div(
           style = "flex-shrink: 0;", # 防止标题区域被压缩
           div(
@@ -195,21 +195,21 @@ ui <- navbarPage(
         ),
         
         div(
-          style = "flex-shrink: 0; padding-bottom: 20px;", # 确保表格不会被压缩
+          style = "flex-shrink: 0; padding-bottom: 20px;", # 确保表格区域高度固定
           column(12, DTOutput("added_items_table"))
         ),
         
         div(
-          style = "flex-shrink: 0; padding: 20px 13px;",  # 按钮区域的固定高度
+          style = "flex-shrink: 0; padding: 20px 13px;",  # 固定按钮区域的高度
           fluidRow(
-            column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
+            column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
             column(6, div(
               textOutput("total_cost"),
               style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
             )),
             column(3, div(
               style = "text-align: right;",
-              actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary")
+              actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
             ))
           )
         ),
@@ -224,6 +224,7 @@ ui <- navbarPage(
           )
         )
       )
+      
       
     )
   ), # end of 采购登记 tab
