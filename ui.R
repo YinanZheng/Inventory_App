@@ -136,6 +136,8 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
+        itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE),
+        
         fluidRow(
           column(10, 
                  selectizeInput("new_maker", "供应商:", choices = NULL, width = "100%",

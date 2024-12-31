@@ -1,5 +1,6 @@
-itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF") {
+itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", use_purchase_date = TRUE) {
   ns <- NS(id)
+  
   div(
     class = "card",
     style = sprintf("margin-bottom: 5px; padding: 5px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);", border_color),
@@ -27,14 +28,19 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF") {
       )
     ),
     
-    fluidRow(
-      column(9, 
-             dateRangeInput(ns("purchase_date_range"), "采购日期范围", 
-                            start = Sys.Date() - 365, end = Sys.Date(), width = "100%")),
-      column(3, 
-             actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
-                          style = "font-size: 14px; width: 100%; height: 35px; padding: 0px; margin-top: 26px;")
+    # 根据 use_purchase_date 参数动态显示采购日期筛选部分
+    if (use_purchase_date) {
+      fluidRow(
+        column(9, 
+               dateRangeInput(ns("purchase_date_range"), "采购日期范围", 
+                              start = Sys.Date() - 365, end = Sys.Date(), width = "100%")),
+        column(3, 
+               actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
+                            style = "font-size: 14px; width: 100%; height: 35px; padding: 0px; margin-top: 26px;")
+        )
       )
-    )
+    } else {
+      NULL  # 如果不使用采购日期筛选，隐藏该部分
+    }
   )
 }
