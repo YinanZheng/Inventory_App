@@ -192,7 +192,7 @@ ui <- navbarPage(
           
           div(
             column(12, DTOutput("added_items_table")),
-            style = "margin-bottom: 10px;"  # 为表格底部添加间距
+            style = "margin-bottom: 30px;"  # 为表格底部添加间距
           ),
           
           div(
