@@ -2502,7 +2502,8 @@ server <- function(input, output, session) {
       SearchableDropdown(
         id = "download_maker",        # 下拉菜单 ID
         opt = maker_options,          # 供应商选项
-        label = "选择供应商:"
+        label = "选择供应商:",
+        style = "max-height: 200px; overflow-y: auto;" # 设置下拉菜单最大高度并启用滚动条
       )
     )
   })
