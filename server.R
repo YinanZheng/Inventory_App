@@ -882,32 +882,6 @@ server <- function(input, output, session) {
     )
   })
   
-  observeEvent(input$inbound_sku, {
-    # 获取当前 SKU
-    sku <- trimws(input$inbound_sku)
-    
-    # 如果 SKU 为空，则重置最大值为 1
-    if (is.null(sku) || sku == "") {
-      updateNumericInput(session, "inbound_quantity", max = 1, value = 1)
-      return()
-    }
-    
-    # 查询当前 SKU 可入库数量
-    available_quantity <- dbGetQuery(
-      con,
-      "SELECT COUNT(*) AS Available FROM unique_items WHERE SKU = ? AND Status = '采购'",
-      params = list(sku)
-    )$Available[1]
-    
-    # 如果查询结果为空，设置最大值为 1
-    if (is.null(available_quantity) || available_quantity == 0) {
-      available_quantity <- 1
-    }
-    
-    # 动态更新 numericInput 的最大值
-    updateNumericInput(session, "inbound_quantity", max = available_quantity, value = min(1, available_quantity))
-  })
-  
   # 确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
     unique_ID <- handleOperation(
