@@ -2440,7 +2440,8 @@ server <- function(input, output, session) {
     
     # 转换为 Dropdown 所需格式
     maker_options <- if (length(makers) > 0) {
-      lapply(makers, function(maker) list(key = maker, text = maker))
+      lapply(makers, function(maker) list(key = paste0(maker, remove_tone(stringi::stri_trans_general(maker, "Latin"))), 
+                                          text = maker))
     } else {
       # 提供默认值避免空选项
       list(list(key = "no-data", text = "无供应商数据"))
