@@ -2461,7 +2461,7 @@ server <- function(input, output, session) {
       append(list(filter_header), opt)
     }
     
-    # 定义搜索框渲染逻辑
+    # 定义模糊搜索渲染逻辑
     render_search_box <- JS(paste0("(option) => {
     if (option.key !== '__FilterHeader__') {
       return option.text;
@@ -2473,7 +2473,8 @@ server <- function(input, output, session) {
       );
       checkboxLabels.forEach(label => {
         const text = label.innerText.replace('\\n', '').replace('', '').toLocaleLowerCase();
-        if (query === '' || text.startsWith(query)) {
+        // 使用 indexOf 实现模糊匹配
+        if (query === '' || text.indexOf(query) !== -1) {
           label.parentElement.style.display = 'flex';
         } else {
           label.parentElement.style.display = 'none';
@@ -2510,6 +2511,7 @@ server <- function(input, output, session) {
       )
     )
   })
+  
   
   
   
