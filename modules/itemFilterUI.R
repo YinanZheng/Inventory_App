@@ -31,16 +31,20 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
     # 根据 use_purchase_date 参数动态显示采购日期筛选部分
     if (use_purchase_date) {
       fluidRow(
-        column(9, 
+        column(12, 
                dateRangeInput(ns("purchase_date_range"), "采购日期范围", 
-                              start = Sys.Date() - 365, end = Sys.Date(), width = "100%")),
-        column(3, 
-               actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
-                            style = "font-size: 14px; width: 100%; height: 35px; padding: 0px; margin-top: 26px;")
+                              start = Sys.Date() - 365, end = Sys.Date(), width = "100%")
         )
       )
     } else {
       NULL  # 如果不使用采购日期筛选，隐藏该部分
-    }
+    },
+    
+    # 清空按钮部分
+    div(
+      style = "text-align: right; margin-top: 15px;",
+      actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
+                   style = "font-size: 14px; width: auto; height: 35px; padding: 5px 20px;")
+    )
   )
 }
