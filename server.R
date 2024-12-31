@@ -2431,30 +2431,22 @@ server <- function(input, output, session) {
   ## 数据下载分页                                               ##
   ##                                                            ##
   ################################################################
+
   
-  DropdownMenuItemType <- function(type) {
-    JS(paste0("jsmodule['@fluentui/react'].DropdownMenuItemType.", type))
-  }
-  
-  options_with_search <- function(opt) {
-    if (is.null(opt) || length(opt) == 0) {
-      opt <- list(list(key = "no-data", text = "无数据"))
+  # 动态生成供应商筛选器
+  output$download_maker_ui <- renderUI({
+    # 获取供应商列表
+    makers <- unique_items_data() %>% pull(Maker) %>% unique()
+    
+    # 转换为 Dropdown 所需格式
+    maker_options <- if (length(makers) > 0) {
+      lapply(makers, function(maker) list(key = maker, text = maker))
+    } else {
+      # 提供默认值避免空选项
+      list(list(key = "no-data", text = "无供应商数据"))
     }
     
-    filter_header <- list(
-      key = "__FilterHeader__",
-      text = "-",
-      itemType = DropdownMenuItemType("Header")
-    )
-    
-    append(list(filter_header), opt)
-  }
-  
-  SearchableDropdown <- function(id, opt, ...) {
-    if (is.null(opt) || length(opt) == 0) {
-      opt <- list(list(key = "no-data", text = "无数据"))  # 设置默认选项
-    }
-    
+    # 定义搜索框逻辑
     render_search_box <- JS(paste0("(option) => {
     if (option.key !== '__FilterHeader__') {
       return option.text;
@@ -2462,7 +2454,7 @@ server <- function(input, output, session) {
     const onChange = (event, newValue) => {
       const query = newValue.toLocaleLowerCase();
       const checkboxLabels = document.querySelectorAll(
-        '#", id, "-list .ms-Checkbox-label'
+        '#download_maker-list .ms-Checkbox-label'
       );
       checkboxLabels.forEach(label => {
         const text = label.innerText.replace('\\n', '').replace('', '').toLocaleLowerCase();
@@ -2473,52 +2465,27 @@ server <- function(input, output, session) {
         }
       });
     };
-    const props = { placeholder: 'Start typing', underlined: true, onChange };
-    const element = React.createElement(jsmodule['@fluentui/react'].SearchBox, props);
-    return element;
+    const props = { placeholder: '搜索供应商...', underlined: true, onChange };
+    return React.createElement(jsmodule['@fluentui/react'].SearchBox, props);
   }"))
     
-    Dropdown.shinyInput(
-      inputId = id,
-      multiSelect = TRUE,
-      placeholder = "请选择供应商...",
-      options = options_with_search(opt),  # 确保传递非空选项
-      ...,
-      onRenderOption = render_search_box
-    )
-  }
-  
-  # 动态生成供应商筛选器
-  output$download_maker_ui <- renderUI({
-    makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
-    
-    # 提供默认值避免空选项
-    if (length(maker_options) == 0) {
-      maker_options <- list(list(key = "no-data", text = "无供应商数据"))
-    }
-    
-    # div(
-    #   style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
-    #   Dropdown.shinyInput(
-    #     inputId = "download_maker",
-    #     label = "选择供应商:",
-    #     options = maker_options,
-    #     multiSelect = TRUE,
-    #     placeholder = "请选择供应商...",
-    #     searchable = TRUE              # 启用搜索功能
-    #   )
-    # )
-    
+    # 创建 UI
     div(
-      style = "padding-bottom: 15px;", # 外层 div 设置内边距
-      SearchableDropdown(
-        id = "download_maker",        # 下拉菜单 ID
-        opt = maker_options,          # 供应商选项
+      style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
+      Dropdown.shinyInput(
+        inputId = "download_maker",
         label = "选择供应商:",
+        options = append(
+          list(list(key = "__FilterHeader__", text = "-", itemType = DropdownMenuItemType("Header"))),
+          maker_options
+        ),
+        multiSelect = TRUE,
+        placeholder = "请选择供应商...",
+        onRenderOption = render_search_box
       )
     )
   })
+  
   
   # 监听供应商选择变化并动态更新商品名称
   observe({
