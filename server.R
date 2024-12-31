@@ -520,8 +520,25 @@ server <- function(input, output, session) {
       maker = input$new_maker
     )
     
-    # Update the SKU input field
-    updateTextInput(session, "new_sku", value = sku)
+    # 检查 SKU 是否冲突
+    existing_sku <- inventory() %>% filter(SKU == sku)
+    
+    if (nrow(existing_sku) > 0) {
+      # 如果 SKU 冲突，弹出模态窗口提醒用户
+      showModal(modalDialog(
+        title = "SKU 冲突",
+        paste0("注意：生成的 SKU '", sku, "' 已存在于库存中！"),
+        easyClose = TRUE,
+        footer = modalButton("关闭")
+      ))
+      
+      # 清空 SKU 输入字段
+      updateTextInput(session, "new_sku", value = "")
+    } else {
+      # 如果 SKU 不冲突，更新输入字段
+      updateTextInput(session, "new_sku", value = sku)
+      showNotification("SKU 生成成功！", type = "message")
+    }
   })
   
   # 缓存商品名，安全处理空值
