@@ -351,22 +351,24 @@ render_table_with_images <- function(data,
 }
 
 
-update_status <- function(con, unique_id, new_status, defect_status = NULL, 
+update_status <- function(con, unique_id, new_status = NULL, defect_status = NULL, 
                           shipping_method = NULL, clear_shipping_method = FALSE, 
                           refresh_trigger = NULL, update_timestamp = TRUE) {
-  if (!new_status %in% names(status_columns)) {
-    showNotification("Invalid status provided", type = "error")
-    return()
-  }
-  
-  # 获取时间戳列
-  timestamp_column <- status_columns[[new_status]]
-  timestamp_update <- if (update_timestamp) paste0(timestamp_column, " = NOW()") else NULL
-  
-  # 动态构建 SET 部分
+  # 构建动态 SQL 子句
   set_clauses <- c(
-    "Status = ?",
-    timestamp_update,
+    if (!is.null(new_status)) {
+      # 检查 new_status 的合法性
+      if (!new_status %in% names(status_columns)) {
+        showNotification("Invalid status provided", type = "error")
+        return()
+      }
+      # 获取时间戳列并添加状态更新
+      timestamp_column <- status_columns[[new_status]]
+      timestamp_update <- if (update_timestamp) paste0(timestamp_column, " = NOW()") else NULL
+      c("Status = ?", timestamp_update)
+    } else {
+      NULL
+    },
     if (!is.null(defect_status)) "Defect = ?" else NULL,
     if (!is.null(shipping_method)) "IntlShippingMethod = ?" else NULL,
     if (clear_shipping_method) "IntlShippingMethod = NULL" else NULL # 显式清空运输方式
@@ -375,18 +377,23 @@ update_status <- function(con, unique_id, new_status, defect_status = NULL,
   # 拼接 SET 子句
   set_clause <- paste(set_clauses[!is.null(set_clauses)], collapse = ", ")
   
-  # 完整 SQL 查询
+  # 如果没有任何更新内容，提示错误并返回
+  if (set_clause == "") {
+    showNotification("No updates provided", type = "error")
+    return()
+  }
+  
+  # 构建 SQL 查询
   query <- paste0(
     "UPDATE unique_items SET ", set_clause, " WHERE UniqueID = ?"
   )
   
   # 构建参数列表
   params <- c(
-    list(new_status),
-    if (!is.null(timestamp_update)) list() else NULL,
+    if (!is.null(new_status)) list(new_status) else NULL,
     if (!is.null(defect_status)) list(defect_status) else NULL,
     if (!is.null(shipping_method)) list(shipping_method) else NULL,
-    list(unique_id)
+    list(unique_id)  # 唯一 ID 是必须的
   )
   
   # 展平参数列表
