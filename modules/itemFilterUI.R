@@ -3,7 +3,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
   
   div(
     class = "card",
-    style = sprintf("margin-bottom: 5px; padding: 5px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); overflow: hidden;", border_color),
+    style = sprintf("margin-bottom: 5px; padding: 10px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);", border_color),
     
     # 标题和清空按钮在同一行
     fluidRow(
@@ -12,9 +12,9 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
       ),
       column(3,
              div(
-               style = "text-align: right; padding-right: 10px;",
+               style = "text-align: right; padding-right: 10px;", # 右侧对齐并留出内边距
                actionButton(ns("reset_btn"), "清空", icon = icon("snowplow"), class = "btn-danger", 
-                            style = "font-size: 14px; width: auto; height: 35px; padding: 5px 10px;")
+                            style = "font-size: 14px; width: auto; height: 35px; padding: 5px 10px; margin-right: 5px;")
              )
       )
     ),
