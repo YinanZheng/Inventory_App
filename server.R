@@ -1455,6 +1455,18 @@ server <- function(input, output, session) {
                              ))$datatable
   })
   
+  # 渲染货架物品数量
+  output$shelf_count <- renderText({
+    shelf_items <- shelf_items()  # 获取当前货架上的物品
+    paste0("(", nrow(shelf_items), ")")  # 返回数量显示
+  })
+  
+  # 渲染发货箱物品数量
+  output$box_count <- renderText({
+    box_items <- box_items()  # 获取当前发货箱内的物品
+    paste0("(", nrow(box_items), ")")  # 返回数量显示
+  })
+  
   # 点击货架物品，移入箱子
   observeEvent(input$shelf_table_rows_selected, {
     selected_row <- input$shelf_table_rows_selected
