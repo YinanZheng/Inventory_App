@@ -86,4 +86,4 @@ defect_statuses <<- c("瑕疵", "修复", "无瑕")
 }
 
 # 定义管理员密码
-admin_password <- ""
+admin_password <- "1029"

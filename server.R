@@ -2647,23 +2647,20 @@ server <- function(input, output, session) {
         
         # 更新选中物品状态
         actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        
+        tags$hr(),
+        
+        tags$h4("修改库存总数", style = "color: #FF5733;"),
+        
+        # 输入新的库存总数
+        numericInput("admin_new_total_quantity", "新库存总数：", value = 0, min = 0, width = "100%"),
+        
+        # 提交修改库存总数的按钮
+        actionButton("admin_update_inventory_btn", "修改库存总数", class = "btn-warning", style = "width: 100%; margin-top: 10px;")
       )
     } else {
       div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
     }
-  })
-  
-  # 通过 SKU 筛选物品数据
-  filtered_unique_items_data_admin <- reactive({
-    data <- unique_items_data()
-    sku <- trimws(input$admin_input_sku)
-    
-    # 自动过滤 SKU，同时排除 NA 值
-    if (!is.null(sku) && sku != "") {
-      data <- data %>% filter(!is.na(SKU) & SKU == sku)
-    }
-    
-    data
   })
   
   # 使用 uniqueItemsTableServer 渲染表格
@@ -2677,9 +2674,9 @@ server <- function(input, output, session) {
                                                         OrderID = "订单号"
                                                       )), 
                                                       selection = "multiple", 
-                                                      data = filtered_unique_items_data_admin)
+                                                      data = unique_items_data)
   
-  # 监听更新状态按钮
+  # 更新状态按钮
   observeEvent(input$admin_update_status_btn, {
     req(input$admin_target_status, unique_items_table_admin_selected_row())
     
@@ -2722,7 +2719,72 @@ server <- function(input, output, session) {
     })
   })
   
-
+  # 更新总库存数按钮
+  observeEvent(input$admin_update_inventory_btn, {
+    # 获取点选的行数据
+    selected_rows <- unique_items_table_admin_selected_row()
+    selected_items <- filtered_unique_items_data_admin()[selected_rows, ]
+    
+    # 校验是否有选中物品
+    if (is.null(selected_rows) || nrow(selected_items) == 0) {
+      showNotification("请先选择至少一件物品！", type = "error")
+      return()
+    }
+    
+    # 获取选中物品的 SKU 列表
+    sku_counts <- selected_items %>%
+      group_by(SKU) %>%
+      summarize(SelectedCount = n(), .groups = "drop")  # 按 SKU 聚合
+    
+    # 获取新库存总数
+    new_total_quantity <- input$admin_new_total_quantity
+    
+    # 校验库存输入
+    if (is.null(new_total_quantity) || new_total_quantity < 0) {
+      showNotification("库存总数必须为非负数！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 遍历每个 SKU，更新库存总数
+      lapply(1:nrow(sku_counts), function(i) {
+        sku <- sku_counts$SKU[i]
+        selected_count <- sku_counts$SelectedCount[i]
+        
+        # 检查 SKU 是否存在
+        existing_record <- dbGetQuery(con, "SELECT SKU, Quantity FROM inventory WHERE SKU = ?", params = list(sku))
+        if (nrow(existing_record) == 0) {
+          showNotification(paste0("SKU ", sku, " 不存在！"), type = "error")
+          return(NULL)
+        }
+        
+        # 更新库存总数为新值
+        dbExecute(con, "
+        UPDATE inventory
+        SET Quantity = ?
+        WHERE SKU = ?",
+                  params = list(new_total_quantity, sku)
+        )
+        
+        showNotification(
+          paste0("SKU ", sku, " 的库存总数已更新为 ", new_total_quantity, "！"),
+          type = "message"
+        )
+      })
+      
+      # 刷新数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("修改库存总数时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  
+  
+  #########################################################################################################################
   
   # Disconnect from the database on app stop
   onStop(function() {
