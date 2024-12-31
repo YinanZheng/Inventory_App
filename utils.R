@@ -677,7 +677,8 @@ handleOperation <- function(
     output,               # 输出对象
     refresh_trigger,      # 数据刷新触发器
     session,              # 当前会话对象
-    input = NULL          # 显式传递的 input 对象
+    input = NULL,          # 显式传递的 input 对象
+    clear_field = NULL    # 需要清空的字段
 ) {
   sku <- trimws(sku_input) # 清理空格
   
@@ -711,6 +712,16 @@ handleOperation <- function(
     shipping_method <- if (!is.null(input) && operation_name %in% c("出库", "售出")) {
       ifelse(operation_name == "出库", input$outbound_shipping_method, input$sold_shipping_method)
     } else NULL
+    
+    # 动态清空字段逻辑
+    if (!is.null(clear_field)) {
+      dbExecute(con, paste0("
+        UPDATE unique_items
+        SET ", clear_field, " = NULL
+        WHERE UniqueID = ?"),
+                params = list(sku_items$UniqueID[1])
+      )
+    }
     
     # 调用更新状态函数
     update_status(

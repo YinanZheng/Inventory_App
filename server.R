@@ -1049,6 +1049,25 @@ server <- function(input, output, session) {
     )
   })
   
+  # 撤回出库逻辑
+  observeEvent(input$revert_outbound_btn, {
+    handleOperation(
+      operation_name = "撤回",
+      sku_input = input$outbound_sku,
+      output_name = "outbound_item_info",
+      query_status = "国内出库",
+      update_status_value = "国内入库",
+      count_label = "可出库数",
+      count_field = "AvailableForOutbound",
+      con = con,
+      output = output,
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session,
+      input = input,
+      clear_field = "DomesticExitTime" # 清空出库日期字段
+    )
+  })
+  
   # 监听选中行并更新出库 SKU
   observeEvent(unique_items_table_outbound_selected_row(), {
     if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
