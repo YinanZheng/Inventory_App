@@ -716,7 +716,7 @@ handleOperation <- function(
     # 动态设置运输方式
     shipping_method <- if (!is.null(input)) {
       if (operation_name == "撤回") {
-        ""  # 清空运输方式
+        NULL  # 清空运输方式
       } else if (operation_name == "出库") {
         input$outbound_shipping_method  # 出库时的运输方式
       } else if (operation_name == "售出") {
