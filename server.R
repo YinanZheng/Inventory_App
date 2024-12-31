@@ -213,8 +213,7 @@ server <- function(input, output, session) {
       item_name_input_id = "purchase_filter-name"
     )
     
-    # 将 "采购" 状态的商品放到最前
-    data %>% arrange(desc(Status == "采购"))
+    data
   })
   
   # 入库页过滤
@@ -251,8 +250,8 @@ server <- function(input, output, session) {
       date_range_input_id = "outbound_filter-purchase_date_range"
     )
     
-    # 将 "国内出库" 状态的商品放到最前
-    data %>% arrange(desc(Status == "国内出库"))
+    # 将 "国内入库" 状态的商品放到最前
+    data %>% arrange(desc(Status == "国内入库"))
   })
   
   # 售出页过滤
@@ -270,8 +269,8 @@ server <- function(input, output, session) {
       date_range_input_id = "sold_filter-purchase_date_range"
     )
     
-    # 将 "国内出库" 状态的商品放到最前
-    data %>% arrange(desc(Status == "国内出库"))
+    # 将 "国内入库" 状态的商品放到最前
+    data %>% arrange(desc(Status == "国内入库"))
   })
   
   # 瑕疵品管理页过滤
