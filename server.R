@@ -2475,9 +2475,11 @@ server <- function(input, output, session) {
       placeholder = "请选择供应商...",
       options = options_with_search(opt),
       ...,
-      onRenderOption = render_search_box
+      onRenderOption = render_search_box,
+      style = "width: 100%;"  # 确保整体宽度正确
     )
   }
+  
   
   
   # 动态生成供应商筛选器
@@ -2503,7 +2505,6 @@ server <- function(input, output, session) {
         id = "download_maker",        # 下拉菜单 ID
         opt = maker_options,          # 供应商选项
         label = "选择供应商:",
-        style = "max-height: 200px; overflow-y: auto;" # 设置下拉菜单最大高度并启用滚动条
       )
     )
   })

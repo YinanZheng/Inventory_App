@@ -98,6 +98,15 @@ ui <- navbarPage(
       table.dataTable thead th {
         white-space: nowrap; /* 表头内容强制不换行 */
       }
+      
+      #download_maker-list {
+      max-height: 200px !important; /* 限制下拉菜单的最大高度 */
+      overflow-y: auto !important; /* 启用垂直滚动条 */
+      }
+      .ms-Checkbox-label {
+        white-space: nowrap; /* 防止选项换行 */
+      }
+      
     ")),
       
       tags$script(HTML("
