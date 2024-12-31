@@ -1126,7 +1126,6 @@ server <- function(input, output, session) {
     }
   })
   
-  
   ############################ 
   #####   物品售出子页   ##### 
   ############################ 
@@ -1186,7 +1185,7 @@ server <- function(input, output, session) {
     })
   })
   
-  #####
+  ##### 网名自动填写
   
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
@@ -1247,7 +1246,6 @@ server <- function(input, output, session) {
     # 更新网名输入框
     updateTextInput(session, "customer_netname", value = netname %||% "")
   })
-  
   
   ######
   
@@ -2107,7 +2105,6 @@ server <- function(input, output, session) {
   
   
   
-  
   ################################################################
   ##                                                            ##
   ## 查询分页                                                   ##
@@ -2337,7 +2334,7 @@ server <- function(input, output, session) {
     complete_data
   })
   
-  # 
+  # 开销柱状图  
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
@@ -2378,7 +2375,7 @@ server <- function(input, output, session) {
       )
   })
   
-  #
+  # 总开销分布
   output$pie_chart <- renderPlotly({
     data <- expense_summary_data()
     
@@ -2650,13 +2647,6 @@ server <- function(input, output, session) {
         
         # 更新选中物品状态
         actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
-        
-        tags$hr(),
-        
-        actionButton("oauth_btn", "登录并授权 USPS", icon = icon("sign-in-alt")),
-        h4("授权结果"),
-        verbatimTextOutput("oauth_status")
-        
       )
     } else {
       div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
@@ -2732,57 +2722,7 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  usps_auth_url <- "https://developer.usps.com/oauth/authorize"
-  usps_token_url <- "https://developer.usps.com/oauth/token"
-  client_id <- "KNqnm8z0iVobHrDWVMhxoDM1R3FiMbTh"  # 替换为实际的 Key
-  client_secret <- "AgBRw1H1pdWcB97Y"  # 替换为实际的 Secret
-  redirect_uri <- "http://54.254.120.88:3838/inventory/callback"
-  
-  observeEvent(input$oauth_btn, {
-    auth_url <- paste0(
-      usps_auth_url, "?response_type=code&client_id=", client_id,
-      "&redirect_uri=", URLencode(redirect_uri)
-    )
-    session$sendCustomMessage(type = "navigate", message = auth_url)
-  })
-  
-  observe({
-    # 监听回调 URL 参数
-    query <- parseQueryString(session$clientData$url_search)
-    
-    if (!is.null(query$code)) {
-      # 获取授权码
-      auth_code <- query$code
-      output$oauth_status <- renderText(paste("授权码：", auth_code))
-      
-      # 使用授权码换取访问令牌
-      response <- httr::POST(
-        url = usps_token_url,
-        body = list(
-          client_id = client_id,
-          client_secret = client_secret,
-          code = auth_code,
-          redirect_uri = redirect_uri,
-          grant_type = "authorization_code"
-        ),
-        encode = "form"
-      )
-      
-      # 解析访问令牌
-      if (response$status_code == 200) {
-        token_data <- httr::content(response, "parsed")
-        access_token <- token_data$access_token
-        output$oauth_status <- renderText(paste("访问令牌：", access_token))
-      } else {
-        output$oauth_status <- renderText("无法获取访问令牌，请检查配置。")
-      }
-    }
-  })
 
-  
-  
-  
   
   # Disconnect from the database on app stop
   onStop(function() {
