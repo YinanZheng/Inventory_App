@@ -2230,9 +2230,9 @@ server <- function(input, output, session) {
             summarise(Count = n(), .groups = "drop")
           
           # 定义固定类别顺序和颜色
-          status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")
-          status_colors <- c("lightgray", "#c7e89b", "#4B4B4B", "#46a80d", "#173b02", "#A9A9A9", "red")
-          
+          status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国售出", "美国发货", "退货")
+          status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#869bb8", "#faf0d4", "red")
+
           # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
           inventory_status_data <- merge(
             data.frame(Status = status_levels),
