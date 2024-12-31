@@ -1076,6 +1076,7 @@ server <- function(input, output, session) {
       session = session,
       input = input
     )
+    updateTextInput(session, "outbound_sku", value = "")
   })
   
   # 撤回出库逻辑
@@ -1096,6 +1097,7 @@ server <- function(input, output, session) {
       clear_field = "DomesticExitTime", # 清空出库日期字段
       clear_shipping_method = TRUE # 清空出库国际运输方式
     )
+    updateTextInput(session, "outbound_sku", value = "")
   })
   
   # 监听选中行并更新出库 SKU
