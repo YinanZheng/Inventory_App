@@ -2677,7 +2677,7 @@ server <- function(input, output, session) {
     
     # 获取选中行的索引
     selected_rows <- unique_items_table_admin_selected_row()
-    selected_items <- filtered_unique_items_data_admin()[selected_rows, ]
+    selected_items <- unique_items_data()[selected_rows, ]
     
     # 确保有选中物品
     if (nrow(selected_items) == 0) {
@@ -2718,7 +2718,7 @@ server <- function(input, output, session) {
   observeEvent(input$admin_update_inventory_btn, {
     # 获取点选的行数据
     selected_rows <- unique_items_table_admin_selected_row()
-    selected_items <- filtered_unique_items_data_admin()[selected_rows, ]
+    selected_items <- unique_items_data()[selected_rows, ]
     
     # 校验是否有选中物品
     if (is.null(selected_rows) || nrow(selected_items) == 0) {
