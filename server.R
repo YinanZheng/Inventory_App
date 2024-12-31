@@ -2487,6 +2487,11 @@ server <- function(input, output, session) {
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
     maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
     
+    # 提供默认值避免空选项
+    if (length(maker_options) == 0) {
+      maker_options <- list(list(key = "no-data", text = "无供应商数据"))
+    }
+    
     # div(
     #   style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
     #   Dropdown.shinyInput(
