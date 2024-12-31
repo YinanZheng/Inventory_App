@@ -2630,12 +2630,7 @@ server <- function(input, output, session) {
   output$admin_controls <- renderUI({
     if (admin_logged_in()) {
       tagList(
-        tags$h4("物品状态管理", style = "color: #007BFF;"),
-        
-        # 输入 SKU 自动过滤物品
-        textInput("admin_input_sku", "", placeholder = "请输入 SKU", width = "100%"),
-        
-        tags$hr(),
+        tags$h4("物品状态管理", style = "font-weight: bold; color: #007BFF;"),
         
         # 目标状态选择
         selectInput("admin_target_status", "目标状态改为：", 
@@ -2650,7 +2645,7 @@ server <- function(input, output, session) {
         
         tags$hr(),
         
-        tags$h4("修改库存总数", style = "color: #FF5733;"),
+        tags$h4("修改库存总数", style = "font-weight: bold; color: #FF5733;"),
         
         # 输入新的库存总数
         numericInput("admin_new_total_quantity", "新库存总数：", value = 0, min = 0, width = "100%"),
