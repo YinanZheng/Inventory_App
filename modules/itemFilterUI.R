@@ -9,7 +9,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
     fluidRow(
       style = "display: flex; align-items: center;", # Flex 布局，垂直方向居中对齐
       column(9, 
-             tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; margin-bottom: 0; padding: 0;", text_color))
+             tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; padding: 0;", text_color))
       ),
       column(3,
              div(
