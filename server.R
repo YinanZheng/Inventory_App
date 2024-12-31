@@ -2432,12 +2432,20 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  DropdownMenuItemType <- function(type) {
+    JS(paste0("jsmodule['@fluentui/react'].DropdownMenuItemType.", type))
+  }
+  
+  options_with_search <- function(opt) {
+    filter_header <- list(
+      key = "__FilterHeader__",
+      text = "-",
+      itemType = DropdownMenuItemType("Header")
+    )
+    append(list(filter_header), opt)
+  }
+  
   SearchableDropdown <- function(id, opt, ...) {
-    # 如果选项为空，提供占位符
-    if (length(opt) == 0) {
-      opt <- list(list(key = "no-data", text = "无数据"))
-    }
-    
     render_search_box <- JS(paste0("(option) => {
     if (option.key !== '__FilterHeader__') {
       return option.text;
@@ -2470,22 +2478,7 @@ server <- function(input, output, session) {
       onRenderOption = render_search_box
     )
   }
-  
-  options_with_search <- function(opt) {
-    if (length(opt) == 0) {
-      opt <- list(list(key = "no-data", text = "无数据")) # 默认占位符选项
-    }
-    
-    filter_header <- list(
-      key = "__FilterHeader__",
-      text = "-",
-      itemType = DropdownMenuItemType("Header")
-    )
-    append(list(filter_header), opt)
-  }
-  
-  
-  
+
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
