@@ -587,19 +587,36 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$new_name, {
-    current_input <- trimws(input$new_name)  # 获取用户当前输入
+    current_input <- trimws(input$new_name)
     if (current_input == "") {
       runjs("$('#name_hint').text('');")  # 清空提示
     } else {
-      suggestions <- item_names()[startsWith(item_names(), current_input)]  # 匹配起始字符
+      suggestions <- item_names()[startsWith(item_names(), current_input)]
       if (length(suggestions) > 0) {
-        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))  # 获取后缀
-        runjs(sprintf("$('#name_hint').text('%s');", hint))  # 更新提示
+        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))
+        # 动态计算用户输入宽度
+        runjs(sprintf("
+        const inputElement = document.getElementById('new_name');
+        const inputValue = '%s';
+        const span = document.createElement('span');
+        span.style.visibility = 'hidden';
+        span.style.position = 'absolute';
+        span.style.whiteSpace = 'nowrap';
+        span.style.fontSize = window.getComputedStyle(inputElement).fontSize;
+        span.innerHTML = inputValue.replace(/ /g, '&nbsp;');
+        document.body.appendChild(span);
+        const inputWidth = span.offsetWidth;
+        document.body.removeChild(span);
+        const hintElement = document.getElementById('name_hint');
+        hintElement.textContent = '%s';
+        hintElement.style.left = `${inputWidth + 10}px`;
+      ", current_input, hint))  # 根据输入动态调整提示位置
       } else {
-        runjs("$('#name_hint').text('');")  # 清空提示
+        runjs("$('#name_hint').text('');")  # 无匹配时清空提示
       }
     }
   })
+  
   
   # # 缓存商品名，安全处理空值
   # item_names <- reactive({

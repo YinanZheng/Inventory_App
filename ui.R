@@ -182,8 +182,8 @@ ui <- navbarPage(
               ),
               tags$div(
                 id = "name_hint",
-                style = "position: absolute; top: 50%; left: 0; transform: translateY(-50%); 
-               color: grey; font-size: 14px; pointer-events: none; padding-left: 10px;"
+                style = "position: absolute; top: 0; left: 0; transform: translateY(50%); 
+               color: grey; font-size: 16px; pointer-events: none; white-space: nowrap;"
               )
             )
           ),  
