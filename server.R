@@ -379,7 +379,7 @@ server <- function(input, output, session) {
     
     data
   })
-  
+
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                          column_mapping <- c(common_columns, list(
