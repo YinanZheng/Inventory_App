@@ -889,15 +889,37 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       character(0)  # 如果为空，返回空字符向量
     }
     
+    # 获取订单中的图片路径作为 inventory_path
+    order_image_path <- if (nrow(existing_order) > 0) {
+      existing_order$OrderImagePath[1]  # 提取 OrderImagePath
+    } else {
+      NULL
+    }
+    
+    # 处理 image_data 数据
+    image_path <- process_image_upload(
+      sku = order_id,
+      file_data = image_data$uploaded_file(),
+      pasted_data = image_data$pasted_file(),
+      inventory_path = order_image_path
+    )
+    
     # 合并订单关联物品和发货箱的图片路径
     combined_image_paths <- unique(c(order_image_paths, box_image_paths))
     
-    # 如果图片路径为空，设置 order_image_path 为 NA
-    if (length(combined_image_paths) > 0) {
-      montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-      order_image_path <- generate_montage(combined_image_paths, montage_path)
+    # 决定订单图片路径
+    if (!is.null(image_path)) {
+      # 如果用户上传或粘贴了图片，直接使用用户的图片路径
+      order_image_path <- image_path
     } else {
-      order_image_path <- NA  # 确保为长度为 1 的 NA
+      # 如果没有用户上传或粘贴的图片，使用库存中的图片路径和发货箱的图片路径生成拼贴图
+      combined_image_paths <- unique(c(order_image_paths, box_image_paths))
+      if (length(combined_image_paths) > 0) {
+        montage_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+        order_image_path <- generate_montage(combined_image_paths, montage_path)
+      } else {
+        order_image_path <- NA  # 确保为长度为 1 的 NA
+      }
     }
     
     # 确保所有参数为长度为 1 的值
