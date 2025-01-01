@@ -101,26 +101,27 @@ ui <- navbarPage(
     ")),
       
       tags$script(HTML("
-        $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
-          const items = (event.originalEvent.clipboardData || event.clipboardData).items;
-          for (let i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image') !== -1) {
-              const file = items[i].getAsFile();
-              const reader = new FileReader();
-    
-              reader.onload = function(evt) {
-                // 使用 currentTarget 确保获取的是父级元素的 id
-                const inputId = event.currentTarget.id + '_pasted_image';
-                Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
-              };
-    
-              reader.readAsDataURL(file);
-              break;
-            }
+      $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
+        const items = (event.originalEvent.clipboardData || event.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            const reader = new FileReader();
+  
+            reader.onload = function(evt) {
+              // 使用 currentTarget 确保获取的是父级元素的 id
+              const inputId = event.currentTarget.id + '_pasted_image';
+              Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
+            };
+  
+            reader.readAsDataURL(file);
+            break;
           }
-        });
-        
-        $(document).on('keydown', function(e) {
+        }
+      });")),
+      
+      tags$script(HTML("
+      $(document).on('keydown', function(e) {
         if (e.key === 'Tab' && $('#new_name').is(':focus')) {
           const hint = $('#name_hint').text();
           if (hint.length > 0) {
