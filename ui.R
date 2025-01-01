@@ -101,24 +101,38 @@ ui <- navbarPage(
     ")),
       
       tags$script(HTML("
-        $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
-          const items = (event.originalEvent.clipboardData || event.clipboardData).items;
-          for (let i = 0; i < items.length; i++) {
-            if (items[i].type.indexOf('image') !== -1) {
-              const file = items[i].getAsFile();
-              const reader = new FileReader();
-    
-              reader.onload = function(evt) {
-                // 使用 currentTarget 确保获取的是父级元素的 id
-                const inputId = event.currentTarget.id + '_pasted_image';
-                Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
-              };
-    
-              reader.readAsDataURL(file);
-              break;
-            }
+      $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
+        const items = (event.originalEvent.clipboardData || event.clipboardData).items;
+        for (let i = 0; i < items.length; i++) {
+          if (items[i].type.indexOf('image') !== -1) {
+            const file = items[i].getAsFile();
+            const reader = new FileReader();
+  
+            reader.onload = function(evt) {
+              // 使用 currentTarget 确保获取的是父级元素的 id
+              const inputId = event.currentTarget.id + '_pasted_image';
+              Shiny.setInputValue(inputId, evt.target.result, {priority: 'event'});
+            };
+  
+            reader.readAsDataURL(file);
+            break;
           }
-        });")),
+        }
+      });")),
+      
+      tags$script(HTML("
+      $(document).on('keydown', function(e) {
+        if (e.key === 'Tab' && $('#new_name').is(':focus')) {
+          const hint = $('#name_hint').text();
+          if (hint.length > 0) {
+            const currentValue = $('#new_name').val();
+            $('#new_name').val(currentValue + hint);  // 补全输入框
+            Shiny.setInputValue('new_name', currentValue + hint, {priority: 'event'});  // 提交补全值
+            $('#name_hint').text('');  // 清空提示
+            e.preventDefault();  // 阻止默认 Tab 行为
+          }
+        }
+      });")),
       
       tags$script('
         Shiny.addCustomMessageHandler("navigate", function(url) {
@@ -130,11 +144,15 @@ ui <- navbarPage(
   ),
   
   tabPanel(
-    "采购登记", icon = icon("shopping-cart"),
+    "采购", icon = icon("shopping-cart"),
     div(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        
+        itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE),
+        
+        tags$hr(),
         
         fluidRow(
           column(10, 
@@ -152,8 +170,23 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(7, uiOutput("new_name_combo_box_ui")),  # 动态生成ComboBox
-          
+          column(
+            7,
+            div(
+              style = "position: relative; width: 100%;",
+              div(
+                style = "position: absolute; top: 50%; left: 10px; transform: translateY(17%); color: grey; 
+               font-size: 15px; pointer-events: none; white-space: nowrap; overflow: hidden;",
+                id = "name_hint"
+              ),
+              textInput(
+                inputId = "new_name",
+                label = "商品名：",
+                placeholder = "请输入商品名...",
+                width = "100%"
+              )
+            )
+          ),  
           column(5, dateInput(
             inputId = "purchase_date",
             label = "采购日期:",
@@ -168,58 +201,62 @@ ui <- navbarPage(
           column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
         ),
         fluidRow(
-          column(9,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%")),
-          column(3,actionButton("reset_btn", "清空", icon = icon("snowplow"), class = "btn-danger", 
-                                style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;"))
+          column(12,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%"))
         ),
         
         imageModuleUI("image_purchase"),
         
-        fluidRow(
-          column(12, style = "text-align: left;", actionButton("add_btn", "添加/更新采购货品信息", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-        ),
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
-        tags$hr(style = "margin: 5px 0; border: none;")
+        actionButton("reset_btn", "重置", icon = icon("snowplow"), class = "btn-danger", 
+                     style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
       ),
       
       div(
         class = "main-panel",
+        style = "display: flex; flex-direction: column; height: 100%;", # 主面板填充剩余空间
         div(
+          style = "flex-shrink: 0;", # 防止标题区域被压缩
           div(
             tags$span(icon("shopping-cart"), style = "margin-right: 5px;"),  # 使用 span 包裹图标
-            "采购箱", style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
-          ),
-          column(12, DTOutput("added_items_table")),
-          
-          div(
-            style = "padding: 20px 0;",  # 添加上下20px的padding
-            fluidRow(
-              column(3, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger")),
-              column(6, div(
-                textOutput("total_cost"),
-                style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-              )),
-              column(3, div(
-                style = "text-align: right;",
-                actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary")
-              ))
-            )
+            "采购箱", 
+            style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
+          )
+        ),
+        
+        div(
+          style = "flex-shrink: 0; padding-bottom: 20px;", # 确保表格区域高度固定
+          column(12, DTOutput("added_items_table"))
+        ),
+        
+        div(
+          style = "flex-shrink: 0; padding: 20px 13px;",  # 固定按钮区域的高度
+          fluidRow(
+            column(2, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
+            column(2, style = "text-align: left;", actionButton("add_btn", "添加/更新采购", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+            column(4, div(
+              textOutput("total_cost"),
+              style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
+            )),
+            column(4, div(
+              style = "text-align: right;",
+              actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
+            ))
           )
         ),
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         
         div(
-          style = "display: flex; flex-direction: column;",
+          style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 使表格内容填充剩余空间并支持滚动
           div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_purchase",
-              uniqueItemsTableUI("unique_items_table_purchase")
-            )
+            id = "item_table_container_purchase",
+            uniqueItemsTableUI("unique_items_table_purchase")
           )
         )
       )
+      
+      
     )
   ), # end of 采购登记 tab
   
@@ -233,7 +270,7 @@ ui <- navbarPage(
         
         itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745"),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
           column(
@@ -245,7 +282,7 @@ ui <- navbarPage(
               # 卡片标题
               div(
                 style = "margin-bottom: 10px; padding-bottom: 8px;",
-                tags$h4("入库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                tags$h4("入库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 5px;"),
               ),
               
               # SKU 输入框
@@ -256,7 +293,22 @@ ui <- navbarPage(
                   label = NULL, 
                   placeholder = "请扫描或输入SKU",
                   width = "100%"
-                )
+                ),
+                tags$script(HTML("
+                $(document).on('keypress', '#inbound_sku', function(e) {
+                    if(e.which === 13) {  // 检测回车键
+                      $('#confirm_inbound_btn').click();  // 模拟点击按钮
+                    }
+                  });
+                "))
+              ),
+              
+              numericInput(
+                inputId = "inbound_quantity",
+                label = "入库数量",
+                value = 1,        # 默认值
+                min = 1,          # 最小值
+                step = 1          # 步长
               ),
               
               # 瑕疵品复选框
@@ -293,7 +345,7 @@ ui <- navbarPage(
           )
         ),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow( 
           # 条形码生成下载按钮
@@ -305,12 +357,12 @@ ui <- navbarPage(
                    # 卡片标题
                    div(
                      style = "margin-bottom: 10px; padding-bottom: 8px;",
-                     tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                     tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 5px;"),
                    ),
                    
                    tags$div(
                      style = "display: flex; justify-content: space-between; align-items: center;",
-                     actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
+                     actionButton("export_select_btn", "生成选中物品条形码", icon = icon("barcode"), class = "btn-info"),
                      downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
                    )
                  )
@@ -350,13 +402,20 @@ ui <- navbarPage(
         
         itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745"),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         div(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
+          tags$script(HTML("
+          $(document).on('keypress', '#outbound_sku', function(e) {
+              if(e.which === 13) {  // 检测回车键
+                $('#confirm_outbound_btn').click();  // 模拟点击按钮
+              }
+            });
+          ")),
           
           tags$div(
             class = "card",
@@ -376,6 +435,13 @@ ui <- navbarPage(
             "确认出库", 
             icon = icon("check"), 
             class = "btn-primary", 
+            style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
+          ),
+          actionButton(
+            "revert_outbound_btn",
+            "撤回出库",
+            icon = icon("undo"),
+            class = "btn-warning",
             style = "font-size: 16px; width: 100%; height: 42px; margin-top: 10px;"
           )
         )
@@ -402,25 +468,25 @@ ui <- navbarPage(
     )
   ), # end of 出库 tab
   
-  
   tabPanel(
     "售出", icon = icon("dollar-sign"),
     div(
-      class = "layout-container",  # Flexbox 容器
+      class = "layout-container",
       
-      # 左侧订单信息录入
+      # 左侧：动态变化的筛选区和订单登记
       div(
-        class = "sticky-sidebar",  # sticky 侧边栏
-        style = "width: 400px;", # override 宽度
+        class = "sticky-sidebar",
+        style = "width: 400px;",
         
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745"),
+        # 动态显示筛选区
+        uiOutput("dynamic_sidebar"),
         
+        # 订单登记区（共用）
         div(
           class = "card",
           style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           
-          # 订单录入表单标题
-          tags$h4("订单登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+          tags$h4("订单登记与更新", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           
           fluidRow(
             column(
@@ -428,15 +494,15 @@ ui <- navbarPage(
               textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
             ),
             column(
-              5,  
+              5,
               selectInput(
                 inputId = "platform",
                 label = "电商平台",
                 choices = c(
-                  "请选择" = "", 
-                  "Etsy" = "Etsy", 
-                  "Shopify" = "Shopify", 
-                  "TikTok" = "TikTok", 
+                  "请选择" = "",
+                  "Etsy" = "Etsy",
+                  "Shopify" = "Shopify",
+                  "TikTok" = "TikTok",
                   "其他" = "其他"
                 ),
                 selected = "",
@@ -494,196 +560,138 @@ ui <- navbarPage(
         )
       ),
       
-      # 主面板：右侧物品选择和已选物品列表
+      # 主面板：售出和订单管理的分页
       div(
         class = "main-panel",
-        
-        fluidRow(
-          # 货架部分
-          column(6,
-                 div(
-                   class = "card",
-                   style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                   tags$h4(
-                     HTML(paste0(as.character(icon("warehouse")), "  货架")), 
-                     style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
-                   ),
-                   DTOutput("shelf_table")  # 显示货架上的物品
-                 )
-          ),
-          
-          # 箱子部分
-          column(6,
-                 div(
-                   class = "card",
-                   style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                   tags$h4(
-                     HTML(paste0(as.character(icon("box")), "  发货箱")), 
-                     style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
-                   ),
-                   DTOutput("box_table"),  # 显示已放入箱子的物品
-                   
-                   fluidRow(
-                     column(
-                       width = 7, # 左侧按钮宽度
-                       actionButton(
-                         "confirm_order_btn",
-                         "确认售出",
-                         icon = icon("check"),
-                         class = "btn-primary", 
-                         style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
-                       )
-                     ),
-                     column(
-                       width = 5, # 右侧选择框宽度
-                       tags$div(
-                         style = "
-    display: flex; 
-    align-items: center; 
-    justify-content: flex-start; 
-    border: 1px solid #007BFF; 
-    border-radius: 8px; 
-    height: 50px; 
-    padding: 0 10px; 
-    margin-top: 10px;
-  ",
-                         tags$span(
-                           "国际运输:", 
-                           style = "font-size: 16px; font-weight: bold; margin-right: 15px; line-height: 1;"
+        tabsetPanel(
+          id = "main_tabs",
+          tabPanel(
+            title = "物品售出",
+            value = "sold",
+            fluidRow(
+              # 货架部分
+              column(6,
+                     div(
+                       class = "card",
+                       style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                       tags$h4(
+                         HTML(paste0(
+                           as.character(icon("warehouse")), 
+                           "  货架  ",
+                           span(style = "display: inline-flex; color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
+                         )),
+                         style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
+                       ),
+                       DTOutput("shelf_table")  # 显示货架上的物品
+                     )
+              ),
+              
+              # 箱子部分
+              column(6,
+                     div(
+                       class = "card",
+                       style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                       tags$h4(
+                         HTML(paste0(
+                           as.character(icon("box")), 
+                           "  发货箱  ",
+                           span(style = "display: inline-flex; color: #28A745; font-size: 18px;", textOutput("box_count")) # 动态显示数量
+                         )),
+                         style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"
+                       ),
+                       DTOutput("box_table"),  # 显示已放入箱子的物品
+                       
+                       fluidRow(
+                         column(
+                           width = 7, # 左侧按钮宽度
+                           actionButton(
+                             "confirm_order_btn",
+                             "确认售出",
+                             icon = icon("check"),
+                             class = "btn-primary",
+                             style = "font-size: 16px; width: 100%; height: 50px; margin-top: 10px;"
+                           )
                          ),
-                         tags$div(
-                           style = "
-      display: flex; 
-      align-items: center; 
-      height: 100%; 
-      margin-bottom: 0; /* 移除底部间距 */
-    ",
-                           tags$style(HTML("
-      #sold_shipping_method .radio {
-        margin-bottom: 0 !important; /* 移除默认的 margin */
-      }
-      #sold_shipping_method {
-        margin-bottom: 0 !important; /* 避免容器本身多余间距 */
-      }
-    ")),
-                           radioButtons(
-                             inputId = "sold_shipping_method",
-                             label = NULL, # 去掉默认 label
-                             choices = list("空运" = "空运", "海运" = "海运"),
-                             selected = "空运",  # 默认选择空运
-                             inline = TRUE       # 设置为横向排布
+                         column(
+                           width = 5, # 右侧选择框宽度
+                           tags$div(
+                             style = "
+                              display: flex;
+                              align-items: center;
+                              justify-content: flex-start;
+                              border: 1px solid #007BFF;
+                              border-radius: 8px;
+                              height: 50px;
+                              padding: 0 10px;
+                              margin-top: 10px;
+                            ",
+                             tags$span(
+                               "国际运输:",
+                               style = "font-size: 16px; font-weight: bold; margin-right: 15px; line-height: 1;"
+                             ),
+                             tags$div(
+                               style = "
+                                  display: flex;
+                                  align-items: center;
+                                  height: 100%;
+                                  margin-bottom: 0; /* 移除底部间距 */
+                                ",
+                               tags$style(HTML("
+                                  #sold_shipping_method .radio {
+                                    margin-bottom: 0 !important; /* 移除默认的 margin */
+                                  }
+                                  #sold_shipping_method {
+                                    margin-bottom: 0 !important; /* 避免容器本身多余间距 */
+                                  }
+                                ")),
+                               radioButtons(
+                                 inputId = "sold_shipping_method",
+                                 label = NULL, # 去掉默认 label
+                                 choices = list("空运" = "空运", "海运" = "海运"),
+                                 selected = "空运",  # 默认选择空运
+                                 inline = TRUE       # 设置为横向排布
+                               )
+                             )
                            )
                          )
                        )
-                       
-                       
-                       
                      )
-                   )
-                 )
-          )
-        ),
-        
-        tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
-        
-        div(
-          style = "display: flex; flex-direction: column;",
-          div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
+              )
+            ),
+            
+            tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
+            
             div(
-              id = "item_table_container_sold",
-              uniqueItemsTableUI("unique_items_table_sold")
+              style = "display: flex; flex-direction: column;",
+              div(
+                style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
+                div(
+                  id = "item_table_container_sold",
+                  uniqueItemsTableUI("unique_items_table_sold")
+                )
+              )
+            )
+          ),
+          tabPanel(
+            title = "订单管理",
+            value = "order_management",
+            div(
+              class = "card",
+              style = "height: 460px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+              orderTableUI("orders_table_module")
+            ),
+            div(
+              class = "card",
+              style = "height: 325px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+              uiOutput("associated_items_title"),  # 动态标题
+              uniqueItemsTableUI("associated_items_table_module")
             )
           )
         )
       )
     )
-  ), # end of 售出 tab
+  ), # End of 售出
   
-  # 订单管理分页
-  tabPanel(
-    title = "订单管理",
-    icon = icon("clipboard-list"),
-    div(
-      class = "layout-container",
-      
-      # 左侧：筛选条件和订单信息
-      div(
-        class = "sticky-sidebar",
-        style = "width: 400px;",  # 缩窄侧边栏宽度
-        
-        # 筛选条件 Card
-        div(
-          class = "card",
-          style = "padding: 15px; border: 1px solid #28A745; border-radius: 8px; margin-bottom: 15px;",
-          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-          textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%"),
-          selectInput(
-            inputId = "filter_platform", 
-            label = "电商平台",
-            choices = c("所有平台" = "", "Etsy" = "Etsy", "Shopify" = "Shopify", "TikTok" = "TikTok", "其他" = "其他"),
-            selected = "", 
-            width = "100%"
-          )
-        ),
-        
-        # 订单信息 Card
-        div(
-          class = "card",
-          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
-          
-          tags$h4("订单信息修改", style = "color: #007BFF; font-weight: bold;"),
-          
-          fluidRow(
-            column(7, textInput("update_customer_name", "顾客姓名", placeholder = "更新顾客姓名", width = "100%")),
-            column(5, selectInput(
-              inputId = "update_platform", 
-              label = "电商平台",
-              choices = c("Etsy", "Shopify", "TikTok", "其他"),
-              selected = NULL, 
-              width = "100%"
-            ))
-          ),
-          
-          textInput("update_tracking_number", "运单号", placeholder = "更新运单号", width = "100%"),
-          textAreaInput("update_order_notes", "订单备注", placeholder = "更新备注内容", width = "100%"),
-          
-          # 图片模块
-          imageModuleUI("image_order_manage", label = "订单图片上传", label_color = "#007BFF"),
-          
-          # 更新和删除按钮
-          div(
-            style = "margin-top: 20px; display: flex; justify-content: space-between;",
-            actionButton("update_order_btn", "更新订单", class = "btn-success", style = "width: 48%;"),
-            actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 48%;")
-          )
-        )
-      ),
-      
-      # 右侧：主面板
-      div(
-        class = "main-panel",
-        style = "display: flex; flex-direction: column; gap: 10px;", # 修改为纵向排列
-        
-        # 订单表
-        div(
-          class = "card",
-          style = "height: 490px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-          tags$h4("订单表", style = "color: #007BFF; font-weight: bold;"),
-          orderTableUI("orders_table_module")  # 订单表模块
-        ),
-        
-        # 关联物品表
-        div(
-          class = "card",
-          style = "height: 325px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-          uiOutput("associated_items_title"),  # 动态标题
-          uniqueItemsTableUI("associated_items_table_module")  # 关联物品表模块
-        )
-      )
-    )
-  ), # end of 订单管理
   
   tabPanel(
     "物品管理", icon = icon("list-check"),
@@ -691,6 +699,23 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
+        
+        div(
+          class = "card shadow-sm", # 添加卡片样式
+          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+          # 卡片标题
+          div(
+            style = "margin-bottom: 10px; padding-bottom: 8px;",
+            tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+            
+            imageModuleUI("image_manage", label = ""),
+            
+            actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
+          ),
+        ),
+        
+        tags$hr(), # 分隔线
+        
         fluidRow(
           column(
             12,
@@ -714,22 +739,6 @@ ui <- navbarPage(
               )
             )
           )
-        ),
-        
-        tags$hr(), # 分隔线
-        
-        div(
-          class = "card shadow-sm", # 添加卡片样式
-          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-          # 卡片标题
-          div(
-            style = "margin-bottom: 10px; padding-bottom: 8px;",
-            tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-            
-            imageModuleUI("image_manage", label = ""),
-            
-            actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
-          ),
         )
       ),
       
@@ -1046,7 +1055,7 @@ ui <- navbarPage(
           dateRangeInput(
             inputId = "download_date_range",
             label = "选择采购日期范围:",
-            start = Sys.Date() - 30, # 默认最近30天
+            start = Sys.Date() - 365, # 默认最近365天
             end = Sys.Date(),        # 默认结束日期为今天
             format = "yyyy-mm-dd",   # 日期格式
             separator = " 至 ",

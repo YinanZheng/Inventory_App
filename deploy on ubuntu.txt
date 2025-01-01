@@ -53,14 +53,25 @@ sudo mkdir /srv/shiny-server/inventory
 sudo chown -R ubuntu:ubuntu /srv/shiny-server/inventory
 sudo chmod -R 755 /srv/shiny-server/inventory
 
+### My us-app
+sudo mkdir /srv/shiny-server/inventory-us
+sudo chown -R ubuntu:ubuntu /srv/shiny-server/inventory-us
+sudo chmod -R 755 /srv/shiny-server/inventory-us
+
 sudo chown ubuntu:ubuntu /var/log/shiny-server
 sudo chmod 755 /var/log/shiny-server
 sudo -u ubuntu touch /var/log/shiny-server/test.log
+
+
+
 
 ### Sync Github code
 cd /srv/shiny-server/inventory
 git clone https://github.com/YinanZheng/Inventory_App.git .
 
+
+cd /srv/shiny-server/inventory-us
+git clone https://github.com/YinanZheng/Inventory_US_App.git .
 
 
 
@@ -70,14 +81,12 @@ git clone https://github.com/YinanZheng/Inventory_App.git .
 cd /srv/shiny-server/inventory
 git pull origin main
 
+cd /srv/shiny-server/inventory-us
+git pull origin main
+
+
 ### Restart shiny server
 sudo systemctl restart shiny-server
-
-
-
-
-
-
 
 
 ###

@@ -2,7 +2,7 @@
 server <- function(input, output, session) {
   
   source("utils.R", local = TRUE)
-  
+
   # Database
   con <- db_connection()
   
@@ -107,13 +107,18 @@ server <- function(input, output, session) {
       data = added_items(),
       column_mapping = column_mapping,
       selection = "multiple",
-      image_column = "ItemImagePath"
+      image_column = "ItemImagePath",
+      options = list(fixedHeader = TRUE,  # 启用表头固定
+                     dom = 't',  # 隐藏搜索框和分页等控件
+                     paging = FALSE,  # 禁止分页
+                     searching = FALSE  # 禁止搜索
+      )
     )$datatable
   })
   
   ####################################################################################################################################
   
-  # 库存表 （过滤）
+  # 查询页-库存表 （过滤）
   filtered_inventory <- reactive({
     
     result <- inventory()
@@ -128,7 +133,7 @@ server <- function(input, output, session) {
     return(result)
   })
   
-  # Render filtered inventory with column name mapping
+  # 查询页-库存表渲染
   output$filtered_inventory_table_query <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
@@ -204,13 +209,11 @@ server <- function(input, output, session) {
     data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
-      maker_input_id = "new_maker",
-      item_name_input_id = "new_name"
+      maker_input_id = "purchase_filter-maker",
+      item_name_input_id = "purchase_filter-name"
     )
     
-    # 将 "采购" 状态的商品放到最前
-    data <- data %>%
-      arrange(desc(Status == "采购"))
+    data
   })
   
   # 入库页过滤
@@ -220,12 +223,16 @@ server <- function(input, output, session) {
     
     data <- data[data$Status %in% c("采购", "国内入库"), ]
     
-    filter_unique_items_data_by_inputs(
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "inbound_filter-maker",
-      item_name_input_id = "inbound_filter-name"
+      item_name_input_id = "inbound_filter-name",
+      date_range_input_id = "inbound_filter-purchase_date_range"
     )
+    
+    # 将 "采购" 状态的商品放到最前
+    data %>% arrange(desc(Status == "采购"))
   })
   
   # 出库页过滤
@@ -235,12 +242,16 @@ server <- function(input, output, session) {
     
     data <- data[data$Status %in% c("国内入库", "国内出库"), ]
     
-    filter_unique_items_data_by_inputs(
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "outbound_filter-maker",
-      item_name_input_id = "outbound_filter-name"
+      item_name_input_id = "outbound_filter-name",
+      date_range_input_id = "outbound_filter-purchase_date_range"
     )
+    
+    # 将 "国内入库" 状态的商品放到最前
+    data %>% arrange(desc(Status == "国内入库"))
   })
   
   # 售出页过滤
@@ -250,13 +261,16 @@ server <- function(input, output, session) {
 
     data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
 
-    filter_unique_items_data_by_inputs(
+    data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
       maker_input_id = "sold_filter-maker",
       item_name_input_id = "sold_filter-name",
       date_range_input_id = "sold_filter-purchase_date_range"
     )
+    
+    # 将 "国内入库" 状态的商品放到最前
+    data %>% arrange(desc(Status == "国内入库"))
   })
   
   # 瑕疵品管理页过滤
@@ -276,23 +290,31 @@ server <- function(input, output, session) {
       data <- data[data$Defect == "无瑕", ]
     }
     
-    # 返回过滤后的数据
     data
   })
   
   
   
-  # 根据物流方式筛选物品数据
+  # 数据下载页筛选
   filtered_unique_items_data_logistics <- reactive({
     data <- unique_items_data()
-    shipping_method <- input$intl_shipping_method 
+    shipping_method <- input$intl_shipping_method
     
+    # 判断并根据物流方式筛选
     if (!is.null(shipping_method) && shipping_method != "全部") {
       data <- data %>% filter(IntlShippingMethod == shipping_method)
+      
+      # 动态移除不相关的运单号列
+      if (shipping_method == "海运") {
+        data <- data %>% select(-IntlAirTracking) # 移除空运运单号列
+      } else if (shipping_method == "空运") {
+        data <- data %>% select(-IntlSeaTracking) # 移除海运运单号列
+      }
     }
     
     data
   })
+  
   
   # 下载页过滤
   filtered_unique_items_data_download <- reactive({
@@ -320,27 +342,48 @@ server <- function(input, output, session) {
   
   # 订单管理页订单过滤
   filtered_orders <- reactive({
-    req(orders())  # 确保数据存在
+    req(orders())  # 确保订单数据存在
     
-    data <- orders()
+    data <- orders()  # 获取所有订单数据
     
-    # 根据筛选条件动态过滤
-    if (input$filter_order_id != "") {
-      data <- data %>% filter(grepl(input$filter_order_id, OrderID, ignore.case = TRUE))
+    # 根据订单号筛选
+    cleaned_filter_order_id <- trimws(input$filter_order_id)
+    if (!is.null(cleaned_filter_order_id) && cleaned_filter_order_id != "") {
+      data <- data %>% filter(grepl(cleaned_filter_order_id, OrderID, ignore.case = TRUE))
     }
     
-    if (input$filter_customer_name != "") {
+    # 根据运单号筛选
+    cleaned_filter_tracking_id <- trimws(input$filter_tracking_id)
+    if (!is.null(cleaned_filter_tracking_id) && cleaned_filter_tracking_id != "") {
+      data <- data %>% filter(grepl(cleaned_filter_tracking_id, UsTrackingNumber, ignore.case = TRUE))
+    }
+    
+    # 根据顾客姓名筛选
+    if (!is.null(input$filter_customer_name) && input$filter_customer_name != "") {
       data <- data %>% filter(grepl(input$filter_customer_name, CustomerName, ignore.case = TRUE))
     }
     
-    if (input$filter_platform != "") {
+    # 根据顾客网名筛选
+    if (!is.null(input$filter_customer_netname) && input$filter_customer_netname != "") {
+      data <- data %>% filter(grepl(input$filter_customer_netname, CustomerNetName, ignore.case = TRUE))
+    }
+    
+    # 根据电商平台筛选
+    if (!is.null(input$filter_platform) && input$filter_platform != "") {
       data <- data %>% filter(Platform == input$filter_platform)
     }
     
+    # 根据订单状态筛选
+    if (!is.null(input$filter_order_status) && input$filter_order_status != "") {
+      data <- data %>% filter(OrderStatus == input$filter_order_status)
+    }
+    
+    # 按更新时间倒序排列
     data <- data %>% arrange(desc(updated_at))
     
     data
   })
+  
 
   
   
@@ -420,7 +463,7 @@ server <- function(input, output, session) {
                                    data = filtered_orders,  # 数据源
                                    selection = "single", # 单选模式
                                    options = list(
-                                     scrollY = "400px",  # 根据内容动态调整滚动高度
+                                     scrollY = "410px",  # 根据内容动态调整滚动高度
                                      scrollX = TRUE,  # 支持水平滚动
                                      fixedHeader = TRUE,  # 启用表头固定
                                      dom = 't',  # 隐藏搜索框和分页等控件
@@ -448,29 +491,48 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 物品表过滤模块
+  itemFilterServer(
+    id = "purchase_filter",
+    makers_df = makers_df,
+    unique_items_data = unique_items_data,
+    filtered_unique_items_data = filtered_unique_items_data_inbound,
+    unique_items_table_selected_row = unique_items_table_inbound_selected_row
+  )
+  
+  
   # 供应商模块
   supplierModuleServer(input, output, session, con, maker_list)
   
   # 物品大小类模块
   typeModuleServer("type_module", con, item_type_data)
   
-  # Automatically generate SKU when relevant inputs change
-  observeEvent({
-    input[["type_module-new_major_type"]]
-    input[["type_module-new_minor_type"]]
-    input$new_name
-    input$new_maker
-  }, {
-    # 安全检查 input$new_name 是否为列表，以及 text 字段是否存在
-    new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
-      input$new_name$text
-    } else {
-      NULL
-    }
+  
+  ### SKU冲撞检查
+  
+  # 合并依赖变量
+  combined_inputs <- reactive({
+    list(
+      major_type = input[["type_module-new_major_type"]],
+      minor_type = input[["type_module-new_minor_type"]],
+      new_name = input$new_name,
+      new_maker = input$new_maker
+    )
+  })
+  
+  # 使用 debounce 延迟触发，避免短时间多次调用
+  debounced_inputs <- debounce(combined_inputs, millis = 300)
+  
+  observeEvent(debounced_inputs(), {
+    inputs <- debounced_inputs()
+    
+    # 检查 SKU 的来源
+    is_from_table <- !is.null(unique_items_table_purchase_selected_row()) && 
+      length(unique_items_table_purchase_selected_row()) > 0
     
     # 判断是否需要清空 SKU
-    if (is.null(input$new_maker) || input$new_maker == "" || 
-        is.null(new_name_text) || new_name_text == "") {
+    if (is.null(inputs$new_maker) || inputs$new_maker == "" || 
+        is.null(input$new_name) || input$new_name == "") {
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       return()
     }
@@ -478,46 +540,74 @@ server <- function(input, output, session) {
     # Dynamically generate SKU
     sku <- generate_sku(
       item_type_data = item_type_data(),
-      major_type = input[["type_module-new_major_type"]],
-      minor_type = input[["type_module-new_minor_type"]],
-      item_name = new_name_text,
-      maker = input$new_maker
+      major_type = inputs$major_type,
+      minor_type = inputs$minor_type,
+      item_name = input$new_name,
+      maker = inputs$new_maker
     )
     
-    # Update the SKU input field
-    updateTextInput(session, "new_sku", value = sku)
-  })
-  
-  # 缓存商品名，安全处理空值
-  item_names <- reactive({
-    inventory_data <- inventory()
-    if (is.null(inventory_data) || nrow(inventory_data) == 0) {
-      return(list())  # 如果没有数据，返回空选项
+    if (is_from_table) {
+      # 如果 SKU 来源于表格，直接更新输入字段
+      updateTextInput(session, "new_sku", value = sku)
+      showNotification("SKU 已生成（来源于表格选择）", type = "message")
+    } else {
+      # 如果 SKU 不是来源于表格，检查是否冲突
+      existing_sku <- inventory() %>% filter(SKU == sku)
+      
+      if (nrow(existing_sku) > 0) {
+        # 如果 SKU 冲突，弹出模态窗口提醒用户
+        showModal(modalDialog(
+          title = "SKU 冲突",
+          paste0("生成的 SKU '", sku, "' 已存在于库存中，请重新生成 SKU！"),
+          easyClose = TRUE,
+          footer = modalButton("关闭")
+        ))
+        
+        # 清空 SKU 输入字段
+        updateTextInput(session, "new_sku", value = "")
+      } else {
+        # 如果 SKU 不冲突，更新输入字段
+        updateTextInput(session, "new_sku", value = sku)
+        showNotification("SKU 生成成功！", type = "message")
+      }
     }
-    lapply(inventory_data$ItemName, function(name) list(key = name, text = name))
   })
   
-  # 动态生成ComboBox组件
-  output$new_name_combo_box_ui <- renderUI({
-    div(
-      Label("商品名:", styles = list(
-        root = list(
-          fontSize = 15,        # 设置字体大小为16px
-          fontWeight = "bold",  # 字体加粗
-          paddingTop = 0
-        )
-      )),  # 添加标签
-      ComboBox.shinyInput(
-        inputId = "new_name",
-        value = input$new_name %||% "",        # 默认初始值为空字符串
-        options = item_names(),         # 动态加载的选项
-        allowFreeform = TRUE,           # 允许用户输入自定义值
-        placeholder = "请输入商品名...",
-        styles = list(
-          root = list(height = 42)
-        )
-      )
-    )
+  
+  item_names <- reactive({
+    req(inventory())
+    unique(inventory()$ItemName)  # 提取唯一的商品名
+  })
+  
+  observeEvent(input$new_name, {
+    current_input <- trimws(input$new_name)
+    if (current_input == "") {
+      runjs("$('#name_hint').text('');")  # 清空提示
+    } else {
+      suggestions <- item_names()[startsWith(item_names(), current_input)]  # 匹配前缀
+      if (length(suggestions) > 0) {
+        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))
+        # 动态计算输入框宽度
+        runjs(sprintf("
+        const inputElement = document.getElementById('new_name');
+        const inputValue = '%s';
+        const span = document.createElement('span');
+        span.style.visibility = 'hidden';
+        span.style.position = 'absolute';
+        span.style.whiteSpace = 'nowrap';
+        span.style.fontSize = window.getComputedStyle(inputElement).fontSize;
+        span.innerHTML = inputValue.replace(/ /g, '&nbsp;');
+        document.body.appendChild(span);
+        const inputWidth = span.offsetWidth;
+        document.body.removeChild(span);
+        const hintElement = document.getElementById('name_hint');
+        hintElement.textContent = '%s';
+        hintElement.style.left = `${inputWidth + 17}px`;
+      ", current_input, hint))  # 提示文字动态对齐到输入末尾
+      } else {
+        runjs("$('#name_hint').text('');")  # 无匹配时清空提示
+      }
+    }
   })
   
   # 采购商品图片处理模块
@@ -525,15 +615,8 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
-    # 提取并验证商品名称
-    new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
-      input$new_name$text
-    } else {
-      NULL
-    }
-    
     # 验证输入
-    if (is.null(new_name_text) || new_name_text == "") {
+    if (is.null(input$new_name) || input$new_name == "") {
       showNotification("请填写正确商品名称！", type = "error")
       return()
     }
@@ -559,7 +642,7 @@ server <- function(input, output, session) {
     })
     
     existing_inventory_path <- if (nrow(inventory_item) > 0) inventory_item$ItemImagePath[1] else NULL
-    
+
     # 上传或粘贴图片处理
     new_image_path <- process_image_upload(
       sku = input$new_sku,
@@ -579,18 +662,18 @@ server <- function(input, output, session) {
       } else {
         current_image_path
       }
-      existing_items[sku_index, ] <- data.frame(
-        SKU = input$new_sku,
-        Maker = input$new_maker,
-        MajorType = input[["type_module-new_major_type"]],
-        MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name$text,
-        Quantity = input$new_quantity,
-        ProductCost = round(input$new_product_cost, 2),
-        ItemImagePath = final_image_path,
-        stringsAsFactors = FALSE
-      )
+      
+      existing_items[sku_index, "SKU"] <- input$new_sku
+      existing_items[sku_index, "Maker"] <- input$new_maker
+      existing_items[sku_index, "MajorType"] <- input[["type_module-new_major_type"]]
+      existing_items[sku_index, "MinorType"] <- input[["type_module-new_minor_type"]]
+      existing_items[sku_index, "ItemName"] <- input$new_name
+      existing_items[sku_index, "Quantity"] <- input$new_quantity
+      existing_items[sku_index, "ProductCost"] <- round(input$new_product_cost, 2)
+      existing_items[sku_index, "ItemImagePath"] <- as.character(final_image_path)
+      
       added_items(existing_items)
+
       showNotification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
       # 添加新记录
@@ -599,14 +682,14 @@ server <- function(input, output, session) {
         Maker = input$new_maker,
         MajorType = input[["type_module-new_major_type"]],
         MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name$text,
+        ItemName = input$new_name,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
       added_items(bind_rows(existing_items, new_item))
-      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name$text), type = "message")
+      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
     # 重置
@@ -649,7 +732,6 @@ server <- function(input, output, session) {
       
       # 更新 inventory, unique_items数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       # 同时添加信息到 unique_items 表中
       purchase_date <- format(as.Date(input$purchase_date), "%Y-%m-%d")
@@ -689,11 +771,12 @@ server <- function(input, output, session) {
         }
         dbCommit(con)
         showNotification("所有采购货物已成功登记！", type = "message")
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       }, error = function(e) {
         dbRollback(con)
         showNotification(paste("采购登记失败:", e$message), type = "error")
       })
+      
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       # Clear added items and reset input fields
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
@@ -723,7 +806,7 @@ server <- function(input, output, session) {
       shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateComboBox.shinyInput(session, "new_name", value = list(key = selected_data$ItemName, text = selected_data$ItemName))
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
@@ -745,7 +828,7 @@ server <- function(input, output, session) {
       shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateComboBox.shinyInput(session, "new_name", value = list(key = selected_data$ItemName, text = selected_data$ItemName))
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
@@ -769,7 +852,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       update_maker_choices(session, "new_maker", maker_list())
-      updateComboBox.shinyInput(session, "new_name", value = "")
+      updateTextInput(session, "new_name", value = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
@@ -893,6 +976,9 @@ server <- function(input, output, session) {
     # 更新 inventory, unique_items数据并触发 UI 刷新
     inventory(dbGetQuery(con, "SELECT * FROM inventory"))
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+    
+    updateTextInput(session, "inbound_sku", value = "")
+    updateNumericInput(session, "inbound_quantity", value = 1)
   })
   
   # 监听选中行并更新 SKU
@@ -1011,6 +1097,28 @@ server <- function(input, output, session) {
       session = session,
       input = input
     )
+    updateTextInput(session, "outbound_sku", value = "")
+  })
+  
+  # 撤回出库逻辑
+  observeEvent(input$revert_outbound_btn, {
+    handleOperation(
+      operation_name = "撤回",
+      sku_input = input$outbound_sku,
+      output_name = "outbound_item_info",
+      query_status = "国内出库",
+      update_status_value = "国内入库",
+      count_label = "可出库数",
+      count_field = "AvailableForOutbound",
+      con = con,
+      output = output,
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session,
+      input = input,
+      clear_field = "DomesticExitTime", # 清空出库日期字段
+      clear_shipping_method = TRUE # 清空出库国际运输方式
+    )
+    updateTextInput(session, "outbound_sku", value = "")
   })
   
   # 监听选中行并更新出库 SKU
@@ -1028,33 +1136,86 @@ server <- function(input, output, session) {
   ## 售出分页                                                   ##
   ##                                                            ##
   ################################################################
-
-  # 物品表过滤模块
-  itemFilterServer(
-    id = "sold_filter",
-    makers_df = makers_df,
-    unique_items_data = unique_items_data,
-    filtered_unique_items_data = filtered_unique_items_data_sold,
-    unique_items_table_selected_row = unique_items_table_sold_selected_row
-  )
   
-  ######
+  # 初始化模块绑定状态
+  sold_filter_initialized <- reactiveVal(FALSE)
+  
+  # 动态更新侧边栏内容
+  observe({
+    req(input$main_tabs)  # 确保主面板选项存在
+    
+    if (input$main_tabs == "sold") {
 
-  # 动态生成运单号输入框
-  output$additional_tracking_numbers <- renderUI({
-    rows <- tracking_rows()
-    
-    # 确保至少返回一个空的 UI，否则初始时页面可能为空
-    if (rows < 2) {
-      return(tagList())
+      # 渲染动态侧边栏
+      output$dynamic_sidebar <- renderUI({
+        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+      })
+      
+      # 确保模块仅绑定一次
+      if (!sold_filter_initialized()) {
+        sold_filter_initialized(TRUE)  # 标记模块已绑定
+        # 确保侧边栏渲染后绑定服务器逻辑
+        session$onFlushed(function() {
+          itemFilterServer(
+            id = "sold_filter",
+            makers_df = makers_df,
+            unique_items_data = unique_items_data,
+            filtered_unique_items_data = filtered_unique_items_data_sold,
+            unique_items_table_selected_row = unique_items_table_sold_selected_row
+          )
+        })
+      }
+    } else if (input$main_tabs == "order_management") {
+      # 订单管理分页：显示订单筛选区
+      output$dynamic_sidebar <- renderUI({
+        div(
+          class = "card",
+          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
+          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+          
+          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+          textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
+          
+          fluidRow(
+            column(6, 
+                   textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
+            column(6, 
+                   textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
+          ),
+          
+          fluidRow(
+            column(6, 
+                   selectInput(
+                     inputId = "filter_platform",
+                     label = "电商平台",
+                     choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+                     selected = "",
+                     width = "100%"
+                   )),
+            column(6, 
+                   selectInput(
+                     inputId = "filter_order_status",
+                     label = "订单状态",
+                     choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
+                     selected = "",
+                     width = "100%"
+                   ))
+          ),
+          
+          fluidRow(
+            column(6, 
+                   actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
+            column(6, 
+                   actionButton("reset_filter_btn", "清空筛选条件", class = "btn-secondary", style = "width: 100%;"))
+          )
+        )
+      })
     }
-    
-    # 动态生成从运单号2开始的输入框
-    tracking_inputs <- lapply(2:rows, function(i) {
-      textInput(paste0("tracking_number", i), paste0("运单号 ", i), placeholder = "请输入运单号", width = "100%")
-    })
-    do.call(tagList, tracking_inputs)
   })
+  
+  ############################ 
+  #####   物品售出子页   ##### 
+  ############################ 
   
   # 监听增加运单号按钮点击
   observeEvent(input$add_tracking_btn, {
@@ -1111,7 +1272,7 @@ server <- function(input, output, session) {
     })
   })
   
-  #####
+  ##### 网名自动填写
   
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
@@ -1132,7 +1293,7 @@ server <- function(input, output, session) {
         return(NULL)  # 如果没有匹配结果，返回 NULL
       }
     }, error = function(e) {
-      showNotification("查询数据库时出错，请检查连接或输入值。", type = "error")
+      showNotification("查询数据库时出错，请检查连接或输入值", type = "error")
       return(NULL)
     })
   })
@@ -1141,17 +1302,17 @@ server <- function(input, output, session) {
   cache <- reactiveVal(list())
   
   # 使用 debounce 避免频繁触发查询
-  customer_name_delayed <- debounce(reactive(input$customer_name), 500)
+  customer_name_delayed <- debounce(reactive(input$customer_name), 300)
   
   # 网名自动填写
   observeEvent(customer_name_delayed(), {
-    req(customer_name_delayed())  # 确保用户输入不为空
-    
-    # 忽略空字符串
+    # 如果用户清空了 customer_name，则清空 customer_netname
     if (customer_name_delayed() == "") {
       updateTextInput(session, "customer_netname", value = "")
       return()
     }
+    
+    req(customer_name_delayed())  # 确保用户输入不为空
     
     cache_data <- cache()
     
@@ -1173,7 +1334,6 @@ server <- function(input, output, session) {
     updateTextInput(session, "customer_netname", value = netname %||% "")
   })
   
-  
   ######
   
   # 出售订单图片处理模块
@@ -1190,28 +1350,67 @@ server <- function(input, output, session) {
       
       # 查询订单信息，包含新增字段
       existing_order <- dbGetQuery(con, "
-      SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderNotes 
+      SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderStatus, OrderNotes 
       FROM orders 
       WHERE OrderID = ?", params = list(sanitized_order_id)
       )
       
       # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
-        showNotification("已找到订单信息！字段已自动填充。", type = "message")
-        
         # 填充各字段信息
+        updateSelectInput(session, "platform", selected = existing_order$Platform[1])
+        
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
         updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1])
-        updateSelectInput(session, "platform", selected = existing_order$Platform[1])
+        
+        if (!is.null(existing_order$OrderStatus[1]) && !is.na(existing_order$OrderStatus[1])) {
+          if (existing_order$OrderStatus[1] == "调货") {
+            updateCheckboxInput(session, "is_transfer_order", value = TRUE)
+            updateCheckboxInput(session, "is_preorder", value = FALSE)  # 确保互斥
+          } else if (existing_order$OrderStatus[1] == "预定") {
+            updateCheckboxInput(session, "is_transfer_order", value = FALSE)  # 确保互斥
+            updateCheckboxInput(session, "is_preorder", value = TRUE)
+            
+            # 从备注中提取预定供应商
+            if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
+              supplier_prefix <- "【供应商】"
+              # 使用正则表达式提取供应商信息
+              supplier_match <- regmatches(existing_order$OrderNotes[1], 
+                                           regexpr(paste0(supplier_prefix, "(.*?)；"), existing_order$OrderNotes[1]))
+              if (length(supplier_match) > 0) {
+                supplier_name <- sub(paste0(supplier_prefix, "(.*?)；"), "\\1", supplier_match)  # 提取中间的供应商名称
+                updateSelectizeInput(session, "preorder_supplier", selected = supplier_name)  # 更新下拉菜单
+              }
+            }
+          } else {
+            # 其他情况，全部复选框设为 FALSE
+            updateCheckboxInput(session, "is_transfer_order", value = FALSE)
+            updateCheckboxInput(session, "is_preorder", value = FALSE)
+            updateSelectizeInput(session, "preorder_supplier", selected = NULL)  # 清空供应商下拉菜单
+          }
+        } else {
+          # 如果 OrderStatus 为空或 NULL，清空复选框和下拉菜单
+          updateCheckboxInput(session, "is_transfer_order", value = FALSE)
+          updateCheckboxInput(session, "is_preorder", value = FALSE)
+          updateSelectizeInput(session, "preorder_supplier", selected = NULL)
+        }
+        
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
-      } else {
-        # 如果订单记录不存在，清空所有相关字段
-        showNotification("未找到对应订单记录，可登记新订单。", type = "warning")
         
-        updateTextInput(session, "customer_name", value = "")
+        showNotification("已找到订单信息！字段已自动填充", type = "message")
+      } else {
+        # 如果订单记录不存在，清空出order ID以外所有相关字段
+        showNotification("未找到对应订单记录，可登记新订单", type = "warning")
+        
+        # 重置所有输入框
         updateSelectInput(session, "platform", selected = "")
+        updateTextInput(session, "customer_name", value = "")
+        updateTextInput(session, "customer_netname", value = "")
+        updateCheckboxInput(session, "is_preorder", value = FALSE)
+        updateCheckboxInput(session, "is_transfer_order", value = FALSE)
         updateTextInput(session, "tracking_number", value = "")
+        image_sold$reset()
         updateTextAreaInput(session, "order_notes", value = "")
       }
     }, error = function(e) {
@@ -1283,23 +1482,13 @@ server <- function(input, output, session) {
       is_preorder = input$is_preorder,
       preorder_supplier = input$preorder_supplier
     )
+    
+    reset_order_form(session, image_sold)
   })
   
-  # 监听清空按钮的点击事件
+  # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
-    # 重置所有输入框
-    updateSelectInput(session, "platform", selected = "")
-    updateTextInput(session, "order_id", value = "")
-    updateTextInput(session, "customer_name", value = "")
-    updateTextInput(session, "customer_netname", value = "")
-    updateCheckboxInput(session, "is_preorder", value = FALSE)
-    updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-    updateTextInput(session, "tracking_number", value = "")
-    
-    # 清空备注和图片模块
-    image_sold$reset()
-    updateTextAreaInput(session, "order_notes", value = "")
-    
+    reset_order_form(session, image_sold)
     showNotification("已清空所有输入！", type = "message")
   })
   
@@ -1341,6 +1530,18 @@ server <- function(input, output, session) {
                                searching = FALSE,       # 禁用搜索框
                                info = FALSE             # 禁用 "Showing x of y entries"
                              ))$datatable
+  })
+  
+  # 渲染货架物品数量
+  output$shelf_count <- renderText({
+    shelf_items <- shelf_items()  # 获取当前货架上的物品
+    paste0("(", nrow(shelf_items), ")")  # 返回数量显示
+  })
+  
+  # 渲染发货箱物品数量
+  output$box_count <- renderText({
+    box_items <- box_items()  # 获取当前发货箱内的物品
+    paste0("(", nrow(box_items), ")")  # 返回数量显示
   })
   
   # 点击货架物品，移入箱子
@@ -1403,7 +1604,7 @@ server <- function(input, output, session) {
       sanitized_order_id <- gsub("#", "", trimws(input$order_id))
       
       # 确保订单已登记
-      register_order(
+      order_registered <- register_order(
         order_id = sanitized_order_id,
         customer_name = input$customer_name,
         customer_netname = input$customer_netname,
@@ -1419,6 +1620,12 @@ server <- function(input, output, session) {
         is_preorder = input$is_preorder,
         preorder_supplier = input$preorder_supplier
       )
+      
+      # 如果订单登记失败，直接退出
+      if (!order_registered) {
+        showNotification("订单登记失败，无法完成售出操作！", type = "error")
+        return()
+      }
       
       # 遍历箱子内物品，减库存并更新物品状态
       lapply(1:nrow(box_items()), function(i) {
@@ -1465,23 +1672,181 @@ server <- function(input, output, session) {
       box_items(create_empty_shelf_box())
       
       # 重置所有输入框
-      updateSelectInput(session, "platform", selected = "")
-      updateTextInput(session, "order_id", value = "")
-      updateTextInput(session, "customer_name", value = "")
-      updateTextInput(session, "tracking_number", value = "")
+      reset_order_form(session, image_sold)
       
-      # 清空备注和图片模块
-      updateTextAreaInput(session, "order_notes", value = "")
-      image_sold$reset()
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
   
+  ############################ 
+  #####   订单管理子页   ##### 
+  ############################ 
   
-  ###################################################################################################################
-  ###################################################################################################################
-  ###################################################################################################################
+  # 选择某个订单后，渲染关联物品表
+  observeEvent(selected_order_row(), {
+    selected_row <- selected_order_row()
+    req(selected_row)  # 确保用户选择了一行
+
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+    customer_name <- selected_order$CustomerName
+
+    # 填充左侧订单信息栏
+    updateTextInput(session, "order_id", value = order_id)
+
+    # 动态更新标题
+    output$associated_items_title <- renderUI({
+      tags$h4(
+        sprintf("#%s - %s 的订单物品", order_id, customer_name),
+        style = "color: #007BFF; font-weight: bold;"
+      )
+    })
+
+    # 渲染关联物品表
+    associated_items <- reactive({
+      # 根据订单号筛选关联物品
+      items <- unique_items_data() %>% filter(OrderID == order_id)
+
+      # 动态移除列
+      if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
+        items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
+      } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
+        items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
+      }
+
+      items
+    })
+
+    # 使用 uniqueItemsTableServer 渲染关联物品表
+    callModule(uniqueItemsTableServer, "associated_items_table_module",
+               column_mapping = c(common_columns, list(
+                 PurchaseTime = "采购日期",
+                 IntlShippingMethod = "国际运输",
+                 IntlAirTracking = "国际空运单号",
+                 IntlSeaTracking = "国际海运单号"
+               )),
+               data = associated_items,
+               options = list(
+                 scrollY = "235px",  # 根据内容动态调整滚动高度
+                 scrollX = TRUE,  # 支持水平滚动
+                 fixedHeader = TRUE,  # 启用表头固定
+                 dom = 't',  # 隐藏搜索框和分页等控件
+                 paging = FALSE,  # 禁用分页
+                 searching = FALSE  # 禁用搜索
+               ))
+  })
+ 
+  # 清空筛选条件逻辑
+  observeEvent(input$reset_filter_btn, {
+    tryCatch({
+      # 重置所有输入框和选择框
+      updateTextInput(session, "filter_order_id", value = "")
+      updateTextInput(session, "filter_tracking_id", value = "")
+      updateTextInput(session, "filter_customer_name", value = "")
+      updateTextInput(session, "filter_customer_netname", value = "")
+      updateSelectInput(session, "filter_platform", selected = "")
+      updateSelectInput(session, "filter_order_status", selected = "")
+      
+      # 显示成功通知
+      showNotification("筛选条件已清空！", type = "message")
+    }, error = function(e) {
+      # 捕获错误并显示通知
+      showNotification(paste("清空筛选条件时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  # 删除订单逻辑
+  observeEvent(input$delete_order_btn, {
+    req(selected_order_row())  # 确保用户选择了一行订单
+    selected_row <- selected_order_row()
+    
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+    
+    # 显示确认弹窗
+    showModal(
+      modalDialog(
+        title = "确认删除订单",
+        paste0("您确定要删除订单 ", order_id, " 吗？此操作无法撤销！"),
+        footer = tagList(
+          modalButton("取消"),  # 关闭弹窗按钮
+          actionButton("confirm_delete_order_btn", "确认删除", class = "btn-danger")
+        )
+      )
+    )
+  })
+  
+  # 确认删除订单逻辑
+  observeEvent(input$confirm_delete_order_btn, {
+    removeModal()  # 关闭确认弹窗
+    
+    req(selected_order_row())  # 确保用户选择了一行订单
+    selected_row <- selected_order_row()
+
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+
+    tryCatch({
+      # 获取与订单关联的物品
+      associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
+
+      if (nrow(associated_items) > 0) {
+        # 遍历关联物品进行逆向操作
+        lapply(1:nrow(associated_items), function(i) {
+          item <- associated_items[i, ]
+
+          # 逆向调整库存
+          adjust_inventory(
+            con = con,
+            sku = item$SKU,
+            adjustment = 1  # 增加库存数量
+          )
+
+          # 恢复物品状态到“国内入库”
+          update_status(
+            con = con,
+            unique_id = item$UniqueID,
+            new_status = "国内入库"
+          )
+
+          # 清空物品的 OrderID
+          update_order_id(
+            con = con,
+            unique_id = item$UniqueID,
+            order_id = NULL  # 清空订单号
+          )
+        })
+      }
+
+      # 删除订单记录
+      dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(order_id))
+
+      # 通知用户操作结果
+      message <- if (nrow(associated_items) > 0) {
+        paste("订单", order_id, "已成功删除，订单内物品已返回库存！")
+      } else {
+        paste("订单", order_id, "已成功删除，没有关联的物品需要处理！")
+      }
+      showNotification(message, type = "message")
+
+      # 刷新数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
+
+      # 重置输入
+      reset_order_form(session, image_sold)
+
+      # 清空关联物品表
+      output$associated_items_table <- renderDT({ NULL })
+    }, error = function(e) {
+      showNotification(paste("删除订单时发生错误：", e$message), type = "error")
+    })
+  })
   
   
   
@@ -1492,12 +1857,39 @@ server <- function(input, output, session) {
   ################################################################
   
   # 删除选定物品
+  # 定义确认框
+  deleteConfirmationModal <- function(item_count) {
+    modalDialog(
+      title = "确认删除",
+      paste0("您已选择 ", item_count, " 件物品。这些物品删除后将无法恢复。是否继续？"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_delete_final", "确认删除", class = "btn-danger")
+      )
+    )
+  }
+  
+  # 监听删除按钮点击事件，弹出确认框
   observeEvent(input$confirm_delete_btn, {
     selected_rows <- unique_items_table_manage_selected_row()
     
     # 如果没有选中行，提示用户
     if (is.null(selected_rows) || length(selected_rows) == 0) {
       showNotification("请先选择要删除的物品！", type = "error")
+      return()
+    }
+    
+    # 显示确认框
+    showModal(deleteConfirmationModal(length(selected_rows)))
+  })
+  
+  # 确认框内 "确认删除" 按钮逻辑
+  observeEvent(input$confirm_delete_final, {
+    selected_rows <- unique_items_table_manage_selected_row()
+    
+    # 如果没有选中行，提示用户
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("没有选中任何物品！", type = "error")
       return()
     }
     
@@ -1510,27 +1902,27 @@ server <- function(input, output, session) {
       for (i in seq_len(nrow(selected_items))) {
         # 删除 unique_items 中对应的记录
         dbExecute(con, "
-        DELETE FROM unique_items
-        WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
+      DELETE FROM unique_items
+      WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
         
         # 重新计算平均 ProductCost 和 ShippingCost
         sku <- selected_items$SKU[i]
         
         remaining_items <- dbGetQuery(con, "
-        SELECT AVG(ProductCost) AS AvgProductCost, 
-               AVG(DomesticShippingCost) AS AvgShippingCost,
-               COUNT(*) AS RemainingCount
-        FROM unique_items
-        WHERE SKU = ?", params = list(sku))
+      SELECT AVG(ProductCost) AS AvgProductCost, 
+             AVG(DomesticShippingCost) AS AvgShippingCost,
+             COUNT(*) AS RemainingCount
+      FROM unique_items
+      WHERE SKU = ?", params = list(sku))
         
         if (remaining_items$RemainingCount[1] > 0) {
           # 更新 inventory 表的平均单价和库存数量
           dbExecute(con, "
-          UPDATE inventory
-          SET Quantity = ?, 
-              ProductCost = ?, 
-              ShippingCost = ?
-          WHERE SKU = ?", 
+        UPDATE inventory
+        SET Quantity = ?, 
+            ProductCost = ?, 
+            ShippingCost = ?
+        WHERE SKU = ?", 
                     params = list(
                       remaining_items$RemainingCount[1],
                       remaining_items$AvgProductCost[1],
@@ -1540,16 +1932,17 @@ server <- function(input, output, session) {
         } else {
           # 如果没有剩余记录，删除 inventory 表中的该 SKU
           dbExecute(con, "
-          DELETE FROM inventory
-          WHERE SKU = ?", params = list(sku))
+        DELETE FROM inventory
+        WHERE SKU = ?", params = list(sku))
         }
       }
       
       dbCommit(con) # 提交事务
       
+      # 通知用户成功删除
       showNotification("物品删除成功！", type = "message")
       
-      # 更新 inventory, unique_items数据并触发 UI 刷新
+      # 更新 inventory, unique_items 数据并触发 UI 刷新
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
@@ -1557,7 +1950,11 @@ server <- function(input, output, session) {
       dbRollback(con) # 回滚事务
       showNotification(paste("删除物品时发生错误：", e$message), type = "error")
     })
+    
+    # 关闭确认框
+    removeModal()
   })
+  
   
   # 采购商品图片处理模块
   image_manage <- imageModuleServer("image_manage")
@@ -1841,209 +2238,6 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
-  ## 订单管理分页                                               ##
-  ##                                                            ##
-  ################################################################
-  
-  # 监听筛选条件变化
-  observe({
-    input$filter_order_id
-    input$filter_customer_name
-    input$filter_platform
-    filtered_orders()  # 自动触发数据刷新
-  })
-  
-  # 订单图片处理模块
-  image_order_manage <- imageModuleServer("image_order_manage")
-  
-  # 选择某个订单后，渲染关联物品表
-  observeEvent(selected_order_row(), {
-    selected_row <- selected_order_row()
-    req(selected_row)  # 确保用户选择了一行
-    
-    # 获取选中的订单数据
-    selected_order <- filtered_orders()[selected_row, ]  
-    order_id <- selected_order$OrderID
-    customer_name <- selected_order$CustomerName
-    
-    # 填充左侧订单信息栏
-    updateTextInput(session, "update_customer_name", value = customer_name)
-    updateSelectInput(session, "update_platform", selected = selected_order$Platform)
-    updateTextInput(session, "update_tracking_number", value = selected_order$UsTrackingNumber)
-    updateTextAreaInput(session, "update_order_notes", value = selected_order$OrderNotes)
-    
-    # 动态更新标题
-    output$associated_items_title <- renderUI({
-      tags$h4(
-        sprintf("#%s - %s 的订单物品", order_id, customer_name),
-        style = "color: #007BFF; font-weight: bold;"
-      )
-    })
-    
-    # 渲染关联物品表
-    associated_items <- reactive({
-      # 根据订单号筛选关联物品
-      items <- unique_items_data() %>% filter(OrderID == order_id)
-      
-      # 动态移除列
-      if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
-        items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
-      } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
-        items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
-      }
-      
-      items
-    })
-    
-    # 使用 uniqueItemsTableServer 渲染关联物品表
-    callModule(uniqueItemsTableServer, "associated_items_table_module",
-               column_mapping = c(common_columns, list(
-                 PurchaseTime = "采购日期",
-                 IntlShippingMethod = "国际运输",
-                 IntlAirTracking = "国际空运单号",
-                 IntlSeaTracking = "国际海运单号"
-               )),
-               data = associated_items,
-               options = list(
-                 scrollY = "235px",  # 根据内容动态调整滚动高度
-                 scrollX = TRUE,  # 支持水平滚动
-                 fixedHeader = TRUE,  # 启用表头固定
-                 dom = 't',  # 隐藏搜索框和分页等控件
-                 paging = FALSE,  # 禁用分页
-                 searching = FALSE  # 禁用搜索
-               ))
-  })
-  
-  # 更新订单逻辑
-  observeEvent(input$update_order_btn, {
-    req(selected_order_row())  # 确保用户选择了一行订单
-    selected_row <- selected_order_row()
-    
-    # 获取选中的订单数据
-    selected_order <- filtered_orders()[selected_row, ]
-    order_id <- selected_order$OrderID
-    
-    # 获取当前订单的图片路径
-    existing_image_path <- selected_order$OrderImagePath
-    
-    # 处理图片上传或粘贴
-    updated_image_path <- process_image_upload(
-      sku = order_id,  # 使用订单号作为 SKU
-      file_data = image_order_manage$uploaded_file(),
-      pasted_data = image_order_manage$pasted_file(),
-      inventory_path = existing_image_path
-    )
-    
-    tryCatch({
-      # 更新订单信息
-      dbExecute(con, "
-      UPDATE orders 
-      SET CustomerName = ?, 
-          Platform = ?, 
-          UsTrackingNumber = ?, 
-          OrderNotes = ?, 
-          OrderImagePath = ?
-      WHERE OrderID = ?",
-                params = list(
-                  input$update_customer_name,   # 更新的顾客姓名
-                  input$update_platform,        # 更新的电商平台
-                  input$update_tracking_number, # 更新的运单号
-                  input$update_order_notes,      # 更新的备注
-                  updated_image_path,           # 更新的图片路径
-                  order_id                      # 更新的订单号
-                )
-      )
-      showNotification("订单信息已成功更新！", type = "message")
-      
-      # 更新orders，触发表格刷新
-      orders(dbGetQuery(con, "SELECT * FROM orders"))
-      
-      # 清空左侧输入栏
-      updateTextInput(session, "update_customer_name", value = "")
-      updateSelectInput(session, "update_platform", selected = "")
-      updateTextInput(session, "update_tracking_number", value = "")
-      updateTextAreaInput(session, "update_order_notes", value = "")
-      image_order_manage$reset()  # 重置图片模块
-    }, error = function(e) {
-      showNotification(paste("更新订单时发生错误：", e$message), type = "error")
-    })
-  })
-  
-  # 删除订单逻辑
-  observeEvent(input$delete_order_btn, {
-    req(selected_order_row())  # 确保用户选择了一行订单
-    selected_row <- selected_order_row()
-    
-    # 获取选中的订单数据
-    selected_order <- filtered_orders()[selected_row, ]
-    order_id <- selected_order$OrderID
-    
-    tryCatch({
-      # 获取与订单关联的物品
-      associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
-      
-      if (nrow(associated_items) > 0) {
-        # 遍历关联物品进行逆向操作
-        lapply(1:nrow(associated_items), function(i) {
-          item <- associated_items[i, ]
-          
-          # 逆向调整库存
-          adjust_inventory(
-            con = con,
-            sku = item$SKU,
-            adjustment = 1  # 增加库存数量
-          )
-          
-          # 恢复物品状态到“国内入库”
-          update_status(
-            con = con,
-            unique_id = item$UniqueID,
-            new_status = "国内入库"
-          )
-          
-          # 清空物品的 OrderID
-          update_order_id(
-            con = con,
-            unique_id = item$UniqueID,
-            order_id = NULL  # 清空订单号
-          )
-        })
-      }
-      
-      # 删除订单记录
-      dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(order_id))
-      
-      # 通知用户操作结果
-      message <- if (nrow(associated_items) > 0) {
-        paste("订单", order_id, "已成功删除，订单内物品已返回库存！")
-      } else {
-        paste("订单", order_id, "已成功删除，没有关联的物品需要处理！")
-      }
-      showNotification(message, type = "message")
-      
-      # 刷新数据
-      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-      orders(dbGetQuery(con, "SELECT * FROM orders"))
-      
-      # 清空左侧输入栏
-      updateTextInput(session, "update_customer_name", value = "")
-      updateSelectInput(session, "update_platform", selected = "")
-      updateTextInput(session, "update_tracking_number", value = "")
-      updateTextAreaInput(session, "update_order_notes", value = "")
-      image_order_manage$reset()  # 重置图片模块
-      
-      # 清空关联物品表
-      output$associated_items_table <- renderDT({ NULL })
-    }, error = function(e) {
-      showNotification(paste("删除订单时发生错误：", e$message), type = "error")
-    })
-  })
-  
-  
-  
-  ################################################################
-  ##                                                            ##
   ## 查询分页                                                   ##
   ##                                                            ##
   ################################################################
@@ -2113,9 +2307,9 @@ server <- function(input, output, session) {
             summarise(Count = n(), .groups = "drop")
           
           # 定义固定类别顺序和颜色
-          status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国售出", "退货")
-          status_colors <- c("lightgray", "#c7e89b", "#4B4B4B", "#46a80d", "#173b02", "#A9A9A9", "red")
-          
+          status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国售出", "美国发货", "退货")
+          status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#869bb8", "#faf0d4", "red")
+
           # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
           inventory_status_data <- merge(
             data.frame(Status = status_levels),
@@ -2271,7 +2465,7 @@ server <- function(input, output, session) {
     complete_data
   })
   
-  # 
+  # 开销柱状图  
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
@@ -2312,7 +2506,7 @@ server <- function(input, output, session) {
       )
   })
   
-  #
+  # 总开销分布
   output$pie_chart <- renderPlotly({
     data <- expense_summary_data()
     
@@ -2366,23 +2560,20 @@ server <- function(input, output, session) {
   ## 数据下载分页                                               ##
   ##                                                            ##
   ################################################################
+
   
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    maker_options <- lapply(makers, function(maker) list(key = maker, text = maker))
     
-    div(
-      style = "padding-bottom: 15px;", # 外层 div 设置内边距和字体大小
-      Dropdown.shinyInput(
-        inputId = "download_maker",
-        label = "选择供应商:",
-        options = maker_options,
-        multiSelect = TRUE,
-        placeholder = "请选择供应商..."
-      )
+    createSearchableDropdown(
+      input_id = "download_maker",
+      label = "选择供应商:",
+      data = makers,
+      placeholder = "搜索供应商..."
     )
   })
+
   
   # 监听供应商选择变化并动态更新商品名称
   observe({
@@ -2409,11 +2600,16 @@ server <- function(input, output, session) {
   observeEvent(input$download_reset_filters, {
     # 重置供应商筛选为全选
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    updateSelectizeInput(session, "download_maker", choices = makers, selected = makers)
+    updateDropdown.shinyInput(
+      session = session,
+      inputId = "download_maker",
+      options = lapply(makers, function(maker) list(key = maker, text = maker)), # 更新选项
+      value = NULL # 重置为未选中状态
+    )
     
     # 重置商品名称筛选为空选项
-    item_names <- c("")  # 仅包含空选项
-    updateSelectizeInput(session, "download_item_name", choices = item_names, selected = "")
+    updateSelectizeInput(session, "download_item_name", choices = "", selected = "")
+    updateDateRangeInput(session, "download_date_range", start = Sys.Date() - 365, end = Sys.Date())
   })
   
   # 下载物品表为 Excel
@@ -2567,47 +2763,45 @@ server <- function(input, output, session) {
   output$admin_controls <- renderUI({
     if (admin_logged_in()) {
       tagList(
-        tags$h4("物品状态管理", style = "color: #007BFF;"),
         
-        # 输入 SKU 自动过滤物品
-        textInput("admin_input_sku", "", placeholder = "请输入 SKU", width = "100%"),
-        
-        tags$hr(),
+        tags$h4("修改库存状态", style = "font-weight: bold; color: #007BFF;"),
         
         # 目标状态选择
-        selectInput("admin_target_status", "目标状态改为：", 
-                    choices = c("采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "退货"), 
+        selectInput("admin_target_status", "目标库存状态改为：", 
+                    choices = c('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国发货','美国调货','退货'), 
                     selected = NULL, width = "100%"),
         
         # 是否记录修改时间
         checkboxInput("admin_record_timestamp", "记录修改时间", value = FALSE),
         
         # 更新选中物品状态
-        actionButton("admin_update_status_btn", "更新选中物品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        actionButton("admin_update_status_btn", "更新库存状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
         
         tags$hr(),
         
-        actionButton("oauth_btn", "登录并授权 USPS", icon = icon("sign-in-alt")),
-        h4("授权结果"),
-        verbatimTextOutput("oauth_status")
+        tags$h4("修改瑕疵品状态", style = "font-weight: bold; color: #007BFF;"),
         
+        # 目标状态选择
+        selectInput("admin_target_defect", "目标下次状态改为：", 
+                    choices = c('未知','无瑕','瑕疵','修复'), 
+                    selected = NULL, width = "100%"),
+        
+        # 更新选中物品瑕疵品状态
+        actionButton("admin_update_defect_btn", "更新瑕疵品状态", class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+        
+        tags$hr(),
+        
+        tags$h4("修改库存总数", style = "font-weight: bold; color: #FF5733;"),
+        
+        # 输入新的库存总数
+        numericInput("admin_new_total_quantity", "新库存总数：", value = 0, min = 0, width = "100%"),
+        
+        # 提交修改库存总数的按钮
+        actionButton("admin_update_inventory_btn", "修改库存总数", class = "btn-warning", style = "width: 100%; margin-top: 10px;")
       )
     } else {
       div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
     }
-  })
-  
-  # 通过 SKU 筛选物品数据
-  filtered_unique_items_data_admin <- reactive({
-    data <- unique_items_data()
-    sku <- trimws(input$admin_input_sku)
-    
-    # 自动过滤 SKU，同时排除 NA 值
-    if (!is.null(sku) && sku != "") {
-      data <- data %>% filter(!is.na(SKU) & SKU == sku)
-    }
-    
-    data
   })
   
   # 使用 uniqueItemsTableServer 渲染表格
@@ -2621,15 +2815,15 @@ server <- function(input, output, session) {
                                                         OrderID = "订单号"
                                                       )), 
                                                       selection = "multiple", 
-                                                      data = filtered_unique_items_data_admin)
+                                                      data = unique_items_data)
   
-  # 监听更新状态按钮
+  # 更新库存状态按钮
   observeEvent(input$admin_update_status_btn, {
     req(input$admin_target_status, unique_items_table_admin_selected_row())
     
     # 获取选中行的索引
     selected_rows <- unique_items_table_admin_selected_row()
-    selected_items <- filtered_unique_items_data_admin()[selected_rows, ]
+    selected_items <- unique_items_data()[selected_rows, ]
     
     # 确保有选中物品
     if (nrow(selected_items) == 0) {
@@ -2657,66 +2851,121 @@ server <- function(input, output, session) {
       })
       
       # 通知成功并刷新数据
-      showNotification("物品状态更新成功！", type = "message")
+      showNotification("库存状态更新成功！", type = "message")
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
     }, error = function(e) {
       # 捕获错误并通知用户
-      showNotification(paste("状态更新失败：", e$message), type = "error")
+      showNotification(paste("库存状态更新失败：", e$message), type = "error")
+    })
+  })
+  
+  observeEvent(input$admin_update_defect_btn, {
+    req(input$admin_target_defect, unique_items_table_admin_selected_row())
+    
+    # 获取选中行的索引
+    selected_rows <- unique_items_table_admin_selected_row()
+    selected_items <- unique_items_data()[selected_rows, ]
+    
+    # 确保有选中物品
+    if (nrow(selected_items) == 0) {
+      showNotification("请选择至少一个物品进行瑕疵品状态更新！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 遍历选中物品
+      lapply(1:nrow(selected_items), function(i) {
+        unique_id <- selected_items$UniqueID[i]
+        target_defect <- input$admin_target_defect  # 获取目标瑕疵品状态
+        
+        # 调用 update_status 更新瑕疵品状态
+        update_status(
+          con = con,
+          unique_id = unique_id,
+          new_status = NULL,  # 不更新物品状态
+          defect_status = target_defect,  # 更新瑕疵品状态
+          refresh_trigger = unique_items_data_refresh_trigger
+        )
+      })
+      
+      # 通知成功并刷新数据
+      showNotification("瑕疵品状态更新成功！", type = "message")
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("瑕疵品状态更新失败：", e$message), type = "error")
     })
   })
   
   
-  usps_auth_url <- "https://developer.usps.com/oauth/authorize"
-  usps_token_url <- "https://developer.usps.com/oauth/token"
-  client_id <- "KNqnm8z0iVobHrDWVMhxoDM1R3FiMbTh"  # 替换为实际的 Key
-  client_secret <- "AgBRw1H1pdWcB97Y"  # 替换为实际的 Secret
-  redirect_uri <- "http://54.254.120.88:3838/inventory/callback"
-  
-  observeEvent(input$oauth_btn, {
-    auth_url <- paste0(
-      usps_auth_url, "?response_type=code&client_id=", client_id,
-      "&redirect_uri=", URLencode(redirect_uri)
-    )
-    session$sendCustomMessage(type = "navigate", message = auth_url)
-  })
-  
-  observe({
-    # 监听回调 URL 参数
-    query <- parseQueryString(session$clientData$url_search)
+  # 更新总库存数按钮
+  observeEvent(input$admin_update_inventory_btn, {
+    # 获取点选的行数据
+    selected_rows <- unique_items_table_admin_selected_row()
+    selected_items <- unique_items_data()[selected_rows, ]
     
-    if (!is.null(query$code)) {
-      # 获取授权码
-      auth_code <- query$code
-      output$oauth_status <- renderText(paste("授权码：", auth_code))
-      
-      # 使用授权码换取访问令牌
-      response <- httr::POST(
-        url = usps_token_url,
-        body = list(
-          client_id = client_id,
-          client_secret = client_secret,
-          code = auth_code,
-          redirect_uri = redirect_uri,
-          grant_type = "authorization_code"
-        ),
-        encode = "form"
-      )
-      
-      # 解析访问令牌
-      if (response$status_code == 200) {
-        token_data <- httr::content(response, "parsed")
-        access_token <- token_data$access_token
-        output$oauth_status <- renderText(paste("访问令牌：", access_token))
-      } else {
-        output$oauth_status <- renderText("无法获取访问令牌，请检查配置。")
-      }
+    # 校验是否有选中物品
+    if (is.null(selected_rows) || nrow(selected_items) == 0) {
+      showNotification("请先选择至少一件物品！", type = "error")
+      return()
     }
+    
+    # 获取选中物品的 SKU 列表
+    sku_counts <- selected_items %>%
+      group_by(SKU) %>%
+      summarize(SelectedCount = n(), .groups = "drop")  # 按 SKU 聚合
+    
+    # 获取新库存总数
+    new_total_quantity <- input$admin_new_total_quantity
+    
+    # 校验库存输入
+    if (is.null(new_total_quantity) || new_total_quantity < 0) {
+      showNotification("库存总数必须为非负数！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 遍历每个 SKU，更新库存总数
+      lapply(1:nrow(sku_counts), function(i) {
+        sku <- sku_counts$SKU[i]
+        selected_count <- sku_counts$SelectedCount[i]
+        
+        # 检查 SKU 是否存在
+        existing_record <- dbGetQuery(con, "SELECT SKU, Quantity FROM inventory WHERE SKU = ?", params = list(sku))
+        if (nrow(existing_record) == 0) {
+          showNotification(paste0("SKU ", sku, " 不存在！"), type = "error")
+          return(NULL)
+        }
+        
+        # 更新库存总数为新值
+        dbExecute(con, "
+        UPDATE inventory
+        SET Quantity = ?
+        WHERE SKU = ?",
+                  params = list(new_total_quantity, sku)
+        )
+        
+        showNotification(
+          paste0("SKU ", sku, " 的库存总数已更新为 ", new_total_quantity, "！"),
+          type = "message"
+        )
+      })
+      
+      # 刷新数据
+      inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("修改库存总数时发生错误：", e$message), type = "error")
+    })
   })
-
   
   
   
+  #########################################################################################################################
   
   # Disconnect from the database on app stop
   onStop(function() {
