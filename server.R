@@ -526,20 +526,13 @@ server <- function(input, output, session) {
   observeEvent(debounced_inputs(), {
     inputs <- debounced_inputs()
     
-    # 安全检查 input$new_name 是否为列表，以及 text 字段是否存在
-    new_name_text <- if (is.list(inputs$new_name) && !is.null(inputs$new_name$text)) {
-      inputs$new_name$text
-    } else {
-      NULL
-    }
-    
     # 检查 SKU 的来源
     is_from_table <- !is.null(unique_items_table_purchase_selected_row()) && 
       length(unique_items_table_purchase_selected_row()) > 0
     
     # 判断是否需要清空 SKU
     if (is.null(inputs$new_maker) || inputs$new_maker == "" || 
-        is.null(new_name_text) || new_name_text == "") {
+        is.null(input$new_name) || input$new_name == "") {
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       return()
     }
@@ -549,7 +542,7 @@ server <- function(input, output, session) {
       item_type_data = item_type_data(),
       major_type = inputs$major_type,
       minor_type = inputs$minor_type,
-      item_name = new_name_text,
+      item_name = input$new_name,
       maker = inputs$new_maker
     )
     
@@ -656,15 +649,8 @@ server <- function(input, output, session) {
   
   # Handle add item button click
   observeEvent(input$add_btn, {
-    # 提取并验证商品名称
-    new_name_text <- if (is.list(input$new_name) && !is.null(input$new_name$text)) {
-      input$new_name$text
-    } else {
-      NULL
-    }
-    
     # 验证输入
-    if (is.null(new_name_text) || new_name_text == "") {
+    if (is.null(input$new_name) || input$new_name == "") {
       showNotification("请填写正确商品名称！", type = "error")
       return()
     }
@@ -715,7 +701,7 @@ server <- function(input, output, session) {
       existing_items[sku_index, "Maker"] <- input$new_maker
       existing_items[sku_index, "MajorType"] <- input[["type_module-new_major_type"]]
       existing_items[sku_index, "MinorType"] <- input[["type_module-new_minor_type"]]
-      existing_items[sku_index, "ItemName"] <- input$new_name$text
+      existing_items[sku_index, "ItemName"] <- input$new_name
       existing_items[sku_index, "Quantity"] <- input$new_quantity
       existing_items[sku_index, "ProductCost"] <- round(input$new_product_cost, 2)
       existing_items[sku_index, "ItemImagePath"] <- as.character(final_image_path)
@@ -730,14 +716,14 @@ server <- function(input, output, session) {
         Maker = input$new_maker,
         MajorType = input[["type_module-new_major_type"]],
         MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name$text,
+        ItemName = input$new_name,
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
       added_items(bind_rows(existing_items, new_item))
-      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name$text), type = "message")
+      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
     }
     
     # 重置
