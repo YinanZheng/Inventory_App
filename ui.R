@@ -176,7 +176,7 @@ ui <- navbarPage(
               style = "position: relative; width: 100%;",
               div(
                 style = "position: absolute; top: 50%; left: 10px; transform: translateY(10%); color: grey; 
-               font-size: 16px; pointer-events: none; white-space: nowrap; overflow: hidden;",
+               font-size: 15px; pointer-events: none; white-space: nowrap; overflow: hidden;",
                 id = "name_hint"
               ),
               textInput(
