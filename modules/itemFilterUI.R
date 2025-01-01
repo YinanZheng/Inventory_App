@@ -24,7 +24,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
     fluidRow(
       column(6, 
              selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
-                            options = list(placeholder = '供应商名称(或拼音)...', 
+                            options = list(placeholder = '名称(或拼音)...', 
                                            maxOptions = 500,
                                            create = FALSE)),
              class = "custom-selectize"
