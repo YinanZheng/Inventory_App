@@ -2,6 +2,7 @@
 server <- function(input, output, session) {
   
   source("utils.R", local = TRUE)
+  source("./modules/itemFilterUI.R", local = TRUE)
   
   # Database
   con <- db_connection()
