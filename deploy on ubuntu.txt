@@ -121,3 +121,9 @@ sudo chown -R ubuntu:ubuntu /srv/shiny-server/<your-app>/www/images
 mysql inventory_system < /var/backups/backup_2024-12-25.sql
 
 
+
+
+### Connect using MacOS command line 
+puttygen /Users/yzk256/CGO\ IGH\ NU\ Dropbox/Yinan\ Zheng/Golden\ Bean\ LLC/Singapore.ppk -O private-openssh -o /Users/yzk256/CGO\ IGH\ NU\ Dropbox/Yinan\ Zheng/Golden\ Bean\ LLC/Singapore.pem
+
+ssh -i /Users/yzk256/CGO\ IGH\ NU\ Dropbox/Yinan\ Zheng/Golden\ Bean\ LLC/Singapore.pem ubuntu@54.254.120.88
