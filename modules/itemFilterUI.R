@@ -8,14 +8,14 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
     # 标题和清空按钮在同一行，垂直居中
     fluidRow(
       style = "display: flex; align-items: center;", # Flex 布局，垂直方向居中对齐
-      column(9, 
+      column(8, 
              tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; padding: 0;", text_color))
       ),
-      column(3,
+      column(4,
              div(
                style = "padding-right: 10px;",
                actionButton(ns("reset_btn"), "重置", icon = icon("snowplow"), class = "btn-danger", 
-                            style = "font-size: 14px; width: auto; height: 30px; padding: 5px 10px; margin-right: 5px;")
+                            style = "font-size: 14px; width: auto; height: 30px; padding: 5px 5px; margin-right: 10px;")
              )
       )
     ),
