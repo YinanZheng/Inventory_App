@@ -402,7 +402,7 @@ ui <- navbarPage(
         
         itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745"),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         div(
           class = "card",
