@@ -270,7 +270,7 @@ ui <- navbarPage(
         
         itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745"),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
           column(
@@ -282,7 +282,7 @@ ui <- navbarPage(
               # 卡片标题
               div(
                 style = "margin-bottom: 10px; padding-bottom: 8px;",
-                tags$h4("入库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                tags$h4("入库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 5px;"),
               ),
               
               # SKU 输入框
@@ -345,7 +345,7 @@ ui <- navbarPage(
           )
         ),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow( 
           # 条形码生成下载按钮
@@ -357,12 +357,12 @@ ui <- navbarPage(
                    # 卡片标题
                    div(
                      style = "margin-bottom: 10px; padding-bottom: 8px;",
-                     tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+                     tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 5px;"),
                    ),
                    
                    tags$div(
                      style = "display: flex; justify-content: space-between; align-items: center;",
-                     actionButton("export_select_btn", "生成选中商品条形码", icon = icon("barcode"), class = "btn-info"),
+                     actionButton("export_select_btn", "生成选中物品条形码", icon = icon("barcode"), class = "btn-info"),
                      downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
                    )
                  )
