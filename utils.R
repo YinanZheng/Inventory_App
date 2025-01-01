@@ -717,7 +717,7 @@ handleOperation <- function(
     sku_items <- dbGetQuery(con, query, params = list(sku))
     
     if (nrow(sku_items) == 0) {
-      showNotification(paste0("无可", operation_name, "的物品，所有该商品已完成 ", operation_name, "！"), type = "message")
+      showNotification(paste0("无可", operation_name, "的物品！"), type = "warning")
       return()
     }
     
