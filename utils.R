@@ -913,6 +913,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 合并订单关联物品和发货箱的图片路径
     combined_image_paths <- unique(c(order_image_paths, box_image_paths))
     
+    showNotification(image_path)
+    
     # 决定订单图片路径
     if (!is.null(image_path)) {
       # 如果用户上传或粘贴了图片，直接使用用户的图片路径
