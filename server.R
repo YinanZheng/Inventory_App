@@ -976,6 +976,9 @@ server <- function(input, output, session) {
     # 更新 inventory, unique_items数据并触发 UI 刷新
     inventory(dbGetQuery(con, "SELECT * FROM inventory"))
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+    
+    updateTextInput(session, "inbound_sku", value = "")
+    updateNumericInput(session, "inbound_quantity", value = 1)
   })
   
   # 监听选中行并更新 SKU
