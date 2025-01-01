@@ -118,7 +118,20 @@ ui <- navbarPage(
               break;
             }
           }
-        });")),
+        });
+        
+        $(document).on('keydown', function(e) {
+        if (e.key === 'Tab' && $('#new_name').is(':focus')) {
+          const hint = $('#name_hint').text();
+          if (hint.length > 0) {
+            const currentValue = $('#new_name').val();
+            $('#new_name').val(currentValue + hint);  // 补全输入框
+            Shiny.setInputValue('new_name', currentValue + hint, {priority: 'event'});  // 提交补全值
+            $('#name_hint').text('');  // 清空提示
+            e.preventDefault();  // 阻止默认 Tab 行为
+          }
+        }
+      });")),
       
       tags$script('
         Shiny.addCustomMessageHandler("navigate", function(url) {
@@ -156,12 +169,23 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(7,   textInput(
-            inputId = "new_name",
-            label = "商品名：",
-            placeholder = "请输入商品名...",
-            width = "100%"
-          )),  
+          column(
+            7,
+            div(
+              style = "position: relative;",
+              textInput(
+                inputId = "new_name",
+                label = "商品名：",
+                placeholder = "请输入商品名...",
+                width = "100%"
+              ),
+              tags$div(
+                id = "name_hint",
+                style = "position: absolute; top: 50%; left: 0; transform: translateY(-50%); 
+               color: grey; font-size: 14px; pointer-events: none; padding-left: 10px;"
+              )
+            )
+          ),  
           column(5, dateInput(
             inputId = "purchase_date",
             label = "采购日期:",

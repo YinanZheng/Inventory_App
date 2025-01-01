@@ -587,10 +587,17 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$new_name, {
-    current_input <- trimws(input$new_name)
-    suggestions <- item_names()[grepl(current_input, item_names(), ignore.case = TRUE)]
-    if (length(suggestions) == 1) {
-      updateTextInput(session, "new_name", value = suggestions[1]) # 自动补全
+    current_input <- trimws(input$new_name)  # 获取用户输入内容
+    if (current_input == "") {
+      updateText(session, "name_hint", "")  # 清空提示
+    } else {
+      suggestions <- item_names()[startsWith(item_names(), current_input)]  # 获取匹配的建议
+      if (length(suggestions) > 0) {
+        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))  # 提取后缀
+        updateText(session, "name_hint", hint)  # 更新提示信息
+      } else {
+        updateText(session, "name_hint", "")  # 无匹配时清空提示
+      }
     }
   })
   
