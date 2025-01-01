@@ -602,7 +602,7 @@ server <- function(input, output, session) {
         document.body.removeChild(span);
         const hintElement = document.getElementById('name_hint');
         hintElement.textContent = '%s';
-        hintElement.style.left = `${inputWidth + 13}px`;
+        hintElement.style.left = `${inputWidth + 15}px`;
       ", current_input, hint))  # 提示文字动态对齐到输入末尾
       } else {
         runjs("$('#name_hint').text('');")  # 无匹配时清空提示
