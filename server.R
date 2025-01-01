@@ -293,9 +293,7 @@ server <- function(input, output, session) {
     data
   })
   
-  
-  
-  # 数据下载页筛选
+  # 国际物流页过滤
   filtered_unique_items_data_logistics <- reactive({
     data <- unique_items_data()
     shipping_method <- input$intl_shipping_method
@@ -383,9 +381,6 @@ server <- function(input, output, session) {
     
     data
   })
-  
-
-  
   
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
