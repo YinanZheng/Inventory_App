@@ -587,17 +587,16 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$new_name, {
-    req(input$new_name)  # 确保输入框存在
-    current_input <- trimws(input$new_name)
+    current_input <- trimws(input$new_name)  # 获取用户当前输入
     if (current_input == "") {
-      updateText(session, "name_hint", "")
+      runjs("$('#name_hint').text('');")  # 清空提示
     } else {
-      suggestions <- item_names()[startsWith(item_names(), current_input)]
+      suggestions <- item_names()[startsWith(item_names(), current_input)]  # 匹配起始字符
       if (length(suggestions) > 0) {
-        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))
-        updateText(session, "name_hint", hint)
+        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))  # 获取后缀
+        runjs(sprintf("$('#name_hint').text('%s');", hint))  # 更新提示
       } else {
-        updateText(session, "name_hint", "")
+        runjs("$('#name_hint').text('');")  # 清空提示
       }
     }
   })
