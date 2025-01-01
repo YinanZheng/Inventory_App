@@ -881,7 +881,8 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
-    handleSkuInput(
+    # 调用 handleSkuInput 并获取待入库数量
+    pending_quantity <- handleSkuInput(
       sku_input = input$inbound_sku,
       output_name = "inbound_item_info",
       count_label = "待入库数",
@@ -891,6 +892,15 @@ server <- function(input, output, session) {
       placeholder_path = placeholder_300px_path,
       host_url = host_url
     )
+    
+    # 设置入库数量最大值
+    if (!is.null(pending_quantity) && pending_quantity > 0) {
+      updateNumericInput(session, "inbound_quantity", max = pending_quantity, value = 1)
+      showNotification(paste0("已更新待入库数量最大值为 ", pending_quantity, "！"), type = "message")
+    } else {
+      updateNumericInput(session, "inbound_quantity", max = 1, value = 1)
+      showNotification("无有效的待入库数量！", type = "warning")
+    }
   })
   
   # 确认入库逻辑

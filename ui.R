@@ -308,7 +308,9 @@ ui <- navbarPage(
                 label = "入库数量",
                 value = 1,        # 默认值
                 min = 1,          # 最小值
-                step = 1          # 步长
+                max = 1,
+                step = 1,          # 步长
+                style = "width: 100%"
               ),
               
               # 瑕疵品复选框

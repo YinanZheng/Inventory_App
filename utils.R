@@ -643,7 +643,7 @@ handleSkuInput <- function(
   if (is.null(sku) || sku == "") {
     # 如果 SKU 为空，渲染默认空的商品信息
     renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
-    return()
+    return(NULL) # 返回 NULL
   }
   
   tryCatch({
@@ -654,7 +654,7 @@ handleSkuInput <- function(
     if (nrow(item_info) == 0) {
       showNotification("未找到该条形码对应的物品！", type = "error")
       renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
-      return()
+      return(NULL) # 返回 NULL
     }
     
     # 渲染商品信息
@@ -670,11 +670,17 @@ handleSkuInput <- function(
       count_label = count_label,
       count_field = count_field
     )
+    
+    # 返回 count_field 的值
+    return(item_info[[count_field]][1])
+    
   }, error = function(e) {
     # 错误处理
     showNotification(paste("处理 SKU 输入时发生错误：", e$message), type = "error")
+    return(NULL) # 返回 NULL
   })
 }
+
 
 handleOperation <- function(
     operation_name,       # 操作名称（入库、出库、售出）
