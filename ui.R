@@ -175,7 +175,7 @@ ui <- navbarPage(
             div(
               style = "position: relative; width: 100%;",
               div(
-                style = "position: absolute; top: 50%; left: 10px; transform: translateY(-50%); color: grey; 
+                style = "position: absolute; top: 50%; left: 10px; transform: translateY(-40%); color: grey; 
                font-size: 14px; pointer-events: none; white-space: nowrap; overflow: hidden;",
                 id = "name_hint"
               ),
