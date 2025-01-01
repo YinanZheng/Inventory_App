@@ -5,3 +5,4 @@ Inventory_App.Rproj
 /www
 tests/test-app/server.R
 tests/test-app/ui.R
+.DS_Store
