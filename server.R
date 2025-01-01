@@ -591,10 +591,10 @@ server <- function(input, output, session) {
     if (current_input == "") {
       runjs("$('#name_hint').text('');")  # 清空提示
     } else {
-      suggestions <- item_names()[startsWith(item_names(), current_input)]
+      suggestions <- item_names()[startsWith(item_names(), current_input)]  # 匹配前缀
       if (length(suggestions) > 0) {
         hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))
-        # 动态计算用户输入宽度
+        # 动态计算输入框宽度
         runjs(sprintf("
         const inputElement = document.getElementById('new_name');
         const inputValue = '%s';
@@ -610,12 +610,13 @@ server <- function(input, output, session) {
         const hintElement = document.getElementById('name_hint');
         hintElement.textContent = '%s';
         hintElement.style.left = `${inputWidth + 10}px`;
-      ", current_input, hint))  # 根据输入动态调整提示位置
+      ", current_input, hint))  # 提示文字动态对齐到输入末尾
       } else {
         runjs("$('#name_hint').text('');")  # 无匹配时清空提示
       }
     }
   })
+  
   
   
   # # 缓存商品名，安全处理空值

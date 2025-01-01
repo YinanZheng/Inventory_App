@@ -173,17 +173,17 @@ ui <- navbarPage(
           column(
             7,
             div(
-              style = "position: relative;",
+              style = "position: relative; width: 100%;",
+              div(
+                style = "position: absolute; top: 50%; left: 10px; transform: translateY(-50%); color: grey; 
+               font-size: 14px; pointer-events: none; white-space: nowrap; overflow: hidden;",
+                id = "name_hint"
+              ),
               textInput(
                 inputId = "new_name",
                 label = "商品名：",
                 placeholder = "请输入商品名...",
                 width = "100%"
-              ),
-              tags$div(
-                id = "name_hint",
-                style = "position: absolute; top: 0; left: 0; transform: translateY(50%); 
-               color: grey; font-size: 16px; pointer-events: none; white-space: nowrap;"
               )
             )
           ),  
