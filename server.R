@@ -610,40 +610,6 @@ server <- function(input, output, session) {
     }
   })
   
-  
-  
-  # # 缓存商品名，安全处理空值
-  # item_names <- reactive({
-  #   inventory_data <- inventory()
-  #   if (is.null(inventory_data) || nrow(inventory_data) == 0) {
-  #     return(list())  # 如果没有数据，返回空选项
-  #   }
-  #   lapply(inventory_data$ItemName, function(name) list(key = name, text = name))
-  # })
-  # 
-  # # 动态生成ComboBox组件
-  # output$new_name_combo_box_ui <- renderUI({
-  #   div(
-  #     Label("商品名:", styles = list(
-  #       root = list(
-  #         fontSize = 15,        # 设置字体大小为16px
-  #         fontWeight = "bold",  # 字体加粗
-  #         paddingTop = 0
-  #       )
-  #     )),  # 添加标签
-  #     ComboBox.shinyInput(
-  #       inputId = "new_name",
-  #       value = input$new_name %||% "",        # 默认初始值为空字符串
-  #       options = item_names(),         # 动态加载的选项
-  #       allowFreeform = TRUE,           # 允许用户输入自定义值
-  #       placeholder = "请输入商品名...",
-  #       styles = list(
-  #         root = list(height = 42)
-  #       )
-  #     )
-  #   )
-  # })
-  
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
   
@@ -840,7 +806,7 @@ server <- function(input, output, session) {
       shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateComboBox.shinyInput(session, "new_name", value = selected_data$ItemName)
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
@@ -862,7 +828,7 @@ server <- function(input, output, session) {
       shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateComboBox.shinyInput(session, "new_name", value = list(key = selected_data$ItemName, text = selected_data$ItemName))
+      updateTextInput(session, "new_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
@@ -886,7 +852,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       update_maker_choices(session, "new_maker", maker_list())
-      updateComboBox.shinyInput(session, "new_name", value = "")
+      updateTextInput(session, "new_name", value = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
