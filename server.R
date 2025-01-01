@@ -293,7 +293,7 @@ server <- function(input, output, session) {
     data
   })
   
-  # 国际物流页过滤
+  # 国际物流筛选
   filtered_unique_items_data_logistics <- reactive({
     data <- unique_items_data()
     shipping_method <- input$intl_shipping_method
@@ -313,7 +313,6 @@ server <- function(input, output, session) {
     data
   })
   
-  
   # 下载页过滤
   filtered_unique_items_data_download <- reactive({
     filter_unique_items_data_by_inputs(
@@ -324,7 +323,6 @@ server <- function(input, output, session) {
       date_range_input_id = "download_date_range"
     )
   })
-  
   
   # 缓存目前数据库已有物品的makers：makers_df
   makers_df <- reactive({
