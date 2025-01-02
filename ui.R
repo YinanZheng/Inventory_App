@@ -601,7 +601,8 @@ ui <- navbarPage(
                            inputId = "sku_to_box",
                            label = NULL,  # 不显示标签
                            placeholder = "扫码入箱",  # 提示文字
-                           width = "300px"  # 控制输入框宽度
+                           width = "300px",  # 控制输入框宽度
+                           height = "21px",  # 控制输入框高度
                          )
                        ),
                        DTOutput("box_table"),  # 显示已放入箱子的物品
