@@ -1261,9 +1261,9 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取符合条件的货架物品
+      # 从 unique_items_data 获取符合条件的货架物品 ("国内入库", "美国入库" 均可)
       all_shelf_items <- unique_items_data() %>%
-        filter(SKU == selected_sku, Status == "国内入库", Defect != "瑕疵") %>%
+        filter(SKU == selected_sku, Status %in% c("国内入库", "美国入库"), Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
@@ -1634,9 +1634,9 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取货架中符合条件的物品总量
+      # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内入库", "美国入库" 均可)
       all_shelf_items <- unique_items_data() %>%
-        filter(SKU == scanned_sku, Status == "国内入库", Defect != "瑕疵") %>%
+        filter(SKU == scanned_sku, Status %in% c("国内入库", "美国入库"), Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
@@ -2156,7 +2156,7 @@ server <- function(input, output, session) {
       # 遍历每个选中物品，进行状态更新和备注添加
       lapply(selected_data$UniqueID, function(unique_id) {
         # 更新状态为瑕疵
-        update_status(con, unique_id, "国内入库", defect_status = "瑕疵", refresh_trigger = unique_items_data_refresh_trigger)
+        update_status(con, unique_id, defect_status = "瑕疵", refresh_trigger = unique_items_data_refresh_trigger)
         
         # 添加备注
         defect_notes <- trimws(input$manage_defective_notes)
@@ -2201,7 +2201,7 @@ server <- function(input, output, session) {
       # 遍历每个选中物品，进行状态更新和备注添加
       lapply(selected_data$UniqueID, function(unique_id) {
         # 更新状态为修复
-        update_status(con, unique_id, "国内入库", defect_status = "修复", refresh_trigger = unique_items_data_refresh_trigger)
+        update_status(con, unique_id, defect_status = "修复", refresh_trigger = unique_items_data_refresh_trigger)
         
         # 添加备注
         repair_notes <- trimws(input$manage_defective_notes)
