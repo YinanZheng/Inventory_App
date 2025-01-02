@@ -324,18 +324,6 @@ server <- function(input, output, session) {
     )
   })
   
-  # 缓存目前数据库已有物品的makers：makers_df
-  makers_df <- reactive({
-    makers <- unique_items_data() %>% pull(Maker) %>% unique()
-    
-    if (!is.null(makers) && length(makers) > 0) {
-      data.frame(Maker = makers, stringsAsFactors = FALSE) %>%
-        mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-    } else {
-      data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-    }
-  })
-  
   # 订单管理页订单过滤
   filtered_orders <- reactive({
     req(orders())  # 确保订单数据存在
@@ -488,12 +476,8 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "purchase_filter",
-    makers_df = makers_df,
     unique_items_data = unique_items_data,
-    filtered_unique_items_data = filtered_unique_items_data_inbound,
-    unique_items_table_selected_row = unique_items_table_inbound_selected_row
   )
-  
   
   # 供应商模块
   supplierModuleServer(input, output, session, con, maker_list)
@@ -874,10 +858,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "inbound_filter",
-    makers_df = makers_df,
-    unique_items_data = unique_items_data,
-    filtered_unique_items_data = filtered_unique_items_data_inbound,
-    unique_items_table_selected_row = unique_items_table_inbound_selected_row
+    unique_items_data = unique_items_data
   )
   
   # 监听 SKU 输入
@@ -1054,10 +1035,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "outbound_filter",
-    makers_df = makers_df,
     unique_items_data = unique_items_data,
-    filtered_unique_items_data = filtered_unique_items_data_outbound,
-    unique_items_table_selected_row = unique_items_table_outbound_selected_row
   )
   
   # 监听出库 SKU 输入
@@ -1176,10 +1154,7 @@ server <- function(input, output, session) {
         session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
-            makers_df = makers_df,
             unique_items_data = unique_items_data,
-            filtered_unique_items_data = filtered_unique_items_data_sold,
-            unique_items_table_selected_row = unique_items_table_sold_selected_row
           )
         })
       }
