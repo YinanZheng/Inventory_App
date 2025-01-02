@@ -1158,14 +1158,17 @@ server <- function(input, output, session) {
           unique_items_data = unique_items_data
         )
         
-        showNotification("绑定")
-        
-        # 调用模块的 resetFilters 方法
-        shinyjs::delay(3000, {  
-          module$resetFilters()
-        }) 
+        # 保存模块的 reset 方法到全局变量
+        assign("sold_filter_reset", module$resetFilters, envir = .GlobalEnv)
       }
   
+      # 每次切换回 sold 页签时运行 resetFilters
+      shinyjs::delay(300, {
+        if (exists("sold_filter_reset", envir = .GlobalEnv)) {
+          get("sold_filter_reset", envir = .GlobalEnv)()
+        }
+      })
+      
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
       output$dynamic_sidebar <- renderUI({
