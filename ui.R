@@ -477,6 +477,7 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",
         style = "width: 400px;",  # 使用内联样式覆盖宽度
+        
         # 动态显示筛选区
         uiOutput("dynamic_sidebar"),
         
