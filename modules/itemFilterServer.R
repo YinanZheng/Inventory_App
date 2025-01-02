@@ -1,51 +1,54 @@
-itemFilterServer <- function(id, unique_items_data) {
+itemFilterServer <- function(id, makers_items_map) {
   moduleServer(id, function(input, output, session) {
-    # 缓存 makers 和 item_names 的哈希值
+    # 缓存哈希值
     makers_hash <- reactiveVal(NULL)
-    item_names_hash <- reactiveVal(NULL)
+    filtered_item_names_hash <- reactiveVal(NULL)
     
     # 动态更新 makers 控件
     observe({
-      req(unique_items_data())  # 确保数据已加载
+      req(makers_items_map())  # 确保数据已加载
       
-      current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+      current_makers <- makers_items_map() %>% pull(Maker) %>% unique()
       new_hash <- digest::digest(current_makers)
       
-      if (!is.null(makers_hash()) && makers_hash() == new_hash) return()
-      
+      if (!is.null(makers_hash()) && makers_hash() == new_hash) return()  # 无需更新
       makers_hash(new_hash)
-      makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
-        data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-          mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-      } else {
-        data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-      }
       
       updateSelectizeInput(
-        session, "maker",
-        choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-        selected = "", server = TRUE
+        session,
+        inputId = "maker",
+        choices = c("", current_makers),  # 更新 Maker 列表
+        selected = "",
+        server = TRUE
       )
     })
     
-    # 动态更新商品名称
+    # 动态过滤并更新 item names 控件
     observe({
-      req(unique_items_data())  # 确保数据已加载
+      req(makers_items_map())  # 确保数据已加载
       
-      selected_makers <- input$maker
-      filtered_data <- if (!is.null(selected_makers) && selected_makers != "") {
-        unique_items_data() %>% filter(Maker %in% as.character(selected_makers))
+      selected_maker <- input$maker
+      filtered_item_names <- if (!is.null(selected_maker) && selected_maker != "") {
+        makers_items_map() %>%
+          filter(Maker == selected_maker) %>%
+          pull(ItemName) %>%
+          unique() %>%
+          sort()
       } else {
-        unique_items_data()
+        makers_items_map() %>% pull(ItemName) %>% unique() %>% sort()  # 所有 ItemName
       }
       
-      current_item_names <- filtered_data$ItemName %>% unique() %>% sort()
-      new_hash <- digest::digest(current_item_names)
+      new_hash <- digest::digest(filtered_item_names)
+      if (!is.null(filtered_item_names_hash()) && filtered_item_names_hash() == new_hash) return()
+      filtered_item_names_hash(new_hash)
       
-      if (!is.null(item_names_hash()) && item_names_hash() == new_hash) return()
-      
-      item_names_hash(new_hash)
-      updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
+      updateSelectizeInput(
+        session,
+        inputId = "name",
+        choices = c("", filtered_item_names),  # 更新筛选后的 ItemName
+        selected = "",
+        server = TRUE
+      )
     })
     
     # 清空输入（按钮绑定逻辑）

@@ -9,7 +9,7 @@ server <- function(input, output, session) {
   # ReactiveVal 存储 item_type_data 数据
   item_type_data <- reactiveVal()
   
-  # ReactiveVal 存储 maker_list 数据
+  # ReactiveVal 存储 完整 maker_list 数据
   maker_list <- reactiveVal()
   
   # ReactiveVal 用于存储 inventory 数据
@@ -17,6 +17,9 @@ server <- function(input, output, session) {
   
   # ReactiveVal 用于存储 orders 数据
   orders <- reactiveVal()
+  
+  # 存储目前数据库中存在的makers与item_names
+  makers_items_map <- reactiveVal(NULL)
   
   # ReactiveVal 用于存储 unique item 数据
   unique_item_for_report <- reactiveVal()
@@ -198,6 +201,16 @@ server <- function(input, output, session) {
     ORDER BY 
       unique_items.updated_at DESC
   ")
+  })
+  
+  # 加载 makers 和 item names
+  observe({
+    unique_data <- unique_items_data()  # 数据源
+    makers_items <- unique_data %>%
+      select(Maker, ItemName) %>%  # 选择需要的列
+      distinct()                   # 确保唯一性
+    
+    makers_items_map(makers_items)  # 更新 reactiveVal
   })
   
   # 采购页过滤
@@ -476,7 +489,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "purchase_filter",
-    unique_items_data = unique_items_data
+    makers_items_map = makers_items_map
   )
   
   # 供应商模块
@@ -859,7 +872,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "inbound_filter",
-    unique_items_data = unique_items_data
+    makers_items_map = makers_items_map
   )
   
   # 监听 SKU 输入
@@ -1036,7 +1049,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "outbound_filter",
-    unique_items_data = unique_items_data
+    makers_items_map = makers_items_map
   )
   
   # 监听出库 SKU 输入
@@ -1155,7 +1168,7 @@ server <- function(input, output, session) {
         session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
-            unique_items_data = unique_items_data
+            makers_items_map = makers_items_map
           )
         })
       }
