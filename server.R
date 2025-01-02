@@ -881,7 +881,6 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
-    req(input$inbound_sku)
     
     sanitized_inbound_sku <- trimws(input$inbound_sku)
     
