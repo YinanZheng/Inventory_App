@@ -1,8 +1,8 @@
 itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_items_data, unique_items_table_selected_row) {
   moduleServer(id, function(input, output, session) {
-    # 缓存上次的 makers 和 unique_items_data 的哈希值
+    # 缓存 makers 和 item_names 的哈希值
     makers_hash <- reactiveVal(NULL)
-    unique_items_hash <- reactiveVal(NULL)
+    item_names_hash <- reactiveVal(NULL)
     
     # 更新 makers 控件
     observe({
@@ -12,7 +12,6 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
       # 如果 makers 数据未变化，则不更新
       if (!is.null(makers_hash()) && makers_hash() == new_hash) return()
       
-      # 更新缓存并更新 UI
       makers_hash(new_hash)
       updateSelectizeInput(
         session, "maker", 
@@ -23,21 +22,19 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
     
     # 动态更新商品名称
     observe({
-      current_unique_items <- unique_items_data()
-      new_hash <- digest::digest(current_unique_items)
-      
-      # 如果 unique_items_data 数据未变化，则不更新
-      if (!is.null(unique_items_hash()) && unique_items_hash() == new_hash) return()
-      
-      # 更新缓存并过滤数据
-      unique_items_hash(new_hash)
       selected_makers <- input$maker
       filtered_data <- if (!is.null(selected_makers) && selected_makers != "") {
-        current_unique_items %>% filter(Maker %in% as.character(selected_makers))
+        unique_items_data() %>% filter(Maker %in% as.character(selected_makers))
       } else {
-        current_unique_items
+        unique_items_data()
       }
       
+      new_hash <- digest::digest(filtered_data$ItemName)
+      
+      # 如果 item_names 未变化，则不更新
+      if (!is.null(item_names_hash()) && item_names_hash() == new_hash) return()
+      
+      item_names_hash(new_hash)
       item_names <- c("", unique(filtered_data$ItemName))
       updateSelectizeInput(session, "name", choices = item_names, selected = "")
     })
