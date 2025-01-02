@@ -1153,10 +1153,7 @@ server <- function(input, output, session) {
         session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
-            makers_df = makers_df,
-            unique_items_data = unique_items_data,
-            filtered_unique_items_data = filtered_unique_items_data_sold,
-            unique_items_table_selected_row = unique_items_table_sold_selected_row
+            unique_items_data = unique_items_data
           )
         })
       }
