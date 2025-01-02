@@ -57,22 +57,19 @@ itemFilterServer <- function(id, unique_items_data) {
     observeEvent(input$reset_btn, {
       tryCatch({
         # 重置 makers 控件
-        # current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-        # makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
-        #   data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-        #     mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-        # } else {
-        #   data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-        # }
-        # updateSelectizeInput(
-        #   session, "maker",
-        #   choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-        #   selected = "", server = TRUE
-        # )
-        # 
-        updateSelectizeInput(session, "maker", selected = NULL)
-        
-        
+        current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+        makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
+          data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
+            mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+        } else {
+          data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+        }
+        updateSelectizeInput(
+          session, "maker",
+          choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
+          selected = "", server = TRUE
+        )
+
         # 重置商品名称控件
         updateSelectizeInput(session, "name", choices = c(""), selected = "")
         updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
