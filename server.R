@@ -1148,34 +1148,15 @@ server <- function(input, output, session) {
       
       # 确保模块仅绑定一次
       if (!sold_filter_initialized()) {
-        sold_filter_initialized(TRUE)
-        
-        # 等待数据加载完成后初始化模块
-        observe({
-          req(unique_items_data())  # 确保数据已加载
-          
-          # 初始化下拉菜单
-          current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-          makers_df <- if (length(current_makers) > 0) {
-            data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-              mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-          } else {
-            data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-          }
-          
-          updateSelectizeInput(
-            session, "maker",
-            choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-            selected = NULL, server = TRUE  # 使用 NULL 重置以显示 placeholder
-          )
-          
-          current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
-          updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = NULL)
-          
-          # 绑定服务器逻辑
+        sold_filter_initialized(TRUE)  # 标记模块已绑定
+        # 确保侧边栏渲染后绑定服务器逻辑
+        session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
-            unique_items_data = unique_items_data
+            makers_df = makers_df,
+            unique_items_data = unique_items_data,
+            filtered_unique_items_data = filtered_unique_items_data_sold,
+            unique_items_table_selected_row = unique_items_table_sold_selected_row
           )
         })
       }
