@@ -1,22 +1,43 @@
 itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_items_data, unique_items_table_selected_row) {
   moduleServer(id, function(input, output, session) {
+    # 缓存上次的 makers 和 unique_items_data 的哈希值
+    makers_hash <- reactiveVal(NULL)
+    unique_items_hash <- reactiveVal(NULL)
+    
     # 更新 makers 控件
-    observeEvent(makers_df(), {
-      req(makers_df())  # 确保 makers_df 已加载
-      updateSelectizeInput(session, "maker", 
-                           choices = c("", setNames(makers_df()$Maker, paste0(makers_df()$Maker, "(", makers_df()$Pinyin, ")"))), 
-                           selected = "", server = TRUE)
+    observe({
+      current_makers <- makers_df()
+      new_hash <- digest::digest(current_makers)
+      
+      # 如果 makers 数据未变化，则不更新
+      if (!is.null(makers_hash()) && makers_hash() == new_hash) return()
+      
+      # 更新缓存并更新 UI
+      makers_hash(new_hash)
+      updateSelectizeInput(
+        session, "maker", 
+        choices = c("", setNames(current_makers$Maker, paste0(current_makers$Maker, "(", current_makers$Pinyin, ")"))), 
+        selected = "", server = TRUE
+      )
     })
     
     # 动态更新商品名称
     observe({
-      req(unique_items_data())  # 确保数据已加载
+      current_unique_items <- unique_items_data()
+      new_hash <- digest::digest(current_unique_items)
+      
+      # 如果 unique_items_data 数据未变化，则不更新
+      if (!is.null(unique_items_hash()) && unique_items_hash() == new_hash) return()
+      
+      # 更新缓存并过滤数据
+      unique_items_hash(new_hash)
       selected_makers <- input$maker
       filtered_data <- if (!is.null(selected_makers) && selected_makers != "") {
-        unique_items_data() %>% filter(Maker %in% as.character(selected_makers))
+        current_unique_items %>% filter(Maker %in% as.character(selected_makers))
       } else {
-        unique_items_data()
+        current_unique_items
       }
+      
       item_names <- c("", unique(filtered_data$ItemName))
       updateSelectizeInput(session, "name", choices = item_names, selected = "")
     })
@@ -24,9 +45,11 @@ itemFilterServer <- function(id, makers_df, unique_items_data, filtered_unique_i
     # 清空输入
     observeEvent(input$reset_btn, {
       tryCatch({
-        updateSelectizeInput(session, "maker", 
-                             choices = c("", setNames(makers_df()$Maker, paste0(makers_df()$Maker, "(", makers_df()$Pinyin, ")"))), 
-                             selected = "", server = TRUE)        
+        updateSelectizeInput(
+          session, "maker", 
+          choices = c("", setNames(makers_df()$Maker, paste0(makers_df()$Maker, "(", makers_df()$Pinyin, ")"))), 
+          selected = "", server = TRUE
+        )        
         updateSelectizeInput(session, "name", choices = c(""), selected = "")
         updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
         showNotification("筛选条件已重置！", type = "message")
