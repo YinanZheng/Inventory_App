@@ -293,10 +293,17 @@ ui <- navbarPage(
                   width = "100%"
                 ),
                 tags$script(HTML("
-                $(document).on('keypress', '#inbound_sku', function(e) {
-                    if(e.which === 13) {  // 检测回车键
-                      $('#confirm_inbound_btn').click();  // 模拟点击按钮
-                    }
+                  let inboundTimeout;  // 定义一个全局的定时器变量
+              
+                  $(document).on('keypress', '#inbound_sku', function(e) {
+                      if (e.which === 13) {  // 检测回车键
+                          e.preventDefault();  // 阻止默认行为
+                          clearTimeout(inboundTimeout);  // 清除之前的定时器
+              
+                          inboundTimeout = setTimeout(function() {
+                              $('#confirm_inbound_btn').click();  // 模拟点击按钮
+                          }, 300);  // 延迟 300 毫秒后触发
+                      }
                   });
                 "))
               ),
