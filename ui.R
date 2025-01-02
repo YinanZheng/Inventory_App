@@ -149,7 +149,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        style = "width: 350px;", # override 宽度
+        style = "width: 380px;", # override 宽度
         itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE),
         
         tags$hr(),
@@ -157,7 +157,7 @@ ui <- navbarPage(
         fluidRow(
           column(10, 
                  selectizeInput("new_maker", "供应商:", choices = NULL, width = "100%",
-                                options = list(placeholder = '输入供应商名称（或拼音）进行搜索', maxOptions = 500))
+                                options = list(placeholder = '输入名称（或拼音）进行搜索', maxOptions = 500))
           ),
           column(2, 
                  div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
