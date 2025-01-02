@@ -1074,7 +1074,32 @@ server <- function(input, output, session) {
     )
   })
   
-  # 确认出库逻辑
+  # 自动出库逻辑
+  observeEvent(input$outbound_sku, {
+    req(input$auto_outbound)  # 仅在自动出库勾选时触发
+    req(input$outbound_sku)   # 确保 SKU 输入框不为空
+    
+    # 调用出库处理逻辑
+    handleOperation(
+      operation_name = "出库",
+      sku_input = input$outbound_sku,
+      output_name = "outbound_item_info",
+      query_status = "国内入库",
+      update_status_value = "国内出库",
+      count_label = "可出库数",
+      count_field = "AvailableForOutbound",
+      con = con,
+      output = output,
+      refresh_trigger = unique_items_data_refresh_trigger,
+      session = session,
+      input = input
+    )
+    
+    # 清空 SKU 输入框
+    updateTextInput(session, "outbound_sku", value = "")
+  })
+  
+  # 手动确认出库逻辑
   observeEvent(input$confirm_outbound_btn, {
     handleOperation(
       operation_name = "出库",

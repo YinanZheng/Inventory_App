@@ -427,6 +427,11 @@ ui <- navbarPage(
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
+          checkboxInput(
+            "auto_outbound",  # 勾选框的 inputId
+            label = "自动出库", 
+            value = FALSE  # 默认不勾选
+          ),
           tags$script(HTML("
             let outboundSkuTimeout;  // 定义全局定时器变量
             let isOutBoundSkuTypingFinished = false;  // 定义标志变量，表示输入是否完成
