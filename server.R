@@ -1520,7 +1520,7 @@ server <- function(input, output, session) {
       preorder_supplier = input$preorder_supplier
     )
     
-    reset_order_form(session, image_sold)
+    # reset_order_form(session, image_sold)
   })
   
   # 清空订单信息按钮
@@ -1911,7 +1911,8 @@ server <- function(input, output, session) {
           update_status(
             con = con,
             unique_id = item$UniqueID,
-            new_status = "国内入库"
+            new_status = "国内入库",
+            clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
           )
 
           # 清空物品的 OrderID
