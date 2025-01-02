@@ -57,30 +57,10 @@ itemFilterServer <- function(id, unique_items_data) {
     resetFilters <- function() {
       tryCatch({
         # 重置 makers 控件
-        # current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-        # makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
-        #   data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-        #     mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-        # } else {
-        #   data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-        # }
-        # 
-        # updateSelectizeInput(
-        #   session, "maker",
-        #   choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-        #   selected = NULL, server = TRUE
-        # )
-        # 
-        updateSelectizeInput(
-          session, 
-          inputId = "maker",
-          selected = NULL, 
-          server = TRUE
-        )
+        updateSelectizeInput(session, "maker", selected = NULL, server = TRUE)
         
         # 重置商品名称控件
-        current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
-        updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = NULL)
+        updateSelectizeInput(session, "name", selected = NULL, server = TRUE)
         
         # 重置日期选择器
         updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
