@@ -1153,13 +1153,11 @@ server <- function(input, output, session) {
         # 延迟初始化，确保数据已加载
         observe({
           req(unique_items_data())
-          
-          session$onFlushed(function() {
-            itemFilterServer(
-              id = "sold_filter",
-              unique_items_data = unique_items_data
-            )
-          })
+          req(output$dynamic_sidebar)  # 确保侧边栏已渲染
+          itemFilterServer(
+            id = "sold_filter",
+            unique_items_data = unique_items_data
+          )
         })
       }
     } else if (input$main_tabs == "order_management") {
