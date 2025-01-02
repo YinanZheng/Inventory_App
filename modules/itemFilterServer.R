@@ -57,18 +57,25 @@ itemFilterServer <- function(id, unique_items_data) {
     resetFilters <- function() {
       tryCatch({
         # 重置 makers 控件
-        current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-        makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
-          data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-            mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-        } else {
-          data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-        }
-        
+        # current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+        # makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
+        #   data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
+        #     mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+        # } else {
+        #   data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+        # }
+        # 
+        # updateSelectizeInput(
+        #   session, "maker",
+        #   choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
+        #   selected = NULL, server = TRUE
+        # )
+        # 
         updateSelectizeInput(
-          session, "maker",
-          choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-          selected = NULL, server = TRUE
+          session, 
+          inputId = "maker",
+          selected = NULL, 
+          server = TRUE
         )
         
         # 重置商品名称控件
