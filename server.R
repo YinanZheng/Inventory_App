@@ -959,7 +959,7 @@ server <- function(input, output, session) {
     # 批量调整库存
     adjust_inventory(
       con = con,
-      sku = sanitized_inbound_sku,
+      sku = input$inbound_sku,
       adjustment = inbound_quantity  # 根据输入的数量调整库存
     )
 

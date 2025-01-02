@@ -1024,6 +1024,7 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
                              minor_type = NULL, item_name = NULL, quantity = NULL, 
                              product_cost = NULL, unit_shipping_cost = NULL, image_path = NULL) {
   tryCatch({
+    sku <- trimws(sku)  # 清理空格
     # 查询现有库存
     existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
     
