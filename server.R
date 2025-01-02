@@ -1136,53 +1136,28 @@ server <- function(input, output, session) {
   # 初始化模块绑定状态
   sold_filter_initialized <- reactiveVal(FALSE)
   
-  # 标记是否已初始化
-  sidebar_initialized <- reactiveVal(FALSE)
-  
-  # 初始化模块和动态渲染状态
-  sidebar_initialized <- reactiveVal(FALSE)
-  
-  observe({
-    # 检查是否默认页签是 sold
-    isolate({
-      if (input$main_tabs == "sold" && !sidebar_initialized()) {
-        sidebar_initialized(TRUE)
-        
-        # 渲染 dynamic_sidebar
-        output$dynamic_sidebar <- renderUI({
-          showNotification("Rendering dynamic_sidebar for sold_filter")
-          itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
-        })
-        
-        # 初始化模块并保存 resetFilters 方法
-        module <- itemFilterServer(
-          id = "sold_filter",
-          unique_items_data = unique_items_data
-        )
-        assign("sold_filter_reset", module$resetFilters, envir = .GlobalEnv)
-        
-        # 调用 resetFilters
-        shinyjs::delay(500, {
-          if (exists("sold_filter_reset", envir = .GlobalEnv)) {
-            get("sold_filter_reset", envir = .GlobalEnv)()
-          }
-        })
-      }
-    })
-  })
-  
-  
-  
   # 动态更新侧边栏内容
-  observeEvent(input$main_tabs, {
+  observe({
+    req(input$main_tabs)  # 确保主面板选项存在
+    
     if (input$main_tabs == "sold") {
-      # 每次切换回 sold 页签时调用 resetFilters
-      shinyjs::delay(500, {
-        if (exists("sold_filter_reset", envir = .GlobalEnv)) {
-          get("sold_filter_reset", envir = .GlobalEnv)()
-        }
+      
+      # 渲染动态侧边栏
+      output$dynamic_sidebar <- renderUI({
+        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
+      # 确保模块仅绑定一次
+      if (!sold_filter_initialized()) {
+        sold_filter_initialized(TRUE)  # 标记模块已绑定
+        # 确保侧边栏渲染后绑定服务器逻辑
+        session$onFlushed(function() {
+          itemFilterServer(
+            id = "sold_filter",
+            unique_items_data = unique_items_data,
+          )
+        })
+      }
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
       output$dynamic_sidebar <- renderUI({
