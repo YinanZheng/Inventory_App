@@ -1146,38 +1146,39 @@ server <- function(input, output, session) {
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
-      # if (!sold_filter_initialized()) {
-      #   sold_filter_initialized(TRUE)
-      #   
-      #   # 初始化模块逻辑
-      #   session$onFlushed(function() {
-      #     # 初始化下拉菜单内容
-      #     req(unique_items_data())  # 确保数据已加载
-      #     
-      #     current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-      #     makers_df <- if (length(current_makers) > 0) {
-      #       data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-      #         mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-      #     } else {
-      #       data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-      #     }
-      #     
-      #     updateSelectizeInput(
-      #       session, "maker",
-      #       choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-      #       selected = "", server = TRUE
-      #     )
-      #     
-      #     current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
-      #     updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
-      #     
-      #     # 绑定服务器逻辑
-      #     itemFilterServer(
-      #       id = "sold_filter",
-      #       unique_items_data = unique_items_data
-      #     )
-      #   })
-      # }
+      # 确保模块仅绑定一次
+      if (!sold_filter_initialized()) {
+        sold_filter_initialized(TRUE)
+        
+        # 等待数据加载完成后初始化模块
+        observe({
+          req(unique_items_data())  # 确保数据已加载
+          
+          # 初始化下拉菜单
+          current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+          makers_df <- if (length(current_makers) > 0) {
+            data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
+              mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+          } else {
+            data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+          }
+          
+          updateSelectizeInput(
+            session, "maker",
+            choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
+            selected = NULL, server = TRUE  # 使用 NULL 重置以显示 placeholder
+          )
+          
+          current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
+          updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = NULL)
+          
+          # 绑定服务器逻辑
+          itemFilterServer(
+            id = "sold_filter",
+            unique_items_data = unique_items_data
+          )
+        })
+      }
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
       output$dynamic_sidebar <- renderUI({
