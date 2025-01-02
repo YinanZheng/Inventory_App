@@ -1139,13 +1139,16 @@ server <- function(input, output, session) {
   # 标记是否已初始化
   sidebar_initialized <- reactiveVal(FALSE)
   
-  # 动态更新侧边栏内容
-  observeEvent(input$main_tabs, {
-    if (input$main_tabs == "sold") {
-      # 渲染 dynamic_sidebar，仅初始化一次
-      if (!sidebar_initialized()) {
+  # 初始化模块和动态渲染状态
+  sidebar_initialized <- reactiveVal(FALSE)
+  
+  observe({
+    # 检查是否默认页签是 sold
+    isolate({
+      if (input$main_tabs == "sold" && !sidebar_initialized()) {
         sidebar_initialized(TRUE)
         
+        # 渲染 dynamic_sidebar
         output$dynamic_sidebar <- renderUI({
           showNotification("Rendering dynamic_sidebar for sold_filter")
           itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
@@ -1158,20 +1161,27 @@ server <- function(input, output, session) {
         )
         assign("sold_filter_reset", module$resetFilters, envir = .GlobalEnv)
         
-        # 如果默认页签是 sold，强制触发一次 resetFilters
-        shinyjs::delay(500, {
-          if (exists("sold_filter_reset", envir = .GlobalEnv)) {
-            get("sold_filter_reset", envir = .GlobalEnv)()
-          }
-        })
-      } else {
-        # 切换回 sold 页签时触发 resetFilters
+        # 调用 resetFilters
         shinyjs::delay(500, {
           if (exists("sold_filter_reset", envir = .GlobalEnv)) {
             get("sold_filter_reset", envir = .GlobalEnv)()
           }
         })
       }
+    })
+  })
+  
+  
+  
+  # 动态更新侧边栏内容
+  observeEvent(input$main_tabs, {
+    if (input$main_tabs == "sold") {
+      # 每次切换回 sold 页签时调用 resetFilters
+      shinyjs::delay(500, {
+        if (exists("sold_filter_reset", envir = .GlobalEnv)) {
+          get("sold_filter_reset", envir = .GlobalEnv)()
+        }
+      })
       
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
