@@ -1399,8 +1399,8 @@ server <- function(input, output, session) {
             "register_order_btn",
             "更新订单",
             icon = icon("edit"),
-            class = "btn-warning",
-            style = "font-size: 16px; width: 48%; height: 42px;"
+            class = "btn-success",
+            style = "font-size: 16px; min-width: 100px; height: 42px;"
           )
         })
         
