@@ -9,7 +9,7 @@ itemFilterServer <- function(id, unique_items_data) {
       req(unique_items_data())  # 确保数据已加载
       
       # 提取 unique_items_data() 中 Maker 列的唯一值
-      current_makers <- unique_items_data() %>% pull(Maker) %>% unique() %>% sort()
+      current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
       new_hash <- digest::digest(current_makers)
       
       # 如果 Maker 的哈希值没有变化，则不更新
