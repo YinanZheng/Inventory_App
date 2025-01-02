@@ -1154,11 +1154,12 @@ server <- function(input, output, session) {
         observe({
           req(unique_items_data())
           
-          # 绑定服务器逻辑
-          itemFilterServer(
-            id = "sold_filter",
-            unique_items_data = unique_items_data
-          )
+          session$onFlushed(function() {
+            itemFilterServer(
+              id = "sold_filter",
+              unique_items_data = unique_items_data
+            )
+          })
         })
       }
     } else if (input$main_tabs == "order_management") {
