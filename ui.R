@@ -549,7 +549,7 @@ ui <- navbarPage(
             ),
             actionButton(
               "clear_order_btn",
-              "清空订单输入",
+              "清空订单",
               icon = icon("eraser"),
               class = "btn-warning",
               style = "font-size: 16px; width: 48%; height: 42px;"

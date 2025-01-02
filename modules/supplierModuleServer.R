@@ -62,11 +62,11 @@ supplierModuleServer <- function(input, output, session, con, maker_data) {
     if (new_supplier != "") {
       # 添加新供应商到 MySQL 数据库
       tryCatch({
-        dbExecute(con, "INSERT INTO maker_data (Name, Pinyin) VALUES (?, ?)", 
+        dbExecute(con, "INSERT INTO maker_list (Name, Pinyin) VALUES (?, ?)", 
                   params = list(new_supplier, pinyin_name))
         
         # 更新数据并刷新 UI
-        new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_data ORDER BY Pinyin ASC")
+        new_data <- dbGetQuery(con, "SELECT Name AS Maker, Pinyin FROM maker_list ORDER BY Pinyin ASC")
         update_maker_choices(session, "new_maker", new_data)
         
         showNotification("新供应商添加成功！", type = "message")
