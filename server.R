@@ -1150,9 +1150,9 @@ server <- function(input, output, session) {
       if (!sold_filter_initialized()) {
         sold_filter_initialized(TRUE)  # 标记模块已绑定
         
-        # 绑定模块逻辑
-        session$onFlushed(function() {
-          req(unique_items_data())  # 确保数据加载完成
+        # 等待数据加载完成后绑定模块
+        observe({
+          req(unique_items_data())  # 确保数据已加载
           
           # 绑定服务器逻辑
           itemFilterServer(
@@ -1161,7 +1161,7 @@ server <- function(input, output, session) {
           )
         })
         
-        # 强制刷新控件内容
+        # 在反应性环境中初始化下拉菜单
         observe({
           req(unique_items_data())  # 确保数据已加载
           
