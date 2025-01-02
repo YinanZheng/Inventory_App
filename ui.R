@@ -599,11 +599,14 @@ ui <- navbarPage(
                          ),
                          
                          # SKU 输入栏
-                         textInput(
-                           inputId = "sku_to_box",
-                           label = NULL,  # 不显示标签
-                           placeholder = "扫码入箱",  # 提示文字
-                           width = "300px"  # 控制输入框宽度
+                         div(
+                           style = "margin-bottom: 0px;",  # 移除下外边距
+                           textInput(
+                             inputId = "sku_to_box",
+                             label = NULL,  # 不显示标签
+                             placeholder = "扫码入箱",  # 提示文字
+                             width = "300px"  # 控制输入框宽度
+                           )
                          )
                        ),
                        DTOutput("box_table"),  # 显示已放入箱子的物品
