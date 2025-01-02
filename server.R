@@ -1400,7 +1400,7 @@ server <- function(input, output, session) {
             "更新订单",
             icon = icon("edit"),
             class = "btn-success",
-            style = "font-size: 16px; min-width: 100px; height: 42px;"
+            style = "font-size: 16px; min-width: 130px; height: 42px;"
           )
         })
         
@@ -1426,7 +1426,7 @@ server <- function(input, output, session) {
             "登记订单",
             icon = icon("plus"),
             class = "btn-primary",
-            style = "font-size: 16px; width: 48%; height: 42px;"
+            style = "font-size: 16px; min-width: 130px; height: 42px;"
           )
         })
       }
