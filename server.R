@@ -899,7 +899,6 @@ server <- function(input, output, session) {
       showNotification(paste0("已更新待入库数量最大值为 ", pending_quantity, "！"), type = "message")
     } else {
       updateNumericInput(session, "inbound_quantity", max = 0, value = 0)
-      showNotification("无有效的待入库数量！", type = "warning")
     }
   })
   
