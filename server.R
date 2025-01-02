@@ -1136,38 +1136,42 @@ server <- function(input, output, session) {
   # 初始化模块绑定状态
   sold_filter_initialized <- reactiveVal(FALSE)
   
+  # 标记是否已初始化
+  sidebar_initialized <- reactiveVal(FALSE)
+  
   # 动态更新侧边栏内容
-  observe({
-    req(input$main_tabs)  # 确保主面板选项存在
-    
+  observeEvent(input$main_tabs, {
     if (input$main_tabs == "sold") {
-      # 渲染动态侧边栏
-      output$dynamic_sidebar <- renderUI({
-        showNotification("Rendering dynamic_sidebar for sold_filter")
+      # 渲染 dynamic_sidebar，仅初始化一次
+      if (!sidebar_initialized()) {
+        sidebar_initialized(TRUE)
         
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
-      })
-      
-      # 确保模块仅绑定一次
-      if (!sold_filter_initialized()) {
-        sold_filter_initialized(TRUE)
+        output$dynamic_sidebar <- renderUI({
+          showNotification("Rendering dynamic_sidebar for sold_filter")
+          itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+        })
         
-        # 绑定模块逻辑并获取方法
+        # 初始化模块并保存 resetFilters 方法
         module <- itemFilterServer(
           id = "sold_filter",
           unique_items_data = unique_items_data
         )
-        
-        # 保存模块的 reset 方法到全局变量
         assign("sold_filter_reset", module$resetFilters, envir = .GlobalEnv)
+        
+        # 如果默认页签是 sold，强制触发一次 resetFilters
+        shinyjs::delay(500, {
+          if (exists("sold_filter_reset", envir = .GlobalEnv)) {
+            get("sold_filter_reset", envir = .GlobalEnv)()
+          }
+        })
+      } else {
+        # 切换回 sold 页签时触发 resetFilters
+        shinyjs::delay(500, {
+          if (exists("sold_filter_reset", envir = .GlobalEnv)) {
+            get("sold_filter_reset", envir = .GlobalEnv)()
+          }
+        })
       }
-  
-      # 每次切换回 sold 页签时运行 resetFilters
-      shinyjs::delay(300, {
-        if (exists("sold_filter_reset", envir = .GlobalEnv)) {
-          get("sold_filter_reset", envir = .GlobalEnv)()
-        }
-      })
       
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
