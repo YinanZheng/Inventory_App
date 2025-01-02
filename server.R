@@ -2,7 +2,7 @@
 server <- function(input, output, session) {
   
   source("utils.R", local = TRUE)
-
+  
   # Database
   con <- db_connection()
   
@@ -258,9 +258,9 @@ server <- function(input, output, session) {
   filtered_unique_items_data_sold <- reactive({
     req(unique_items_data())
     data <- unique_items_data()
-
+    
     data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
-
+    
     data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
@@ -367,7 +367,7 @@ server <- function(input, output, session) {
     
     data
   })
-
+  
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                          column_mapping <- c(common_columns, list(
@@ -620,7 +620,7 @@ server <- function(input, output, session) {
     })
     
     existing_inventory_path <- if (nrow(inventory_item) > 0) inventory_item$ItemImagePath[1] else NULL
-
+    
     # 上传或粘贴图片处理
     new_image_path <- process_image_upload(
       sku = input$new_sku,
@@ -651,7 +651,7 @@ server <- function(input, output, session) {
       existing_items[sku_index, "ItemImagePath"] <- as.character(final_image_path)
       
       added_items(existing_items)
-
+      
       showNotification(paste("SKU 已更新:", input$new_sku, "已覆盖旧记录"), type = "message")
     } else {
       # 添加新记录
@@ -794,12 +794,12 @@ server <- function(input, output, session) {
   # 监听采购页选中added_items_table 用来更改添加数据
   observeEvent(input$added_items_table_rows_selected, {
     selected_row <- input$added_items_table_rows_selected
-
+    
     if (length(selected_row) > 0) {
       # 仅处理最后一个选择的行
       last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
       selected_data <- added_items()[last_selected, ] # 提取最后一个选择的数据
-
+      
       # 更新侧边栏的输入字段
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
@@ -892,7 +892,7 @@ server <- function(input, output, session) {
       showNotification("入库数量必须是一个正整数！", type = "error")
       return()
     }
-  
+    
     # 批量处理入库逻辑
     for (i in seq_len(inbound_quantity)) {
       unique_ID <- handleOperation(
@@ -937,14 +937,14 @@ server <- function(input, output, session) {
         showNotification("无瑕疵品备注！", type = "warning")
       }
     }
-
+    
     # 批量调整库存
     adjust_inventory(
       con = con,
       sku = input$inbound_sku,
       adjustment = inbound_quantity  # 根据输入的数量调整库存
     )
-
+    
     # 刷新 UI 和数据
     inventory(dbGetQuery(con, "SELECT * FROM inventory"))
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
@@ -1157,7 +1157,9 @@ server <- function(input, output, session) {
         )
         
         # 调用模块的 resetFilters 方法
-        module$resetFilters()
+        shinyjs::delay(500, {  # 延迟 500 毫秒
+          module$resetFilters()
+        })      
       }
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
@@ -1764,15 +1766,15 @@ server <- function(input, output, session) {
   observeEvent(selected_order_row(), {
     selected_row <- selected_order_row()
     req(selected_row)  # 确保用户选择了一行
-
+    
     # 获取选中的订单数据
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     customer_name <- selected_order$CustomerName
-
+    
     # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
-
+    
     # 动态更新标题
     output$associated_items_title <- renderUI({
       tags$h4(
@@ -1780,22 +1782,22 @@ server <- function(input, output, session) {
         style = "color: #007BFF; font-weight: bold;"
       )
     })
-
+    
     # 渲染关联物品表
     associated_items <- reactive({
       # 根据订单号筛选关联物品
       items <- unique_items_data() %>% filter(OrderID == order_id)
-
+      
       # 动态移除列
       if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
         items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
       } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
         items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
       }
-
+      
       items
     })
-
+    
     # 使用 uniqueItemsTableServer 渲染关联物品表
     callModule(uniqueItemsTableServer, "associated_items_table_module",
                column_mapping = c(common_columns, list(
@@ -1814,7 +1816,7 @@ server <- function(input, output, session) {
                  searching = FALSE  # 禁用搜索
                ))
   })
- 
+  
   # 清空筛选条件逻辑
   observeEvent(input$reset_filter_btn, {
     tryCatch({
@@ -1862,27 +1864,27 @@ server <- function(input, output, session) {
     
     req(selected_order_row())  # 确保用户选择了一行订单
     selected_row <- selected_order_row()
-
+    
     # 获取选中的订单数据
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
-
+    
     tryCatch({
       # 获取与订单关联的物品
       associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
-
+      
       if (nrow(associated_items) > 0) {
         # 遍历关联物品进行逆向操作
         lapply(1:nrow(associated_items), function(i) {
           item <- associated_items[i, ]
-
+          
           # 逆向调整库存
           adjust_inventory(
             con = con,
             sku = item$SKU,
             adjustment = 1  # 增加库存数量
           )
-
+          
           # 恢复物品状态到“国内入库”
           update_status(
             con = con,
@@ -1890,7 +1892,7 @@ server <- function(input, output, session) {
             new_status = "国内入库",
             clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
           )
-
+          
           # 清空物品的 OrderID
           update_order_id(
             con = con,
@@ -1899,10 +1901,10 @@ server <- function(input, output, session) {
           )
         })
       }
-
+      
       # 删除订单记录
       dbExecute(con, "DELETE FROM orders WHERE OrderID = ?", params = list(order_id))
-
+      
       # 通知用户操作结果
       message <- if (nrow(associated_items) > 0) {
         paste("订单", order_id, "已成功删除，订单内物品已返回库存！")
@@ -1910,15 +1912,15 @@ server <- function(input, output, session) {
         paste("订单", order_id, "已成功删除，没有关联的物品需要处理！")
       }
       showNotification(message, type = "message")
-
+      
       # 刷新数据
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       orders(dbGetQuery(con, "SELECT * FROM orders"))
-
+      
       # 重置输入
       reset_order_form(session, image_sold)
-
+      
       # 清空关联物品表
       output$associated_items_table <- renderDT({ NULL })
     }, error = function(e) {
@@ -2387,7 +2389,7 @@ server <- function(input, output, session) {
           # 定义固定类别顺序和颜色
           status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国售出", "美国发货", "退货")
           status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#869bb8", "#faf0d4", "red")
-
+          
           # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
           inventory_status_data <- merge(
             data.frame(Status = status_levels),
@@ -2638,7 +2640,7 @@ server <- function(input, output, session) {
   ## 数据下载分页                                               ##
   ##                                                            ##
   ################################################################
-
+  
   
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
@@ -2651,7 +2653,7 @@ server <- function(input, output, session) {
       placeholder = "搜索供应商..."
     )
   })
-
+  
   
   # 监听供应商选择变化并动态更新商品名称
   observe({
@@ -2769,35 +2771,35 @@ server <- function(input, output, session) {
         image_width_max <- 1
         
         if (!is.na(image_path) && file.exists(image_path)) {
-        
-        # 获取图片的实际宽高比
-        dims <- get_image_dimensions(image_path)
-        width_ratio <- dims$width / dims$height  # 宽高比
-        
-        row_to_insert <- i + 1  # 对应数据的行号
-        
-        image_width <- image_height * width_ratio  # 动态宽度（英寸）
-        
-        # 更新最大宽度
-        image_width_max <- max(image_width_max, image_width)
-        
-        insertImage(
-          wb = wb,
-          sheet = "物品明细表",
-          file = normalizePath(image_path),
-          startRow = row_to_insert,
-          startCol = col_to_insert,
-          width = image_width,
-          height = image_height,
-          units = "in"
-        )
-        
-        # 清空路径数据
-        writeData(wb, "物品明细表", "", startCol = col_to_insert, startRow = i + 1)
-        
-        # 调整行高和列宽
-        setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
-        
+          
+          # 获取图片的实际宽高比
+          dims <- get_image_dimensions(image_path)
+          width_ratio <- dims$width / dims$height  # 宽高比
+          
+          row_to_insert <- i + 1  # 对应数据的行号
+          
+          image_width <- image_height * width_ratio  # 动态宽度（英寸）
+          
+          # 更新最大宽度
+          image_width_max <- max(image_width_max, image_width)
+          
+          insertImage(
+            wb = wb,
+            sheet = "物品明细表",
+            file = normalizePath(image_path),
+            startRow = row_to_insert,
+            startCol = col_to_insert,
+            width = image_width,
+            height = image_height,
+            units = "in"
+          )
+          
+          # 清空路径数据
+          writeData(wb, "物品明细表", "", startCol = col_to_insert, startRow = i + 1)
+          
+          # 调整行高和列宽
+          setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
+          
         } else {
           showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
         }
@@ -2822,7 +2824,7 @@ server <- function(input, output, session) {
   ## 移库模块（管理员模式）                                     ##
   ##                                                            ##
   ################################################################
-
+  
   # 管理员登录状态
   admin_logged_in <- reactiveVal(FALSE)
   
@@ -3041,7 +3043,7 @@ server <- function(input, output, session) {
     })
   })
   
-
+  
   
   #########################################################################################################################
   
