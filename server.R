@@ -1143,6 +1143,8 @@ server <- function(input, output, session) {
     if (input$main_tabs == "sold") {
       # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
+        showNotification("Rendering dynamic_sidebar for sold_filter")
+        
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
