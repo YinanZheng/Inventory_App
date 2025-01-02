@@ -1150,8 +1150,11 @@ server <- function(input, output, session) {
       # 确保模块仅绑定一次
       if (!sold_filter_initialized()) {
         sold_filter_initialized(TRUE)  # 标记模块已绑定
-        # 确保侧边栏渲染后绑定服务器逻辑
-        session$onFlushed(function() {
+        # 延迟初始化，确保数据已加载
+        observe({
+          req(unique_items_data())
+          
+          # 绑定服务器逻辑
           itemFilterServer(
             id = "sold_filter",
             unique_items_data = unique_items_data
