@@ -476,6 +476,7 @@ ui <- navbarPage(
       # 左侧：动态变化的筛选区和订单登记
       div(
         class = "sticky-sidebar",
+        width = "400px",
         # 动态显示筛选区
         uiOutput("dynamic_sidebar"),
         
