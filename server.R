@@ -1150,11 +1150,11 @@ server <- function(input, output, session) {
       if (!sold_filter_initialized()) {
         sold_filter_initialized(TRUE)  # 标记模块已绑定
         
-        # 使用 session$onFlushed 确保 UI 渲染完成后绑定模块
-        session$onFlushed(function() {
-          req(unique_items_data())  # 确保数据已加载
+        # 监听 `unique_items_data` 的加载状态
+        observe({
+          req(unique_items_data())  # 确保数据加载完成
           
-          # 强制初始化 makers 和 item_names
+          # 初始化 makers 和 item_names
           current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
           makers_df <- if (length(current_makers) > 0) {
             data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
@@ -1170,11 +1170,13 @@ server <- function(input, output, session) {
             selected = NULL, server = TRUE  # 使用 NULL 保持 placeholder 显示
           )
           
-          # 初始化商品名称
+          # 更新商品名称
           current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
           updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = NULL)
-          
-          # 绑定服务器逻辑
+        })
+        
+        # 绑定模块逻辑
+        session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
             unique_items_data = unique_items_data
