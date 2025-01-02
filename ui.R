@@ -232,16 +232,17 @@ ui <- navbarPage(
         div(
           style = "flex-shrink: 0; padding: 20px 13px;",  # 固定按钮区域的高度
           fluidRow(
-            column(2, actionButton("delete_btn", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
-            column(2, style = "text-align: left;", actionButton("add_btn", "添加/更新采购", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
-            column(4, div(
+            column(2, style = "text-align: left;", actionButton("add_btn", "添加/更新", width = "100%", icon = icon("pen"), style = "background-color: #006400; color: white;")),
+            column(2, div(
+              style = "text-align: right;",
+              actionButton("confirm_btn", "确认登记", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
+            )),
+            column(2, actionButton("delete_btn", "删除选中", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
+            column(6, div(
               textOutput("total_cost"),
               style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"
-            )),
-            column(4, div(
-              style = "text-align: right;",
-              actionButton("confirm_btn", "确认登记采购货品", icon = icon("check"), class = "btn-primary", style = "width: 100%;")
             ))
+            
           )
         ),
         
