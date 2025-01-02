@@ -476,7 +476,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "purchase_filter",
-    unique_items_data = unique_items_data,
+    unique_items_data = unique_items_data
   )
   
   # 供应商模块
@@ -1035,7 +1035,7 @@ server <- function(input, output, session) {
   # 物品表过滤模块
   itemFilterServer(
     id = "outbound_filter",
-    unique_items_data = unique_items_data,
+    unique_items_data = unique_items_data
   )
   
   # 监听出库 SKU 输入
@@ -1154,7 +1154,7 @@ server <- function(input, output, session) {
         session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
-            unique_items_data = unique_items_data,
+            unique_items_data = unique_items_data
           )
         })
       }
