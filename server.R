@@ -1151,12 +1151,12 @@ server <- function(input, output, session) {
       if (!sold_filter_initialized()) {
         sold_filter_initialized(TRUE)  # 标记模块已绑定
         # 确保侧边栏渲染后绑定服务器逻辑
-     
+        session$onFlushed(function() {
           itemFilterServer(
             id = "sold_filter",
-            unique_items_data = unique_items_data,
+            unique_items_data = unique_items_data
           )
-  
+        })
       }
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
