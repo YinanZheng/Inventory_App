@@ -881,12 +881,9 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
-    
-    sanitized_inbound_sku <- trimws(input$inbound_sku)
-    
     # 调用 handleSkuInput 并获取待入库数量
     pending_quantity <- handleSkuInput(
-      sku_input = sanitized_inbound_sku,
+      sku_input = input$inbound_sku,
       output_name = "inbound_item_info",
       count_label = "待入库数",
       count_field = "PendingQuantity",
@@ -914,14 +911,12 @@ server <- function(input, output, session) {
       showNotification("入库数量必须是一个正整数！", type = "error")
       return()
     }
-    
-    sanitized_inbound_sku <- trimws(input$inbound_sku)
-    
+  
     # 批量处理入库逻辑
     for (i in seq_len(inbound_quantity)) {
       unique_ID <- handleOperation(
         operation_name = "入库",
-        sku_input = sanitized_inbound_sku,
+        sku_input = input$inbound_sku,
         output_name = "inbound_item_info",
         query_status = "采购",
         update_status_value = "国内入库",

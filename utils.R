@@ -636,7 +636,9 @@ handleSkuInput <- function(
     placeholder_path, # 默认占位图片路径
     host_url          # 图片主机 URL
 ) {
-  if (length(sku_input) == 0) {
+  sku <- trimws(sku_input) # 清理空格
+  
+  if (is.null(sku) || sku == "") {
     # 如果 SKU 为空，渲染默认空的商品信息
     renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
     return(NULL) # 返回 NULL
@@ -644,7 +646,7 @@ handleSkuInput <- function(
   
   tryCatch({
     # 查询 SKU 数据
-    item_info <- fetchSkuOperationData(sku_input, con)
+    item_info <- fetchSkuOperationData(sku, con)
     
     # 如果未找到记录
     if (nrow(item_info) == 0) {
