@@ -1136,28 +1136,6 @@ server <- function(input, output, session) {
   # 初始化模块绑定状态
   sold_filter_initialized <- reactiveVal(FALSE)
   
-  # 强制刷新下拉菜单的函数
-  forceUpdateSelectizeInputs <- function(session, unique_items_data) {
-    # 刷新 makers 控件
-    current_makers <- unique_items_data %>% pull(Maker) %>% unique()
-    makers_df <- if (length(current_makers) > 0) {
-      data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-        mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-    } else {
-      data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-    }
-    
-    updateSelectizeInput(
-      session, "maker",
-      choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-      selected = NULL, server = TRUE
-    )
-    
-    # 刷新商品名称控件
-    current_item_names <- unique_items_data$ItemName %>% unique() %>% sort()
-    updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = NULL)
-  }
-  
   # 动态更新侧边栏内容
   observe({
     req(input$main_tabs)  # 确保主面板选项存在
@@ -1174,16 +1152,42 @@ server <- function(input, output, session) {
         
         # 绑定模块逻辑
         session$onFlushed(function() {
-          req(unique_items_data())  # 确保数据已加载
+          req(unique_items_data())  # 确保数据加载完成
           
           # 绑定服务器逻辑
           itemFilterServer(
             id = "sold_filter",
             unique_items_data = unique_items_data
           )
+        })
+        
+        # 强制刷新控件内容
+        observe({
+          req(unique_items_data())  # 确保数据已加载
           
-          # 强制刷新控件内容
-          forceUpdateSelectizeInputs(session, unique_items_data())
+          # 初始化 makers 下拉菜单
+          current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+          makers_df <- if (length(current_makers) > 0) {
+            data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
+              mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+          } else {
+            data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+          }
+          
+          # 更新 makers 下拉菜单（绑定到 sold_filter）
+          updateSelectizeInput(
+            session, NS("sold_filter", "maker"),
+            choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
+            selected = NULL, server = TRUE
+          )
+          
+          # 初始化商品名称下拉菜单（绑定到 sold_filter）
+          current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
+          updateSelectizeInput(
+            session, NS("sold_filter", "name"),
+            choices = c("", current_item_names),
+            selected = NULL
+          )
         })
       }
     } else if (input$main_tabs == "order_management") {
