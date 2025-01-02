@@ -1603,6 +1603,38 @@ server <- function(input, output, session) {
   })
   
   # 扫码入箱功能
+  # 检查货架和箱子中的 SKU 数量
+  validate_sku_operation <- function(sku, all_shelf_items, box_sku_count) {
+    # 如果货架中没有符合条件的物品
+    if (nrow(all_shelf_items) == 0) {
+      showNotification("货架上未找到对应 SKU 的物品！", type = "error")
+      return(FALSE)
+    }
+    # 如果箱子中的 SKU 数量 >= 货架中的物品总量
+    if (box_sku_count >= nrow(all_shelf_items)) {
+      showNotification("该 SKU 的所有物品已移入箱子，无法继续添加！", type = "error")
+      return(FALSE)
+    }
+    TRUE
+  }
+  
+  # 移入箱子并更新货架
+  move_item_to_box <- function(sku, all_shelf_items, box_sku_count) {
+    # 获取第一个符合条件的物品
+    selected_item <- all_shelf_items[box_sku_count + 1, ]
+    
+    # 更新箱子内容
+    current_box <- box_items()
+    box_items(bind_rows(current_box, selected_item))
+    
+    # 更新货架内容
+    updated_shelf <- all_shelf_items[-(1:(box_sku_count + 1)), ]
+    shelf_items(updated_shelf)
+    
+    # 通知用户
+    showNotification(paste("物品已移入箱子！SKU:", sku), type = "message")
+  }
+  
   observeEvent(input$sku_to_box, {
     req(input$sku_to_box)  # 确保输入框不为空
     
@@ -1615,43 +1647,24 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取货架中符合条件的物品总量
+      # 获取货架中符合条件的物品
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == scanned_sku, Status == "国内入库", Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
-        arrange(ProductCost)  # 按单价从低到高排序
+        arrange(ProductCost)
       
-      # 如果货架中没有符合条件的物品，提示错误
-      if (nrow(all_shelf_items) == 0) {
-        showNotification("货架上未找到对应 SKU 的物品！", type = "error")
-        updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
-        return()
-      }
-      
-      # 从箱子中获取当前 SKU 的已选数量
+      # 获取箱子中已存在的 SKU 数量
       box_data <- box_items()
       box_sku_count <- sum(box_data$SKU == scanned_sku)
       
-      # 如果箱子中物品数量 >= 货架中物品总量，则阻止操作
-      if (box_sku_count >= nrow(all_shelf_items)) {
-        showNotification("该 SKU 的所有物品已移入箱子，无法继续添加！", type = "error")
+      # 验证操作合法性
+      if (!validate_sku_operation(scanned_sku, all_shelf_items, box_sku_count)) {
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
       
-      # 获取第一个符合条件的物品
-      selected_item <- all_shelf_items[box_sku_count + 1, ]
-      
-      # 更新箱子内容
-      current_box <- box_items()
-      box_items(bind_rows(current_box, selected_item))
-      
-      # 更新货架上的物品
-      updated_shelf <- all_shelf_items[-(1:(box_sku_count + 1)), ]  # 移除已入箱的物品
-      shelf_items(updated_shelf)
-      
-      # 通知用户
-      showNotification(paste("物品已移入箱子！SKU:", scanned_sku), type = "message")
+      # 将物品移入箱子并更新货架
+      move_item_to_box(scanned_sku, all_shelf_items, box_sku_count)
       
       # 清空输入框
       updateTextInput(session, "sku_to_box", value = "")
