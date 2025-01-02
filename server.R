@@ -1141,27 +1141,41 @@ server <- function(input, output, session) {
     req(input$main_tabs)  # 确保主面板选项存在
     
     if (input$main_tabs == "sold") {
-
       # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
         itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
       })
       
-      # 确保模块仅绑定一次
       if (!sold_filter_initialized()) {
-        sold_filter_initialized(TRUE)  # 标记模块已绑定
+        sold_filter_initialized(TRUE)
         
-        # 延迟初始化模块
-        observe({
+        # 初始化模块逻辑
+        session$onFlushed(function() {
+          # 初始化下拉菜单内容
           req(unique_items_data())  # 确保数据已加载
           
-          # 使用 session$onFlushed 确保 UI 已完全渲染
-          session$onFlushed(function() {
-            itemFilterServer(
-              id = "sold_filter",
-              unique_items_data = unique_items_data
-            )
-          })
+          current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+          makers_df <- if (length(current_makers) > 0) {
+            data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
+              mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+          } else {
+            data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+          }
+          
+          updateSelectizeInput(
+            session, "maker",
+            choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
+            selected = "", server = TRUE
+          )
+          
+          current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
+          updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
+          
+          # 绑定服务器逻辑
+          itemFilterServer(
+            id = "sold_filter",
+            unique_items_data = unique_items_data
+          )
         })
       }
     } else if (input$main_tabs == "order_management") {

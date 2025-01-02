@@ -34,6 +34,7 @@ itemFilterServer <- function(id, unique_items_data) {
     # 动态更新商品名称
     observe({
       req(unique_items_data())  # 确保数据已加载
+      
       selected_makers <- input$maker
       filtered_data <- if (!is.null(selected_makers) && selected_makers != "") {
         unique_items_data() %>% filter(Maker %in% as.character(selected_makers))
@@ -50,15 +51,6 @@ itemFilterServer <- function(id, unique_items_data) {
       
       item_names_hash(new_hash)
       updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
-      
-      # 默认触发一次重置逻辑
-      observe({
-        req(unique_items_data())
-        session$onFlushed(function() {
-          updateSelectizeInput(session, "maker", selected = "")
-          updateSelectizeInput(session, "name", choices = c(""), selected = "")
-        })
-      })
     })
     
     # 清空输入
@@ -73,11 +65,11 @@ itemFilterServer <- function(id, unique_items_data) {
         #   data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
         # }
         # updateSelectizeInput(
-        #   session, "maker", 
-        #   choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))), 
+        #   session, "maker",
+        #   choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
         #   selected = "", server = TRUE
-        # )        
-        
+        # )
+        # 
         updateSelectizeInput(session, "maker", selected = "")
         
         
