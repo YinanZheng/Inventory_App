@@ -1150,14 +1150,18 @@ server <- function(input, output, session) {
       # 确保模块仅绑定一次
       if (!sold_filter_initialized()) {
         sold_filter_initialized(TRUE)  # 标记模块已绑定
-        # 延迟初始化，确保数据已加载
+        
+        # 延迟初始化模块
         observe({
-          req(unique_items_data())
-          req(output$dynamic_sidebar)  # 确保侧边栏已渲染
-          itemFilterServer(
-            id = "sold_filter",
-            unique_items_data = unique_items_data
-          )
+          req(unique_items_data())  # 确保数据已加载
+          
+          # 使用 session$onFlushed 确保 UI 已完全渲染
+          session$onFlushed(function() {
+            itemFilterServer(
+              id = "sold_filter",
+              unique_items_data = unique_items_data
+            )
+          })
         })
       }
     } else if (input$main_tabs == "order_management") {

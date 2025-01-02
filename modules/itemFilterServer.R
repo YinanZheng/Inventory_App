@@ -13,12 +13,8 @@ itemFilterServer <- function(id, unique_items_data) {
       new_hash <- digest::digest(current_makers)
       
       # 如果 Maker 的哈希值没有变化，则不更新
-      if (!is.null(makers_hash()) && makers_hash() == new_hash) 
-      {
-        showNotification(sprintf("[%s] Makers unchanged, skipping update.", id))
-        return()
-      }
-      
+      if (!is.null(makers_hash()) && makers_hash() == new_hash) return()
+
       makers_hash(new_hash)
       makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
         data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
@@ -27,7 +23,6 @@ itemFilterServer <- function(id, unique_items_data) {
         data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
       }
       
-      showNotification(sprintf("[%s] Updating makers dropdown...", id))
       updateSelectizeInput(
         session, "maker", 
         choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))), 
@@ -38,6 +33,7 @@ itemFilterServer <- function(id, unique_items_data) {
 
     # 动态更新商品名称
     observe({
+      req(unique_items_data())  # 确保数据已加载
       selected_makers <- input$maker
       filtered_data <- if (!is.null(selected_makers) && selected_makers != "") {
         unique_items_data() %>% filter(Maker %in% as.character(selected_makers))
@@ -50,34 +46,40 @@ itemFilterServer <- function(id, unique_items_data) {
       new_hash <- digest::digest(current_item_names)
       
       # 如果 item_names 未变化，则不更新
-      if (!is.null(item_names_hash()) && item_names_hash() == new_hash) 
-      {
-        showNotification(sprintf("[%s] Item names unchanged, skipping update.", id))
-        return()
-      }
+      if (!is.null(item_names_hash()) && item_names_hash() == new_hash) return() 
       
       item_names_hash(new_hash)
-      
-      showNotification(sprintf("[%s] Updating item names dropdown...", id))
       updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
+      
+      # 默认触发一次重置逻辑
+      observe({
+        req(unique_items_data())
+        session$onFlushed(function() {
+          updateSelectizeInput(session, "maker", selected = "")
+          updateSelectizeInput(session, "name", choices = c(""), selected = "")
+        })
+      })
     })
     
     # 清空输入
     observeEvent(input$reset_btn, {
       tryCatch({
         # 重置 makers 控件
-        current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-        makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
-          data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-            mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-        } else {
-          data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-        }
-        updateSelectizeInput(
-          session, "maker", 
-          choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))), 
-          selected = "", server = TRUE
-        )        
+        # current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+        # makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
+        #   data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
+        #     mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
+        # } else {
+        #   data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
+        # }
+        # updateSelectizeInput(
+        #   session, "maker", 
+        #   choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))), 
+        #   selected = "", server = TRUE
+        # )        
+        
+        updateSelectizeInput(session, "maker", selected = "")
+        
         
         # 重置商品名称控件
         updateSelectizeInput(session, "name", choices = c(""), selected = "")
