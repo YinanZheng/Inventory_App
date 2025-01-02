@@ -13,7 +13,11 @@ itemFilterServer <- function(id, unique_items_data) {
       new_hash <- digest::digest(current_makers)
       
       # 如果 Maker 的哈希值没有变化，则不更新
-      if (!is.null(makers_hash()) && makers_hash() == new_hash) return()
+      if (!is.null(makers_hash()) && makers_hash() == new_hash) 
+      {
+        showNotification(sprintf("[%s] Makers unchanged, skipping update.", id))
+        return()
+      }
       
       makers_hash(new_hash)
       makers_df <- if (!is.null(current_makers) && length(current_makers) > 0) {
@@ -23,6 +27,7 @@ itemFilterServer <- function(id, unique_items_data) {
         data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
       }
       
+      showNotification(sprintf("[%s] Updating makers dropdown...", id))
       updateSelectizeInput(
         session, "maker", 
         choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))), 
@@ -45,9 +50,15 @@ itemFilterServer <- function(id, unique_items_data) {
       new_hash <- digest::digest(current_item_names)
       
       # 如果 item_names 未变化，则不更新
-      if (!is.null(item_names_hash()) && item_names_hash() == new_hash) return()
+      if (!is.null(item_names_hash()) && item_names_hash() == new_hash) 
+      {
+        showNotification(sprintf("[%s] Item names unchanged, skipping update.", id))
+        return()
+      }
       
       item_names_hash(new_hash)
+      
+      showNotification(sprintf("[%s] Updating item names dropdown...", id))
       updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
     })
     
