@@ -7,15 +7,18 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
     
     # 标题和清空按钮在同一行，垂直居中
     fluidRow(
-      style = "display: flex; align-items: center; justify-content: space-between;", # Flex 布局，标题左对齐，按钮右对齐
-      tags$h4("物品筛选", style = sprintf("color: %s; font-weight: bold; margin: 0;", text_color)), # 左对齐标题
+      style = "display: flex; align-items: center; justify-content: space-between; width: 100%;", # Flex 布局
+      tags$h4(
+        "物品筛选", 
+        style = sprintf("color: %s; font-weight: bold; margin: 0;", text_color) # 左对齐标题
+      ),
       actionButton(
         ns("reset_btn"), 
         "重置", 
         icon = icon("snowplow"), 
         class = "btn-danger", 
-        style = "font-size: 14px; height: 30px; padding: 5px 10px;"
-      ) # 右对齐按钮
+        style = "font-size: 14px; height: 30px; padding: 5px 10px;" # 右对齐按钮
+      )
     ),
     
     # 供应商和商品名筛选行
