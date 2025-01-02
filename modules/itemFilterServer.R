@@ -39,6 +39,8 @@ itemFilterServer <- function(id, unique_items_data) {
       
       new_hash <- digest::digest(filtered_data$ItemName)
       
+      showNotification(new_hash)
+      
       # 如果 item_names 未变化，则不更新
       if (!is.null(item_names_hash()) && item_names_hash() == new_hash) return()
       
