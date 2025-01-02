@@ -1155,12 +1155,12 @@ server <- function(input, output, session) {
           id = "sold_filter",
           unique_items_data = unique_items_data
         )
-        
-        # 调用模块的 resetFilters 方法
-        shinyjs::delay(500, {  # 延迟 500 毫秒
-          module$resetFilters()
-        })      
       }
+      
+      # 调用模块的 resetFilters 方法
+      shinyjs::delay(1000, {  
+        module$resetFilters()
+      })  
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
       output$dynamic_sidebar <- renderUI({
