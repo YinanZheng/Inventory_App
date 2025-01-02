@@ -1615,7 +1615,7 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取所有符合条件的物品
+      # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == scanned_sku, Status == "国内入库", Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
@@ -1632,9 +1632,15 @@ server <- function(input, output, session) {
       box_data <- box_items()
       box_sku_count <- sum(box_data$SKU == scanned_sku)
       
-      # 如果货架中的物品数量小于等于已入箱数量，阻止操作
-      if (nrow(all_shelf_items) <= box_sku_count) {
-        showNotification("该 SKU 的所有物品已移入箱子，无法继续添加！", type = "error")
+      # 扣除已移入箱子的物品
+      if (box_sku_count > 0) {
+        all_shelf_items <- all_shelf_items %>%
+          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
+      }
+      
+      # 如果扣除后已无可用物品，提示用户
+      if (nrow(all_shelf_items) == 0) {
+        showNotification("该 SKU 的所有物品已移入箱子！", type = "error")
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
@@ -1646,9 +1652,15 @@ server <- function(input, output, session) {
       current_box <- box_items()
       box_items(bind_rows(current_box, selected_item))
       
-      # 更新货架上的物品，移除已选的
-      updated_shelf <- all_shelf_items[-1, ]
-      shelf_items(updated_shelf)
+      # 更新货架上的物品
+      if (nrow(all_shelf_items) == 1) {
+        # 如果货架只剩一个物品，将货架清空
+        shelf_items(data.frame())  # 清空货架数据
+      } else {
+        # 否则，移除已选的物品
+        updated_shelf <- all_shelf_items[-1, ]
+        shelf_items(updated_shelf)
+      }
       
       # 通知用户
       showNotification(paste("物品已移入箱子！SKU:", scanned_sku), type = "message")
@@ -1661,6 +1673,7 @@ server <- function(input, output, session) {
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
   })
+  
   
   
   
