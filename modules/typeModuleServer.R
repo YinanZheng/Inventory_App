@@ -185,7 +185,7 @@ typeModuleServer <- function(id, con, item_type_data) {
         
         # 重新加载数据
         item_type_data(dbGetQuery(con, "SELECT * FROM item_type_data"))
-        updateSelectInput(session, "new_major_type", selected = selected_major)
+        
       }, error = function(e) {
         showNotification(paste("批量新增小类失败：", e$message), type = "error")
         print(e)  # 打印错误详情到控制台
