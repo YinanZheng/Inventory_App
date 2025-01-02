@@ -1615,13 +1615,9 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 检查货架是否还有物品
-      current_shelf <- shelf_items()
-      if (is.null(current_shelf) || nrow(current_shelf) == 0) {
-        showNotification("货架上已经没有物品可操作！", type = "error")
-        updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
-        return()
-      }
+      # 从箱子中获取当前 SKU 的已选数量
+      box_data <- box_items()
+      box_sku_count <- sum(box_data$SKU == scanned_sku)
       
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
@@ -1635,16 +1631,13 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从箱子中获取当前 SKU 的已选数量
-      box_data <- box_items()
-      box_sku_count <- sum(box_data$SKU == scanned_sku)
-      
       # 扣除已移入箱子的物品
       if (box_sku_count > 0) {
         all_shelf_items <- all_shelf_items %>%
           slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
       }
       
+      # 如果扣除后已无可用物品，提示用户
       if (nrow(all_shelf_items) == 0) {
         showNotification("该 SKU 的所有物品已移入箱子！", type = "error")
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
@@ -1673,6 +1666,7 @@ server <- function(input, output, session) {
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
   })
+  
   
   # 确认售出
   observeEvent(input$confirm_order_btn, {
