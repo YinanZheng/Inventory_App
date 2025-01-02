@@ -365,7 +365,7 @@ ui <- navbarPage(
                    tags$div(
                      style = "display: flex; justify-content: space-between; align-items: center;",
                      actionButton("export_select_btn", "生成条形码", icon = icon("barcode"), class = "btn-info"),
-                     downloadButton("download_select_pdf", "下载条形码", class = "btn-info")
+                     downloadButton("download_select_pdf", "下载条形码", class = "btn-primary")
                    )
                  )
           )
