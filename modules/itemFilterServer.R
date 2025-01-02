@@ -70,7 +70,7 @@ itemFilterServer <- function(id, unique_items_data) {
         #   selected = "", server = TRUE
         # )
         # 
-        updateSelectizeInput(session, "maker", selected = "")
+        updateSelectizeInput(session, "maker", selected = NULL)
         
         
         # 重置商品名称控件
