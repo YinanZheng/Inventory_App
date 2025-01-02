@@ -44,17 +44,28 @@ typeModuleServer <- function(id, con, item_type_data) {
         )      
       } else {
         filtered_data <- type_data[type_data$MajorType == selected_major, ]
-        choices <- setNames(
-          filtered_data$MinorType, 
-          paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
-        )
-        selectizeInput(
-          ns("new_minor_type"), 
-          "小类:", 
-          choices = choices, 
-          width = "100%", 
-          options = list(placeholder = "选择或搜索小类", maxOptions = 500)
-        )      
+        if (nrow(filtered_data) == 0) {
+          # 处理无匹配数据的情况
+          selectizeInput(
+            ns("new_minor_type"), 
+            "小类:", 
+            choices = NULL, 
+            width = "100%", 
+            options = list(placeholder = "暂无匹配的小类", maxOptions = 500)
+          )
+        } else {
+          choices <- setNames(
+            filtered_data$MinorType, 
+            paste0(filtered_data$MinorType, "（", filtered_data$MinorTypeSKU, "）")
+          )
+          selectizeInput(
+            ns("new_minor_type"), 
+            "小类:", 
+            choices = choices, 
+            width = "100%", 
+            options = list(placeholder = "选择或搜索小类", maxOptions = 500)
+          )
+        }
       }
     })
     
