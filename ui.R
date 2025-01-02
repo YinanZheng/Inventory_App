@@ -429,15 +429,15 @@ ui <- navbarPage(
           textInput("outbound_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
           tags$script(HTML("
             let outboundSkuTimeout;  // 定义全局定时器变量
-            let isTypingFinished = false;  // 定义标志变量，表示输入是否完成
+            let isOutBoundSkuTypingFinished = false;  // 定义标志变量，表示输入是否完成
         
             // 监听输入框内容变化
             $(document).on('input', '#outbound_sku', function() {
                 clearTimeout(outboundSkuTimeout);  // 清除之前的定时器
-                isTypingFinished = false;  // 重置标志
+                isOutBoundSkuTypingFinished = false;  // 重置标志
         
                 outboundSkuTimeout = setTimeout(function() {
-                    isTypingFinished = true;  // 输入完成后更新标志
+                    isOutBoundSkuTypingFinished = true;  // 输入完成后更新标志
                 }, 300);  // 延迟 300 毫秒
             });
         
@@ -446,7 +446,7 @@ ui <- navbarPage(
                 if (e.which === 13) {  // 检测回车键
                     e.preventDefault();  // 阻止默认行为
         
-                    if (isTypingFinished) {  // 仅在输入完成后允许触发回车
+                    if (isOutBoundSkuTypingFinished) {  // 仅在输入完成后允许触发回车
                         $('#confirm_outbound_btn').click();  // 模拟点击按钮
                     }
                 }
