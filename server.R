@@ -1158,7 +1158,7 @@ server <- function(input, output, session) {
       
       # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+        itemFilterUI(id = "sold_filter", makers_items_map(), border_color = "#28A745", text_color = "#28A745")
       })
       
       # 确保模块仅绑定一次

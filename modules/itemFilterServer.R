@@ -60,10 +60,24 @@ itemFilterServer <- function(id, makers_items_map) {
     resetFilters <- function() {
       tryCatch({
         # 重置 makers 控件
-        updateSelectizeInput(session, "maker", selected = NULL, server = TRUE)
+        makers_choices <- makers_items_map() %>% pull(Maker) %>% unique()  # 获取 makers 列表
+        updateSelectizeInput(
+          session, 
+          inputId = "maker", 
+          choices = c("", makers_choices),  # 重新定义 makers choices
+          selected = NULL, 
+          server = TRUE
+        )
         
         # 重置商品名称控件
-        updateSelectizeInput(session, "name", selected = NULL, server = TRUE)
+        item_name_choices <- makers_items_map() %>% pull(ItemName) %>% unique() %>% sort()  # 获取所有 ItemName
+        updateSelectizeInput(
+          session, 
+          inputId = "name", 
+          choices = c("", item_name_choices),  # 重新定义 item name choices
+          selected = NULL, 
+          server = TRUE
+        )
         
         # 重置日期选择器
         updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
