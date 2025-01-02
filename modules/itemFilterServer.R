@@ -7,7 +7,7 @@ itemFilterServer <- function(id, unique_items_data) {
     # 动态更新 makers 控件
     observe({
       # 提取 unique_items_data() 中 Maker 列的唯一值
-      current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
+      current_makers <- unique_items_data() %>% pull(Maker) %>% unique() %>% sort()
       new_hash <- digest::digest(current_makers)
       
       # 如果 Maker 的哈希值没有变化，则不更新
@@ -28,6 +28,7 @@ itemFilterServer <- function(id, unique_items_data) {
       )
     })
     
+
     # 动态更新商品名称
     observe({
       selected_makers <- input$maker
@@ -37,16 +38,15 @@ itemFilterServer <- function(id, unique_items_data) {
         unique_items_data()
       }
       
-      new_hash <- digest::digest(filtered_data$ItemName)
-      
-      showNotification(new_hash)
+      # 提取 ItemName 的唯一值并排序
+      current_item_names <- filtered_data$ItemName %>% unique() %>% sort()
+      new_hash <- digest::digest(current_item_names)
       
       # 如果 item_names 未变化，则不更新
       if (!is.null(item_names_hash()) && item_names_hash() == new_hash) return()
       
       item_names_hash(new_hash)
-      item_names <- c("", unique(filtered_data$ItemName))
-      updateSelectizeInput(session, "name", choices = item_names, selected = "")
+      updateSelectizeInput(session, "name", choices = c("", current_item_names), selected = "")
     })
     
     # 清空输入
