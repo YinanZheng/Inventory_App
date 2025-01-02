@@ -1148,47 +1148,16 @@ server <- function(input, output, session) {
       
       # 确保模块仅绑定一次
       if (!sold_filter_initialized()) {
-        sold_filter_initialized(TRUE)  # 标记模块已绑定
+        sold_filter_initialized(TRUE)
         
-        # 等待数据加载完成后绑定模块
-        observe({
-          req(unique_items_data())  # 确保数据已加载
-          
-          # 绑定服务器逻辑
-          itemFilterServer(
-            id = "sold_filter",
-            unique_items_data = unique_items_data
-          )
-        })
+        # 绑定模块逻辑并获取方法
+        module <- itemFilterServer(
+          id = "sold_filter",
+          unique_items_data = unique_items_data
+        )
         
-        # 在反应性环境中初始化下拉菜单
-        observe({
-          req(unique_items_data())  # 确保数据已加载
-          
-          # 初始化 makers 下拉菜单
-          current_makers <- unique_items_data() %>% pull(Maker) %>% unique()
-          makers_df <- if (length(current_makers) > 0) {
-            data.frame(Maker = current_makers, stringsAsFactors = FALSE) %>%
-              mutate(Pinyin = remove_tone(stringi::stri_trans_general(Maker, "Latin")))
-          } else {
-            data.frame(Maker = character(), Pinyin = character(), stringsAsFactors = FALSE)
-          }
-          
-          # 更新 makers 下拉菜单（绑定到 sold_filter）
-          updateSelectizeInput(
-            session, NS("sold_filter", "maker"),
-            choices = c("", setNames(makers_df$Maker, paste0(makers_df$Maker, "(", makers_df$Pinyin, ")"))),
-            selected = NULL, server = TRUE
-          )
-          
-          # 初始化商品名称下拉菜单（绑定到 sold_filter）
-          current_item_names <- unique_items_data()$ItemName %>% unique() %>% sort()
-          updateSelectizeInput(
-            session, NS("sold_filter", "name"),
-            choices = c("", current_item_names),
-            selected = NULL
-          )
-        })
+        # 调用模块的 resetFilters 方法
+        module$resetFilters()
       }
     } else if (input$main_tabs == "order_management") {
       # 订单管理分页：显示订单筛选区
