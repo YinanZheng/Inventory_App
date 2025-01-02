@@ -5,8 +5,8 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
     class = "card",
     style = sprintf("margin-bottom: 5px; padding: 10px; border: 1px solid %s; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);", border_color),
     
-    # 标题和清空按钮在同一行，垂直居中
-    fluidRow(
+    # 标题和清空按钮在同一行，左右对齐
+    div(
       style = "display: flex; align-items: center; justify-content: space-between; width: 100%;", # Flex 布局
       tags$h4(
         "物品筛选", 
@@ -17,7 +17,7 @@ itemFilterUI <- function(id, border_color = "#007BFF", text_color = "#007BFF", u
         "重置", 
         icon = icon("snowplow"), 
         class = "btn-danger", 
-        style = "font-size: 14px; height: 30px; padding: 5px 10px;" # 右对齐按钮
+        style = "font-size: 14px; height: 30px; padding: 5px 10px; margin-left: auto;" # 右对齐按钮
       )
     ),
     
