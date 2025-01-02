@@ -540,13 +540,7 @@ ui <- navbarPage(
           # 按钮区
           div(
             style = "margin-top: 10px; display: flex; justify-content: space-between;",
-            actionButton(
-              "register_order_btn",
-              "登记/更新订单",
-              icon = icon("save"),
-              class = "btn-primary",
-              style = "font-size: 16px; width: 48%; height: 42px;"
-            ),
+            uiOutput("register_order_button_ui"),
             actionButton(
               "clear_order_btn",
               "清空订单",

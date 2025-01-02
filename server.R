@@ -1348,11 +1348,7 @@ server <- function(input, output, session) {
       sanitized_order_id <- gsub("#", "", trimws(input$order_id))
       
       # 查询订单信息，包含新增字段
-      existing_order <- dbGetQuery(con, "
-      SELECT CustomerName, CustomerNetName, Platform, UsTrackingNumber, OrderStatus, OrderNotes 
-      FROM orders 
-      WHERE OrderID = ?", params = list(sanitized_order_id)
-      )
+      existing_order <- orders() %>% filter(OrderID == sanitized_order_id)
       
       # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
@@ -1397,6 +1393,17 @@ server <- function(input, output, session) {
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
         
+        # 动态更新按钮为“更新订单”
+        output$register_order_button_ui <- renderUI({
+          actionButton(
+            "register_order_btn",
+            "更新订单",
+            icon = icon("edit"),
+            class = "btn-warning",
+            style = "font-size: 16px; width: 48%; height: 42px;"
+          )
+        })
+        
         showNotification("已找到订单信息！字段已自动填充", type = "message")
       } else {
         # 如果订单记录不存在，清空出order ID以外所有相关字段
@@ -1411,6 +1418,17 @@ server <- function(input, output, session) {
         updateTextInput(session, "tracking_number", value = "")
         image_sold$reset()
         updateTextAreaInput(session, "order_notes", value = "")
+        
+        # 动态更新按钮为“登记订单”
+        output$register_order_button_ui <- renderUI({
+          actionButton(
+            "register_order_btn",
+            "登记订单",
+            icon = icon("plus"),
+            class = "btn-primary",
+            style = "font-size: 16px; width: 48%; height: 42px;"
+          )
+        })
       }
     }, error = function(e) {
       # 捕获错误并通知用户
@@ -1448,6 +1466,7 @@ server <- function(input, output, session) {
       updateSelectizeInput(session, "preorder_supplier", selected = NULL)
     }
   })
+  
   
   # 登记订单逻辑
   observeEvent(input$register_order_btn, {
