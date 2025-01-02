@@ -1615,6 +1615,14 @@ server <- function(input, output, session) {
         return()
       }
       
+      # 检查货架是否还有物品
+      current_shelf <- shelf_items()
+      if (is.null(current_shelf) || nrow(current_shelf) == 0) {
+        showNotification("货架上已经没有物品可操作！", type = "error")
+        updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
+        return()
+      }
+      
       # 从 unique_items_data 获取符合条件的货架物品
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == scanned_sku, Status == "国内入库", Defect != "瑕疵") %>%
@@ -1623,6 +1631,7 @@ server <- function(input, output, session) {
       
       if (nrow(all_shelf_items) == 0) {
         showNotification("未找到符合条件的物品！", type = "error")
+        updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
       
@@ -1638,6 +1647,7 @@ server <- function(input, output, session) {
       
       if (nrow(all_shelf_items) == 0) {
         showNotification("该 SKU 的所有物品已移入箱子！", type = "error")
+        updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
       
@@ -1663,7 +1673,6 @@ server <- function(input, output, session) {
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
   })
-  
   
   # 确认售出
   observeEvent(input$confirm_order_btn, {
