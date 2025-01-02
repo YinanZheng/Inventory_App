@@ -149,7 +149,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        
+        style = "width: 350px;", # override 宽度
         itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE),
         
         tags$hr(),
