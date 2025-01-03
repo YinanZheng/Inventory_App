@@ -2346,8 +2346,9 @@ server <- function(input, output, session) {
       total_value_sum <- summary_info$TotalValue[1] + summary_info$TotalDomesticShipping[1] + summary_info$TotalIntlShipping[1]
       
       # 格式化汇总信息
+      # 格式化汇总信息
       summary_text <- HTML(paste0(
-        "<div style='font-family: Arial, sans-serif; line-height: 1.6;'>",
+        "<div style='font-family: Arial, sans-serif; line-height: 2;'>",  # 调整行间距
         "<table style='width: 100%; border-collapse: collapse;'>",
         "<tr>",
         "<td style='color: #007BFF; font-weight: bold; text-align: left; width: 30%;'>运单号:</td>",
@@ -2359,7 +2360,7 @@ server <- function(input, output, session) {
         "</tr>",
         "<tr>",
         "<td style='color: #007BFF; font-weight: bold; text-align: left;'>总货物价值:</td>",
-        "<td style='text-align: left; color: #FF5733;'>￥", formatC(summary_info$TotalValue[1], format = "f", digits = 2), "</td>",
+        "<td style='text-align: left;'>￥", formatC(summary_info$TotalValue[1], format = "f", digits = 2), "</td>",
         "</tr>",
         "<tr>",
         "<td style='color: #007BFF; font-weight: bold; text-align: left;'>总国内运费:</td>",
@@ -2376,6 +2377,7 @@ server <- function(input, output, session) {
         "</table>",
         "</div>"
       ))
+      
       
       # 创建模态对话框
       showModal(modalDialog(
