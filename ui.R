@@ -892,6 +892,12 @@ ui <- navbarPage(
       class = "layout-container",
       div(
         class = "sticky-sidebar",
+        
+        itemFilterUI(id = "logistic_filter", 
+                     use_purchase_date = FALSE,
+                     use_sold_date = TRUE, use_exit_date = TRUE,
+                     border_color = "#28A745", text_color = "#28A745"),
+        
         fluidRow(
           column(
             12,
