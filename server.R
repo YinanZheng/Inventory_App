@@ -2393,9 +2393,30 @@ server <- function(input, output, session) {
 
   # 删除运单逻辑
   observeEvent(input$delete_shipment_btn, {
-    req(input$intl_tracking_number)  # 确保运单号不为空
+    tracking_number <- input$intl_tracking_number
     
-    tracking_number <- input$intl_tracking_number  # 获取输入的运单号
+    if (is.null(tracking_number) || tracking_number == "") {
+      showNotification("请输入运单号后再执行此操作！", type = "error", duration = 5)
+      return()
+    }
+    
+    # 弹出确认对话框
+    showModal(modalDialog(
+      title = HTML("<strong style='color: #C70039;'>确认删除运单</strong>"),
+      HTML(paste0(
+        "<p>您确定要删除运单号 <strong>", tracking_number, "</strong> 吗？此操作不可逆！</p>"
+      )),
+      easyClose = FALSE,
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_delete_shipment_btn", "确认删除", class = "btn-danger")
+      )
+    ))
+  })
+  
+  # 监听确认删除按钮的点击事件
+  observeEvent(input$confirm_delete_shipment_btn, {
+    tracking_number <- input$intl_tracking_number
     
     tryCatch({
       # 从 intl_shipments 表中删除对应的运单号
@@ -2422,8 +2443,10 @@ server <- function(input, output, session) {
       showNotification(paste("删除失败：", e$message), type = "error")
     })
     
-    shinyjs::disable("link_tracking_btn")  #禁用按钮
+    shinyjs::disable("link_tracking_btn")  # 禁用按钮
     
+    # 关闭确认对话框
+    removeModal()
   })
   
   # 点击行自动填写运单号
