@@ -317,15 +317,8 @@ server <- function(input, output, session) {
     shipping_method <- input$intl_shipping_method
     
     # 判断并根据物流方式筛选
-    if (!is.null(shipping_method) && shipping_method != "全部") {
+    if (!is.null(shipping_method)) {
       data <- data %>% filter(IntlShippingMethod == shipping_method)
-      
-      # 动态移除不相关的运单号列
-      if (shipping_method == "海运") {
-        data <- data %>% select(-IntlAirTracking) # 移除空运运单号列
-      } else if (shipping_method == "空运") {
-        data <- data %>% select(-IntlSeaTracking) # 移除海运运单号列
-      }
     }
     
     data
@@ -435,8 +428,7 @@ server <- function(input, output, session) {
                                                             IntlShippingMethod = "国际运输",
                                                             DomesticSoldTime = "售出日期",
                                                             DomesticExitTime = "出库日期",
-                                                            IntlAirTracking = "国际空运单号",
-                                                            IntlSeaTracking = "国际海运单号"
+                                                            IntlTracking = "国际物流单号",
                                                           )), selection = "multiple",
                                                           data = filtered_unique_items_data_logistics)
   
