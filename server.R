@@ -2467,7 +2467,6 @@ server <- function(input, output, session) {
     removeModal()
   })
   
-  
   # 点击行自动填写运单号
   observeEvent(unique_items_table_logistics_selected_row(), {
     selected_rows <- unique_items_table_logistics_selected_row()
