@@ -428,7 +428,7 @@ server <- function(input, output, session) {
                                                             IntlShippingMethod = "国际运输",
                                                             DomesticSoldTime = "售出日期",
                                                             DomesticExitTime = "出库日期",
-                                                            IntlTracking = "国际物流单号",
+                                                            IntlTracking = "国际物流单号"
                                                           )), selection = "multiple",
                                                           data = filtered_unique_items_data_logistics)
   
