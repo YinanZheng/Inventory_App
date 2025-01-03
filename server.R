@@ -2296,17 +2296,21 @@ server <- function(input, output, session) {
         # 如果运单号存在，回填信息
         updateSelectInput(session, "intl_shipping_method", selected = shipment_info$ShippingMethod[1])
         updateNumericInput(session, "intl_total_shipping_cost", value = shipment_info$TotalCost[1])
-        showNotification("已加载运单信息！", type = "message", duration = 5)
+        shinyjs::enable("link_tracking_btn")  # 启用挂靠运单按钮
+        showNotification("已加载运单信息，可执行挂靠操作！", type = "message", duration = 5)
       } else {
-        # 如果运单号不存在，清空相关字段并提示
+        # 如果运单号不存在，清空相关字段并禁用按钮
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
         updateNumericInput(session, "intl_total_shipping_cost", value = 0)
-        showNotification("未找到对应的运单信息！", type = "warning", duration = 5)
+        shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
+        showNotification("未找到对应的运单信息，无法挂靠！", type = "warning", duration = 5)
       }
     }, error = function(e) {
+      shinyjs::disable("link_tracking_btn")  # 遇到错误时禁用按钮
       showNotification(paste("加载运单信息失败：", e$message), type = "error")
     })
   })
+  
   
   # 删除运单逻辑
   observeEvent(input$delete_shipment_btn, {
