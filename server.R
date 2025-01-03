@@ -2270,7 +2270,6 @@ server <- function(input, output, session) {
       updateSelectInput(session, "intl_shipping_method", selected = "空运")
       updateNumericInput(session, "intl_total_shipping_cost", value = 0)
       shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
-      showNotification("运单号已清空，相关输入已重置！", type = "warning", duration = 5)
       return()
     }
     
