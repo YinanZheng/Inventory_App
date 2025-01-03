@@ -302,17 +302,19 @@ server <- function(input, output, session) {
   
   # 国际物流筛选
   filtered_unique_items_data_logistics <- reactive({
+    req(unique_items_data())
     data <- unique_items_data()
-    shipping_method <- input$intl_shipping_method
     
     data <- filter_unique_items_data_by_inputs(
-      data = unique_items_data(),
+      data = data,
       input = input,
       maker_input_id = "logistic_filter-maker",
       item_name_input_id = "logistic_filter-name",
       sold_date_range_id = "logistic_filter-sold_date_range",
       exit_date_range_id = "logistic_filter-exit_date_range"
     )
+    
+    shipping_method <- input$intl_shipping_method
     
     # 判断并根据物流方式筛选
     if (!is.null(shipping_method) && shipping_method != "全部") {
