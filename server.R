@@ -1795,14 +1795,6 @@ server <- function(input, output, session) {
     associated_items <- reactive({
       # 根据订单号筛选关联物品
       items <- unique_items_data() %>% filter(OrderID == order_id)
-      
-      # 动态移除列
-      if (all(items$IntlShippingMethod == "空运" | is.na(items$IntlShippingMethod))) {
-        items <- items %>% select(-IntlSeaTracking)  # 移除海运单号列
-      } else if (all(items$IntlShippingMethod == "海运" | is.na(items$IntlShippingMethod))) {
-        items <- items %>% select(-IntlAirTracking)  # 移除空运单号列
-      }
-      
       items
     })
     
@@ -2367,20 +2359,15 @@ server <- function(input, output, session) {
       }
       
       # 准备批量更新的参数
-      update_data <- selected_items %>%
-        mutate(
-          IntlAirTracking = ifelse(shipping_method == "空运", tracking_number, NA),
-          IntlSeaTracking = ifelse(shipping_method == "海运", tracking_number, NA)
-        ) %>%
-        select(UniqueID, IntlAirTracking, IntlSeaTracking)
+      update_data <- selected_items %>% select(UniqueID, IntlTracking)
       
       # 批量更新数据库
       dbBegin(con)
       for (i in 1:nrow(update_data)) {
         dbExecute(
           con,
-          "UPDATE unique_items SET IntlAirTracking = ?, IntlSeaTracking = ? WHERE UniqueID = ?",
-          params = list(update_data$IntlAirTracking[i], update_data$IntlSeaTracking[i], update_data$UniqueID[i])
+          "UPDATE unique_items SET IntlTracking = ? WHERE UniqueID = ?",
+          params = list(update_data$IntlTracking[i], update_data$UniqueID[i])
         )
       }
       dbCommit(con)
@@ -2412,7 +2399,7 @@ server <- function(input, output, session) {
         dbExecute(
           con,
           "UPDATE unique_items 
-         SET IntlAirTracking = NULL, IntlSeaTracking = NULL 
+         SET IntlTracking = NULL
          WHERE UniqueID = ?",
           params = list(unique_id)
         )
