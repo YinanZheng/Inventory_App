@@ -2426,6 +2426,37 @@ server <- function(input, output, session) {
     
   })
   
+  # 点击行自动填写运单号
+  observeEvent(unique_items_table_logistics_selected_row(), {
+    selected_rows <- unique_items_table_logistics_selected_row()
+    
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      # 如果没有选中行，清空运单号输入框
+      updateTextInput(session, "intl_tracking_number", value = "")
+      return()
+    }
+    
+    tryCatch({
+      # 获取选中行的数据
+      selected_data <- filtered_unique_items_data_logistics()[selected_rows, ]
+      
+      # 提取所有选中行的国际物流单号（IntlTracking）
+      unique_tracking_numbers <- unique(selected_data$IntlTracking)
+      
+      if (length(unique_tracking_numbers) == 1 && !is.na(unique_tracking_numbers)) {
+        # 如果只有一个唯一的物流单号，填写到输入框
+        updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers)
+        showNotification("已根据选中行填写运单号！", type = "message")
+      } else {
+        # 如果有多个物流单号或为空，清空输入框并提示用户
+        updateTextInput(session, "intl_tracking_number", value = "")
+        showNotification("选中行包含多个不同的物流单号或为空，请检查！", type = "warning")
+      }
+    }, error = function(e) {
+      showNotification(paste("操作失败：", e$message), type = "error")
+    })
+  })
+  
   # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()  # 获取用户选择的物品行
