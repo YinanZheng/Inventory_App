@@ -205,9 +205,7 @@ ui <- navbarPage(
         
         imageModuleUI("image_purchase"),
         
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        actionButton("reset_btn", "重置", icon = icon("snowplow"), class = "btn-danger", 
+        actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-danger", 
                      style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
       ),
       
