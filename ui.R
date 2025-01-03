@@ -902,10 +902,10 @@ ui <- navbarPage(
         
         div(
           class = "card shadow-sm",
-          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #28A745; border-radius: 10px;",
+          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 10px;",
           
           # Card 标题
-          tags$h4("登记国际运单", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+          tags$h4("登记国际运单", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           
           # 输入内容
           fluidRow(
@@ -916,7 +916,7 @@ ui <- navbarPage(
           
           # 登记按钮
           fluidRow(
-            column(12, actionButton("register_shipment_btn", "登记", icon = icon("save"), class = "btn-success", style = "margin-top: 20px; width: 100%; font-size: 16px;"))
+            column(12, actionButton("register_shipment_btn", "登记", icon = icon("save"), class = "btn-info", style = "margin-top: 20px; width: 100%; font-size: 16px;"))
           )
         ),
         
