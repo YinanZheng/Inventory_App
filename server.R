@@ -235,7 +235,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "inbound_filter-maker",
       item_name_input_id = "inbound_filter-name",
-      purchase_date_range_input_id = "inbound_filter-purchase_date_range"
+      purchase_date_range_id = "inbound_filter-purchase_date_range"
     )
     
     # 将 "采购" 状态的商品放到最前
@@ -254,7 +254,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "outbound_filter-maker",
       item_name_input_id = "outbound_filter-name",
-      purchase_date_range_input_id = "outbound_filter-purchase_date_range"
+      purchase_date_range_id = "outbound_filter-purchase_date_range"
     )
     
     # 将 "国内入库" 状态的商品放到最前
@@ -273,7 +273,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "sold_filter-maker",
       item_name_input_id = "sold_filter-name",
-      purchase_date_range_input_id = "sold_filter-purchase_date_range"
+      purchase_date_range_id = "sold_filter-purchase_date_range"
     )
     
     # 将 "国内入库" 状态的商品放到最前
