@@ -915,8 +915,9 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(6, actionButton("register_shipment_btn", "登记运单", icon = icon("save"), class = "btn-info", style = "margin-top: 20px; width: 100%; font-size: 16px;")),
-            column(6, actionButton("delete_shipment_btn", "删除运单", icon = icon("trash"), class = "btn-danger", style = "margin-top: 20px; width: 100%; font-size: 16px;"))
+            column(4, actionButton("register_shipment_btn", "登记", icon = icon("save"), class = "btn-info", style = "margin-top: 20px; width: 100%; font-size: 16px;")),
+            column(4, actionButton("batch_value_btn", "货值", icon = icon("dollar-sign"), class = "btn-success", style = "margin-top: 20px; width: 100%; font-size: 16px;")),
+            column(4, actionButton("delete_shipment_btn", "删除", icon = icon("trash"), class = "btn-danger", style = "margin-top: 20px; width: 100%; font-size: 16px;"))
           )
         ),
         

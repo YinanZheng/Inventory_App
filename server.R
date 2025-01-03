@@ -2302,6 +2302,70 @@ server <- function(input, output, session) {
     })
   })
   
+  # 货值汇总显示
+  observeEvent(input$batch_value_btn, {
+    req(input$intl_tracking_number)  # 确保输入的运单号不为空
+    
+    tracking_number <- input$intl_tracking_number
+    
+    tryCatch({
+      # 查询与运单号相关的汇总信息
+      summary_info <- dbGetQuery(
+        con,
+        "
+      SELECT 
+        COUNT(*) AS TotalQuantity,
+        SUM(ProductCost) AS TotalValue,
+        SUM(DomesticShippingCost) AS TotalDomesticShipping,
+        SUM(IntlShippingCost) AS TotalIntlShipping
+      FROM unique_items
+      WHERE IntlTracking = ?
+      ",
+        params = list(tracking_number)
+      )
+      
+      # 查询运单号的运输方式
+      shipping_method_info <- dbGetQuery(
+        con,
+        "SELECT ShippingMethod FROM intl_shipments WHERE TrackingNumber = ?",
+        params = list(tracking_number)
+      )
+      
+      if (nrow(summary_info) == 0 || is.na(summary_info$TotalQuantity[1])) {
+        showNotification("未找到与当前运单号相关的货物信息！", type = "warning")
+        return()
+      }
+      
+      # 确定运输方式
+      shipping_method <- ifelse(nrow(shipping_method_info) > 0, shipping_method_info$ShippingMethod[1], "未知")
+      
+      # 计算总价值合计
+      total_value_sum <- summary_info$TotalValue[1] + summary_info$TotalDomesticShipping[1] + summary_info$TotalIntlShipping[1]
+      
+      # 格式化汇总信息
+      summary_text <- HTML(paste0(
+        "<div style='font-family: Arial, sans-serif;'>",
+        "<p><strong style='color: #007BFF;'>运单号:</strong> ", tracking_number, " <span style='color: #28A745;'>(", shipping_method, ")</span></p>",
+        "<p><strong style='color: #007BFF;'>总货物数量:</strong> ", summary_info$TotalQuantity[1], "</p>",
+        "<p><strong style='color: #007BFF;'>总货物价值:</strong> <span style='color: #FF5733;'>￥", formatC(summary_info$TotalValue[1], format = "f", digits = 2), "</span></p>",
+        "<p><strong style='color: #007BFF;'>总国内运费:</strong> <span style='color: #FFC300;'>￥", formatC(summary_info$TotalDomesticShipping[1], format = "f", digits = 2), "</span></p>",
+        "<p><strong style='color: #007BFF;'>总国际运费:</strong> <span style='color: #C70039;'>￥", formatC(summary_info$TotalIntlShipping[1], format = "f", digits = 2), "</span></p>",
+        "<p><strong style='color: #007BFF;'>合计总价值:</strong> <span style='color: #900C3F; font-size: 18px;'>￥", formatC(total_value_sum, format = "f", digits = 2), "</span></p>",
+        "</div>"
+      ))
+      
+      # 创建模态对话框
+      showModal(modalDialog(
+        title = HTML("<strong style='color: #007BFF;'>运单货值汇总</strong>"),
+        HTML(summary_text),
+        easyClose = TRUE,
+        footer = modalButton("关闭")
+      ))
+    }, error = function(e) {
+      showNotification(paste("操作失败：", e$message), type = "error")
+    })
+  })
+  
   
   # 删除运单逻辑
   observeEvent(input$delete_shipment_btn, {
@@ -2337,7 +2401,6 @@ server <- function(input, output, session) {
     shinyjs::disable("link_tracking_btn")  #禁用按钮
     
   })
-  
   
   # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
@@ -2426,7 +2489,6 @@ server <- function(input, output, session) {
       showNotification(paste("挂靠失败：", e$message), type = "error")
     })
   })
-  
   
   # 解除运单号挂靠逻辑
   observeEvent(input$delete_tracking_btn, {
