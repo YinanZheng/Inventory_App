@@ -2238,6 +2238,11 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 筛选逻辑
+  itemFilterServer(
+    id = "logistic_filter",
+    makers_items_map = makers_items_map)
+    
   # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()

@@ -898,6 +898,8 @@ ui <- navbarPage(
                      use_sold_date = TRUE, use_exit_date = TRUE,
                      border_color = "#28A745", text_color = "#28A745"),
         
+        tags$hr(style = "margin: 5px 0; border: none;"),
+        
         fluidRow(
           column(
             12,
