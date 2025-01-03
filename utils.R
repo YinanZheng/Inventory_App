@@ -996,6 +996,14 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
   })
 }
 
+# 动态生成 input 命名空间
+get_input_id <- function(base_id, suffix) {
+  # 提取 "XXX" 的前缀部分
+  prefix <- strsplit(base_id, "-")[[1]][1]
+  # 拼接完整 ID
+  paste0(prefix, "-", suffix)
+}
+
 
 # 从输入数据中筛选数据
 filter_unique_items_data_by_inputs <- function(
@@ -1004,7 +1012,7 @@ filter_unique_items_data_by_inputs <- function(
     maker_input_id, 
     item_name_input_id, 
     purchase_date_range_id = NULL, 
-    sold_date_range_id = NULL, 
+    sold_date_range_id = NULL,
     exit_date_range_id = NULL
 ) {
   req(data)  # 确保数据不为空
@@ -1025,8 +1033,13 @@ filter_unique_items_data_by_inputs <- function(
     data <- data %>% filter(as.Date(PurchaseTime) >= purchase_date_range[1], as.Date(PurchaseTime) <= purchase_date_range[2])
   }
   
+  # 动态生成 "only_show_sold" 和 "only_show_exit" 的命名空间
+  only_show_sold_id <- get_input_id(sold_date_range_id, "only_show_sold")
+  only_show_exit_id <- get_input_id(exit_date_range_id, "only_show_exit")
+  
+  
   # 根据“仅显示售出”和“仅显示出库”的互斥逻辑更新筛选
-  if (!is.null(input$only_show_sold) && input$only_show_sold) {
+  if (!is.null(input[[only_show_sold_id]]) && input[[only_show_sold_id]]) {
     # 按售出日期筛选，仅对库存状态为‘国内售出’的物品有效
     if (!is.null(sold_date_range_id) && 
         !is.null(input[[sold_date_range_id]]) && 
@@ -1038,7 +1051,9 @@ filter_unique_items_data_by_inputs <- function(
                as.Date(DomesticSoldTime) >= sold_date_range[1], 
                as.Date(DomesticSoldTime) <= sold_date_range[2])
     }
-  } else if (!is.null(input$only_show_exit) && input$only_show_exit) {
+  } 
+  
+  if (!is.null(input[[only_show_exit_id]]) && input[[only_show_exit_id]]) {
     # 按出库日期筛选，仅对库存状态为‘国内出库’的物品有效
     if (!is.null(exit_date_range_id) && 
         !is.null(input[[exit_date_range_id]]) && 
@@ -1050,11 +1065,8 @@ filter_unique_items_data_by_inputs <- function(
                as.Date(DomesticExitTime) >= exit_date_range[1], 
                as.Date(DomesticExitTime) <= exit_date_range[2])
     }
-  } else {
-    # 如果两个都未选中，或者用户未勾选任何“仅显示”选项，则保留原始数据
-    data <- data
   }
-  
+
   data
 }
 
