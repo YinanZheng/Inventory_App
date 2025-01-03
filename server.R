@@ -422,7 +422,7 @@ server <- function(input, output, session) {
   unique_items_table_logistics_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_logistics",
                                                           column_mapping = c(common_columns, list(
                                                             IntlShippingMethod = "国际运输",
-                                                            DomesticEntryTime = "入库日期",
+                                                            DomesticSoldTime = "售出日期",
                                                             DomesticExitTime = "出库日期",
                                                             IntlAirTracking = "国际空运单号",
                                                             IntlSeaTracking = "国际海运单号"
