@@ -71,7 +71,7 @@ itemFilterUI <- function(
                               start = Sys.Date() - 365, end = Sys.Date(), width = "100%")
         ),
         column(3,
-               checkboxInput(ns("only_show_sold"), "仅售出", value = FALSE, width = "100%")
+               checkboxInput(ns("only_show_sold"), "售出", value = FALSE, width = "100%")
         )
       )
     } else {
@@ -85,7 +85,7 @@ itemFilterUI <- function(
                               start = Sys.Date() - 365, end = Sys.Date(), width = "100%")
         ),
         column(3,
-               checkboxInput(ns("only_show_exit"), "仅出库", value = FALSE, width = "100%")
+               checkboxInput(ns("only_show_exit"), "出库", value = FALSE, width = "100%")
         )
       )
     }
