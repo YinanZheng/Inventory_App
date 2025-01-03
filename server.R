@@ -2419,6 +2419,9 @@ server <- function(input, output, session) {
     tracking_number <- input$intl_tracking_number
     
     tryCatch({
+      # 开始事务
+      dbBegin(con)
+      
       # 从 intl_shipments 表中删除对应的运单号
       rows_affected <- dbExecute(
         con,
@@ -2430,6 +2433,14 @@ server <- function(input, output, session) {
         # 如果删除成功
         showNotification("运单已成功删除！", type = "message", duration = 5)
         
+        # 更新 unique_items 表中相关记录的平摊国际运费为 0.00
+        dbExecute(
+          con,
+          "UPDATE unique_items 
+         SET IntlShippingCost = 0.00 
+         WHERE IntlTracking IS NULL AND IntlShippingCost > 0.00"
+        )
+        
         # 清空输入框
         updateTextInput(session, "intl_tracking_number", value = "")
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
@@ -2438,16 +2449,24 @@ server <- function(input, output, session) {
         # 如果没有找到对应的运单号
         showNotification("未找到该运单，删除失败！", type = "warning", duration = 5)
       }
+      
+      # 提交事务
+      dbCommit(con)
     }, error = function(e) {
-      # 捕获错误并提示用户
+      # 捕获错误并提示用户，回滚事务
+      dbRollback(con)
       showNotification(paste("删除失败：", e$message), type = "error")
     })
     
     shinyjs::disable("link_tracking_btn")  # 禁用按钮
     
+    # 刷新表格数据
+    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+    
     # 关闭确认对话框
     removeModal()
   })
+  
   
   # 点击行自动填写运单号
   observeEvent(unique_items_table_logistics_selected_row(), {
