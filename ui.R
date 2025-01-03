@@ -293,7 +293,6 @@ ui <- navbarPage(
                 tags$script(HTML("
                 $(document).on('shiny:inputchanged', function(event) {
                     if (event.name.endsWith('inbound_sku')) {  // 确保监听的是正确的输入框
-                        let inputValue = event.value;
                         let inboundSkuTimeout;  // 定义定时器
                         let isInBoundSkuTypingFinished = false;  // 定义标志变量
                 
@@ -432,29 +431,29 @@ ui <- navbarPage(
             value = FALSE  # 默认不勾选
           ),
           tags$script(HTML("
-            let outboundSkuTimeout;  // 定义全局定时器变量
-            let isOutBoundSkuTypingFinished = false;  // 定义标志变量，表示输入是否完成
-        
-            // 监听输入框内容变化
-            $(document).on('input', '#outbound_sku', function() {
-                clearTimeout(outboundSkuTimeout);  // 清除之前的定时器
-                isOutBoundSkuTypingFinished = false;  // 重置标志
-        
-                outboundSkuTimeout = setTimeout(function() {
-                    isOutBoundSkuTypingFinished = true;  // 输入完成后更新标志
-                }, 300);  // 延迟 300 毫秒
-            });
-        
-            // 监听回车键事件
-            $(document).on('keypress', '#outbound_sku', function(e) {
-                if (e.which === 13) {  // 检测回车键
-                    e.preventDefault();  // 阻止默认行为
-        
-                    if (isOutBoundSkuTypingFinished) {  // 仅在输入完成后允许触发回车
-                        $('#confirm_outbound_btn').click();  // 模拟点击按钮
-                    }
-                }
-            });
+          $(document).on('shiny:inputchanged', function(event) {
+              if (event.name.endsWith('outbound_sku')) {  // 确保监听的是正确的输入框
+                  let outboundSkuTimeout;  // 定义定时器
+                  let isOutBoundSkuTypingFinished = false;  // 定义标志变量
+          
+                  clearTimeout(outboundSkuTimeout);  // 清除之前的定时器
+                  isOutBoundSkuTypingFinished = false;  // 重置标志
+          
+                  outboundSkuTimeout = setTimeout(function() {
+                      isOutBoundSkuTypingFinished = true;  // 输入完成后更新标志
+                  }, 300);  // 延迟 300 毫秒
+          
+                  // 监听回车键事件
+                  $('#outbound_sku').off('keydown').on('keydown', function(e) {
+                      if (e.which === 13) {  // 检测回车键
+                          e.preventDefault();  // 阻止默认行为
+                          if (isOutBoundSkuTypingFinished) {
+                              $('#confirm_outbound_btn').click();  // 模拟点击按钮
+                          }
+                      }
+                  });
+              }
+          });
           ")),
           
           tags$div(
