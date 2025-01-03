@@ -1049,7 +1049,8 @@ filter_unique_items_data_by_inputs <- function(
       data <- data %>%
         filter(Status == "国内售出", # 仅对状态为‘国内售出’的记录
                as.Date(DomesticSoldTime) >= sold_date_range[1], 
-               as.Date(DomesticSoldTime) <= sold_date_range[2])
+               as.Date(DomesticSoldTime) <= sold_date_range[2]) %>%
+        select(-DomesticExitTime) # 去掉“国内出库”列
     }
   } 
   
@@ -1063,7 +1064,8 @@ filter_unique_items_data_by_inputs <- function(
       data <- data %>%
         filter(Status == "国内出库", # 仅对状态为‘国内出库’的记录
                as.Date(DomesticExitTime) >= exit_date_range[1], 
-               as.Date(DomesticExitTime) <= exit_date_range[2])
+               as.Date(DomesticExitTime) <= exit_date_range[2]) %>%
+        select(-DomesticSoldTime) # 去掉“国内售出”列
     }
   }
 
