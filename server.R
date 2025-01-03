@@ -2429,7 +2429,7 @@ server <- function(input, output, session) {
   })
   
   
-  # 删除运单号逻辑
+  # 解除运单号挂靠逻辑
   observeEvent(input$delete_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
     
@@ -2441,12 +2441,12 @@ server <- function(input, output, session) {
     tryCatch({
       selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
       
-      # 删除运单号
+      # 解除运单号关联，清零运费数据
       lapply(selected_items$UniqueID, function(unique_id) {
         dbExecute(
           con,
           "UPDATE unique_items 
-         SET IntlTracking = NULL
+         SET IntlTracking = NULL, IntlShippingCost = 0.00
          WHERE UniqueID = ?",
           params = list(unique_id)
         )
