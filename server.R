@@ -2304,9 +2304,12 @@ server <- function(input, output, session) {
   
   # 货值汇总显示
   observeEvent(input$batch_value_btn, {
-    req(input$intl_tracking_number)  # 确保输入的运单号不为空
-    
     tracking_number <- input$intl_tracking_number
+    
+    if (is.null(tracking_number) || tracking_number == "") {
+      showNotification("请输入运单号后再执行此操作！", type = "error", duration = 5)
+      return()
+    }
     
     tryCatch({
       # 查询与运单号相关的汇总信息
