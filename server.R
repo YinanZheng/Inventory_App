@@ -2310,7 +2310,7 @@ server <- function(input, output, session) {
   })
   
   # 删除运单逻辑
-  observeEvent(input$delete_tracking_btn, {
+  observeEvent(input$delete_shipment_btn, {
     req(input$intl_tracking_number)  # 确保运单号不为空
     
     tracking_number <- input$intl_tracking_number  # 获取输入的运单号
