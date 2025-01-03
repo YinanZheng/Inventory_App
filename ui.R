@@ -902,7 +902,7 @@ ui <- navbarPage(
         
         div(
           class = "card shadow-sm",
-          style = "padding: 10px; border: 1px solid 007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          style = "padding: 10px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           
           # Card 标题
           tags$h4("登记国际运单", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
