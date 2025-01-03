@@ -2253,12 +2253,9 @@ server <- function(input, output, session) {
         params = list(tracking_number, shipping_method, total_cost)
       )
       
-      showNotification("国际运单登记成功，信息已更新！", type = "message", duration = 5)
+      showNotification("国际运单登记成功，信息已更新，可执行挂靠操作！", type = "message", duration = 5)
       
-      # 清空输入框
-      updateTextInput(session, "intl_tracking_number", value = "")
-      updateSelectInput(session, "intl_shipping_method", selected = "空运")
-      updateNumericInput(session, "intl_total_shipping_cost", value = 0)
+      shinyjs::enable("link_tracking_btn")  # 启用挂靠运单按钮
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
@@ -2266,7 +2263,16 @@ server <- function(input, output, session) {
   
   # 查询运单逻辑
   observeEvent(input$intl_tracking_number, {
-    req(input$intl_tracking_number)  # 确保输入不为空
+    tracking_number <- input$intl_tracking_number
+    
+    if (is.null(tracking_number) || tracking_number == "") {
+      # 如果运单号为空，清空相关输入字段并禁用按钮
+      updateSelectInput(session, "intl_shipping_method", selected = "空运")
+      updateNumericInput(session, "intl_total_shipping_cost", value = 0)
+      shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
+      showNotification("运单号已清空，相关输入已重置！", type = "warning", duration = 5)
+      return()
+    }
     
     tracking_number <- input$intl_tracking_number
     
@@ -2328,6 +2334,9 @@ server <- function(input, output, session) {
       # 捕获错误并提示用户
       showNotification(paste("删除失败：", e$message), type = "error")
     })
+    
+    shinyjs::disable("link_tracking_btn")  #禁用按钮
+    
   })
   
   
