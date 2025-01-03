@@ -2294,7 +2294,7 @@ server <- function(input, output, session) {
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
         updateNumericInput(session, "intl_total_shipping_cost", value = 0)
         shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
-        showNotification("未找到对应的运单信息，无法挂靠！", type = "warning", duration = 5)
+        showNotification("未找到对应的运单信息，请登记新运单！", type = "warning", duration = 5)
       }
     }, error = function(e) {
       shinyjs::disable("link_tracking_btn")  # 遇到错误时禁用按钮
