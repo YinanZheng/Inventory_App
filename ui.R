@@ -914,9 +914,9 @@ ui <- navbarPage(
             column(12, numericInput("intl_total_shipping_cost", "国际物流总运费 (元):", value = 0, min = 0, width = "100%"))
           ),
           
-          # 登记按钮
           fluidRow(
-            column(12, actionButton("register_shipment_btn", "登记", icon = icon("save"), class = "btn-info", style = "margin-top: 20px; width: 100%; font-size: 16px;"))
+            column(6, actionButton("register_shipment_btn", "登记运单", icon = icon("save"), class = "btn-info", style = "margin-top: 20px; width: 100%; font-size: 16px;")),
+            column(6, actionButton("delete_shipment_btn", "删除运单", icon = icon("trash"), class = "btn-danger", style = "margin-top: 20px; width: 100%; font-size: 16px;"))
           )
         ),
         

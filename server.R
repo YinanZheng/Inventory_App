@@ -2245,7 +2245,72 @@ server <- function(input, output, session) {
   itemFilterServer(
     id = "logistic_filter",
     makers_items_map = makers_items_map)
+  
+  # 登记运单信息
+  observeEvent(input$register_shipment_btn, {
+    req(input$intl_tracking_number, input$intl_shipping_method, input$intl_total_shipping_cost)
     
+    # 获取用户输入的值
+    tracking_number <- input$intl_tracking_number
+    shipping_method <- input$intl_shipping_method
+    total_cost <- as.numeric(input$intl_total_shipping_cost)
+    
+    tryCatch({
+      # 更新或插入运单记录
+      dbExecute(
+        con,
+        "INSERT INTO intl_shipments (TrackingNumber, ShippingMethod, TotalCost, Status)
+       VALUES (?, ?, ?, '待分配')
+       ON DUPLICATE KEY UPDATE 
+         ShippingMethod = VALUES(ShippingMethod), 
+         TotalCost = VALUES(TotalCost),
+         UpdatedAt = CURRENT_TIMESTAMP",
+        params = list(tracking_number, shipping_method, total_cost)
+      )
+      
+      showNotification("国际运单登记成功，信息已更新！", type = "message", duration = 5)
+      
+      # 清空输入框
+      updateTextInput(session, "intl_tracking_number", value = "")
+      updateSelectInput(session, "intl_shipping_method", selected = "空运")
+      updateNumericInput(session, "intl_total_shipping_cost", value = 0)
+    }, error = function(e) {
+      showNotification(paste("操作失败：", e$message), type = "error")
+    })
+  })
+  
+  # 查询运单号逻辑
+  observeEvent(input$intl_tracking_number, {
+    req(input$intl_tracking_number)  # 确保输入不为空
+    
+    tracking_number <- input$intl_tracking_number
+    
+    tryCatch({
+      # 查询运单号对应的信息
+      shipment_info <- dbGetQuery(
+        con,
+        "SELECT ShippingMethod, TotalCost FROM intl_shipments WHERE TrackingNumber = ?",
+        params = list(tracking_number)
+      )
+      
+      if (nrow(shipment_info) > 0) {
+        # 如果运单号存在，回填信息
+        updateSelectInput(session, "intl_shipping_method", selected = shipment_info$ShippingMethod[1])
+        updateNumericInput(session, "intl_total_shipping_cost", value = shipment_info$TotalCost[1])
+        showNotification("已加载运单信息！", type = "message", duration = 5)
+      } else {
+        # 如果运单号不存在，清空相关字段并提示
+        updateSelectInput(session, "intl_shipping_method", selected = "空运")
+        updateNumericInput(session, "intl_total_shipping_cost", value = 0)
+        showNotification("未找到对应的运单信息！", type = "warning", duration = 5)
+      }
+    }, error = function(e) {
+      showNotification(paste("加载运单信息失败：", e$message), type = "error")
+    })
+  })
+  
+  
+  
   # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
     selected_rows <- unique_items_table_logistics_selected_row()
