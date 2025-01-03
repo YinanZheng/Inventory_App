@@ -1038,13 +1038,13 @@ filter_unique_items_data_by_inputs <- function(
   # 按售出日期筛选
   if (!is.null(sold_date_range_id) && !is.null(input[[sold_date_range_id]]) && length(input[[sold_date_range_id]]) == 2) {
     sold_date_range <- as.Date(input[[sold_date_range_id]])
-    data <- data %>% filter(as.Date(SoldTime) >= sold_date_range[1], as.Date(SoldTime) <= sold_date_range[2])
+    data <- data %>% filter(as.Date(DomesticSoldTime) >= sold_date_range[1], as.Date(DomesticSoldTime) <= sold_date_range[2])
   }
   
   # 按出库日期筛选
   if (!is.null(exit_date_range_id) && !is.null(input[[exit_date_range_id]]) && length(input[[exit_date_range_id]]) == 2) {
     exit_date_range <- as.Date(input[[exit_date_range_id]])
-    data <- data %>% filter(as.Date(ExitTime) >= exit_date_range[1], as.Date(ExitTime) <= exit_date_range[2])
+    data <- data %>% filter(as.Date(DomesticExitTime) >= exit_date_range[1], as.Date(DomesticExitTime) <= exit_date_range[2])
   }
   
   data
