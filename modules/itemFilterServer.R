@@ -81,8 +81,24 @@ itemFilterServer <- function(id, makers_items_map) {
         
         # 重置日期选择器
         updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
+        
         updateDateRangeInput(session, "sold_date_range", start = Sys.Date() - 365, end = Sys.Date())
+        # 监听“仅显示售出”复选框的变化
+        observeEvent(input$only_show_sold, {
+          if (isTRUE(input$only_show_sold)) {
+            # 如果选中了“仅显示售出”，自动取消“仅显示出库”
+            updateCheckboxInput(session, "only_show_exit", value = FALSE)
+          }
+        })
+        
         updateDateRangeInput(session, "exit_date_range", start = Sys.Date() - 365, end = Sys.Date())
+        # 监听“仅显示出库”复选框的变化
+        observeEvent(input$only_show_exit, {
+          if (isTRUE(input$only_show_exit)) {
+            # 如果选中了“仅显示出库”，自动取消“仅显示售出”
+            updateCheckboxInput(session, "only_show_sold", value = FALSE)
+          }
+        })
         
         showNotification("筛选条件已重置！", type = "message")
       }, error = function(e) {

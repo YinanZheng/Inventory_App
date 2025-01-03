@@ -68,7 +68,7 @@ itemFilterUI <- function(
       div(
         dateRangeInput(ns("exit_date_range"), "出库日期范围", 
                        start = Sys.Date() - 365, end = Sys.Date(), width = "100%"),
-        checkboxInput(ns("only_show_exit"), "仅显示出库", value = FALSE, width = "100%")
+        checkboxInput(ns("only_show_exit"), "仅显示出库物品", value = FALSE, width = "100%")
       )
     } else {
       NULL
@@ -78,7 +78,7 @@ itemFilterUI <- function(
       div(
         dateRangeInput(ns("sold_date_range"), "售出日期范围", 
                        start = Sys.Date() - 365, end = Sys.Date(), width = "100%"),
-        checkboxInput(ns("only_show_sold"), "仅显示售出", value = FALSE, width = "100%")
+        checkboxInput(ns("only_show_sold"), "仅显示售出物品", value = FALSE, width = "100%")
       )
     } else {
       NULL
