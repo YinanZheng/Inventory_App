@@ -2279,7 +2279,7 @@ server <- function(input, output, session) {
     })
   })
   
-  # 查询运单号逻辑
+  # 查询运单逻辑
   observeEvent(input$intl_tracking_number, {
     req(input$intl_tracking_number)  # 确保输入不为空
     
@@ -2309,6 +2309,37 @@ server <- function(input, output, session) {
     })
   })
   
+  # 删除运单逻辑
+  observeEvent(input$delete_tracking_btn, {
+    req(input$intl_tracking_number)  # 确保运单号不为空
+    
+    tracking_number <- input$intl_tracking_number  # 获取输入的运单号
+    
+    tryCatch({
+      # 从 intl_shipments 表中删除对应的运单号
+      rows_affected <- dbExecute(
+        con,
+        "DELETE FROM intl_shipments WHERE TrackingNumber = ?",
+        params = list(tracking_number)
+      )
+      
+      if (rows_affected > 0) {
+        # 如果删除成功
+        showNotification("运单已成功删除！", type = "message", duration = 5)
+        
+        # 清空输入框
+        updateTextInput(session, "intl_tracking_number", value = "")
+        updateSelectInput(session, "intl_shipping_method", selected = "空运")
+        updateNumericInput(session, "intl_total_shipping_cost", value = 0)
+      } else {
+        # 如果没有找到对应的运单号
+        showNotification("未找到该运单，删除失败！", type = "warning", duration = 5)
+      }
+    }, error = function(e) {
+      # 捕获错误并提示用户
+      showNotification(paste("删除失败：", e$message), type = "error")
+    })
+  })
   
   
   # 挂靠运单号逻辑
