@@ -901,45 +901,11 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
-          column(
-            12,
-            textInput(
-              "intl_tracking_number",
-              "国际运单号:",
-              placeholder = "请输入空运或海运运单号",
-              width = "100%"
-            )
-          ),
-          column(
-            12,
-            selectInput(
-              "intl_shipping_method",
-              "国际运输方式:",
-              choices = c("空运" = "空运", "海运" = "海运"),
-              selected = "空运",
-              width = "100%"
-            )
-          ),
-          column(
-            6,
-            actionButton(
-              "link_tracking_btn",
-              "挂靠运单",
-              icon = icon("link"),
-              class = "btn-primary",
-              style = "margin-top: 20px; width: 100%;"
-            )
-          ),
-          column(
-            6,
-            actionButton(
-              "delete_tracking_btn",
-              "删除运单",
-              icon = icon("trash"),
-              class = "btn-danger",
-              style = "margin-top: 20px; width: 100%;"
-            )
-          )
+          column(12, textInput("intl_tracking_number", "国际运单号:", placeholder = "请输入空运或海运运单号", width = "100%")),
+          column(12, selectInput("intl_shipping_method", "国际运输方式:", choices = c("空运" = "空运", "海运" = "海运"), selected = "空运", width = "100%")),
+          column(12, numericInput("intl_total_shipping_cost", "国际物流总运费 (元):", value = 0, min = 0, width = "100%")),
+          column(6, actionButton("link_tracking_btn", "挂靠运单", icon = icon("link"), class = "btn-primary", style = "margin-top: 20px; width: 100%;")),
+          column(6, actionButton("delete_tracking_btn", "解除挂靠", icon = icon("link-slash"), class = "btn-danger", style = "margin-top: 20px; width: 100%;"))
         )
       ),
       div(

@@ -171,6 +171,7 @@ server <- function(input, output, session) {
       unique_items.IntlShippingMethod,
       unique_items.IntlAirTracking,
       unique_items.IntlSeaTracking,
+      unique_items.IntlShippingCost,
       unique_items.PurchaseTime,
       unique_items.DomesticEntryTime,
       unique_items.DomesticExitTime,
