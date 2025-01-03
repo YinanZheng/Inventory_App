@@ -323,7 +323,7 @@ render_table_with_images <- function(data,
                                                     dom = 't',  # 隐藏搜索框和分页等控件
                                                     paging = FALSE,  # 禁止分页
                                                     searching = FALSE  # 禁止搜索
-                                                    )) {
+                                     )) {
   if (!is.null(image_column) && nrow(data) > 0) {
     # Render the image column
     data[[image_column]] <- render_image_column(data[[image_column]], host_url)
@@ -1033,18 +1033,14 @@ filter_unique_items_data_by_inputs <- function(
     data <- data %>% filter(as.Date(PurchaseTime) >= purchase_date_range[1], as.Date(PurchaseTime) <= purchase_date_range[2])
   }
   
-  # 动态生成 "only_show_sold" 和 "only_show_exit" 的命名空间
-  only_show_sold_id <- get_input_id(sold_date_range_id, "only_show_sold")
-  only_show_exit_id <- get_input_id(exit_date_range_id, "only_show_exit")
-  
-  
-  # 根据“仅显示售出”和“仅显示出库”的互斥逻辑更新筛选
-  if (!is.null(input[[only_show_sold_id]]) && input[[only_show_sold_id]]) {
-    # 按售出日期筛选，仅对库存状态为‘国内售出’的物品有效
-    if (!is.null(sold_date_range_id) && 
-        !is.null(input[[sold_date_range_id]]) && 
-        length(input[[sold_date_range_id]]) == 2) {
-      
+  # 按售出日期筛选，仅对库存状态为‘国内售出’的物品有效
+  if (!is.null(sold_date_range_id) && 
+      !is.null(input[[sold_date_range_id]]) && 
+      length(input[[sold_date_range_id]]) == 2) {
+    
+    only_show_sold_id <- get_input_id(sold_date_range_id, "only_show_sold")
+    
+    if (!is.null(input[[only_show_sold_id]]) && input[[only_show_sold_id]]) {
       sold_date_range <- as.Date(input[[sold_date_range_id]])
       data <- data %>%
         filter(Status == "国内售出", # 仅对状态为‘国内售出’的记录
@@ -1052,14 +1048,16 @@ filter_unique_items_data_by_inputs <- function(
                as.Date(DomesticSoldTime) <= sold_date_range[2]) %>%
         select(-DomesticExitTime) # 去掉“国内出库”列
     }
-  } 
+  }
   
-  if (!is.null(input[[only_show_exit_id]]) && input[[only_show_exit_id]]) {
-    # 按出库日期筛选，仅对库存状态为‘国内出库’的物品有效
-    if (!is.null(exit_date_range_id) && 
-        !is.null(input[[exit_date_range_id]]) && 
-        length(input[[exit_date_range_id]]) == 2) {
-      
+  # 按出库日期筛选，仅对库存状态为‘国内出库’的物品有效
+  if (!is.null(exit_date_range_id) && 
+      !is.null(input[[exit_date_range_id]]) && 
+      length(input[[exit_date_range_id]]) == 2) {
+    
+    only_show_exit_id <- get_input_id(exit_date_range_id, "only_show_exit")
+    
+    if (!is.null(input[[only_show_exit_id]]) && input[[only_show_exit_id]]) {
       exit_date_range <- as.Date(input[[exit_date_range_id]])
       data <- data %>%
         filter(Status == "国内出库", # 仅对状态为‘国内出库’的记录
@@ -1068,7 +1066,7 @@ filter_unique_items_data_by_inputs <- function(
         select(-DomesticSoldTime) # 去掉“国内售出”列
     }
   }
-
+  
   data
 }
 

@@ -100,6 +100,9 @@ itemFilterServer <- function(id, makers_items_map) {
         updateDateRangeInput(session, "sold_date_range", start = Sys.Date() - 365, end = Sys.Date())
         updateDateRangeInput(session, "exit_date_range", start = Sys.Date() - 365, end = Sys.Date())
 
+        updateCheckboxInput(session, "only_show_exit", value = FALSE)
+        updateCheckboxInput(session, "only_show_sold", value = FALSE)
+        
         showNotification("筛选条件已重置！", type = "message")
       }, error = function(e) {
         showNotification("重置输入时发生错误，请重试！", type = "error")
