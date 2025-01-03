@@ -21,17 +21,11 @@ server <- function(input, output, session) {
   # 存储目前数据库中存在的makers与item_names
   makers_items_map <- reactiveVal(NULL)
   
-  # ReactiveVal 用于存储 unique item 数据
-  unique_item_for_report <- reactiveVal()
-  
   # 声明一个 reactiveVal 用于触发unique_items_data刷新
   unique_items_data_refresh_trigger <- reactiveVal(FALSE)
   
   # 用于存储 PDF 文件路径
   select_pdf_file_path <- reactiveVal(NULL)
-  
-  # 存储条形码是否已生成的状态
-  barcode_generated <- reactiveVal(FALSE)  # 初始化为 FALSE
   
   # 初始化货架和箱子内物品（售出分页）
   shelf_items <- reactiveVal(create_empty_shelf_box())
