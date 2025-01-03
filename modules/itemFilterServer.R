@@ -81,6 +81,8 @@ itemFilterServer <- function(id, makers_items_map) {
         
         # 重置日期选择器
         updateDateRangeInput(session, "purchase_date_range", start = Sys.Date() - 365, end = Sys.Date())
+        updateDateRangeInput(session, "sold_date_range", start = Sys.Date() - 365, end = Sys.Date())
+        updateDateRangeInput(session, "exit_date_range", start = Sys.Date() - 365, end = Sys.Date())
         
         showNotification("筛选条件已重置！", type = "message")
       }, error = function(e) {

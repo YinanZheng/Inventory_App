@@ -235,7 +235,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "inbound_filter-maker",
       item_name_input_id = "inbound_filter-name",
-      date_range_input_id = "inbound_filter-purchase_date_range"
+      purchase_date_range_input_id = "inbound_filter-purchase_date_range"
     )
     
     # 将 "采购" 状态的商品放到最前
@@ -254,7 +254,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "outbound_filter-maker",
       item_name_input_id = "outbound_filter-name",
-      date_range_input_id = "outbound_filter-purchase_date_range"
+      purchase_date_range_input_id = "outbound_filter-purchase_date_range"
     )
     
     # 将 "国内入库" 状态的商品放到最前
@@ -273,7 +273,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "sold_filter-maker",
       item_name_input_id = "sold_filter-name",
-      date_range_input_id = "sold_filter-purchase_date_range"
+      purchase_date_range_input_id = "sold_filter-purchase_date_range"
     )
     
     # 将 "国内入库" 状态的商品放到最前
@@ -305,6 +305,15 @@ server <- function(input, output, session) {
     data <- unique_items_data()
     shipping_method <- input$intl_shipping_method
     
+    data <- filter_unique_items_data_by_inputs(
+      data = unique_items_data(),
+      input = input,
+      maker_input_id = "logistic_filter-maker",
+      item_name_input_id = "logistic_filter-name",
+      sold_date_range_id = "logistic_filter-sold_date_range",
+      exit_date_range_id = "logistic_filter-exit_date_range"
+    )
+    
     # 判断并根据物流方式筛选
     if (!is.null(shipping_method) && shipping_method != "全部") {
       data <- data %>% filter(IntlShippingMethod == shipping_method)
@@ -327,7 +336,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "download_maker",
       item_name_input_id = "download_item_name",
-      date_range_input_id = "download_date_range"
+      purchase_date_range_id = "download_date_range"
     )
   })
   

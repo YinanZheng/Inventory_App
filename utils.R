@@ -998,7 +998,15 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
 
 
 # 从输入数据中筛选数据
-filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item_name_input_id, date_range_input_id = NULL) {
+filter_unique_items_data_by_inputs <- function(
+    data, 
+    input, 
+    maker_input_id, 
+    item_name_input_id, 
+    purchase_date_range_id = NULL, 
+    sold_date_range_id = NULL, 
+    exit_date_range_id = NULL
+) {
   req(data)  # 确保数据不为空
   
   # 按供应商筛选
@@ -1022,9 +1030,21 @@ filter_unique_items_data_by_inputs <- function(data, input, maker_input_id, item
   }
   
   # 按采购日期筛选
-  if (!is.null(date_range_input_id) && !is.null(input[[date_range_input_id]]) && length(input[[date_range_input_id]]) == 2) {
-    date_range <- as.Date(input[[date_range_input_id]])
-    data <- data %>% filter(as.Date(PurchaseTime) >= date_range[1], as.Date(PurchaseTime) <= date_range[2])
+  if (!is.null(purchase_date_range_id) && !is.null(input[[purchase_date_range_id]]) && length(input[[purchase_date_range_id]]) == 2) {
+    purchase_date_range <- as.Date(input[[purchase_date_range_id]])
+    data <- data %>% filter(as.Date(PurchaseTime) >= purchase_date_range[1], as.Date(PurchaseTime) <= purchase_date_range[2])
+  }
+  
+  # 按售出日期筛选
+  if (!is.null(sold_date_range_id) && !is.null(input[[sold_date_range_id]]) && length(input[[sold_date_range_id]]) == 2) {
+    sold_date_range <- as.Date(input[[sold_date_range_id]])
+    data <- data %>% filter(as.Date(SoldTime) >= sold_date_range[1], as.Date(SoldTime) <= sold_date_range[2])
+  }
+  
+  # 按出库日期筛选
+  if (!is.null(exit_date_range_id) && !is.null(input[[exit_date_range_id]]) && length(input[[exit_date_range_id]]) == 2) {
+    exit_date_range <- as.Date(input[[exit_date_range_id]])
+    data <- data %>% filter(as.Date(ExitTime) >= exit_date_range[1], as.Date(ExitTime) <= exit_date_range[2])
   }
   
   data
