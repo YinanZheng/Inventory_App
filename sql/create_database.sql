@@ -50,8 +50,7 @@ CREATE TABLE `unique_items` (
   `UsSoldTime` date DEFAULT NULL,
   `ReturnTime` date DEFAULT NULL,
   `IntlShippingMethod` enum('海运','空运') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `IntlAirTracking` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
-  `IntlSeaTracking` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `IntlTracking` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `IntlShippingCost` decimal(10,2) NOT NULL,
   `OrderID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
@@ -59,9 +58,11 @@ CREATE TABLE `unique_items` (
   PRIMARY KEY (`UniqueID`),
   KEY `SKU` (`SKU`),
   KEY `fk_orders_orderid` (`OrderID`),
+  KEY `fk_intl_tracking` (`IntlTracking`),
+  CONSTRAINT `fk_intl_tracking` FOREIGN KEY (`IntlTracking`) REFERENCES `intl_shipments` (`TrackingNumber`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `fk_orderid` FOREIGN KEY (`OrderID`) REFERENCES `orders` (`OrderID`) ON DELETE SET NULL ON UPDATE CASCADE,
   CONSTRAINT `unique_items_ibfk_1` FOREIGN KEY (`SKU`) REFERENCES `inventory` (`SKU`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
 CREATE TABLE `orders` (
   `OrderID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
