@@ -2348,9 +2348,9 @@ server <- function(input, output, session) {
         "<p><strong style='color: #007BFF;'>运单号:</strong> ", tracking_number, " <span style='color: #28A745;'>(", shipping_method, ")</span></p>",
         "<p><strong style='color: #007BFF;'>总货物数量:</strong> ", summary_info$TotalQuantity[1], "</p>",
         "<p><strong style='color: #007BFF;'>总货物价值:</strong> <span style='color: #FF5733;'>￥", formatC(summary_info$TotalValue[1], format = "f", digits = 2), "</span></p>",
-        "<p><strong style='color: #007BFF;'>总国内运费:</strong> <span style='color: #FFC300;'>￥", formatC(summary_info$TotalDomesticShipping[1], format = "f", digits = 2), "</span></p>",
-        "<p><strong style='color: #007BFF;'>总国际运费:</strong> <span style='color: #C70039;'>￥", formatC(summary_info$TotalIntlShipping[1], format = "f", digits = 2), "</span></p>",
-        "<p><strong style='color: #007BFF;'>合计总价值:</strong> <span style='color: #900C3F; font-size: 18px;'>￥", formatC(total_value_sum, format = "f", digits = 2), "</span></p>",
+        "<p><strong style='color: #007BFF;'>总国内运费开销:</strong> ￥", formatC(summary_info$TotalDomesticShipping[1], format = "f", digits = 2), "</p>",
+        "<p><strong style='color: #007BFF;'>总国际运费:</strong> ￥", formatC(summary_info$TotalIntlShipping[1], format = "f", digits = 2), "</p>",
+        "<p><strong style='color: #007BFF;'>合计总价值:</strong> <span style='font-size: 18px;'>￥", formatC(total_value_sum, format = "f", digits = 2), "</span></p>",
         "</div>"
       ))
       
@@ -2365,8 +2365,7 @@ server <- function(input, output, session) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
-  
-  
+
   # 删除运单逻辑
   observeEvent(input$delete_shipment_btn, {
     req(input$intl_tracking_number)  # 确保运单号不为空
