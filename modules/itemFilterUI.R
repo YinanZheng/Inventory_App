@@ -64,32 +64,23 @@ itemFilterUI <- function(
       NULL
     },
     
-    if (use_sold_date) {
-      fluidRow(
-        column(9, 
-               dateRangeInput(ns("sold_date_range"), "售出日期范围", 
-                              start = Sys.Date() - 365, end = Sys.Date(), width = "100%")
-        ),
-        column(3,
-               checkboxInput(ns("only_show_sold"), "售出", value = FALSE, width = "100%")
-        )
+    if (use_exit_date) {
+      div(
+        dateRangeInput(ns("exit_date_range"), "出库日期范围", 
+                       start = Sys.Date() - 365, end = Sys.Date(), width = "100%"),
+        checkboxInput(ns("only_show_exit"), "仅显示出库", value = FALSE, width = "100%")
       )
     } else {
       NULL
     },
     
-    if (use_exit_date) {
-      fluidRow(
-        column(9, 
-               dateRangeInput(ns("exit_date_range"), "出库日期范围", 
-                              start = Sys.Date() - 365, end = Sys.Date(), width = "100%")
-        ),
-        column(3,
-               checkboxInput(ns("only_show_exit"), "出库", value = FALSE, width = "100%")
-        )
+    if (use_sold_date) {
+      div(
+        dateRangeInput(ns("sold_date_range"), "售出日期范围", 
+                       start = Sys.Date() - 365, end = Sys.Date(), width = "100%"),
+        checkboxInput(ns("only_show_sold"), "仅显示售出", value = FALSE, width = "100%")
       )
-    }
-    else {
+    } else {
       NULL
     }
   )
