@@ -220,7 +220,8 @@ server <- function(input, output, session) {
       item_name_input_id = "purchase_filter-name"
     )
     
-    data
+    # 将 "采购" 状态的商品放到最前
+    data %>% arrange(desc(Status == "采购"))
   })
   
   # 入库页过滤
