@@ -2763,9 +2763,9 @@ server <- function(input, output, session) {
       ) %>%
       group_by(GroupDate) %>%
       summarize(
-        TotalExpense = sum(ProductCost + DomesticShippingCost, na.rm = TRUE),
+        TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
-        ShippingCost = sum(DomesticShippingCost, na.rm = TRUE),
+        ShippingCost = sum(DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         .groups = "drop"
       )
     
