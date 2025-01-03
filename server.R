@@ -2331,10 +2331,11 @@ server <- function(input, output, session) {
   
   # 挂靠运单号逻辑
   observeEvent(input$link_tracking_btn, {
-    selected_rows <- unique_items_table_logistics_selected_row()
-    tracking_number <- input$intl_tracking_number
-    shipping_method <- input$intl_shipping_method
+    selected_rows <- unique_items_table_logistics_selected_row()  # 获取用户选择的物品行
+    tracking_number <- input$intl_tracking_number  # 获取输入的运单号
+    shipping_method <- input$intl_shipping_method  # 获取选择的物流方式
     
+    # 校验输入和选择
     if (is.null(selected_rows) || length(selected_rows) == 0) {
       showNotification("请先选择物品！", type = "error")
       return()
@@ -2346,41 +2347,76 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      # 获取选中的物品
+      # 获取选中的物品数据
       selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
       
-      # 检查运输方式一致性
+      # 检查物流方式是否一致
       inconsistent_methods <- selected_items %>%
         filter(is.na(IntlShippingMethod) | IntlShippingMethod != shipping_method)
       
       if (nrow(inconsistent_methods) > 0) {
-        showNotification("选中物品的物流方式与当前选择不符！", type = "error")
+        showNotification("选中物品的物流方式与当前选择的物流方式不一致！", type = "error")
         return()
       }
       
-      # 准备批量更新的参数
-      update_data <- selected_items %>% select(UniqueID, IntlTracking)
-      
-      # 批量更新数据库
+      # 批量更新数据库中的 `IntlTracking`
       dbBegin(con)
-      for (i in 1:nrow(update_data)) {
+      for (i in seq_len(nrow(selected_items))) {
         dbExecute(
           con,
           "UPDATE unique_items SET IntlTracking = ? WHERE UniqueID = ?",
-          params = list(update_data$IntlTracking[i], update_data$UniqueID[i])
+          params = list(tracking_number, selected_items$UniqueID[i])
         )
       }
+      
+      # 查询运单的总运费
+      shipment_info <- dbGetQuery(
+        con,
+        "SELECT TotalCost FROM intl_shipments WHERE TrackingNumber = ?",
+        params = list(tracking_number)
+      )
+      
+      if (nrow(shipment_info) == 0) {
+        showNotification("未找到该运单的总运费信息，请检查运单号是否正确。", type = "error")
+        dbRollback(con)
+        return()
+      }
+      
+      total_cost <- as.numeric(shipment_info$TotalCost)
+      
+      # 查询挂靠到该运单的所有物品
+      related_items <- dbGetQuery(
+        con,
+        "SELECT UniqueID FROM unique_items WHERE IntlTracking = ?",
+        params = list(tracking_number)
+      )
+      
+      if (nrow(related_items) == 0) {
+        showNotification("未找到挂靠到该运单的物品。", type = "error")
+        dbRollback(con)
+        return()
+      }
+      
+      # 计算平摊运费并更新到 `unique_items`
+      per_item_cost <- total_cost / nrow(related_items)
+      dbExecute(
+        con,
+        "UPDATE unique_items SET IntlShippingCost = ? WHERE IntlTracking = ?",
+        params = list(per_item_cost, tracking_number)
+      )
+      
       dbCommit(con)
       
-      # 刷新数据
+      # 刷新表格数据
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-      showNotification("运单号已成功挂靠！", type = "message")
-      
+      showNotification("运单号已成功挂靠，平摊运费已更新！", type = "message")
     }, error = function(e) {
-      dbRollback(con)  # 如果发生错误，回滚事务
+      # 回滚事务并通知用户
+      dbRollback(con)
       showNotification(paste("挂靠失败：", e$message), type = "error")
     })
   })
+  
   
   # 删除运单号逻辑
   observeEvent(input$delete_tracking_btn, {
