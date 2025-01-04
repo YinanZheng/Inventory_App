@@ -1716,6 +1716,8 @@ server <- function(input, output, session) {
         return()
       }
       
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
+      
       # 遍历箱子内物品，减库存并更新物品状态
       lapply(1:nrow(box_items()), function(i) {
         item <- box_items()[i, ]
@@ -1741,7 +1743,7 @@ server <- function(input, output, session) {
           unique_id = item$UniqueID,
           new_status = "国内售出",
           shipping_method = input$sold_shipping_method,
-          refresh_trigger = unique_items_data_refresh_trigger
+          refresh_trigger = NULL
         )
         
         # 更新订单号
@@ -1750,10 +1752,11 @@ server <- function(input, output, session) {
           unique_id = item$UniqueID,
           order_id = sanitized_order_id
         )
-      })
+      }) # end of lapply
       
-      # 更新 inventory, unique_items数据并触发 UI 刷新
+      # 刷新数据
       inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       showNotification("订单已完成售出并更新状态！", type = "message")
       
