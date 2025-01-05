@@ -2678,12 +2678,6 @@ server <- function(input, output, session) {
         )
       })
       
-      # 清空sku输入框
-      observeEvent(input$clear_query_sku_btn, {
-        # updateTextInput(session, "query_sku", value = "")
-        showNotification("已清空SKU输入框！", type = "message")
-      })
-      
       # 渲染库存状态图表
       output$inventory_status_chart <- renderPlotly({
         tryCatch({
@@ -2936,6 +2930,12 @@ server <- function(input, output, session) {
       )
   })
   
+  
+  # 清空sku输入框
+  observeEvent(input$clear_query_sku_btn, {
+    updateTextInput(session, "query_sku", value = "")
+  })
+  
   # 监听查询页选中inventory table (for SKU query and chart summary)
   observeEvent(input$filtered_inventory_table_query_rows_selected, {
     selected_row <- input$filtered_inventory_table_query_rows_selected
@@ -2944,7 +2944,7 @@ server <- function(input, output, session) {
       # 更新 SKU 输入框(生成库存图表用)
       updateTextInput(session, "query_sku", value = selected_data$SKU)
     }
-  }, ignoreInit = TRUE, ignoreNULL = TRUE)
+  })
   
   
   
