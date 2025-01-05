@@ -1,5 +1,5 @@
 orderTableServer <- function(input, output, session, column_mapping, selection = "single", data, options = list(
-  scrollY = "410px",  # 根据内容动态调整滚动高度
+  scrollY = "380px",  # 根据内容动态调整滚动高度
   scrollX = TRUE,  # 支持水平滚动
   fixedHeader = TRUE,  # 启用表头固定
   paging = TRUE,  # 启用分页
