@@ -53,7 +53,7 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
         )
     }
     table
-  })
+  }, server = TRUE)
   
   # 监听用户点击图片列
   observeEvent(input$order_table_cell_clicked, {

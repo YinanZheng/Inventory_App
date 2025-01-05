@@ -69,7 +69,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     }
     
     table
-  })
+  }, server = TRUE)
   
   # 返回选中行的索引
   reactive({
