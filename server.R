@@ -1264,14 +1264,14 @@ server <- function(input, output, session) {
       box_data <- box_items()
       box_sku_count <- sum(box_data$SKU == selected_sku)
       
-      # 扣除已移入箱子的物品
-      if (box_sku_count > 0) {
-        all_shelf_items <- all_shelf_items %>%
-          slice((box_sku_count + 1):n())  # 移除前 box_sku_count 条记录
+      # 如果箱子中已包含所有该 SKU 的物品，则直接清空货架
+      if (box_sku_count >= nrow(all_shelf_items)) {
+        shelf_items(data.frame())  # 清空货架
+      } else {
+        # 更新货架内容，移除已在箱子中的物品
+        shelf_items(all_shelf_items[-seq_len(box_sku_count), ])
       }
       
-      # 更新货架
-      shelf_items(all_shelf_items)
       showNotification(paste("已加载 SKU:", selected_sku, "的货架物品！"), type = "message")
     }, error = function(e) {
       showNotification(paste("加载货架时发生错误：", e$message), type = "error")
