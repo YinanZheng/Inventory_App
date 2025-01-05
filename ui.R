@@ -291,30 +291,34 @@ ui <- navbarPage(
                   width = "100%"
                 ),
                 tags$script(HTML("
-                $(document).on('shiny:inputchanged', function(event) {
+                  $(document).on('shiny:inputchanged', function(event) {
                     if (event.name.endsWith('inbound_sku')) {  // 确保监听的是正确的输入框
-                        let inboundSkuTimeout;  // 定义定时器
-                        let isInBoundSkuTypingFinished = false;  // 定义标志变量
-                
-                        clearTimeout(inboundSkuTimeout);  // 清除之前的定时器
-                        isInBoundSkuTypingFinished = false;  // 重置标志
-                
-                        inboundSkuTimeout = setTimeout(function() {
-                            isInBoundSkuTypingFinished = true;  // 输入完成后更新标志
-                        }, 300);  // 延迟 300 毫秒
-                
-                        // 监听回车键事件
-                        $('#inbound_sku').off('keydown').on('keydown', function(e) {
-                            if (e.which === 13) {  // 检测回车键
-                                e.preventDefault();  // 阻止默认行为
-                                if (isInBoundSkuTypingFinished) {
-                                    $('#confirm_inbound_btn').click();  // 模拟点击按钮
-                                }
-                            }
-                        });
+                      let inboundSkuTimeout;  // 定义定时器
+                      let isSystemReady = false;  // 系统是否已更新的标志
+              
+                      clearTimeout(inboundSkuTimeout);  // 清除之前的定时器
+                      isSystemReady = false;  // 重置系统更新标志
+              
+                      // 设置一个延迟等待系统更新完成
+                      inboundSkuTimeout = setTimeout(function() {
+                        Shiny.setInputValue('inbound_sku_ready', true, {priority: 'event'});  // 通知系统 SKU 输入已完成
+                        isSystemReady = true;  // 标志系统已准备好
+                      }, 300);  // 延迟 300 毫秒，模拟系统更新完成
+              
+                      // 监听回车键事件
+                      $('#inbound_sku').off('keydown').on('keydown', function(e) {
+                        if (e.which === 13) {  // 检测回车键
+                          e.preventDefault();  // 阻止默认行为
+                          if (isSystemReady) {  // 系统更新完成后才允许操作
+                            $('#confirm_inbound_btn').click();  // 模拟点击按钮
+                          } else {
+                            console.log('系统尚未准备好，回车操作被忽略');
+                          }
+                        }
+                      });
                     }
-                });
-              "))
+                  });
+                "))
               ),
               
               div(
@@ -431,29 +435,33 @@ ui <- navbarPage(
             value = FALSE  # 默认不勾选
           ),
           tags$script(HTML("
-          $(document).on('shiny:inputchanged', function(event) {
+            $(document).on('shiny:inputchanged', function(event) {
               if (event.name.endsWith('outbound_sku')) {  // 确保监听的是正确的输入框
-                  let outboundSkuTimeout;  // 定义定时器
-                  let isOutBoundSkuTypingFinished = false;  // 定义标志变量
+                let outboundSkuTimeout;  // 定义定时器
+                let isSystemReady = false;  // 系统是否已更新的标志
           
-                  clearTimeout(outboundSkuTimeout);  // 清除之前的定时器
-                  isOutBoundSkuTypingFinished = false;  // 重置标志
+                clearTimeout(outboundSkuTimeout);  // 清除之前的定时器
+                isSystemReady = false;  // 重置系统更新标志
           
-                  outboundSkuTimeout = setTimeout(function() {
-                      isOutBoundSkuTypingFinished = true;  // 输入完成后更新标志
-                  }, 300);  // 延迟 300 毫秒
+                // 设置一个延迟等待系统更新完成
+                outboundSkuTimeout = setTimeout(function() {
+                  Shiny.setInputValue('outbound_sku_ready', true, {priority: 'event'});  // 通知系统 SKU 输入已完成
+                  isSystemReady = true;  // 标志系统已准备好
+                }, 300);  // 延迟 300 毫秒，模拟系统更新完成
           
-                  // 监听回车键事件
-                  $('#outbound_sku').off('keydown').on('keydown', function(e) {
-                      if (e.which === 13) {  // 检测回车键
-                          e.preventDefault();  // 阻止默认行为
-                          if (isOutBoundSkuTypingFinished) {
-                              $('#confirm_outbound_btn').click();  // 模拟点击按钮
-                          }
-                      }
-                  });
+                // 监听回车键事件
+                $('#outbound_sku').off('keydown').on('keydown', function(e) {
+                  if (e.which === 13) {  // 检测回车键
+                    e.preventDefault();  // 阻止默认行为
+                    if (isSystemReady) {  // 系统更新完成后才允许操作
+                      $('#confirm_outbound_btn').click();  // 模拟点击按钮
+                    } else {
+                      console.log('系统尚未准备好，回车操作被忽略');
+                    }
+                  }
+                });
               }
-          });
+            });
           ")),
           
           tags$div(
