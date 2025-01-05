@@ -1272,7 +1272,12 @@ server <- function(input, output, session) {
       }
       
       # 更新货架数据，移除已移入箱子的物品
-      updated_shelf_items <- all_shelf_items[-seq_len(box_sku_count), ]
+      if (box_sku_count == 0) {
+        updated_shelf_items <- all_shelf_items
+      } else {
+        updated_shelf_items <- all_shelf_items[-seq_len(box_sku_count), ]
+      }
+      
       shelf_items(updated_shelf_items)
       showNotification(paste("已加载 SKU:", selected_sku, "的货架物品！"), type = "message")
     }, error = function(e) {
