@@ -303,7 +303,7 @@ ui <- navbarPage(
                       inboundSkuTimeout = setTimeout(function() {
                         Shiny.setInputValue('inbound_sku_ready', true, {priority: 'event'});  // 通知系统 SKU 输入已完成
                         isSystemReady = true;  // 标志系统已准备好
-                      }, 300);  // 延迟 300 毫秒，模拟系统更新完成
+                      }, 1000);  // 延迟 300 毫秒，模拟系统更新完成
               
                       // 监听回车键事件
                       $('#inbound_sku').off('keydown').on('keydown', function(e) {
