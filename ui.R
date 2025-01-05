@@ -299,23 +299,29 @@ ui <- navbarPage(
                       clearTimeout(inboundSkuTimeout);  // 清除之前的定时器
                       isSystemReady = false;  // 重置系统更新标志
                 
-                      // 设置一个延迟等待系统更新完成
-                      inboundSkuTimeout = setTimeout(function() {
-                        Shiny.setInputValue('inbound_sku_ready', true, {priority: 'event'});  // 通知系统 SKU 输入已完成
-                        isSystemReady = true;  // 标志系统已准备好
-                      }, 1000);  // 延迟 1000 毫秒
-                
-                      // 临时禁用回车键事件，直到延迟完成
+                      // 屏蔽回车事件，防止延迟期间触发
                       $('#inbound_sku').off('keydown').on('keydown', function(e) {
                         if (e.which === 13) {  // 检测回车键
                           e.preventDefault();  // 阻止默认行为
-                          if (isSystemReady) {
-                            $('#confirm_inbound_btn').click();  // 模拟点击按钮
-                          } else {
-                            console.log('系统尚未准备好，回车操作被忽略');
-                          }
+                          console.log('回车被忽略，因为系统尚未准备好');
                         }
                       });
+                
+                      // 设置延迟等待系统更新完成
+                      inboundSkuTimeout = setTimeout(function() {
+                        isSystemReady = true;  // 标志系统已准备好
+                        Shiny.setInputValue('inbound_sku_ready', true, {priority: 'event'});  // 通知系统 SKU 输入已完成
+                
+                        // 延迟完成后重新绑定回车事件
+                        $('#inbound_sku').off('keydown').on('keydown', function(e) {
+                          if (e.which === 13) {  // 检测回车键
+                            e.preventDefault();  // 阻止默认行为
+                            if (isSystemReady) {
+                              $('#confirm_inbound_btn').click();  // 模拟点击按钮
+                            }
+                          }
+                        });
+                      }, 1000);  // 延迟 1000 毫秒
                     }
                   });
                 "))
