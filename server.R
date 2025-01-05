@@ -3132,7 +3132,7 @@ server <- function(input, output, session) {
   )
   
   
-  # 下载物品汇明细表为 Excel
+  # 下载物品明细表为 Excel
   output$download_summary_xlsx <- downloadHandler(
     filename = function() {
       paste("物品明细表-", format(Sys.time(), "%Y%m%d-%H%M%S", tz = "Asia/Shanghai"), ".xlsx", sep = "")
