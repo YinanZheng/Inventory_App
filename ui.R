@@ -292,31 +292,32 @@ ui <- navbarPage(
                 ),
                 tags$script(HTML("
                   $(document).on('shiny:inputchanged', function(event) {
-                    if (event.name.endsWith('inbound_sku')) {  // 确保监听的是正确的输入框
+                    if (event.name.endsWith('inbound_sku')) {  // 仅监听 inbound_sku
                       let inboundSkuTimeout;  // 定义定时器
-                      let isSystemReady = false;  // 系统是否已更新的标志
+                      let isSystemReady = false;  // 系统状态标志，默认未准备好
                 
                       clearTimeout(inboundSkuTimeout);  // 清除之前的定时器
-                      isSystemReady = false;  // 重置系统更新标志
+                      isSystemReady = false;  // 重置系统状态
                 
-                      // 屏蔽回车事件，防止延迟期间触发
+                      // 禁用回车逻辑
                       $('#inbound_sku').off('keydown').on('keydown', function(e) {
                         if (e.which === 13) {  // 检测回车键
                           e.preventDefault();  // 阻止默认行为
-                          console.log('回车被忽略，因为系统尚未准备好');
+                          console.log('回车被屏蔽，因为系统尚未准备好');
                         }
                       });
                 
-                      // 设置延迟等待系统更新完成
+                      // 延迟 1000ms 后启用回车逻辑
                       inboundSkuTimeout = setTimeout(function() {
                         isSystemReady = true;  // 标志系统已准备好
-                        Shiny.setInputValue('inbound_sku_ready', true, {priority: 'event'});  // 通知系统 SKU 输入已完成
+                        Shiny.setInputValue('inbound_sku_ready', true, {priority: 'event'});  // 通知服务器端
                 
-                        // 延迟完成后重新绑定回车事件
+                        // 解除屏蔽并绑定新的回车逻辑
                         $('#inbound_sku').off('keydown').on('keydown', function(e) {
                           if (e.which === 13) {  // 检测回车键
                             e.preventDefault();  // 阻止默认行为
                             if (isSystemReady) {
+                              console.log('回车触发操作');
                               $('#confirm_inbound_btn').click();  // 模拟点击按钮
                             }
                           }
