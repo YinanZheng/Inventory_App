@@ -1579,7 +1579,7 @@ server <- function(input, output, session) {
       
       # 更新箱子内容
       current_box <- box_items()
-      box_items(bind_rows(current_box, selected_item))
+      box_items(bind_rows(selected_item, current_box))
       
       # 更新货架上的物品，移除已选的
       updated_shelf <- shelf_data[-selected_row, ]
@@ -1651,7 +1651,7 @@ server <- function(input, output, session) {
       
       # 更新箱子内容
       current_box <- box_items()
-      box_items(bind_rows(current_box, selected_item))
+      box_items(bind_rows(selected_item, current_box))
       
       # 更新货架上的物品
       updated_shelf <- all_shelf_items[-(1:(box_sku_count + 1)), ]  # 移除已入箱的物品
