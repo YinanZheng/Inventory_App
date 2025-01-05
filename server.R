@@ -2680,7 +2680,7 @@ server <- function(input, output, session) {
       
       # 清空sku输入框
       observeEvent(input$clear_query_sku, {
-        updateTextInput(session, "query_sku", value = "")
+        # updateTextInput(session, "query_sku", value = "")
         showNotification("已清空SKU输入框！", type = "message")
       })
       
