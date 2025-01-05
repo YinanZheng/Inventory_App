@@ -289,7 +289,12 @@ ui <- navbarPage(
                   label = NULL, 
                   placeholder = "请扫描或输入SKU",
                   width = "100%"
-                )
+                ),
+                checkboxInput(
+                  "auto_inbound",  # 勾选框的 inputId
+                  label = "自动入库（瑕疵信息不会采用）", 
+                  value = FALSE  # 默认不勾选
+                ),
               ),
               
               div(
