@@ -2944,7 +2944,7 @@ server <- function(input, output, session) {
       # 更新 SKU 输入框(生成库存图表用)
       updateTextInput(session, "query_sku", value = selected_data$SKU)
     }
-  })
+  }, ignoreInit = TRUE, ignoreNULL = TRUE)
   
   
   
