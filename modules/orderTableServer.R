@@ -3,7 +3,7 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
   scrollX = TRUE,  # 支持水平滚动
   fixedHeader = TRUE,  # 启用表头固定
   paging = TRUE,  # 启用分页
-  pageLength = 5,      # 每页显示5条
+  pageLength = 30,      # 每页显示30条
   dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
   searching = FALSE  # 支持搜索
 )) {

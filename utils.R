@@ -344,7 +344,8 @@ render_table_with_images <- function(data,
       escape = FALSE,  # Disable HTML escaping to allow rendering of images
       selection = selection,
       rownames = FALSE,
-      options = options
+      options = options,
+      server = TRUE
     ),
     column_names = updated_column_names
   )

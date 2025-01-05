@@ -3,7 +3,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
   scrollX = TRUE,  # 支持水平滚动
   fixedHeader = TRUE,  # 启用表头固定
   paging = TRUE,  # 启用分页
-  pageLength = 11,      # 每页显示10条
+  pageLength = 30,      # 每页显示30条
   dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
   searching = FALSE  # 支持搜索
 )) {
