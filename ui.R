@@ -953,8 +953,7 @@ ui <- navbarPage(
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("query_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
-          actionButton("clear_query_sku", NULL, icon = icon("eraser"), class = "btn btn-warning", style = "margin-left: 10px; width: 40px; height: 38px;"
-          )
+          actionButton("clear_query_sku", NULL, icon = icon("eraser"), class = "btn btn-warning")
         )
       ),
       div(
