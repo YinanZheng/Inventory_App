@@ -1266,7 +1266,7 @@ server <- function(input, output, session) {
       
       # 检查是否所有物品已移入箱子
       if (box_sku_count >= nrow(all_shelf_items)) {
-        shelf_items(data.frame())  # 清空货架
+        shelf_items(create_empty_shelf_box())  # 清空货架
         showNotification("该 SKU 的所有物品已移入箱子，货架已清空！", type = "message")
         return()
       }
