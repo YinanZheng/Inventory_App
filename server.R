@@ -131,7 +131,7 @@ server <- function(input, output, session) {
     }
     
     # 按商品名称筛选
-    if (!is.null(input[["query_filter-name"]]) && input[[query_filter-name]] != "") {
+    if (!is.null(input[["query_filter-name"]]) && input[["query_filter-name"]] != "") {
       result <- result %>% filter(ItemName == input[[query_filter-name]])
     }
     
