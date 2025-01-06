@@ -291,6 +291,22 @@ server <- function(input, output, session) {
     data %>% arrange(desc(Status == "国内入库"))
   })
   
+  # 物品管理页过滤
+  filtered_unique_items_data_manage <- reactive({
+    req(unique_items_data())
+    data <- unique_items_data()
+    
+    data <- filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "manage_filter-maker",
+      item_name_input_id = "manage_filter-name",
+      purchase_date_range_id = "manage_filter-purchase_date_range"
+    )
+    
+    data
+  })
+  
   # 瑕疵品管理页过滤
   filtered_unique_items_data_defect <- reactive({
     req(unique_items_data())
@@ -417,7 +433,7 @@ server <- function(input, output, session) {
                                                          DomesticEntryTime = "入库日期",
                                                          DomesticExitTime = "出库日期",
                                                          DomesticSoldTime = "售出日期")
-                                                       ), selection = "multiple", data = unique_items_data)
+                                                       ), selection = "multiple", data = filtered_unique_items_data_manage)
   
   unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect",
                                                        column_mapping <- c(common_columns, list(
@@ -2020,34 +2036,34 @@ server <- function(input, output, session) {
     
     tryCatch({
       # 获取选中物品的 UniqueID 和 SKU
-      selected_items <- unique_items_data()[selected_rows, ]
+      selected_items <- filtered_unique_items_data_manage()[selected_rows, ]
       
       dbBegin(con) # 开启事务
       
       for (i in seq_len(nrow(selected_items))) {
         # 删除 unique_items 中对应的记录
         dbExecute(con, "
-      DELETE FROM unique_items
-      WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
-        
+          DELETE FROM unique_items
+          WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
+            
         # 重新计算平均 ProductCost 和 ShippingCost
         sku <- selected_items$SKU[i]
         
         remaining_items <- dbGetQuery(con, "
-      SELECT AVG(ProductCost) AS AvgProductCost, 
-             AVG(DomesticShippingCost) AS AvgShippingCost,
-             COUNT(*) AS RemainingCount
-      FROM unique_items
-      WHERE SKU = ?", params = list(sku))
+                            SELECT AVG(ProductCost) AS AvgProductCost, 
+                                   AVG(DomesticShippingCost) AS AvgShippingCost,
+                                   COUNT(*) AS RemainingCount
+                            FROM unique_items
+                            WHERE SKU = ?", params = list(sku))
         
         if (remaining_items$RemainingCount[1] > 0) {
           # 更新 inventory 表的平均单价和库存数量
           dbExecute(con, "
-        UPDATE inventory
-        SET Quantity = ?, 
-            ProductCost = ?, 
-            ShippingCost = ?
-        WHERE SKU = ?", 
+            UPDATE inventory
+            SET Quantity = ?, 
+                ProductCost = ?, 
+                ShippingCost = ?
+            WHERE SKU = ?", 
                     params = list(
                       remaining_items$RemainingCount[1],
                       remaining_items$AvgProductCost[1],
@@ -2057,8 +2073,8 @@ server <- function(input, output, session) {
         } else {
           # 如果没有剩余记录，删除 inventory 表中的该 SKU
           dbExecute(con, "
-        DELETE FROM inventory
-        WHERE SKU = ?", params = list(sku))
+            DELETE FROM inventory
+            WHERE SKU = ?", params = list(sku))
         }
       }
       

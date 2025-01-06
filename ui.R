@@ -703,6 +703,10 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
         
+        itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
+        
+        tags$hr(), # 分隔线
+        
         div(
           class = "card shadow-sm", # 添加卡片样式
           style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
