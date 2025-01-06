@@ -1826,7 +1826,7 @@ server <- function(input, output, session) {
       # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内入库", "美国入库" 均可)
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == scanned_sku, Status %in% c("国内入库", "美国入库"), Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
+        select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
       # 如果货架中没有符合条件的物品，提示错误
