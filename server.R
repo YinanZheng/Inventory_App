@@ -230,8 +230,12 @@ server <- function(input, output, session) {
       item_name_input_id = "purchase_filter-name"
     )
     
-    # 将 "采购" 状态的商品放到最前
-    data %>% arrange(desc(Status == "采购"))
+    # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
+    data <- data %>%
+      arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
+      distinct(SKU, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
+    
+    data
   })
   
   # 入库页过滤
