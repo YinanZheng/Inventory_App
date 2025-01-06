@@ -599,7 +599,14 @@ ui <- navbarPage(
                            label = NULL,  # 不显示标签
                            placeholder = "扫码入箱",  # 提示文字
                            width = "300px"  # 控制输入框宽度
-                         )
+                         ),
+                         tags$style(HTML("
+                          #sku_to_box {
+                            height: 30px !important;  /* 调整高度 */
+                            font-size: 12px;         /* 可同时调整字体大小 */
+                            padding: 5px;            /* 调整内边距 */
+                          }
+                        "))
                        ),
                        DTOutput("box_table"),  # 显示已放入箱子的物品
                        
