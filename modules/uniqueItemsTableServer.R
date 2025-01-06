@@ -22,51 +22,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     
     table <- datatable_and_names$datatable
     
-    # 动态应用样式
-    if ("库存态" %in% column_names) {
-      table <- table %>%
-        formatStyle(
-          "库存态",
-          backgroundColor = styleEqual(
-            c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国售出", "美国发货", "退货"),
-            c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#869bb8", "#faf0d4", "red")
-          ),
-          color = styleEqual(
-            c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国售出", "美国发货", "退货"),
-            c("black", "black", "black", "white", "white", "black", "black", "black", "white")
-          )
-        )
-    }
-    
-    if ("瑕疵态" %in% column_names) {
-      table <- table %>%
-        formatStyle(
-          "瑕疵态",
-          backgroundColor = styleEqual(
-            c("未知", "无瑕", "瑕疵", "修复"),
-            c("darkgray", "green", "red", "orange")
-          ),
-          color = styleEqual(
-            c("未知", "无瑕", "瑕疵", "修复"),
-            c("black", "white", "white", "white")
-          )
-        )
-    }
-    
-    if ("国际运输" %in% column_names) {
-      table <- table %>%
-        formatStyle(
-          "国际运输",
-          backgroundColor = styleEqual(
-            c("空运", "海运"),
-            c("lightblue", "darkblue")
-          ),
-          color = styleEqual(
-            c("空运", "海运"),
-            c("black", "white")
-          )
-        )
-    }
+    table <- apply_dynamic_styles(table, column_names)
     
     table
   }, server = TRUE)
