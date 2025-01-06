@@ -1646,11 +1646,11 @@ server <- function(input, output, session) {
   output$shelf_table <- renderDT({
     render_table_with_images(shelf_items(), 
                              column_mapping = list(
-                               SKU = "SKU",
+                               SKU = "条形码",
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
-                               Status = "库存状",
-                               Defect = "物品状",
+                               Status = "库存态",
+                               Defect = "物品态",
                                ProductCost = "单价"
                              ), 
                              selection = "single",
@@ -1670,11 +1670,11 @@ server <- function(input, output, session) {
   output$box_table <- renderDT({
     render_table_with_images(box_items(), 
                              column_mapping = list(
-                               SKU = "SKU",
+                               SKU = "条形码",
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
-                               Status = "库存状",
-                               Defect = "物品状",
+                               Status = "库存态",
+                               Defect = "物品态",
                                ProductCost = "单价"
                              ), 
                              selection = "single",
