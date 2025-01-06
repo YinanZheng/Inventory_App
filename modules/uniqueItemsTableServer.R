@@ -23,10 +23,10 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     table <- datatable_and_names$datatable
     
     # 动态应用样式
-    if ("库存状" %in% column_names) {
+    if ("库存态" %in% column_names) {
       table <- table %>%
         formatStyle(
-          "库存状",
+          "库存态",
           backgroundColor = styleEqual(
             c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国售出", "美国发货", "退货"),
             c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#869bb8", "#faf0d4", "red")
@@ -38,10 +38,10 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
         )
     }
     
-    if ("物品状" %in% column_names) {
+    if ("物品态" %in% column_names) {
       table <- table %>%
         formatStyle(
-          "物品状",
+          "物品态",
           backgroundColor = styleEqual(
             c("未知", "无瑕", "瑕疵", "修复"),
             c("darkgray", "green", "red", "orange")
