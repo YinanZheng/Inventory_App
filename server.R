@@ -767,19 +767,27 @@ server <- function(input, output, session) {
     image_purchase$reset()
   })
   
-  # 动态更新按钮文本
+  # 动态更新按钮文本和图标
   output$add_update_button_ui <- renderUI({
     # 检查SKU是否存在于added_items()
     sku_input <- input$new_sku
     if (is.null(sku_input) || sku_input == "") {
       label <- "添加" # 默认显示“添加”
+      icon_type <- "plus" # 默认图标为“添加”图标
     } else {
       sku_exists <- sku_input %in% added_items()$SKU
-      label <- ifelse(sku_exists, "更新", "添加")
+      if (sku_exists) {
+        label <- "更新" # SKU已存在时显示“更新”
+        icon_type <- "edit" # 图标显示为“编辑”
+      } else {
+        label <- "添加" # SKU不存在时显示“添加”
+        icon_type <- "plus" # 图标显示为“添加”
+      }
     }
     
     # 创建动态按钮
-    actionButton("add_btn", label, width = "100%", icon = icon("pen"), 
+    actionButton("add_btn", label, width = "100%", 
+                 icon = icon(icon_type), 
                  style = "background-color: #006400; color: white;")
   })
   
@@ -1817,10 +1825,6 @@ server <- function(input, output, session) {
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
   })
-  
-  
-  
-  
   
   # 确认售出
   observeEvent(input$confirm_order_btn, {
