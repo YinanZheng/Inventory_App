@@ -1596,7 +1596,7 @@ server <- function(input, output, session) {
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
                                Status = "库存状",
-                               Status = "物品状",
+                               Defect = "物品状",
                                ProductCost = "单价"
                              ), 
                              selection = "single",
@@ -1617,7 +1617,7 @@ server <- function(input, output, session) {
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
                                Status = "库存状",
-                               Status = "物品状",
+                               Defect = "物品状",
                                ProductCost = "单价"
                              ), 
                              selection = "single",
