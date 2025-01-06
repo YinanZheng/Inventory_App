@@ -606,8 +606,8 @@ ui <- navbarPage(
                             font-size: 15px;          /* 调整字体大小 */
                             padding: 5px;             /* 调整内边距 */
                           }
-                          #sku_to_box_container.form-group {
-                            margin-bottom: 0 !important;  /* 移除外层 form-group 的下边距 */
+                          #sku_to_box ~ .form-group.shiny-input-container {
+                            margin-bottom: 0 !important;
                           }
                         "))
                        ),
