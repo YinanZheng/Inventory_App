@@ -230,16 +230,16 @@ server <- function(input, output, session) {
       item_name_input_id = "purchase_filter-name"
     )
     
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    # 统计 SKU, Status, 和 PurchaseTime 下的数量
     data <- data %>%
-      group_by(SKU, PurchaseTime) %>%
+      group_by(SKU, Status, PurchaseTime) %>%
       mutate(ItemCount = n()) %>%  # 统计数量
       ungroup()
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
       arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
-      distinct(SKU, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
+      distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
   })
@@ -259,16 +259,16 @@ server <- function(input, output, session) {
       purchase_date_range_id = "inbound_filter-purchase_date_range"
     )
     
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
+    # 统计 SKU, Status, 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
-      group_by(SKU, PurchaseTime) %>%
-      mutate(ItemCount = sum(Status %in% c("采购", "国内入库") & Defect != "瑕疵")) %>%  # 条件统计数量
+      group_by(SKU, Status, PurchaseTime) %>%
+      mutate(ItemCount = sum(Defect != "瑕疵")) %>%  # 条件统计数量
       ungroup()
     
-    # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
+    # 去重：仅保留每个 SKU 和组合的第一条记录
     data <- data %>%
       arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
-      distinct(SKU, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
+      distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
   })
@@ -288,16 +288,16 @@ server <- function(input, output, session) {
       purchase_date_range_id = "outbound_filter-purchase_date_range"
     )
     
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
+    # 统计 SKU, Status, 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
-      group_by(SKU, PurchaseTime) %>%
-      mutate(ItemCount = sum(Status %in% c("国内入库", "国内出库") & Defect != "瑕疵")) %>%  # 条件统计数量
+      group_by(SKU, Status, PurchaseTime) %>%
+      mutate(ItemCount = sum(Defect != "瑕疵")) %>%  # 条件统计数量
       ungroup()
     
-    # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
+    # 去重：仅保留每个 SKU 和组合的第一条记录
     data <- data %>%
       arrange(desc(Status == "国内入库"), desc(PurchaseTime)) %>%  # 按需求排序
-      distinct(SKU, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
+      distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
   })
@@ -317,26 +317,28 @@ server <- function(input, output, session) {
       purchase_date_range_id = "sold_filter-purchase_date_range"
     )
     
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    # 统计 SKU, Status, 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
-      group_by(SKU, PurchaseTime) %>%
+      group_by(SKU, Status, PurchaseTime) %>%
       mutate(ItemCount = n()) %>%  # 统计数量
       ungroup()
     
     # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
-      group_by(SKU, PurchaseTime) %>%
-      mutate(ItemCount = sum(Status %in% c("国内入库", "美国入库", "美国调货", "国内售出") & Defect != "瑕疵")) %>%  # 条件统计数量
+      group_by(SKU, Status, urchaseTime) %>%
+      mutate(ItemCount = sum(Defect != "瑕疵")) %>%  # 条件统计数量
       ungroup()
     
     
-    # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
+    # 去重：仅保留每个 SKU 和组合的第一条记录
     data <- data %>%
       arrange(desc(Status == "国内入库"), desc(PurchaseTime)) %>%  # 按需求排序
-      distinct(SKU, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
+      distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
   })
+  
+  ##########################################################
   
   # 物品管理页过滤
   filtered_unique_items_data_manage <- reactive({
@@ -463,7 +465,13 @@ server <- function(input, output, session) {
   
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
-                                                         column_mapping <- c(common_columns, list(
+                                                         column_mapping <- c(list(
+                                                           SKU = "条形码",
+                                                           ItemName = "商品名",
+                                                           ItemImagePath = "商品图",
+                                                           Maker = "供应商",
+                                                           ProductCost = "单价",
+                                                           Status = "库存状",
                                                            PurchaseTime = "采购日",
                                                            ItemCount = "数量")
                                                          ), data = filtered_unique_items_data_purchase)
