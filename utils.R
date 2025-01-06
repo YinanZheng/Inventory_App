@@ -941,6 +941,13 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       order_status <- "预定"
     }
     
+    # 检查发货箱中的物品是否含有“美国入库”状态
+    if (nrow(box_items()) > 0) {
+      if ("美国入库" %in% box_items()$Status) {
+        order_status <- "调货"  # 如果包含“美国入库”物品，状态改为“调货”
+      }
+    }
+    
     # 如果为预订单，生成或更新供应商备注
     if (is_preorder && !is.null(preorder_supplier)) {
       supplier_prefix <- "【供应商】"
