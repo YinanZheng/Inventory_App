@@ -251,7 +251,7 @@ server <- function(input, output, session) {
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
-      arrange(Status == "采购", desc(PurchaseTime)) %>%  # 按需求排序
+      arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
       distinct(SKU, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
