@@ -1707,50 +1707,55 @@ server <- function(input, output, session) {
   
   # 渲染货架
   output$shelf_table <- renderDT({
-    render_table_with_images(shelf_items(), 
-                             column_mapping = list(
-                               SKU = "条形码",
-                               ItemImagePath = "商品图",
-                               ItemName = "商品名",
-                               Status = "库存态",
-                               Defect = "物品态",
-                               ProductCost = "单价"
-                             ), 
-                             selection = "single",
-                             image_column = "ItemImagePath",
-                             options = list(
-                               scrollY = "278px",  # 根据内容动态调整滚动高度
-                               scrollX = TRUE,  # 支持水平滚动
-                               fixedHeader = TRUE,  # 启用表头固定
-                               paging = TRUE,  # 启用分页
-                               pageLength = 30,      # 每页显示30条
-                               dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
-                               searching = FALSE  # 禁止搜索
-                             ))$datatable
+    datatable_and_names <- render_table_with_images(shelf_items(), 
+                                                    column_mapping = list(
+                                                      SKU = "条形码",
+                                                      ItemImagePath = "商品图",
+                                                      ItemName = "商品名",
+                                                      Status = "库存态",
+                                                      Defect = "瑕疵态",
+                                                      ProductCost = "单价"
+                                                    ), 
+                                                    selection = "single",
+                                                    image_column = "ItemImagePath",
+                                                    options = list(
+                                                      scrollY = "278px",  # 根据内容动态调整滚动高度
+                                                      scrollX = TRUE,  # 支持水平滚动
+                                                      fixedHeader = TRUE,  # 启用表头固定
+                                                      paging = TRUE,  # 启用分页
+                                                      pageLength = 30,      # 每页显示30条
+                                                      dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
+                                                      searching = FALSE  # 禁止搜索
+                                                    ))
+    
+    table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
+    table
   })
   
   # 渲染箱子
   output$box_table <- renderDT({
-    render_table_with_images(box_items(), 
-                             column_mapping = list(
-                               SKU = "条形码",
-                               ItemImagePath = "商品图",
-                               ItemName = "商品名",
-                               Status = "库存态",
-                               Defect = "物品态",
-                               ProductCost = "单价"
-                             ), 
-                             selection = "single",
-                             image_column = "ItemImagePath",
-                             options = list(
-                               scrollY = "220px",  # 根据内容动态调整滚动高度
-                               scrollX = TRUE,  # 支持水平滚动
-                               fixedHeader = TRUE,  # 启用表头固定
-                               paging = TRUE,  # 启用分页
-                               pageLength = 30,      # 每页显示30条
-                               dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
-                               searching = FALSE  # 禁止搜索
-                             ))$datatable
+    datatable_and_names <- render_table_with_images(box_items(), 
+                                                    column_mapping = list(
+                                                      SKU = "条形码",
+                                                      ItemImagePath = "商品图",
+                                                      ItemName = "商品名",
+                                                      Status = "库存态",
+                                                      Defect = "瑕疵态",
+                                                      ProductCost = "单价"
+                                                    ), 
+                                                    selection = "single",
+                                                    image_column = "ItemImagePath",
+                                                    options = list(
+                                                      scrollY = "220px",  # 根据内容动态调整滚动高度
+                                                      scrollX = TRUE,  # 支持水平滚动
+                                                      fixedHeader = TRUE,  # 启用表头固定
+                                                      paging = TRUE,  # 启用分页
+                                                      pageLength = 30,      # 每页显示30条
+                                                      dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
+                                                      searching = FALSE  # 禁止搜索
+                                                    ))
+    table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
+    table
   })
   
   # 渲染货架物品数量

@@ -16,14 +16,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
       image_column = "ItemImagePath",
       options = options
     )
-    
-    # 获取数据列名
-    column_names <- datatable_and_names$column_names
-    
-    table <- datatable_and_names$datatable
-    
-    table <- apply_dynamic_styles(table, column_names)
-    
+    table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
     table
   }, server = TRUE)
   
