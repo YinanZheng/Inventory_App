@@ -38,10 +38,10 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
         )
     }
     
-    if ("物品态" %in% column_names) {
+    if ("瑕疵态" %in% column_names) {
       table <- table %>%
         formatStyle(
-          "物品态",
+          "瑕疵态",
           backgroundColor = styleEqual(
             c("未知", "无瑕", "瑕疵", "修复"),
             c("darkgray", "green", "red", "orange")

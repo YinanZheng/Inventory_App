@@ -472,9 +472,9 @@ server <- function(input, output, session) {
   
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
                                                         column_mapping <- c(common_columns, list(
-                                                          Defect = "物品状",
                                                           PurchaseTime = "采购日",
                                                           DomesticEntryTime = "入库日",
+                                                          Defect = "瑕疵态",
                                                           ItemCount = "数量")
                                                         ), selection = "multiple", data = filtered_unique_items_data_inbound)
   
@@ -507,7 +507,7 @@ server <- function(input, output, session) {
                                                        column_mapping <- c(common_columns, list(
                                                          PurchaseTime = "采购日",
                                                          DomesticEntryTime = "入库日",
-                                                         Defect = "物品态",
+                                                         Defect = "瑕疵态",
                                                          DefectNotes = "瑕疵备注")
                                                        ), selection = "multiple", data = filtered_unique_items_data_defect)
   
@@ -3166,22 +3166,22 @@ server <- function(input, output, session) {
         MinorType = "小类",
         ProductCost = "单价",
         DomesticShippingCost = "平摊运费",
-        PurchaseTime = "采购日期",
-        Status = "库存状态",
-        Defect = "物品状态"
+        PurchaseTime = "采购日",
+        Status = "库存态",
+        Defect = "物品态"
       ))
       
       # 按 SKU 计算全局库存统计
       sku_inventory_stats <- data %>%
         group_by(`条形码`) %>%
         summarize(
-          总剩余库存数 = sum(`库存状态` %in% c("国内入库", "国内出库", "美国入库")),
-          国内库存数 = sum(`库存状态` == "国内入库"),
-          在途库存数 = sum(`库存状态` == "国内出库"),
-          美国库存数 = sum(`库存状态` == "美国入库"),
-          无瑕 = sum(`物品状态` == "无瑕"),
-          瑕疵 = sum(`物品状态` == "瑕疵"),
-          修复 = sum(`物品状态` == "修复"),
+          总剩余库存数 = sum(`库存态` %in% c("国内入库", "国内出库", "美国入库")),
+          国内库存数 = sum(`库存态` == "国内入库"),
+          在途库存数 = sum(`库存态` == "国内出库"),
+          美国库存数 = sum(`库存态` == "美国入库"),
+          无瑕 = sum(`物品态` == "无瑕"),
+          瑕疵 = sum(`物品态` == "瑕疵"),
+          修复 = sum(`物品态` == "修复"),
           .groups = "drop"
         )
       

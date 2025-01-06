@@ -62,7 +62,7 @@ common_columns <<- list(
   ProductCost = "单价",
   # DomesticShippingCost = "平摊运费",
   Status = "库存态"
-  # Defect = "物品态"
+  # Defect = "瑕疵态"
 )
 
 # 定义需要记录时间的状态
