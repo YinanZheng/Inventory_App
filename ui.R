@@ -606,9 +606,6 @@ ui <- navbarPage(
                             font-size: 15px;          /* 调整字体大小 */
                             padding: 5px;             /* 调整内边距 */
                           }
-                          #sku_to_box ~ .form-group.shiny-input-container {
-                            margin-bottom: 0 !important;
-                          }
                         "))
                        ),
                        DTOutput("box_table"),  # 显示已放入箱子的物品
