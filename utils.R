@@ -270,6 +270,8 @@ create_empty_shelf_box <- function() {
     SKU = character(),
     UniqueID = character(),
     ItemName = character(),
+    Status = character(),
+    Defect = character(),
     ProductCost = numeric(),
     ItemImagePath = character(),
     stringsAsFactors = FALSE

@@ -1314,7 +1314,7 @@ server <- function(input, output, session) {
       # 从 unique_items_data 获取符合条件的货架物品 ("国内入库", "美国入库" 均可)
       all_shelf_items <- unique_items_data() %>%
         filter(SKU == selected_sku, Status %in% c("国内入库", "美国入库"), Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, ProductCost, ItemImagePath) %>%
+        select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
       if (nrow(all_shelf_items) == 0) {
@@ -1595,6 +1595,8 @@ server <- function(input, output, session) {
                                SKU = "SKU",
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
+                               Status = "库存状",
+                               Status = "物品状",
                                ProductCost = "单价"
                              ), 
                              selection = "single",
@@ -1614,6 +1616,8 @@ server <- function(input, output, session) {
                                SKU = "SKU",
                                ItemImagePath = "图片",
                                ItemName = "商品名称",
+                               Status = "库存状",
+                               Status = "物品状",
                                ProductCost = "单价"
                              ), 
                              selection = "single",
