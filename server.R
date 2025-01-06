@@ -1870,12 +1870,22 @@ server <- function(input, output, session) {
           stop("库存调整失败")
         }
         
+        # 根据当前状态决定新的状态
+        current_status <- item$Status
+        new_status <- ifelse(current_status == "国内入库", "国内售出",
+                             ifelse(current_status == "美国入库", "美国调货", NA))
+        
+        if (is.na(new_status)) {
+          showNotification(paste("无法确定 SKU", sku, "的目标状态，操作已终止！"), type = "error")
+          stop("目标状态未知")
+        }
+        
         # 更新 unique_items 表中的状态
         update_status(
           con = con,
           unique_id = item$UniqueID,
-          new_status = "国内售出",
-          shipping_method = input$sold_shipping_method,
+          new_status = new_status,
+          shipping_method = if (new_status == "国内售出") input$sold_shipping_method else NULL,
           refresh_trigger = NULL
         )
         
