@@ -296,6 +296,14 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
+    data <- filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "defect_filter-maker",
+      item_name_input_id = "defect_filter-name",
+      purchase_date_range_id = "defect_filter-purchase_date_range"
+    )
+    
     # 默认过滤条件：状态为“国内入库”且 Defect 不为“未知”
     data <- data[!is.na(data$Defect) & data$Defect != "未知" & data$Status == "国内入库", ]
     
@@ -2148,6 +2156,12 @@ server <- function(input, output, session) {
   ## 瑕疵商品分页                                               ##
   ##                                                            ##
   ################################################################
+  
+  # 物品表过滤模块
+  itemFilterServer(
+    id = "defect_filter",
+    makers_items_map = makers_items_map
+  )
   
   # 处理登记为瑕疵品
   observeEvent(input$register_defective, {

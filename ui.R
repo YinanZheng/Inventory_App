@@ -768,6 +768,8 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
 
+        itemFilterUI(id = "defect_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
+        
         # 登记瑕疵品部分
         div(
           style = "margin-bottom: 20px;",
