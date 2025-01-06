@@ -562,14 +562,14 @@ ui <- navbarPage(
               column(6,
                      div(
                        class = "card",
-                       style = "padding: 20px; margin-bottom: 20px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                       style = "padding: 20px; margin-bottom: 5px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
                        tags$h4(
                          HTML(paste0(
                            as.character(icon("warehouse")), 
                            "  货架  ",
                            span(style = "display: inline-flex; color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
                          )),
-                         style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"
+                         style = "color: #007BFF; font-weight: bold; margin-bottom: 0px;"
                        ),
                        DTOutput("shelf_table")  # 显示货架上的物品
                      )
@@ -579,7 +579,7 @@ ui <- navbarPage(
               column(6,
                      div(
                        class = "card",
-                       style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                       style = "padding: 20px; margin-bottom: 5px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
                        div(
                          style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 0px;",
                          
@@ -661,7 +661,7 @@ ui <- navbarPage(
               )
             ),
             
-            tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
+            tags$hr(style = "margin: 5px 0; border: 1px solid #ddd;"),  # 添加分隔线
             
             div(
               style = "display: flex; flex-direction: column;",
