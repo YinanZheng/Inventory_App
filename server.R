@@ -259,6 +259,12 @@ server <- function(input, output, session) {
       purchase_date_range_id = "inbound_filter-purchase_date_range"
     )
     
+    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    data <- data %>%
+      group_by(SKU, PurchaseTime) %>%
+      mutate(ItemCount = n()) %>%  # 统计数量
+      ungroup()
+    
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
       arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
@@ -281,6 +287,12 @@ server <- function(input, output, session) {
       item_name_input_id = "outbound_filter-name",
       purchase_date_range_id = "outbound_filter-purchase_date_range"
     )
+    
+    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    data <- data %>%
+      group_by(SKU, PurchaseTime) %>%
+      mutate(ItemCount = n()) %>%  # 统计数量
+      ungroup()
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
