@@ -705,7 +705,7 @@ ui <- navbarPage(
         
         itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         div(
           class = "card shadow-sm", # 添加卡片样式
@@ -721,7 +721,7 @@ ui <- navbarPage(
           ),
         ),
         
-        tags$hr(), # 分隔线
+        tags$hr(style = "margin: 5px 0; border: none;"),
         
         fluidRow(
           column(
