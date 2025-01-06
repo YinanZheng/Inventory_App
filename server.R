@@ -230,6 +230,12 @@ server <- function(input, output, session) {
       item_name_input_id = "purchase_filter-name"
     )
     
+    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    data <- data %>%
+      group_by(SKU, PurchaseTime) %>%
+      mutate(ItemCount = n()) %>%  # 统计数量
+      ungroup()
+    
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
       arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
@@ -429,7 +435,8 @@ server <- function(input, output, session) {
   # 渲染物品追踪数据表
   unique_items_table_purchase_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_purchase",
                                                          column_mapping <- c(common_columns, list(
-                                                           PurchaseTime = "采购日期")
+                                                           PurchaseTime = "采购日期",
+                                                           ItemCount = "数量")
                                                          ), data = filtered_unique_items_data_purchase)
   
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
