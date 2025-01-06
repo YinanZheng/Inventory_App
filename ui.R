@@ -603,8 +603,11 @@ ui <- navbarPage(
                          tags$style(HTML("
                           #sku_to_box {
                             height: 30px !important;  /* 调整高度 */
-                            font-size: 12px;         /* 可同时调整字体大小 */
-                            padding: 5px;            /* 调整内边距 */
+                            font-size: 15px;          /* 调整字体大小 */
+                            padding: 5px;             /* 调整内边距 */
+                          }
+                          #sku_to_box_container.form-group {
+                            margin-bottom: 0 !important;  /* 移除外层 form-group 的下边距 */
                           }
                         "))
                        ),
