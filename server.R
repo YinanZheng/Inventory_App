@@ -507,6 +507,7 @@ server <- function(input, output, session) {
                                                        column_mapping <- c(common_columns, list(
                                                          PurchaseTime = "采购日",
                                                          DomesticEntryTime = "入库日",
+                                                         Defect = "物品态",
                                                          DefectNotes = "瑕疵备注")
                                                        ), selection = "multiple", data = filtered_unique_items_data_defect)
   
