@@ -767,6 +767,22 @@ server <- function(input, output, session) {
     image_purchase$reset()
   })
   
+  # 动态更新按钮文本
+  output$add_update_button_ui <- renderUI({
+    # 检查SKU是否存在于added_items()
+    sku_input <- input$new_sku
+    if (is.null(sku_input) || sku_input == "") {
+      label <- "添加" # 默认显示“添加”
+    } else {
+      sku_exists <- sku_input %in% added_items()$SKU
+      label <- ifelse(sku_exists, "更新", "添加")
+    }
+    
+    # 创建动态按钮
+    actionButton("add_btn", label, width = "100%", icon = icon("pen"), 
+                 style = "background-color: #006400; color: white;")
+  })
+  
   # Confirm button: Update database and handle images
   observeEvent(input$confirm_btn, {
     tryCatch({
