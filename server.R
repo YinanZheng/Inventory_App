@@ -514,8 +514,8 @@ server <- function(input, output, session) {
   unique_items_table_logistics_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_logistics",
                                                           column_mapping = c(common_columns, list(
                                                             IntlShippingMethod = "国际运输",
-                                                            DomesticSoldTime = "售出日期",
-                                                            DomesticExitTime = "出库日期",
+                                                            DomesticSoldTime = "售出日",
+                                                            DomesticExitTime = "出库日",
                                                             IntlShippingCost = "国际运费",
                                                             IntlTracking = "国际运单"
                                                           )), selection = "multiple",
@@ -523,10 +523,11 @@ server <- function(input, output, session) {
   
   unique_items_table_download_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_download",
                                                          column_mapping <- c(common_columns, list(
-                                                           PurchaseTime = "采购日期",
-                                                           DomesticEntryTime = "入库日期",
-                                                           DomesticExitTime = "出库日期",
-                                                           DomesticSoldTime = "售出日期")
+                                                           Defect = "瑕疵态",
+                                                           PurchaseTime = "采购日",
+                                                           DomesticEntryTime = "入库日",
+                                                           DomesticExitTime = "出库日",
+                                                           DomesticSoldTime = "售出日")
                                                          ), data = filtered_unique_items_data_download)
   
   # 订单管理分页订单表
@@ -1938,9 +1939,9 @@ server <- function(input, output, session) {
     # 使用 uniqueItemsTableServer 渲染关联物品表
     callModule(uniqueItemsTableServer, "associated_items_table_module",
                column_mapping = c(common_columns, list(
-                 PurchaseTime = "采购日期",
-                 DomesticEntryTime = "入库日期",
-                 DomesticSoldTime = "售出日期",
+                 PurchaseTime = "采购日",
+                 DomesticEntryTime = "入库日",
+                 DomesticSoldTime = "售出日",
                  DefectNotes = "瑕疵品备注"
                )),
                data = associated_items,
@@ -3187,7 +3188,7 @@ server <- function(input, output, session) {
       
       # 按条形码和采购日期分组，统计其他信息
       grouped_data <- data %>%
-        group_by(`条形码`, `采购日期`) %>%
+        group_by(`条形码`, `采购日`) %>%
         summarize(
           商品名 = first(`商品名`),
           商品图片 = first(`商品图片`),
@@ -3416,10 +3417,11 @@ server <- function(input, output, session) {
   # 使用 uniqueItemsTableServer 渲染表格
   unique_items_table_admin_selected_row <- callModule(uniqueItemsTableServer, "admin_items_table", 
                                                       column_mapping = c(common_columns, list(
-                                                        PurchaseTime = "采购日期",
-                                                        DomesticEntryTime = "入库日期",
-                                                        DomesticExitTime = "出库日期",
-                                                        DomesticSoldTime = "出售日期",
+                                                        Defect = "物品态",
+                                                        PurchaseTime = "采购日",
+                                                        DomesticEntryTime = "入库日",
+                                                        DomesticExitTime = "出库日",
+                                                        DomesticSoldTime = "出售日",
                                                         IntlShippingMethod = "国际运输",
                                                         OrderID = "订单号"
                                                       )), 
