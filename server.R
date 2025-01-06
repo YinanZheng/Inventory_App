@@ -249,7 +249,7 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    data <- data[data$Status %in% c("采购", "国内入库"), ]
+    data <- data[data$Status %in% c("采购", "国内入库") & Defect != "瑕疵", ]
     
     data <- filter_unique_items_data_by_inputs(
       data = data,
@@ -262,7 +262,7 @@ server <- function(input, output, session) {
     # 统计 SKU, Status, 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
       group_by(SKU, Status, PurchaseTime) %>%
-      mutate(ItemCount = sum(Defect != "瑕疵")) %>%  # 条件统计数量
+      mutate(ItemCount = n()) %>%  # 条件统计数量
       ungroup()
     
     # 去重：仅保留每个 SKU 和组合的第一条记录
@@ -278,7 +278,7 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    data <- data[data$Status %in% c("国内入库", "国内出库"), ]
+    data <- data[data$Status %in% c("国内入库", "国内出库") & Defect != "瑕疵", ]
     
     data <- filter_unique_items_data_by_inputs(
       data = data,
@@ -291,7 +291,7 @@ server <- function(input, output, session) {
     # 统计 SKU, Status, 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
       group_by(SKU, Status, PurchaseTime) %>%
-      mutate(ItemCount = sum(Defect != "瑕疵")) %>%  # 条件统计数量
+      mutate(ItemCount = n()) %>%  # 条件统计数量
       ungroup()
     
     # 去重：仅保留每个 SKU 和组合的第一条记录
@@ -307,7 +307,7 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), ]
+    data <- data[data$Status %in% c("国内入库", "美国入库", "美国调货", "国内售出") & Defect != "瑕疵", ]
     
     data <- filter_unique_items_data_by_inputs(
       data = data,
@@ -320,13 +320,7 @@ server <- function(input, output, session) {
     # 统计 SKU, Status, 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
       group_by(SKU, Status, PurchaseTime) %>%
-      mutate(ItemCount = n()) %>%  # 统计数量
-      ungroup()
-    
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
-    data <- data %>%
-      group_by(SKU, Status, urchaseTime) %>%
-      mutate(ItemCount = sum(Defect != "瑕疵")) %>%  # 条件统计数量
+      mutate(ItemCount = n()) %>%  # 条件统计数量
       ungroup()
     
     
