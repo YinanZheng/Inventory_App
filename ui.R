@@ -581,7 +581,7 @@ ui <- navbarPage(
                        class = "card",
                        style = "padding: 20px; margin-bottom: 20px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
                        div(
-                         style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;",
+                         style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 0px;",
                          
                          # 发货箱标题和动态显示数量
                          tags$h4(
