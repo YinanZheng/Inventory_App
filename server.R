@@ -259,10 +259,10 @@ server <- function(input, output, session) {
       purchase_date_range_id = "inbound_filter-purchase_date_range"
     )
     
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
       group_by(SKU, PurchaseTime) %>%
-      mutate(ItemCount = n()) %>%  # 统计数量
+      mutate(ItemCount = sum(Status %in% c("采购", "国内入库") & Defect != "瑕疵")) %>%  # 条件统计数量
       ungroup()
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
@@ -288,10 +288,10 @@ server <- function(input, output, session) {
       purchase_date_range_id = "outbound_filter-purchase_date_range"
     )
     
-    # 添加一列统计 SKU 和 PurchaseTime 下的数量
+    # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
     data <- data %>%
       group_by(SKU, PurchaseTime) %>%
-      mutate(ItemCount = n()) %>%  # 统计数量
+      mutate(ItemCount = sum(Status %in% c("国内入库", "国内出库") & Defect != "瑕疵")) %>%  # 条件统计数量
       ungroup()
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
@@ -322,6 +322,13 @@ server <- function(input, output, session) {
       group_by(SKU, PurchaseTime) %>%
       mutate(ItemCount = n()) %>%  # 统计数量
       ungroup()
+    
+    # 添加一列统计 SKU 和 PurchaseTime 下的数量（仅统计非瑕疵状态）
+    data <- data %>%
+      group_by(SKU, PurchaseTime) %>%
+      mutate(ItemCount = sum(Status %in% c("国内入库", "美国入库", "美国调货", "国内售出") & Defect != "瑕疵")) %>%  # 条件统计数量
+      ungroup()
+    
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
@@ -465,7 +472,6 @@ server <- function(input, output, session) {
                                                         column_mapping <- c(common_columns, list(
                                                           PurchaseTime = "采购日",
                                                           DomesticEntryTime = "入库日",
-                                                          DefectNotes = "瑕疵备注",
                                                           ItemCount = "数量")
                                                         ), selection = "multiple", data = filtered_unique_items_data_inbound)
   
