@@ -424,7 +424,7 @@ server <- function(input, output, session) {
                                                         column_mapping <- c(common_columns, list(
                                                           PurchaseTime = "采购日期",
                                                           DomesticEntryTime = "入库日期",
-                                                          DefectNotes = "瑕疵品备注")
+                                                          DefectNotes = "瑕疵备注")
                                                         ), selection = "multiple", data = filtered_unique_items_data_inbound)
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
@@ -439,7 +439,7 @@ server <- function(input, output, session) {
                                                        column_mapping <- c(common_columns, list(
                                                          PurchaseTime = "采购日期",
                                                          DomesticEntryTime = "入库日期",
-                                                         DefectNotes = "瑕疵品备注")
+                                                         DefectNotes = "瑕疵备注")
                                                        ), selection = "multiple", data = filtered_unique_items_data_defect)
   
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
@@ -463,8 +463,8 @@ server <- function(input, output, session) {
                                                             IntlShippingMethod = "国际运输",
                                                             DomesticSoldTime = "售出日期",
                                                             DomesticExitTime = "出库日期",
-                                                            IntlShippingCost = "平摊国际运费",
-                                                            IntlTracking = "国际物流单号"
+                                                            IntlShippingCost = "国际运费",
+                                                            IntlTracking = "国际运单"
                                                           )), selection = "multiple",
                                                           data = filtered_unique_items_data_logistics)
   
