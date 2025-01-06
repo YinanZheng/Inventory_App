@@ -770,6 +770,8 @@ ui <- navbarPage(
 
         itemFilterUI(id = "defect_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
         
+        tags$hr(), # 分隔线
+        
         # 登记瑕疵品部分
         div(
           style = "margin-bottom: 20px;",
