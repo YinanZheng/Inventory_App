@@ -929,18 +929,57 @@ server <- function(input, output, session) {
     }
   })
   
-  # Delete selected item
+  # 监听删除按钮点击事件，弹出确认框
   observeEvent(input$delete_btn, {
     selected_row <- input$added_items_table_rows_selected
-    if (length(selected_row) > 0) {
-      current_items <- added_items()
-      updated_items <- current_items[-selected_row, ]  # Remove selected row
-      added_items(updated_items)  # Update reactive value
-      showNotification("记录已成功删除", type = "message")
-    } else {
+    
+    # 如果没有选中行，提示用户
+    if (length(selected_row) == 0) {
       showNotification("请选择要删除的记录", type = "error")
+      return()
     }
+    
+    # 显示确认框
+    showModal(
+      modalDialog(
+        title = HTML("<strong style='color: red;'>确认删除</strong>"),
+        HTML(paste0(
+          "<p>您确定要删除选中的 <strong>", length(selected_row), "</strong> 条记录吗？</p>",
+          "<p><strong>注意：</strong> 此操作无法撤销！</p>"
+        )),
+        footer = tagList(
+          modalButton("取消"),  # 关闭弹窗按钮
+          actionButton("confirm_delete_selected", "确认删除", class = "btn-danger")
+        ),
+        easyClose = FALSE
+      )
+    )
   })
+  
+  # 确认删除逻辑
+  observeEvent(input$confirm_delete_selected, {
+    removeModal()  # 关闭确认弹窗
+    
+    selected_row <- input$added_items_table_rows_selected
+    
+    tryCatch({
+      if (length(selected_row) > 0) {
+        # 执行删除逻辑
+        current_items <- added_items()
+        updated_items <- current_items[-selected_row, ]  # 删除选中行
+        added_items(updated_items)  # 更新 reactive 值
+        
+        # 通知用户
+        showNotification("选中的记录已成功删除", type = "message")
+      } else {
+        showNotification("请选择要删除的记录", type = "error")
+      }
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("删除失败：", e$message), type = "error")
+    })
+  })
+  
   
   # 清空输入
   observeEvent(input$reset_btn, {
