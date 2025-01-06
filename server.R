@@ -1647,8 +1647,8 @@ server <- function(input, output, session) {
     render_table_with_images(shelf_items(), 
                              column_mapping = list(
                                SKU = "条形码",
-                               ItemImagePath = "图片",
-                               ItemName = "商品名称",
+                               ItemImagePath = "商品图",
+                               ItemName = "商品名",
                                Status = "库存态",
                                Defect = "物品态",
                                ProductCost = "单价"
@@ -1671,8 +1671,8 @@ server <- function(input, output, session) {
     render_table_with_images(box_items(), 
                              column_mapping = list(
                                SKU = "条形码",
-                               ItemImagePath = "图片",
-                               ItemName = "商品名称",
+                               ItemImagePath = "商品图",
+                               ItemName = "商品名",
                                Status = "库存态",
                                Defect = "物品态",
                                ProductCost = "单价"
