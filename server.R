@@ -1989,6 +1989,7 @@ server <- function(input, output, session) {
   
   # 如果筛选结果只有一个，直接显示详情无需点击
   observe({
+    req(filtered_orders())
     filter_order <- filtered_orders()
 
     if (!is.null(filter_order) && nrow(filter_order) == 1) {
