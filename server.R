@@ -1987,36 +1987,29 @@ server <- function(input, output, session) {
   # 订单关联物品容器
   associated_items <- reactiveVal()
   
-  observe({
-    req(filtered_orders(), unique_items_data())  # 确保数据源有效
+  # 监听订单选择事件
+  observeEvent(selected_order_row(), {
+    selected_row <- selected_order_row()
     
-    selected_rows <- input$order_table_rows_selected  # 监听选中行
-    
-    if (is.null(selected_rows) || length(selected_rows) == 0) {
-      # 用户未选中任何行，清空数据
-      updateTextInput(session, "order_id", value = "")
-      output$associated_items_title <- renderUI({
-        tags$h4("未选中任何订单", style = "color: gray; font-weight: bold;")
-      })
-      associated_items(data.frame())  # 清空关联物品数据
-      return()
-    }
-    
-    # 用户选中某一行，更新关联数据
-    selected_order <- filtered_orders()[selected_rows, ]
+    # 如果用户选择了订单，获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     customer_name <- selected_order$CustomerName
     
+    # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
+    
+    # 动态更新标题
     output$associated_items_title <- renderUI({
       tags$h4(
         sprintf("#%s - %s 的订单物品", order_id, customer_name),
         style = "color: #007BFF; font-weight: bold;"
       )
     })
-    associated_items(unique_items_data() %>% filter(OrderID == order_id))
+    
+    # 更新关联物品数据
+    associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
   })
-  
   
   
   # 渲染物品信息卡片  
