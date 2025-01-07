@@ -529,7 +529,7 @@ ui <- navbarPage(
           
           # 按钮区
           div(
-            style = "margin-top: 10px; display: flex; flex-direction: column; gap: 20px;",  # 增加垂直间距
+            style = "margin-top: 10px; display: flex; flex-direction: column; gap: 5px;",  # 增加垂直间距
             
             div(
               style = "display: flex; justify-content: space-between;",
