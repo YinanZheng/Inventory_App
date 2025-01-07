@@ -1988,18 +1988,29 @@ server <- function(input, output, session) {
   associated_items <- reactiveVal()
   
   # 如果筛选结果只有一个，直接显示详情无需点击
-  # observe({
-  #   req(filtered_orders())
-  #   filter_order <- filtered_orders()
-  #   
-  #   if (!is.null(filter_order) && nrow(filter_order) == 1) {
-  #     # 模拟用户选择第一行
-  #     session$sendCustomMessage(
-  #       type = "selectRow",
-  #       message = list(id = "orders_table_module", row = 1)
-  #     )
-  #   }
-  # })
+  observe({
+    req(filtered_orders())
+
+    if (!is.null(filtered_orders()) && nrow(filtered_orders()) == 1) {
+      # 获取选中的订单数据
+      selected_order <- filtered_orders()[1, ]
+      order_id <- selected_order$OrderID
+      customer_name <- selected_order$CustomerName
+      
+      # 填充左侧订单信息栏
+      updateTextInput(session, "order_id", value = order_id)
+      
+      # 动态更新标题
+      output$associated_items_title <- renderUI({
+        tags$h4(
+          sprintf("#%s - %s 的订单物品", order_id, customer_name),
+          style = "color: #007BFF; font-weight: bold;"
+        )
+      })
+      
+      associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))    
+    }
+  })
   
   # 选择某个订单后，渲染关联物品卡片
   observeEvent(selected_order_row(), {
