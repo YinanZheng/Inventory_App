@@ -544,7 +544,7 @@ ui <- navbarPage(
             ),
             
             div(
-              style = "margin-top: 20px; display: flex; justify-content: center;",  # 设置行间距
+              style = "margin-top: 5px; display: flex; justify-content: center;",  # 设置行间距
               actionButton(
                 "merge_order_btn",
                 "合并订单",
