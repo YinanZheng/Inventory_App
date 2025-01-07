@@ -1989,8 +1989,9 @@ server <- function(input, output, session) {
   
   # 如果筛选结果只有一个，直接显示详情无需点击
   observe({
-    # 监听 filtered_unique_items_data_sold 数据
     sold_data <- filtered_unique_items_data_sold()
+    
+    showNotification(nrow(sold_data))
     
     if (!is.null(sold_data) && nrow(sold_data) == 1) {
       order_id <- sold_data$OrderID  
