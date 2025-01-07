@@ -587,7 +587,8 @@ ui <- navbarPage(
                        ),
                        
                        DTOutput("shelf_table")  # 显示货架上的物品
-                     ),
+                     )
+              ),
               
               # 箱子部分
               column(6,
@@ -623,6 +624,7 @@ ui <- navbarPage(
                           }
                         "))
                        ),
+                       
                        DTOutput("box_table"),  # 显示已放入箱子的物品
                        
                        fluidRow(
