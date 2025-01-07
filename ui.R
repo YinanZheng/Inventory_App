@@ -537,13 +537,16 @@ ui <- navbarPage(
               icon = icon("eraser"),
               class = "btn-warning",
               style = "font-size: 16px; width: 48%; height: 42px;"
-            ),
+            )
+          ),
+          div(
+            style = "display: flex; justify-content: center;",
             actionButton(
               "merge_order_btn",
               "合并订单",
               icon = icon("object-group"),
               class = "btn-primary",
-              style = "font-size: 16px; width: 48%; height: 42px;"
+              style = "font-size: 16px; width: 100%; height: 42px;"
             )
           )
         )
