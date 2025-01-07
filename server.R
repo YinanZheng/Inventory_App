@@ -1984,6 +1984,9 @@ server <- function(input, output, session) {
   #####   订单管理子页   ##### 
   ############################ 
   
+  # 订单关联物品容器
+  associated_items <- reactiveVal()
+  
   # 选择某个订单后，渲染关联物品表
   observeEvent(selected_order_row(), {
     selected_row <- selected_order_row()
@@ -2005,12 +2008,7 @@ server <- function(input, output, session) {
       )
     })
     
-    # 渲染关联物品表
-    associated_items <- reactive({
-      # 根据订单号筛选关联物品
-      items <- unique_items_data() %>% filter(OrderID == order_id)
-      items
-    })
+    associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
     
     # # 使用 uniqueItemsTableServer 渲染关联物品表
     # callModule(uniqueItemsTableServer, "associated_items_table_module",
@@ -2040,7 +2038,7 @@ server <- function(input, output, session) {
   
   # 订单物品删除逻辑
   observeEvent(input$delete_card, {
-    # req(input$delete_card, associated_items())  # 确保输入和物品列表存在
+    req(input$delete_card, associated_items())  # 确保输入和物品列表存在
     
     showNotification(input$delete_card)
     # 当前物品列表
