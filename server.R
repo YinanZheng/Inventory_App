@@ -1987,7 +1987,30 @@ server <- function(input, output, session) {
   # 订单关联物品容器
   associated_items <- reactiveVal()
   
-  # 选择某个订单后，渲染关联物品表
+  # 如果筛选结果只有一个，直接显示详情无需点击
+  observe({
+    # 监听 filtered_unique_items_data_sold 数据
+    sold_data <- filtered_unique_items_data_sold()
+    
+    if (!is.null(sold_data) && nrow(sold_data) == 1) {
+      order_id <- sold_data$OrderID  
+      customer_name <- sold_data$CustomerName
+      
+      # 填充左侧订单信息栏
+      updateTextInput(session, "order_id", value = order_id)
+      
+      # 动态更新标题
+      output$associated_items_title <- renderUI({
+        tags$h4(
+          sprintf("#%s - %s 的订单物品", order_id, customer_name),
+          style = "color: #007BFF; font-weight: bold;"
+        )
+      })
+      associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
+    }
+  })
+    
+  # 选择某个订单后，渲染关联物品卡片
   observeEvent(selected_order_row(), {
     selected_row <- selected_order_row()
     req(selected_row)  # 确保用户选择了一行
