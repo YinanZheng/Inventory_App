@@ -2041,33 +2041,45 @@ server <- function(input, output, session) {
     req(input$delete_card, associated_items())  # 确保输入和物品列表存在
     
     showNotification(input$delete_card)
-    # 当前物品列表
-    # current_items <- associated_items()
-    # 
-    # # 移除对应的物品
-    # updated_items <- current_items %>% filter(UniqueID != input$delete_card)
-    # associated_items(updated_items)  # 更新物品列表
-    # 
-    # 
-    # deleted_item <- current_items %>% filter(UniqueID == input$delete_card)
-    # 
-    # # 归还库存
-    # adjust_inventory(
-    #   con = con,
-    #   sku = deleted_item$SKU,
-    #   adjustment = 1  # 增加库存数量
-    # )
-    # 
-    # # 恢复物品状态到“国内入库”
-    # update_status(
-    #   con = con,
-    #   unique_id = deleted_item$UniqueID,
-    #   new_status = "国内入库",
-    #   clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
-    # )
-    # 
-    # # 提示删除成功
-    # showNotification("物品已删除, 库存已归还。", type = "message")
+    当前物品列表
+    current_items <- associated_items()
+
+    # 移除对应的物品
+    updated_items <- current_items %>% filter(UniqueID != input$delete_card)
+    associated_items(updated_items)  # 更新物品列表
+
+    # 移除物品逆向操作
+    deleted_item <- current_items %>% filter(UniqueID == input$delete_card)
+
+    # 归还库存
+    adjust_inventory(
+      con = con,
+      sku = deleted_item$SKU,
+      adjustment = 1  # 增加库存数量
+    )
+
+    # 恢复物品状态到“国内入库”
+    update_status(
+      con = con,
+      unique_id = deleted_item$UniqueID,
+      new_status = "国内入库",
+      clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
+    )
+    
+    # 清空物品的 OrderID
+    update_order_id(
+      con = con,
+      unique_id = deleted_item$UniqueID,
+      order_id = NULL  # 清空订单号
+    )
+    
+    # 提示删除成功
+    showNotification("物品已删除, 库存已归还。", type = "message")
+    
+    # 刷新数据
+    inventory(dbGetQuery(con, "SELECT * FROM inventory"))
+    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+    orders(dbGetQuery(con, "SELECT * FROM orders"))
   })
   
   # 清空筛选条件逻辑
