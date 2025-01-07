@@ -1987,37 +1987,26 @@ server <- function(input, output, session) {
   # 订单关联物品容器
   associated_items <- reactiveVal()
   
-  # 如果筛选结果只有一个，直接显示详情无需点击
-  observe({
-    req(filtered_orders())
-
-    if (!is.null(filtered_orders()) && nrow(filtered_orders()) == 1) {
-      # 获取选中的订单数据
-      selected_order <- filtered_orders()[1, ]
-      order_id <- selected_order$OrderID
-      customer_name <- selected_order$CustomerName
-      
-      # 填充左侧订单信息栏
-      updateTextInput(session, "order_id", value = order_id)
-      
-      # 动态更新标题
-      output$associated_items_title <- renderUI({
-        tags$h4(
-          sprintf("#%s - %s 的订单物品", order_id, customer_name),
-          style = "color: #007BFF; font-weight: bold;"
-        )
-      })
-      
-      associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))    
-    }
-  })
-  
-  # 选择某个订单后，渲染关联物品卡片
+  # 监听订单选择事件
   observeEvent(selected_order_row(), {
     selected_row <- selected_order_row()
-    req(selected_row)  # 确保用户选择了一行
     
-    # 获取选中的订单数据
+    if (is.null(selected_row) || length(selected_row) == 0) {
+      # 如果没有选中任何行，清空相关内容
+      updateTextInput(session, "order_id", value = "")
+      
+      # 动态清空标题
+      output$associated_items_title <- renderUI({
+        tags$h4("未选中任何订单", style = "color: gray; font-weight: bold;")
+      })
+      
+      # 清空关联物品
+      associated_items <- associated_items(data.frame())  # 或 NULL，视实际逻辑需要
+      
+      return()  # 提前退出，避免执行后续逻辑
+    }
+    
+    # 如果用户选择了订单，获取选中的订单数据
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     customer_name <- selected_order$CustomerName
@@ -2033,8 +2022,10 @@ server <- function(input, output, session) {
       )
     })
     
+    # 更新关联物品数据
     associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
   })
+  
   
   # 渲染物品信息卡片  
   observe({
