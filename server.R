@@ -2040,7 +2040,7 @@ server <- function(input, output, session) {
   
   # 订单物品删除逻辑
   observeEvent(input$delete_card, {
-    req(input$delete_card, associated_items())  # 确保输入和物品列表存在
+    # req(input$delete_card, associated_items())  # 确保输入和物品列表存在
     
     showNotification(input$delete_card)
     # # 当前物品列表
