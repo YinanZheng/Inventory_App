@@ -2035,7 +2035,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    renderOrderItems(output, "order_items_cards", associated_items())
+    renderOrderItems(output, "order_items_cards", associated_items(), deletable = TRUE)
   })
   
   # 清空筛选条件逻辑
