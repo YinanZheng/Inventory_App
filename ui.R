@@ -556,23 +556,45 @@ ui <- navbarPage(
                      div(
                        class = "card",
                        style = "padding: 10px; margin-bottom: 5px; border: 1px solid #007BFF; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
-                       tags$h4(
-                         HTML(paste0(
-                           as.character(icon("warehouse")), 
-                           "  货架  ",
-                           span(style = "display: inline-flex; color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
-                         )),
-                         style = "color: #007BFF; font-weight: bold; margin-bottom: 0px;"
+                       
+                       div(
+                         style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 0px; height: 30px",
+                         
+                         # 货架标题和动态显示数量
+                         tags$h4(
+                           HTML(paste0(
+                             as.character(icon("warehouse")), 
+                             "  货架  ",
+                             span(style = "display: inline-flex; color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
+                           )),
+                           style = "color: #007BFF; font-weight: bold; margin-bottom: 0px;"
+                         ),
+                         
+                         # SKU 输入栏
+                         textInput(
+                           inputId = "sku_to_shelf",
+                           label = NULL,  # 不显示标签
+                           placeholder = "扫码入箱",  # 提示文字
+                           width = "300px"  # 控制输入框宽度
+                         ),
+                         tags$style(HTML("
+                          #sku_to_shelf {
+                            height: 35px !important;  /* 调整高度 */
+                            font-size: 15px;          /* 调整字体大小 */
+                            padding: 5px;             /* 调整内边距 */
+                          }
+                        "))
                        ),
+                       
                        DTOutput("shelf_table")  # 显示货架上的物品
-                     )
-              ),
+                     ),
               
               # 箱子部分
               column(6,
                      div(
                        class = "card",
                        style = "padding: 10px; margin-bottom: 5px; border: 1px solid #28A745; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);",
+                       
                        div(
                          style = "display: flex; align-items: center; justify-content: space-between; margin-bottom: 0px; height: 30px",
                          
