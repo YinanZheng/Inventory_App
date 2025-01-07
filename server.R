@@ -313,7 +313,7 @@ server <- function(input, output, session) {
     
     # 只显示本页相关状态
     data <- data %>%
-      filter(Status %in% c("国内入库", "美国入库", "美国调货", "国内售出"), Defect != "瑕疵")
+      filter(Status %in% c("国内入库", "国内出库", "美国入库", "美国调货", "国内售出"), Defect != "瑕疵")
 
     data <- filter_unique_items_data_by_inputs(
       data = data,
@@ -1936,8 +1936,10 @@ server <- function(input, output, session) {
         
         # 根据当前状态决定新的状态
         current_status <- item$Status
-        new_status <- ifelse(current_status == "国内入库", "国内售出",
-                             ifelse(current_status == "美国入库", "美国调货", NA))
+        new_status <- ifelse(
+          current_status %in% c("美国入库", "国内出库"), "美国调货",
+          ifelse(current_status == "国内入库", "国内售出", NA)
+        )
         
         if (is.na(new_status)) {
           showNotification(paste("无法确定 SKU", sku, "的目标状态，操作已终止！"), type = "error")

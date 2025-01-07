@@ -943,8 +943,9 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     
     # 检查发货箱中的物品是否含有“美国入库”状态
     if (nrow(box_items()) > 0) {
-      if ("美国入库" %in% box_items()$Status) {
-        order_status <- "调货"  # 如果包含“美国入库”物品，状态改为“调货”
+      # 如果 box_items() 中包含 "国内出库" 或 "美国入库"，设置状态为 "调货"
+      if (any(box_items()$Status %in% c("国内出库", "美国入库"))) {
+        order_status <- "调货"
       }
     }
     
