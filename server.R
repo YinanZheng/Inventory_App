@@ -2009,33 +2009,18 @@ server <- function(input, output, session) {
     })
     
     associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
-    
-    # # 使用 uniqueItemsTableServer 渲染关联物品表
-    # callModule(uniqueItemsTableServer, "associated_items_table_module",
-    #            column_mapping = c(common_columns, list(
-    #              PurchaseTime = "采购日",
-    #              DomesticEntryTime = "入库日",
-    #              DomesticSoldTime = "售出日",
-    #              DefectNotes = "瑕疵品备注"
-    #            )),
-    #            data = associated_items,
-    #            options = list(
-    #              scrollY = "235px",  # 根据内容动态调整滚动高度
-    #              scrollX = TRUE,  # 支持水平滚动
-    #              fixedHeader = TRUE,  # 启用表头固定
-    #              dom = 't',  # 隐藏搜索框和分页等控件
-    #              paging = FALSE,  # 禁用分页
-    #              searching = FALSE  # 禁用搜索
-    #            ))
-    
+  })
+  
+  # 渲染物品信息卡片  
+  observe({
+    req(associated_items())
     if (nrow(associated_items()) == 0) {
       renderOrderItems(output, "order_items_cards", data.frame())  # 清空物品卡片
       return()
     }
-    
     renderOrderItems(output, "order_items_cards", associated_items(), deletable = TRUE)
   })
-  
+
   # 订单物品删除逻辑
   observeEvent(input$delete_card, {
     req(input$delete_card, associated_items())  # 确保输入和物品列表存在
