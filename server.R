@@ -2038,6 +2038,39 @@ server <- function(input, output, session) {
     renderOrderItems(output, "order_items_cards", associated_items(), deletable = TRUE)
   })
   
+  # 订单物品删除逻辑
+  observeEvent(input$delete_card, {
+    req(input$delete_card, associated_items())  # 确保输入和物品列表存在
+    
+    # 当前物品列表
+    current_items <- associated_items()
+    
+    # 移除对应的物品
+    updated_items <- current_items %>% filter(UniqueID != input$delete_card)
+    associated_items(updated_items)  # 更新物品列表
+    
+    
+    deleted_item <- current_items %>% filter(UniqueID == input$delete_card)
+    
+    # 归还库存
+    adjust_inventory(
+      con = con,
+      sku = deleted_item$SKU,
+      adjustment = 1  # 增加库存数量
+    )
+    
+    # 恢复物品状态到“国内入库”
+    update_status(
+      con = con,
+      unique_id = deleted_item$UniqueID,
+      new_status = "国内入库",
+      clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
+    )
+    
+    # 提示删除成功
+    showNotification("物品已删除, 库存已归还。", type = "message")
+  })
+  
   # 清空筛选条件逻辑
   observeEvent(input$reset_filter_btn, {
     tryCatch({
