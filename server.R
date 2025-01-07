@@ -1428,9 +1428,9 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取符合条件的货架物品 ("国内入库", "美国入库" 均可)
+      # 从 unique_items_data 获取符合条件的货架物品 ("国内出库", "国内入库", "美国入库" 均可)
       all_shelf_items <- unique_items_data() %>%
-        filter(SKU == selected_sku, Status %in% c("国内入库", "美国入库"), Defect != "瑕疵") %>%
+        filter(SKU == selected_sku, Status %in% c("国内出库", "国内入库", "美国入库"), Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
@@ -1823,9 +1823,9 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内入库", "美国入库" 均可)
+      # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内出库", "国内入库", "美国入库" 均可)
       all_shelf_items <- unique_items_data() %>%
-        filter(SKU == scanned_sku, Status %in% c("国内入库", "美国入库"), Defect != "瑕疵") %>%
+        filter(SKU == scanned_sku, Status %in% c("国内出库", "国内入库", "美国入库"), Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
         arrange(ProductCost)  # 按单价从低到高排序
       
