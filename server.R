@@ -1429,7 +1429,7 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku)
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
