@@ -2030,12 +2030,12 @@ server <- function(input, output, session) {
     #              searching = FALSE  # 禁用搜索
     #            ))
     
-    if (nrow(items) == 0) {
+    if (nrow(associated_items()) == 0) {
       renderOrderItems(output, "order_items_cards", data.frame())  # 清空物品卡片
       return()
     }
     
-    renderOrderItems(output, "order_items_cards", items)
+    renderOrderItems(output, "order_items_cards", associated_items())
   })
   
   # 清空筛选条件逻辑
