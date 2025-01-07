@@ -2037,6 +2037,13 @@ server <- function(input, output, session) {
     order_id <- selected_order$OrderID
     existing_notes <- selected_order$OrderNotes %||% ""  # 若为空，则默认空字符串
     
+    # 检查 associated_items 是否为空
+    associated_items_data <- associated_items()
+    if (is.null(associated_items_data) || nrow(associated_items_data) == 0) {
+      showNotification("无法完成预定：订单中未找到关联物品！", type = "error")
+      return()  # 提前退出，避免后续逻辑执行
+    }
+    
     # 在 R 中拼接备注内容
     new_notes <- paste(existing_notes, sprintf("【预定完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
     
