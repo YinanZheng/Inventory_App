@@ -1989,25 +1989,10 @@ server <- function(input, output, session) {
   
   # 如果筛选结果只有一个，直接显示详情无需点击
   observe({
-    sold_data <- filtered_unique_items_data_sold()
-    
-    showNotification(nrow(sold_data))
-    
-    if (!is.null(sold_data) && nrow(sold_data) == 1) {
-      order_id <- sold_data$OrderID  
-      customer_name <- sold_data$CustomerName
-      
-      # 填充左侧订单信息栏
-      updateTextInput(session, "order_id", value = order_id)
-      
-      # 动态更新标题
-      output$associated_items_title <- renderUI({
-        tags$h4(
-          sprintf("#%s - %s 的订单物品", order_id, customer_name),
-          style = "color: #007BFF; font-weight: bold;"
-        )
-      })
-      associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
+    filter_order <- filtered_orders()
+
+    if (!is.null(filter_order) && nrow(filter_order) == 1) {
+      updateSelectInput(session, "orders_table_module_rows_selected", selected = 1)
     }
   })
     
