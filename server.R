@@ -1988,14 +1988,14 @@ server <- function(input, output, session) {
   associated_items <- reactiveVal()
   
   # 如果筛选结果只有一个，直接显示详情无需点击
-  observe({
-    req(filtered_orders())
-    filter_order <- filtered_orders()
-
-    if (!is.null(filter_order) && nrow(filter_order) == 1) {
-      updateSelectInput(session, "orders_table_module_rows_selected", selected = 1)
-    }
-  })
+  # observe({
+  #   req(filtered_orders())
+  #   filter_order <- filtered_orders()
+  # 
+  #   if (!is.null(filter_order) && nrow(filter_order) == 1) {
+  #     updateSelectInput(session, "orders_table_module_rows_selected", selected = 1)
+  #   }
+  # })
     
   # 选择某个订单后，渲染关联物品卡片
   observeEvent(selected_order_row(), {
