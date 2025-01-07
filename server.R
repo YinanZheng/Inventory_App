@@ -1995,6 +1995,7 @@ server <- function(input, output, session) {
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     customer_name <- selected_order$CustomerName
+    order_status <- selected_order$OrderStatus
     
     # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
@@ -2037,7 +2038,7 @@ server <- function(input, output, session) {
     existing_notes <- selected_order$OrderNotes %||% ""  # 若为空，则默认空字符串
     
     # 在 R 中拼接备注内容
-    new_notes <- paste(existing_notes, sprintf("【预订完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
+    new_notes <- paste(existing_notes, sprintf("【预定完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
     
     tryCatch({
       # 使用拼接后的备注信息进行 SQL 更新
