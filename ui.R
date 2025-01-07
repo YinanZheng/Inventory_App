@@ -540,7 +540,7 @@ ui <- navbarPage(
             )
           ),
           div(
-            style = "display: flex; justify-content: center;",
+            style = "display: flex; justify-content: center; margin-top = 5px;",
             actionButton(
               "merge_order_btn",
               "合并订单",
