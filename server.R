@@ -2040,8 +2040,7 @@ server <- function(input, output, session) {
   observeEvent(input$delete_card, {
     req(input$delete_card, associated_items())  # 确保输入和物品列表存在
     
-    showNotification(input$delete_card)
-    当前物品列表
+    # 当前物品列表
     current_items <- associated_items()
 
     # 移除对应的物品
