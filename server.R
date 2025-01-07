@@ -2001,9 +2001,24 @@ server <- function(input, output, session) {
     
     # 动态更新标题
     output$associated_items_title <- renderUI({
-      tags$h4(
-        sprintf("#%s - %s 的订单物品", order_id, customer_name),
-        style = "color: #007BFF; font-weight: bold;"
+      div(
+        style = "display: flex; align-items: center; justify-content: space-between;",
+        
+        # 左侧标题
+        tags$h4(
+          sprintf("#%s - %s 的订单物品", order_id, customer_name),
+          style = "color: #007BFF; font-weight: bold; margin: 0;"
+        ),
+        
+        # 右侧按钮（仅在订单状态为“预定”时显示）
+        if (order_status == "预定") {
+          actionButton(
+            inputId = "complete_preorder",
+            label = "已完成预定",
+            class = "btn-success",
+            style = "margin-left: auto; font-size: 14px; padding: 5px 10px;"
+          )
+        }
       )
     })
     
@@ -2011,6 +2026,39 @@ server <- function(input, output, session) {
     associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
   })
   
+  
+  observeEvent(input$complete_preorder, {
+    req(selected_order_row())
+    
+    # 获取选中订单
+    selected_row <- selected_order_row()
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+    existing_notes <- selected_order$OrderNotes %||% ""  # 若为空，则默认空字符串
+    
+    # 在 R 中拼接备注内容
+    new_notes <- paste(existing_notes, sprintf("【预订完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
+    
+    tryCatch({
+      # 使用拼接后的备注信息进行 SQL 更新
+      dbExecute(con, "
+      UPDATE orders
+      SET OrderStatus = '备货',
+          OrderNotes = ?
+      WHERE OrderID = ?
+    ", params = list(new_notes, order_id))
+      
+      # 重新加载最新的 orders 数据
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
+      
+      # 通知用户操作成功
+      showNotification(sprintf("订单 #%s 已更新为备货状态！", order_id), type = "message")
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(sprintf("更新订单状态时发生错误：%s", e$message), type = "error")
+    })
+  })
   
   # 渲染物品信息卡片  
   observe({
