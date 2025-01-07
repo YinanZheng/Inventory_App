@@ -1991,6 +1991,8 @@ server <- function(input, output, session) {
   observeEvent(selected_order_row(), {
     selected_row <- selected_order_row()
     
+    showNotification(selected_row)
+    
     if (is.null(selected_row) || length(selected_row) == 0) {
       # 如果没有选中任何行，清空相关内容
       updateTextInput(session, "order_id", value = "")
