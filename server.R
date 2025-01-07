@@ -1428,14 +1428,11 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取符合条件的货架物品 ("国内出库", "国内入库", "美国入库" 均可)
-      all_shelf_items <- unique_items_data() %>%
-        filter(SKU == selected_sku, Status %in% c("国内出库", "国内入库", "美国入库"), Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
-        arrange(ProductCost)  # 按单价从低到高排序
+      # 从 unique_items_data 获取货架中符合条件的物品
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
       
-      if (nrow(all_shelf_items) == 0) {
-        showNotification("未找到符合条件的物品！", type = "error")
+      if (is.null(all_shelf_items)) {
+        showNotification("货架上未找到对应 SKU 的物品！", type = "error")
         return()
       }
       
@@ -1823,14 +1820,11 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内出库", "国内入库", "美国入库" 均可)
-      all_shelf_items <- unique_items_data() %>%
-        filter(SKU == scanned_sku, Status %in% c("美国入库", "国内出库", "国内入库"), Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
-        arrange(ProductCost)  # 按单价从低到高排序
+      # 从 unique_items_data 获取货架中符合条件的物品
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
       
       # 如果货架中没有符合条件的物品，提示错误
-      if (nrow(all_shelf_items) == 0) {
+      if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
         updateTextInput(session, "sku_to_shelf", value = "")  # 清空输入框
         return()
@@ -1869,19 +1863,10 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- unique_items_data() %>%
-        filter(SKU == scanned_sku, Status %in% c("美国入库", "国内出库", "国内入库"), Defect != "瑕疵") %>%
-        select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
-        mutate(StatusPriority = case_when(
-          Status == "美国入库" ~ 1,
-          Status == "国内出库" ~ 2,
-          Status == "国内入库" ~ 3,
-          TRUE ~ 4  # 默认最低优先级
-        )) %>%
-        arrange(StatusPriority, ProductCost)  # 按优先级和单价排序
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
       
       # 如果货架中没有符合条件的物品，提示错误
-      if (nrow(all_shelf_items) == 0) {
+      if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
