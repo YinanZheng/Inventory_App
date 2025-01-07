@@ -238,7 +238,7 @@ server <- function(input, output, session) {
     
     # 去重：仅保留每个 SKU 和采购日期组合的第一条记录
     data <- data %>%
-      arrange(desc(Status == "采购"), desc(PurchaseTime)) %>%  # 按需求排序
+      arrange(desc(Status == "采购"), desc(updated_at)) %>%  # 按需求排序
       distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
@@ -269,7 +269,7 @@ server <- function(input, output, session) {
     
     # 去重：仅保留每个 SKU 和组合的第一条记录
     data <- data %>%
-      arrange(desc(Status == "采购"), desc(Defect == "无瑕"), desc(PurchaseTime)) %>%  # 按需求排序
+      arrange(desc(Status == "采购"), desc(Defect == "无瑕"), desc(updated_at)) %>%  # 按需求排序
       distinct(SKU, Status, Defect, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
@@ -300,7 +300,7 @@ server <- function(input, output, session) {
     
     # 去重：仅保留每个 SKU 和组合的第一条记录
     data <- data %>%
-      arrange(desc(Status == "国内入库"), desc(PurchaseTime)) %>%  # 按需求排序
+      arrange(desc(Status == "国内入库"), desc(updated_at)) %>%  # 按需求排序
       distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
@@ -332,7 +332,7 @@ server <- function(input, output, session) {
     
     # 去重：仅保留每个 SKU 和组合的第一条记录
     data <- data %>%
-      arrange(desc(Status == "国内入库"), desc(PurchaseTime)) %>%  # 按需求排序
+      arrange(desc(Status == "国内入库"), desc(updated_at)) %>%  # 按需求排序
       distinct(SKU, Status, PurchaseTime, .keep_all = TRUE)         # 去重，保留所有列
     
     data
