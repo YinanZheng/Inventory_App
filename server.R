@@ -1538,7 +1538,16 @@ server <- function(input, output, session) {
       sanitized_order_id <- gsub("#", "", trimws(input$order_id))
       
       # 查询订单信息，包含新增字段
-      existing_order <- orders() %>% filter(OrderID == sanitized_order_id)
+      existing_order <- orders() %>% {
+        if (grepl("@", sanitized_order_id)) {
+          # 如果 OrderID 包含 "@"
+          at_prefix <- sub("@.*", "", sanitized_order_id)  # 提取 "@" 之前的所有字符
+          filter(., grepl(paste0("^", at_prefix, "@"), OrderID))  # 匹配包含 "@" 且符合前缀的 OrderID
+        } else {
+          # 如果 OrderID 不包含 "@"
+          filter(., OrderID == sanitized_order_id)
+        }
+      }
       
       # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
