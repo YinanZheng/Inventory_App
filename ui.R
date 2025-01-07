@@ -574,7 +574,7 @@ ui <- navbarPage(
                          textInput(
                            inputId = "sku_to_shelf",
                            label = NULL,  # 不显示标签
-                           placeholder = "扫码入箱",  # 提示文字
+                           placeholder = "扫码上架",  # 提示文字
                            width = "300px"  # 控制输入框宽度
                          ),
                          tags$style(HTML("

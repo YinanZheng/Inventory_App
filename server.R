@@ -1810,6 +1810,51 @@ server <- function(input, output, session) {
     }
   })
   
+  # 扫码上架功能
+  observeEvent(input$sku_to_shelf, {
+    req(input$sku_to_shelf)  # 确保输入框不为空
+    
+    tryCatch({
+      # 获取输入的 SKU
+      scanned_sku <- trimws(input$sku_to_shelf)
+      
+      if (is.null(scanned_sku) || scanned_sku == "") {
+        showNotification("请输入有效的 SKU！", type = "error")
+        return()
+      }
+      
+      # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内出库", "国内入库", "美国入库" 均可)
+      all_shelf_items <- unique_items_data() %>%
+        filter(SKU == scanned_sku, Status %in% c("美国入库", "国内出库", "国内入库"), Defect != "瑕疵") %>%
+        select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
+        arrange(ProductCost)  # 按单价从低到高排序
+      
+      # 如果货架中没有符合条件的物品，提示错误
+      if (nrow(all_shelf_items) == 0) {
+        showNotification("货架上未找到对应 SKU 的物品！", type = "error")
+        updateTextInput(session, "sku_to_shelf", value = "")  # 清空输入框
+        return()
+      }
+      
+      # 从箱子中获取当前 SKU 的已选数量
+      box_data <- box_items()
+
+      # 更新货架上的物品
+      updated_shelf <- all_shelf_items[!all_shelf_items$UniqueID %in% box_data$UniqueID, ]
+      shelf_items(updated_shelf)
+      
+      # 通知用户
+      showNotification(paste("物品已上货架！SKU:", scanned_sku), type = "message")
+      
+      # 清空输入框
+      updateTextInput(session, "sku_to_shelf", value = "")
+      
+    }, error = function(e) {
+      # 捕获错误并通知用户
+      showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
+    })
+  })
+  
   # 扫码入箱功能
   observeEvent(input$sku_to_box, {
     req(input$sku_to_box)  # 确保输入框不为空
@@ -1823,11 +1868,17 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 从 unique_items_data 获取货架中符合条件的物品总量 ("国内出库", "国内入库", "美国入库" 均可)
+      # 从 unique_items_data 获取货架中符合条件的物品
       all_shelf_items <- unique_items_data() %>%
-        filter(SKU == scanned_sku, Status %in% c("国内出库", "国内入库", "美国入库"), Defect != "瑕疵") %>%
+        filter(SKU == scanned_sku, Status %in% c("美国入库", "国内出库", "国内入库"), Defect != "瑕疵") %>%
         select(SKU, UniqueID, ItemName, Status, Defect, ProductCost, ItemImagePath) %>%
-        arrange(ProductCost)  # 按单价从低到高排序
+        mutate(StatusPriority = case_when(
+          Status == "美国入库" ~ 1,
+          Status == "国内出库" ~ 2,
+          Status == "国内入库" ~ 3,
+          TRUE ~ 4  # 默认最低优先级
+        )) %>%
+        arrange(StatusPriority, ProductCost)  # 按优先级和单价排序
       
       # 如果货架中没有符合条件的物品，提示错误
       if (nrow(all_shelf_items) == 0) {
@@ -1847,7 +1898,7 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 获取第一个符合条件的物品
+      # 获取优先级最高的物品
       selected_item <- all_shelf_items[box_sku_count + 1, ]
       
       # 更新箱子内容
@@ -1855,7 +1906,7 @@ server <- function(input, output, session) {
       box_items(bind_rows(selected_item, current_box))
       
       # 更新货架上的物品
-      updated_shelf <- all_shelf_items[-(1:(box_sku_count + 1)), ]  # 移除已入箱的物品
+      updated_shelf <- all_shelf_items[!all_shelf_items$UniqueID %in% box_items()$UniqueID, ]
       shelf_items(updated_shelf)
       
       # 通知用户
