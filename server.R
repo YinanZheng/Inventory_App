@@ -2012,23 +2012,30 @@ server <- function(input, output, session) {
       items
     })
     
-    # 使用 uniqueItemsTableServer 渲染关联物品表
-    callModule(uniqueItemsTableServer, "associated_items_table_module",
-               column_mapping = c(common_columns, list(
-                 PurchaseTime = "采购日",
-                 DomesticEntryTime = "入库日",
-                 DomesticSoldTime = "售出日",
-                 DefectNotes = "瑕疵品备注"
-               )),
-               data = associated_items,
-               options = list(
-                 scrollY = "235px",  # 根据内容动态调整滚动高度
-                 scrollX = TRUE,  # 支持水平滚动
-                 fixedHeader = TRUE,  # 启用表头固定
-                 dom = 't',  # 隐藏搜索框和分页等控件
-                 paging = FALSE,  # 禁用分页
-                 searching = FALSE  # 禁用搜索
-               ))
+    # # 使用 uniqueItemsTableServer 渲染关联物品表
+    # callModule(uniqueItemsTableServer, "associated_items_table_module",
+    #            column_mapping = c(common_columns, list(
+    #              PurchaseTime = "采购日",
+    #              DomesticEntryTime = "入库日",
+    #              DomesticSoldTime = "售出日",
+    #              DefectNotes = "瑕疵品备注"
+    #            )),
+    #            data = associated_items,
+    #            options = list(
+    #              scrollY = "235px",  # 根据内容动态调整滚动高度
+    #              scrollX = TRUE,  # 支持水平滚动
+    #              fixedHeader = TRUE,  # 启用表头固定
+    #              dom = 't',  # 隐藏搜索框和分页等控件
+    #              paging = FALSE,  # 禁用分页
+    #              searching = FALSE  # 禁用搜索
+    #            ))
+    
+    if (nrow(items) == 0) {
+      renderOrderItems(output, "order_items_cards", data.frame())  # 清空物品卡片
+      return()
+    }
+    
+    renderOrderItems(output, "order_items_cards", items)
   })
   
   # 清空筛选条件逻辑

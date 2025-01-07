@@ -1240,6 +1240,100 @@ adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NU
   })
 }
 
+renderOrderItems <- function(output, output_name, order_items, deletable = FALSE) {
+  # 如果没有物品，返回提示信息
+  if (is.null(order_items) || nrow(order_items) == 0) {
+    output[[output_name]] <- renderUI({
+      div("没有找到订单内物品")
+    })
+    return()
+  }
+  
+  # 动态渲染物品卡片
+  output[[output_name]] <- renderUI({
+    item_cards <- lapply(1:nrow(order_items), function(i) {
+      item <- order_items[i, ]
+      
+      # 图片路径
+      item_img_path <- ifelse(
+        is.na(item$ItemImagePath) || item$ItemImagePath == "",
+        placeholder_150px_path,
+        paste0(host_url, "/images/", basename(item$ItemImagePath))
+      )
+      
+      # 动态添加蒙版和打勾图标
+      mask_overlay <- if (item$Status == "美国发货") {
+        div(
+          style = "position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+                  background: rgba(128, 128, 128, 0.6); display: flex; justify-content: center; align-items: center;
+                  border-radius: 8px; z-index: 2;",
+          tags$div(
+            style = "width: 50px; height: 50px; background: #28a745; border-radius: 50%; display: flex; 
+                     justify-content: center; align-items: center;",
+            tags$i(class = "fas fa-check", style = "color: white; font-size: 24px;")  # 绿色勾
+          )
+        )
+      } else {
+        NULL
+      }
+      
+      # 渲染卡片
+      div(
+        id = paste0("card_", i),  # 设置唯一 ID
+        class = "card",
+        style = "position: relative; display: inline-block; padding: 10px; width: 230px; text-align: center; 
+                 border: 1px solid #ddd; border-radius: 8px; box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.1);",
+        
+        mask_overlay,  # 动态显示蒙版
+        
+        div(
+          style = "margin-bottom: 10px; position: relative;",
+          tags$img(
+            src = item_img_path,
+            style = "height: 150px; object-fit: cover; border-radius: 8px;"  # 图片高度固定为150px
+          ),
+          if (deletable) {
+            tags$button(
+              class = "btn btn-danger btn-sm delete-btn",
+              type = "button",
+              style = "position: absolute; top: 5px; right: 5px;",
+              onclick = sprintf("Shiny.setInputValue('delete_card', '%s', {priority: 'event'})", item$UniqueID),
+              tags$i(class = "fas fa-trash-alt")
+            )
+          } else {
+            NULL
+          }
+        ),
+        
+        tags$table(
+          style = "width: 100%; font-size: 12px; color: #333;",
+          tags$tr(
+            tags$td(tags$strong("SKU:"), style = "padding: 0px; width: 60px;"),
+            tags$td(item$SKU)
+          ),
+          tags$tr(
+            tags$td(tags$strong("商品名:"), style = "padding: 0px;"),
+            tags$td(item$ItemName)
+          ),
+          tags$tr(
+            tags$td(tags$strong("状态:"), style = "padding: 0px;"),
+            tags$td(item$Status)
+          ),
+          tags$tr(
+            tags$td(tags$strong("瑕疵状态:"), style = "padding: 0px;"),
+            tags$td(ifelse(is.na(item$Defect), "无", item$Defect))  # 显示瑕疵状态
+          ),
+          tags$tr(
+            tags$td(tags$strong("瑕疵备注:"), style = "padding: 0px;"),
+            tags$td(ifelse(is.na(item$DefectNotes) || item$DefectNotes == "", "无备注", item$DefectNotes))  # 显示瑕疵备注
+          )
+        )
+      )
+    })
+    
+    do.call(tagList, item_cards)  # 返回卡片列表
+  })
+}
 
 # 动态拼接图片函数（接近正方形布局）
 generate_montage <- function(image_paths, output_path, geometry = "+5+5") {
