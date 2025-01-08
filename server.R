@@ -293,7 +293,7 @@ server <- function(input, output, session) {
     
     # 根据订单号筛选
     cleaned_filter_order_id <- trimws(input$filter_order_id)
-    if (!is.null(cleaned_filter_order_id) && nzchar(cleaned_filter_tracking_id)) {
+    if (!is.null(cleaned_filter_order_id) && nzchar(cleaned_filter_order_id)) {
       data <- data %>% filter(grepl(cleaned_filter_order_id, OrderID, ignore.case = TRUE))
     }
     
