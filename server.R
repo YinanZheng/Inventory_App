@@ -810,17 +810,14 @@ server <- function(input, output, session) {
       unit_shipping_cost <- total_shipping_cost / sum(added_items_df$Quantity)
       
       for (i in 1:nrow(added_items_df)) {
-        adjust_inventory(
+        add_new_inventory_record(
           con = con,
           sku = added_items_df$SKU[i],
-          adjustment = 0,  # 采购物品尚未入库，库存不变
           maker = added_items_df$Maker[i],
           major_type = added_items_df$MajorType[i],
           minor_type = added_items_df$MinorType[i],
           item_name = added_items_df$ItemName[i],
-          quantity = added_items_df$Quantity[i],
-          product_cost = added_items_df$ProductCost[i],
-          unit_shipping_cost = unit_shipping_cost,
+          quantity = 0, # 采购初始库存为 0 
           image_path = added_items_df$ItemImagePath[i]
         )
       }
@@ -1051,7 +1048,7 @@ server <- function(input, output, session) {
       # 检查是否成功处理
       if (!is.null(unique_ID) && unique_ID != "") {
         # 更新库存数据
-        adjust_inventory(con, input$inbound_sku, adjustment = 1)
+        adjust_inventory_quantity(con, input$inbound_sku, adjustment = 1)
         
         # 显示成功通知
         showNotification(paste0("SKU ", input$inbound_sku, " 的一个物品已自动入库！"), type = "message")
@@ -1132,11 +1129,7 @@ server <- function(input, output, session) {
     }
     
     # 批量调整库存
-    adjust_inventory(
-      con = con,
-      sku = input$inbound_sku,
-      adjustment = inbound_quantity  # 根据输入的数量调整库存
-    )
+    adjust_inventory_quantity(con, input$inbound_sku, adjustment = inbound_quantity)  # 根据输入的数量调整库存
     
     # 刷新 UI 和数据
     inventory(dbGetQuery(con, "SELECT * FROM inventory"))
@@ -1971,18 +1964,9 @@ server <- function(input, output, session) {
         sku <- item$SKU
         
         # 调整库存：减少数量
-        adjustment_result <- adjust_inventory(
-          con = con,
-          sku = sku,
-          adjustment = -1  # 减少 1 的库存数量
-        )
+        adjust_inventory_quantity(con, sku, adjustment = -1)  # 减少 1 的库存数量
         
         inventory(dbGetQuery(con, "SELECT * FROM inventory"))
-        
-        if (!adjustment_result) {
-          showNotification(paste("库存调整失败：SKU", sku, "，操作已终止！"), type = "error")
-          stop("库存调整失败")
-        }
         
         # 根据当前状态决定新的状态
         current_status <- item$Status
@@ -2143,11 +2127,7 @@ server <- function(input, output, session) {
     deleted_item <- current_items %>% filter(UniqueID == input$delete_card)
 
     # 归还库存
-    adjust_inventory(
-      con = con,
-      sku = deleted_item$SKU,
-      adjustment = 1  # 增加库存数量
-    )
+    adjust_inventory_quantity(con, deleted_item$SKU, adjustment = 1)  # 增加库存数量
 
     # 恢复物品状态到“国内入库”
     update_status(
@@ -2235,11 +2215,7 @@ server <- function(input, output, session) {
           item <- associated_items[i, ]
           
           # 逆向调整库存
-          adjust_inventory(
-            con = con,
-            sku = item$SKU,
-            adjustment = 1  # 增加库存数量
-          )
+          adjust_inventory_quantity(con, item$SKU, adjustment = 1)  # 增加库存数量
           
           # 恢复物品状态到“国内入库”
           update_status(

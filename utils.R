@@ -1160,6 +1160,63 @@ filter_unique_items_data_by_inputs <- function(
   data
 }
 
+adjust_inventory_quantity <- function(con, sku, adjustment) {
+  tryCatch({
+    sku <- trimws(sku)  # 清理空格
+    # 查询现有库存
+    existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
+    
+    if (nrow(existing_item) > 0) {
+      # SKU 存在，计算新的库存
+      new_quantity <- existing_item$Quantity + adjustment
+      
+      # 库存不足的校验（仅在减少库存时检查）
+      if (adjustment < 0 && new_quantity < 0) {
+        showNotification("库存不足，无法完成操作！", type = "error")
+        return(FALSE)
+      }
+      
+      # 更新库存数量到数据库
+      dbExecute(con, "UPDATE inventory SET Quantity = ? WHERE SKU = ?", params = list(new_quantity, sku))
+      
+      showNotification(paste("库存已成功调整! SKU:", sku), type = "message")
+      return(TRUE)
+    } else {
+      showNotification(paste("SKU 不存在，无法调整库存！SKU:", sku), type = "error")
+      return(FALSE)
+    }
+  }, error = function(e) {
+    showNotification(paste("调整库存时发生错误：", e$message), type = "error")
+    return(FALSE)
+  })
+}
+
+add_new_inventory_record <- function(con, sku, maker, major_type, minor_type, item_name, quantity, image_path = NULL) {
+  tryCatch({
+    sku <- trimws(sku)  # 清理空格
+    # 检查是否已存在该 SKU
+    existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
+    
+    if (nrow(existing_item) > 0) {
+      showNotification(paste("SKU 已存在！无法重复添加。SKU:", sku), type = "error")
+      return(FALSE)
+    }
+    
+    # 插入新的库存记录
+    dbExecute(con, "INSERT INTO inventory 
+                    (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ItemImagePath) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?)",
+              params = list(
+                sku, maker, major_type, minor_type, item_name, quantity, image_path
+              ))
+    
+    showNotification(paste("新商品成功登记! SKU:", sku, ", 商品名:", item_name), type = "message")
+    return(TRUE)
+  }, error = function(e) {
+    showNotification(paste("添加新库存记录时发生错误：", e$message), type = "error")
+    return(FALSE)
+  })
+}
 
 adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NULL, 
                              minor_type = NULL, item_name = NULL, quantity = NULL, 
