@@ -2320,13 +2320,6 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 获取子单的物品
-      sub_items <- unique_items_data() %>%
-        filter(OrderID %in% possible_sub_orders$OrderID)
-      
-      # 更新子单物品的订单号为主单号
-      update_order_id(con, sub_items$UniqueID, main_order_id)
-      
       # 子单图片路径拼接
       image_paths <- possible_sub_orders$OrderImagePath[!is.na(possible_sub_orders$OrderImagePath)]
       
@@ -2359,13 +2352,24 @@ server <- function(input, output, session) {
         append = TRUE, overwrite = FALSE
       )
       
-      # # 删除子单
-      # dbExecute(con, sprintf(
-      #   "DELETE FROM orders WHERE OrderID IN (%s)",
-      #   paste(shQuote(possible_sub_orders$OrderID), collapse = ", ")
-      # ))
+      # 获取子单的物品
+      sub_items <- unique_items_data() %>%
+        filter(OrderID %in% possible_sub_orders$OrderID)
+      
+      # 删除子单
+      dbExecute(con, sprintf(
+        "DELETE FROM orders WHERE OrderID IN (%s)",
+        paste(shQuote(possible_sub_orders$OrderID), collapse = ", ")
+      ))
+      
+      # 更新子单物品的订单号为主单号
+      update_order_id(con, sub_items$UniqueID, main_order_id)
       
       showNotification(paste("订单合并成功！主单号为：", main_order_id), type = "message")
+      
+      # 刷新数据
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      orders(dbGetQuery(con, "SELECT * FROM orders"))
       
     }, error = function(e) {
       showNotification(paste("合并订单时发生错误：", e$message), type = "error")
