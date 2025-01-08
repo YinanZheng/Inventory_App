@@ -533,7 +533,7 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "总库存数",
-      ProductCost = "平均单价",
+      ProductCost = "平均成本",
       ShippingCost = "平均运费"
     )
     
@@ -3138,7 +3138,7 @@ server <- function(input, output, session) {
               tags$tr(tags$td(tags$b("商品名称：")), tags$td(sku_data$ItemName[1])),
               tags$tr(tags$td(tags$b("供应商：")), tags$td(sku_data$Maker[1])),
               tags$tr(tags$td(tags$b("分类：")), tags$td(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]))),
-              tags$tr(tags$td(tags$b("平均单价：")), tags$td(sprintf("¥%.2f", sku_data$ProductCost[1]))),
+              tags$tr(tags$td(tags$b("平均成本：")), tags$td(sprintf("¥%.2f", sku_data$ProductCost[1]))),
               tags$tr(tags$td(tags$b("平均运费：")), tags$td(sprintf("¥%.2f", sku_data$ShippingCost[1]))),
               tags$tr(tags$td(tags$b("国内库存数：")), tags$td(sku_stats$国内库存数)),
               tags$tr(tags$td(tags$b("在途库存数：")), tags$td(sku_stats$在途库存数)),
