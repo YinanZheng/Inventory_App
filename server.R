@@ -1065,6 +1065,7 @@ server <- function(input, output, session) {
       
       # 清空 SKU 输入框
       updateTextInput(session, "inbound_sku", value = "")
+      runjs("document.getElementById('inbound_sku').focus();")
     } else {
       # 未启用自动入库时更新待入库数量最大值
       if (!is.null(pending_quantity) && pending_quantity > 0) {
@@ -1144,7 +1145,6 @@ server <- function(input, output, session) {
     # 重置输入
     updateTextInput(session, "inbound_sku", value = "")
     updateNumericInput(session, "inbound_quantity", value = 1)
-    
     runjs("document.getElementById('inbound_sku').focus();")
   })
   
@@ -1269,6 +1269,7 @@ server <- function(input, output, session) {
     
     # 清空 SKU 输入框
     updateTextInput(session, "outbound_sku", value = "")
+    runjs("document.getElementById('outbound_sku').focus();")
   })
   
   # 手动确认出库逻辑
@@ -1288,6 +1289,7 @@ server <- function(input, output, session) {
       input = input
     )
     updateTextInput(session, "outbound_sku", value = "")
+    runjs("document.getElementById('outbound_sku').focus();")
   })
   
   # 撤回出库逻辑
@@ -1309,6 +1311,7 @@ server <- function(input, output, session) {
       clear_shipping_method = TRUE # 清空出库国际运输方式
     )
     updateTextInput(session, "outbound_sku", value = "")
+    runjs("document.getElementById('outbound_sku').focus();")
   })
   
   # 监听选中行并更新出库 SKU
@@ -2322,8 +2325,12 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 子单图片路径拼接
-      image_paths <- possible_sub_orders$OrderImagePath[!is.na(possible_sub_orders$OrderImagePath)]
+      # 获取子单的所有物品
+      sub_items <- unique_items_data() %>%
+        filter(OrderID %in% possible_sub_orders$OrderID)
+      
+      # 子单物品图片路径拼接
+      image_paths <- unique(sub_items$ItemImagePath[!is.na(sub_items$ItemImagePath)])
       
       if (length(image_paths) > 0) {
         # 生成拼接图片路径（带时间戳）
@@ -2337,7 +2344,7 @@ server <- function(input, output, session) {
       # 更新订单信息
       merged_order <- tibble(
         OrderID = main_order_id,
-        Platform = if (length(unique(possible_sub_orders$Platform)) > 1) "其他" else unique(possible_sub_orders$Platform)[1],
+        Platform = platforms[1],
         UsTrackingNumber = tracking_numbers[1],
         CustomerName = ifelse(length(unique(possible_sub_orders$CustomerName)) > 0,
                               paste(unique(possible_sub_orders$CustomerName), collapse = ", "), NA),
@@ -2354,10 +2361,6 @@ server <- function(input, output, session) {
         append = TRUE, overwrite = FALSE
       )
       
-      # 获取子单的物品
-      sub_items <- unique_items_data() %>%
-        filter(OrderID %in% possible_sub_orders$OrderID)
-      
       # 删除子单
       dbExecute(con, sprintf(
         "DELETE FROM orders WHERE OrderID IN (%s)",
@@ -2367,7 +2370,7 @@ server <- function(input, output, session) {
       # 更新子单物品的订单号为主单号
       update_order_id(con, sub_items$UniqueID, main_order_id)
       
-      showNotification(paste("订单合并成功！主单号为：", main_order_id), type = "message")
+      showNotification(paste("订单合并成功！主单号为：", main_order_id, ", 共计", nrow(sub_items), "件物品"), type = "message")
       
       # 刷新数据
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
