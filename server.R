@@ -339,12 +339,12 @@ server <- function(input, output, session) {
       data <- data %>% filter(OrderID %in% sku_orders)
     }
     
-    if (!is.null(debounced_item_name()) && debounced_item_name() != "") {
+    item_name <- debounced_item_name()
+    if (!is.null(item_name) && length(item_name) > 0 && nzchar(item_name)) {
       item_orders <- unique_items_data() %>%
         filter(grepl(debounced_item_name(), ItemName, ignore.case = TRUE)) %>%
         pull(OrderID) %>%  # 提取与商品名相关的订单号
         unique()
-      
       data <- data %>% filter(OrderID %in% item_orders)
     }
     
