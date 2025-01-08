@@ -2283,7 +2283,9 @@ server <- function(input, output, session) {
   observeEvent(input$merge_order_btn, {
     tryCatch({
       # 获取用户选中的订单号
-      selected_order_id <- input$order_table_rows_selected  # 假设从表格中选取
+      selected_order <- filtered_orders()[selected_order_row(), ]
+      selected_order_id <- selected_order$OrderID
+      
       if (is.null(selected_order_id) || length(selected_order_id) != 1) {
         showNotification("请选择一个订单进行合并！", type = "error")
         return()
