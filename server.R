@@ -3098,14 +3098,7 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
-      # 查询 SKU 数据
-      sku_query <- "
-      SELECT
-        ItemName, Maker, MajorType, MinorType, Quantity,
-        ProductCost, ShippingCost, ItemImagePath
-      FROM inventory
-      WHERE SKU = ?"
-      sku_data <- dbGetQuery(con, sku_query, params = list(sku))
+      sku_data <- inventory() %>% filter(SKU == sku)
       
       if (nrow(sku_data) == 0) {
         output$query_item_info <- renderUI({
@@ -3121,16 +3114,19 @@ server <- function(input, output, session) {
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
         div(
-          style = "display: flex; align-items: center; padding: 10px;",
-          div(style = "flex: 1; text-align: center; margin-right: 20px;",
-              tags$img(src = img_path, height = "150px", style = "border: 1px solid #ddd; border-radius: 8px;")),
-          div(style = "flex: 2; display: flex; flex-direction: column; justify-content: center;",
-              tags$p(tags$b("商品名称："), sku_data$ItemName[1]),
-              tags$p(tags$b("供应商："), sku_data$Maker[1]),
-              tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])),
-              tags$p(tags$b("总库存数："), sku_data$Quantity[1]),
-              tags$p(tags$b("平均单价："), sprintf("¥%.2f", sku_data$ProductCost[1])),
-              tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]))
+          style = "display: flex; flex-direction: column; align-items: center; padding: 10px;",
+          div(
+            style = "text-align: center; margin-bottom: 10px;",
+            tags$img(src = img_path, height = "150px", style = "border: 1px solid #ddd; border-radius: 8px;")
+          ),
+          div(
+            style = "width: 100%;",
+            tags$p(tags$b("商品名称："), sku_data$ItemName[1], style = "text-align: center;"),
+            tags$p(tags$b("供应商："), sku_data$Maker[1], style = "text-align: center;"),
+            tags$p(tags$b("分类："), paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]), style = "text-align: center;"),
+            tags$p(tags$b("总库存数："), sku_data$Quantity[1], style = "text-align: center;"),
+            tags$p(tags$b("平均单价："), sprintf("¥%.2f", sku_data$ProductCost[1]), style = "text-align: center;"),
+            tags$p(tags$b("平均运费："), sprintf("¥%.2f", sku_data$ShippingCost[1]), style = "text-align: center;")
           )
         )
       })
