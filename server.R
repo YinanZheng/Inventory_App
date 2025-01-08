@@ -291,22 +291,22 @@ server <- function(input, output, session) {
     
     data <- orders()  # 获取所有订单数据
     
+    # 根据订单号筛选
+    cleaned_filter_order_id <- trimws(input$filter_order_id)
+    if (!is.null(cleaned_filter_order_id) && cleaned_filter_order_id != "") {
+      data <- data %>% filter(grepl(cleaned_filter_order_id, OrderID, ignore.case = TRUE))
+    }
+    
     # 根据运单号筛选，处理前缀不定的情况
-    cleaned_filter_tracking_id <- input$filter_tracking_id
-    if (!is.null(cleaned_filter_tracking_id)) {
-      cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(cleaned_filter_tracking_id))
-      
-      if (!is.null(cleaned_filter_tracking_id) && length(cleaned_filter_tracking_id) > 0) {
-        data <- data %>%
-          filter(
-            !is.na(UsTrackingNumber) &  # 确保运单号字段不为空
-              UsTrackingNumber != "" &  # 确保运单号不是空字符串
-              (
-                UsTrackingNumber == cleaned_filter_tracking_id |  # 完整匹配
-                  stri_detect_fixed(cleaned_filter_tracking_id, UsTrackingNumber)  # 子字符串匹配
-              )
-          )
-      }
+    cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(input$filter_tracking_id))
+    if (!is.null(cleaned_filter_tracking_id) && nzchar(cleaned_filter_tracking_id)) {
+      data <- data %>%
+        filter(
+          !is.na(UsTrackingNumber) &
+            UsTrackingNumber != "" &
+            (UsTrackingNumber == cleaned_filter_tracking_id | 
+               stri_detect_fixed(cleaned_filter_tracking_id, UsTrackingNumber))
+        )
     }
     
     # 根据顾客姓名筛选
