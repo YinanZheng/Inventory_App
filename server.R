@@ -297,20 +297,23 @@ server <- function(input, output, session) {
       data <- data %>% filter(grepl(cleaned_filter_order_id, OrderID, ignore.case = TRUE))
     }
     
-    # 根据运单号筛选，处理前缀不定的情况
+    # 根据运单号筛选，处理前缀多余情况
     cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(input$filter_tracking_id))
     
     if (!is.null(cleaned_filter_tracking_id) && nzchar(cleaned_filter_tracking_id)) {
+      # 如果运单号长度超过 22，则去掉前 8 位
+      if (nchar(cleaned_filter_tracking_id) > 22) {
+        cleaned_filter_tracking_id <- substr(cleaned_filter_tracking_id, 9, nchar(cleaned_filter_tracking_id))
+      }
+      
       data <- data %>%
         filter(
           !is.na(UsTrackingNumber) &  # 确保运单号字段不为空
             UsTrackingNumber != "" &  # 确保运单号不是空字符串
-            (
-              UsTrackingNumber == cleaned_filter_tracking_id |  # 完整匹配
-                grepl(cleaned_filter_tracking_id, UsTrackingNumber, fixed = TRUE)  # 子字符串匹配
-            )
+            UsTrackingNumber == cleaned_filter_tracking_id  # 完全匹配
         )
     }
+
     
     # 根据顾客姓名筛选
     if (!is.null(input$filter_customer_name) && input$filter_customer_name != "") {
