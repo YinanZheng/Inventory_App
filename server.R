@@ -3075,6 +3075,7 @@ server <- function(input, output, session) {
     if (input$main_tabs == "查询") {
       # 切换到“查询”页面时，手动触发刷新
       inventory_refresh_trigger(!inventory_refresh_trigger())
+      showNotification("库存数据已更新！", type = "message")
     }
   })
   
