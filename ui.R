@@ -1,6 +1,7 @@
 # Define UI
 ui <- navbarPage(
   title = "库存管理系统（国内端）",
+  id = "inventory_china",  # 设置 ID，用于监听当前选中的主页面
   theme = shinytheme("flatly"), # 可选主题
   position = "fixed-top",
   
@@ -561,10 +562,9 @@ ui <- navbarPage(
       div(
         class = "main-panel",
         tabsetPanel(
-          id = "main_tabs",
+          id = "sold_tabs",
           tabPanel(
             title = "物品售出",
-            value = "sold",
             fluidRow(
               # 货架部分
               column(6,
@@ -715,7 +715,6 @@ ui <- navbarPage(
           ),
           tabPanel(
             title = "订单管理",
-            value = "order_management",
             div(
               class = "card",
               style = "height: 460px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
@@ -966,7 +965,7 @@ ui <- navbarPage(
         class = "main-panel",
         # 使用 tabsetPanel 来组织分页
         tabsetPanel(
-          type = "tabs", # 使用 tabs 样式
+          type = "query_tabs", # 使用 tabs 样式
           tabPanel(
             "商品状态",
             fluidRow(

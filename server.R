@@ -1032,8 +1032,8 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听标签页切换事件
-  observeEvent(input$main_tabs, {
-    if (input$main_tabs == "入库") {
+  observeEvent(input$inventory_china, {
+    if (input$inventory_china == "入库") {
       runjs("document.getElementById('inbound_sku').focus();")
     }
   })
@@ -1248,8 +1248,8 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听标签页切换事件
-  observeEvent(input$main_tabs, {
-    if (input$main_tabs == "出库") {
+  observeEvent(input$inventory_china, {
+    if (input$inventory_china == "出库") {
       runjs("document.getElementById('outbound_sku').focus();")
     }
   })
@@ -1363,9 +1363,9 @@ server <- function(input, output, session) {
   
   # 动态更新侧边栏内容
   observe({
-    req(input$main_tabs)  # 确保主面板选项存在
+    req(input$sold_tabs)  # 确保主面板选项存在
     
-    if (input$main_tabs == "sold") {
+    if (input$sold_tabs == "物品售出") {
       
       # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
@@ -1383,7 +1383,7 @@ server <- function(input, output, session) {
           )
         })
       }
-    } else if (input$main_tabs == "order_management") {
+    } else if (input$sold_tabs == "订单管理") {
       # 订单管理分页：显示订单筛选区
       output$dynamic_sidebar <- renderUI({
         div(
@@ -3073,7 +3073,7 @@ server <- function(input, output, session) {
   # 监听主页面和子页面的切换
   observe({
     # 当用户切换到“查询”主页面或“商品状态”分页时，触发刷新
-    if (input$main_tabs == "查询" && input$tabs == "商品状态") {
+    if (input$inventory_china == "查询" && input$query_tabs == "商品状态") {
       inventory_refresh_trigger(!inventory_refresh_trigger())
       showNotification("库存表已更新！", type = "message")
     }
