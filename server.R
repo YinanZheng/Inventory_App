@@ -53,47 +53,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  # PDF下载按钮默认禁用
-  session$onFlushed(function() {
-    shinyjs::disable("download_select_pdf")
-  })
-  
-  ####################################################################################################################################
-  ###################################################                              ###################################################
-  ###################################################             渲染             ###################################################
-  ###################################################                              ###################################################
-  ####################################################################################################################################
-  
-  # 采购商品添加表（临时）
-  added_items <- reactiveVal(create_empty_inventory())
-  
-  # Render added items table
-  output$added_items_table <- renderDT({
-    column_mapping <- list(
-      SKU = "条形码",
-      ItemName = "商品名",
-      ItemImagePath = "商品图",
-      Maker = "供应商",
-      MajorType = "大类",
-      MinorType = "小类",
-      Quantity = "入库数量",
-      ProductCost = "采购单价"
-    )
-    
-    render_table_with_images(
-      data = added_items(),
-      column_mapping = column_mapping,
-      selection = "multiple",
-      image_column = "ItemImagePath",
-      options = list(fixedHeader = TRUE,  # 启用表头固定
-                     dom = 't',  # 隐藏搜索框和分页等控件
-                     paging = FALSE,  # 禁止分页
-                     searching = FALSE  # 禁止搜索
-      )
-    )$datatable
-  })
-  
   ####################################################################################################################################
   
   # 库存表
@@ -574,17 +533,7 @@ server <- function(input, output, session) {
   
   ####################################################################################################################################
   
-  # 显示总采购开销（含运费）
-  output$total_cost <- renderText({
-    total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
-    paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
-           "（其中包含运费: ¥", input$new_shipping_cost, ")")
-  })
-  
-  ####################################################################################################################################
-  
-  
-  
+ 
   ################################################################
   ##                                                            ##
   ## 采购分页                                                   ##
@@ -669,7 +618,7 @@ server <- function(input, output, session) {
     }
   })
   
-  
+  # 商品名自动联想
   item_names <- reactive({
     req(inventory())
     unique(inventory()$ItemName)  # 提取唯一的商品名
@@ -709,6 +658,35 @@ server <- function(input, output, session) {
   
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
+  
+  # 采购商品添加表（临时）
+  added_items <- reactiveVal(create_empty_inventory())
+  
+  # Render added items table
+  output$added_items_table <- renderDT({
+    column_mapping <- list(
+      SKU = "条形码",
+      ItemName = "商品名",
+      ItemImagePath = "商品图",
+      Maker = "供应商",
+      MajorType = "大类",
+      MinorType = "小类",
+      Quantity = "入库数量",
+      ProductCost = "采购单价"
+    )
+    
+    render_table_with_images(
+      data = added_items(),
+      column_mapping = column_mapping,
+      selection = "multiple",
+      image_column = "ItemImagePath",
+      options = list(fixedHeader = TRUE,  # 启用表头固定
+                     dom = 't',  # 隐藏搜索框和分页等控件
+                     paging = FALSE,  # 禁止分页
+                     searching = FALSE  # 禁止搜索
+      )
+    )$datatable
+  })
   
   # Handle add item button click
   observeEvent(input$add_btn, {
@@ -952,6 +930,13 @@ server <- function(input, output, session) {
     }
   })
   
+  # 显示总采购开销（含运费）
+  output$total_cost <- renderText({
+    total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
+    paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
+           "（其中包含运费: ¥", input$new_shipping_cost, ")")
+  })
+  
   # 监听删除按钮点击事件，弹出确认框
   observeEvent(input$delete_btn, {
     selected_row <- input$added_items_table_rows_selected
@@ -1192,6 +1177,11 @@ server <- function(input, output, session) {
       shinyjs::hide("defective_notes_container")
       updateTextInput(session, "defective_notes", value = "") # 清空备注
     }
+  })
+  
+  # PDF下载按钮默认禁用
+  session$onFlushed(function() {
+    shinyjs::disable("download_select_pdf")
   })
   
   # 生成选中商品条形码 PDF
