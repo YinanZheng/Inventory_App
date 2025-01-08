@@ -2295,7 +2295,6 @@ server <- function(input, output, session) {
   
   # 订单合并
   observeEvent(input$merge_order_btn, {
-    req(filtered_orders())
     tryCatch({
       # 获取用户选中的订单号
       selected_order <- filtered_orders()[selected_order_row(), ]
