@@ -3201,7 +3201,7 @@ server <- function(input, output, session) {
               marker = list(colors = status_colors) # 按固定颜色映射
             ) %>%
               layout(
-                showlegend = TRUE, # 显示图例
+                showlegend = FALSE, # 隐藏图例
                 margin = list(l = 20, r = 20, t = 30, b = 30), # 增加边距
                 uniformtext = list(minsize = 10, mode = "hide") # 统一文本大小
               )
@@ -3260,7 +3260,7 @@ server <- function(input, output, session) {
               marker = list(colors = defect_colors) # 按固定颜色映射
             ) %>%
               layout(
-                showlegend = TRUE, # 显示图例
+                showlegend = FALSE, # 隐藏图例
                 margin = list(l = 20, r = 20, t = 30, b = 30), # 增加边距
                 uniformtext = list(minsize = 10, mode = "hide") # 统一文本大小
               )
