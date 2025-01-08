@@ -119,28 +119,7 @@ ui <- navbarPage(
             break;
           }
         }
-      });")),
-      
-      tags$script(HTML("
-      $(document).on('keydown', function(e) {
-        if (e.key === 'Tab' && $('#new_name').is(':focus')) {
-          const hint = $('#name_hint').text();
-          if (hint.length > 0) {
-            const currentValue = $('#new_name').val();
-            $('#new_name').val(currentValue + hint);  // 补全输入框
-            Shiny.setInputValue('new_name', currentValue + hint, {priority: 'event'});  // 提交补全值
-            $('#name_hint').text('');  // 清空提示
-            e.preventDefault();  // 阻止默认 Tab 行为
-          }
-        }
-      });")),
-      
-      tags$script('
-        Shiny.addCustomMessageHandler("navigate", function(url) {
-          window.location.href = url;
-        });
-      ')
-      
+      });"))
     )
   ),
   
