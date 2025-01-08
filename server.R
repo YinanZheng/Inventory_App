@@ -3116,7 +3116,7 @@ server <- function(input, output, session) {
         
         # 从 unique_items_data() 中计算额外信息
         sku_stats <- unique_items_data() %>%
-          filter(SKU == sku_data$SKU[1]) %>%
+          filter(SKU == sku) %>%
           group_by(Status) %>%
           summarise(Count = n(), .groups = "drop") %>%
           pivot_wider(names_from = Status, values_from = Count, values_fill = 0) %>%
@@ -3137,14 +3137,6 @@ server <- function(input, output, session) {
           )
         }
         
-        # 防止字段为复杂类型，确保转为字符
-        safe_value <- function(value) {
-          if (is.null(value) || is.na(value)) {
-            return("")
-          }
-          as.character(value)
-        }
-        
         # 渲染图片和表格信息
         div(
           style = "display: flex; flex-direction: column; align-items: center; padding: 10px;",
@@ -3156,16 +3148,16 @@ server <- function(input, output, session) {
             style = "width: 100%; padding-left: 10px;",
             tags$table(
               style = "width: 100%; border-collapse: collapse;",
-              tags$tr(tags$td(tags$b("商品名称：")), tags$td(safe_value(sku_data$ItemName[1]))),
-              tags$tr(tags$td(tags$b("供应商：")), tags$td(safe_value(sku_data$Maker[1]))),
-              tags$tr(tags$b("分类："), tags$td(safe_value(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1])))),
-              tags$tr(tags$td(tags$b("总库存数：")), tags$td(safe_value(sku_data$Quantity[1]))),
-              tags$tr(tags$td(tags$b("平均单价：")), tags$td(sprintf("¥%.2f", as.numeric(sku_data$ProductCost[1])))),
-              tags$tr(tags$td(tags$b("平均运费：")), tags$td(sprintf("¥%.2f", as.numeric(sku_data$ShippingCost[1])))),
-              tags$tr(tags$td(tags$b("美国库存数：")), tags$td(safe_value(sku_stats$美国库存数))),
-              tags$tr(tags$td(tags$b("在途库存数：")), tags$td(safe_value(sku_stats$在途库存数))),
-              tags$tr(tags$td(tags$b("国内库存数：")), tags$td(safe_value(sku_stats$国内库存数))),
-              tags$tr(tags$td(tags$b("已售库存数：")), tags$td(safe_value(sku_stats$已售库存数)))
+              tags$tr(tags$td(tags$b("商品名称：")), tags$td(sku_data$ItemName[1])),
+              tags$tr(tags$td(tags$b("供应商：")), tags$td(sku_data$Maker[1])),
+              tags$tr(tags$td(tags$b("分类：")), tags$td(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]))),
+              tags$tr(tags$td(tags$b("平均单价：")), tags$td(sprintf("¥%.2f", sku_data$ProductCost[1]))),
+              tags$tr(tags$td(tags$b("平均运费：")), tags$td(sprintf("¥%.2f", sku_data$ShippingCost[1]))),
+              tags$tr(tags$td(tags$b("美国库存数：")), tags$td(sku_stats$美国库存数)),
+              tags$tr(tags$td(tags$b("在途库存数：")), tags$td(sku_stats$在途库存数)),
+              tags$tr(tags$td(tags$b("国内库存数：")), tags$td(sku_stats$国内库存数)),
+              tags$tr(tags$td(tags$b("总库存数：")), tags$td(sku_data$Quantity[1])),
+              tags$tr(tags$td(tags$b("已售库存数：")), tags$td(sku_stats$已售库存数))
             )
           )
         )
