@@ -1198,11 +1198,10 @@ add_new_inventory_record <- function(con, sku, maker, major_type, minor_type, it
     existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
     
     if (nrow(existing_item) > 0) {
-      showNotification(paste("SKU 已存在！无法重复添加。SKU:", sku), type = "error")
-      return(FALSE)
+      return(NULL)  # 提前返回，表示无需新增记录
     }
     
-    # 插入新的库存记录
+    # 如果 SKU 不存在，插入新的库存记录
     dbExecute(con, "INSERT INTO inventory 
                     (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ItemImagePath) 
                     VALUES (?, ?, ?, ?, ?, ?, ?)",
