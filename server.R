@@ -568,7 +568,7 @@ server <- function(input, output, session) {
     list(
       major_type = input[["type_module-new_major_type"]],
       minor_type = input[["type_module-new_minor_type"]],
-      new_name = input$new_name,
+      new_name = input[["purchase-item_name"]],
       new_maker = input$new_maker
     )
   })
@@ -585,7 +585,7 @@ server <- function(input, output, session) {
     
     # 判断是否需要清空 SKU
     if (is.null(inputs$new_maker) || inputs$new_maker == "" || 
-        is.null(input$new_name) || input$new_name == "") {
+        is.null(inputs$new_name) || inputs$new_name == "") {
       updateTextInput(session, "new_sku", value = "")  # 清空 SKU
       return()
     }
@@ -595,7 +595,7 @@ server <- function(input, output, session) {
       item_type_data = item_type_data(),
       major_type = inputs$major_type,
       minor_type = inputs$minor_type,
-      item_name = input$new_name,
+      item_name = input[["purchase-item_name"]],
       maker = inputs$new_maker
     )
     
@@ -695,7 +695,7 @@ server <- function(input, output, session) {
   # Handle add item button click
   observeEvent(input$add_btn, {
     # 验证输入
-    if (is.null(input$new_name) || input$new_name == "") {
+    if (is.null(input[["purchase-item_name"]]) || input[["purchase-item_name"]] == "") {
       showNotification("请填写正确商品名称！", type = "error")
       return()
     }
@@ -746,7 +746,7 @@ server <- function(input, output, session) {
       existing_items[sku_index, "Maker"] <- input$new_maker
       existing_items[sku_index, "MajorType"] <- input[["type_module-new_major_type"]]
       existing_items[sku_index, "MinorType"] <- input[["type_module-new_minor_type"]]
-      existing_items[sku_index, "ItemName"] <- input$new_name
+      existing_items[sku_index, "ItemName"] <- input[["purchase-item_name"]]
       existing_items[sku_index, "Quantity"] <- input$new_quantity
       existing_items[sku_index, "ProductCost"] <- round(input$new_product_cost, 2)
       existing_items[sku_index, "ItemImagePath"] <- as.character(final_image_path)
@@ -761,14 +761,14 @@ server <- function(input, output, session) {
         Maker = input$new_maker,
         MajorType = input[["type_module-new_major_type"]],
         MinorType = input[["type_module-new_minor_type"]],
-        ItemName = input$new_name,
+        ItemName = input[["purchase-item_name"]],
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
         ItemImagePath = new_image_path,
         stringsAsFactors = FALSE
       )
       added_items(bind_rows(existing_items, new_item))
-      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input$new_name), type = "message")
+      showNotification(paste("SKU 已添加:", input$new_sku, "商品名:", input[["purchase-item_name"]]), type = "message")
     }
     
     # 重置
@@ -882,7 +882,7 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
-      updateSelectizeInput(session, "new_name", choices = c("", inventory()$ItemName), selected = "")
+      updateTextInput(session, "purchase-item_name", value = "")
       image_purchase$reset() # 重置图片
       
       added_items(create_empty_inventory()) #清空添加表
@@ -906,7 +906,7 @@ server <- function(input, output, session) {
       shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateTextInput(session, "purchase-item_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
@@ -928,7 +928,7 @@ server <- function(input, output, session) {
       shinyjs::delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
-      updateTextInput(session, "new_name", value = selected_data$ItemName)
+      updateTextInput(session, "purchase-item_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
     }
@@ -998,7 +998,7 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       update_maker_choices(session, "new_maker", maker_list())
-      updateTextInput(session, "new_name", value = "")
+      updateTextInput(session, "purchase-item_name", value = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
       updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
