@@ -2052,6 +2052,7 @@ server <- function(input, output, session) {
   # 订单关联物品容器
   associated_items <- reactiveVal()
   
+  # 商品名自动联想
   autocompleteInputServer("sold", get_suggestions = item_names)  # 返回商品名列表
   
   # 监听订单选择事件
@@ -2446,7 +2447,6 @@ server <- function(input, output, session) {
           DELETE FROM unique_items
           WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
             
-        # 重新计算平均 ProductCost 和 ShippingCost
         sku <- selected_items$SKU[i]
         
         remaining_items <- dbGetQuery(con, "
