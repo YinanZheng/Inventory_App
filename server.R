@@ -2195,6 +2195,8 @@ server <- function(input, output, session) {
       updateTextInput(session, "filter_customer_netname", value = "")
       updateSelectInput(session, "filter_platform", selected = "")
       updateSelectInput(session, "filter_order_status", selected = "")
+      updateTextInput(session, "filter_sku", value = "")
+      updateTextInput(session, "sold-item_name", value = "")
       
       # 显示成功通知
       showNotification("筛选条件已清空！", type = "message")
