@@ -318,6 +318,28 @@ server <- function(input, output, session) {
       data <- data %>% filter(OrderStatus == input$filter_order_status)
     }
     
+    # 根据 SKU 或商品名筛选
+    req(unique_items_data())  # 确保 unique_items_data 数据存在
+    
+    # 筛选包含所输入 SKU 或商品名的订单
+    if (!is.null(input$filter_sku) && input$filter_sku != "") {
+      sku_orders <- unique_items_data() %>%
+        filter(SKU == trimws(input$filter_sku)) %>%
+        pull(OrderID) %>%  # 提取与 SKU 相关的订单号
+        unique()
+      
+      data <- data %>% filter(OrderID %in% sku_orders)
+    }
+    
+    if (!is.null(input[["sold-item_name"]]) && input[["sold-item_name"]] != "") {
+      item_orders <- unique_items_data() %>%
+        filter(grepl(trimws(input[["sold-item_name"]]), ItemName, ignore.case = TRUE)) %>%
+        pull(OrderID) %>%  # 提取与商品名相关的订单号
+        unique()
+      
+      data <- data %>% filter(OrderID %in% item_orders)
+    }
+    
     # 按更新时间倒序排列
     data <- data %>% arrange(desc(updated_at))
     
@@ -1389,7 +1411,7 @@ server <- function(input, output, session) {
             column(6, 
                    textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
             column(6, 
-                   textInput("filter_item_name", "商品名反查", placeholder = "输入商品名", width = "100%"))
+                   autocompleteInputUI("sold", label = "商品名反查", placeholder = "输入商品名"))
           ),
           
           fluidRow(
@@ -2024,6 +2046,8 @@ server <- function(input, output, session) {
   
   # 订单关联物品容器
   associated_items <- reactiveVal()
+  
+  autocompleteInputServer("sold", get_suggestions = item_names)  # 返回商品名列表
   
   # 监听订单选择事件
   observeEvent(selected_order_row(), {
