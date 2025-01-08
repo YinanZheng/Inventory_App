@@ -423,16 +423,22 @@ update_status <- function(con, unique_id, new_status = NULL, defect_status = NUL
 }
 
 
-
-update_order_id <- function(con, unique_id, order_id) {
+update_order_id <- function(con, unique_ids, order_id) {
   tryCatch({
+    # 检查输入的 unique_ids 是否为空
+    if (is.null(unique_ids) || length(unique_ids) == 0) {
+      showNotification("未提供需要更新的物品 ID！", type = "error")
+      return()
+    }
+    
+    # 如果 order_id 为 NULL，清空指定物品的订单号
     if (is.null(order_id)) {
-      # 构造 SQL 更新语句，清空 OrderID
-      query <- "UPDATE unique_items SET OrderID = NULL WHERE UniqueID = ?"
-      params <- list(unique_id)
+      # 构造 SQL 更新语句，批量清空 OrderID
+      query <- sprintf("UPDATE unique_items SET OrderID = NULL WHERE UniqueID IN (%s)", 
+                       paste(shQuote(unique_ids), collapse = ", "))
       
       # 执行 SQL 更新
-      dbExecute(con, query, params = params)
+      dbExecute(con, query)
       
       # 成功提示
       showNotification("订单号已成功清空！", type = "message")
@@ -440,21 +446,22 @@ update_order_id <- function(con, unique_id, order_id) {
       showNotification("订单号不能为空字符串！", type = "error")
       return()
     } else {
-      # 构造 SQL 更新语句
-      query <- "UPDATE unique_items SET OrderID = ? WHERE UniqueID = ?"
-      params <- list(order_id, unique_id)
+      # 构造 SQL 更新语句，批量更新 OrderID
+      query <- sprintf("UPDATE unique_items SET OrderID = '%s' WHERE UniqueID IN (%s)", 
+                       order_id, paste(shQuote(unique_ids), collapse = ", "))
       
       # 执行 SQL 更新
-      dbExecute(con, query, params = params)
+      dbExecute(con, query)
       
       # 成功提示
-      showNotification("订单号已成功更新！", type = "message")
+      showNotification("订单号已成功批量更新！", type = "message")
     }
   }, error = function(e) {
     # 错误提示
-    showNotification(paste("更新订单号时发生错误：", e$message), type = "error")
+    showNotification(paste("批量更新订单号时发生错误：", e$message), type = "error")
   })
 }
+
 
 
 # 定义确认框

@@ -2279,6 +2279,97 @@ server <- function(input, output, session) {
     })
   })
   
+  # 订单合并
+  observeEvent(input$merge_order_btn, {
+    tryCatch({
+      # 获取用户选中的订单号
+      selected_order_id <- input$order_table_rows_selected  # 假设从表格中选取
+      if (is.null(selected_order_id) || length(selected_order_id) != 1) {
+        showNotification("请选择一个订单进行合并！", type = "error")
+        return()
+      }
+      
+      # 检查订单号是否包含 "@"
+      if (!grepl("@", selected_order_id)) {
+        showNotification("选中的订单不包含识别符 '@'，无法进行合并！", type = "error")
+        return()
+      }
+      
+      # 提取主单号
+      main_order_id <- sub("@.*", "", selected_order_id)  # 提取 '@' 之前的部分
+      
+      # 获取可能的子单
+      possible_sub_orders <- orders() %>%
+        filter(grepl(paste0("^", main_order_id, "@"), OrderID))
+      
+      # 检查子单是否满足合并条件
+      if (nrow(possible_sub_orders) == 0) {
+        showNotification("未找到符合条件的子单！", type = "error")
+        return()
+      }
+      
+      order_statuses <- unique(possible_sub_orders$OrderStatus)
+      tracking_numbers <- unique(possible_sub_orders$UsTrackingNumber)
+      
+      # 检查订单状态和运单号是否满足合并条件
+      if (!all(order_statuses == "备货") || length(tracking_numbers) > 1) {
+        showNotification("子单的订单状态必须全部为 '备货' 且运单号必须一致，无法合并！", type = "error")
+        return()
+      }
+      
+      # 获取子单的物品
+      sub_items <- unique_items_data() %>%
+        filter(OrderID %in% possible_sub_orders$OrderID)
+      
+      # 更新子单物品的订单号为主单号
+      update_order_id(con, sub_items$UniqueID, main_order_id)
+      
+      # 子单图片路径拼接
+      image_paths <- possible_sub_orders$OrderImagePath[!is.na(possible_sub_orders$OrderImagePath)]
+      
+      if (length(image_paths) > 0) {
+        # 生成拼接图片路径（带时间戳）
+        montage_path <- paste0("/var/www/images/", main_order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+        # 调用拼接图片函数
+        merged_image_path <- generate_montage(image_paths, montage_path)
+      } else {
+        merged_image_path <- NA  # 如果没有图片，路径设为 NA
+      }
+      
+      # 更新订单信息
+      merged_order <- tibble(
+        OrderID = main_order_id,
+        Platform = if (length(unique(possible_sub_orders$Platform)) > 1) "其他" else unique(possible_sub_orders$Platform)[1],
+        UsTrackingNumber = tracking_numbers[1],
+        CustomerName = ifelse(length(unique(possible_sub_orders$CustomerName)) > 0,
+                              paste(unique(possible_sub_orders$CustomerName), collapse = ", "), NA),
+        CustomerNetName = ifelse(length(unique(possible_sub_orders$CustomerNetName)) > 0,
+                                 paste(unique(possible_sub_orders$CustomerNetName), collapse = ", "), NA),
+        OrderImagePath = merged_image_path,  # 使用拼接后的图片路径
+        OrderNotes = ifelse(length(unique(possible_sub_orders$OrderNotes)) > 0,
+                            paste(unique(possible_sub_orders$OrderNotes), collapse = " | "), NA),
+        OrderStatus = "备货"
+      )
+      # 更新数据库中的订单
+      dbWriteTable(
+        con, "orders", merged_order,
+        append = TRUE, overwrite = FALSE
+      )
+      
+      # # 删除子单
+      # dbExecute(con, sprintf(
+      #   "DELETE FROM orders WHERE OrderID IN (%s)",
+      #   paste(shQuote(possible_sub_orders$OrderID), collapse = ", ")
+      # ))
+      
+      showNotification(paste("订单合并成功！主单号为：", main_order_id), type = "message")
+      
+    }, error = function(e) {
+      showNotification(paste("合并订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
+  
   
   
   ################################################################
