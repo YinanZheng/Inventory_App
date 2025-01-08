@@ -1417,6 +1417,13 @@ server <- function(input, output, session) {
           
           fluidRow(
             column(6, 
+                   textInput("filter_sku", "SKU", placeholder = "输入SKU", width = "100%")),
+            column(6, 
+                   textInput("filter_item_name", "商品名", placeholder = "输入商品名", width = "100%"))
+          ),
+          
+          fluidRow(
+            column(6, 
                    actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
             column(6, 
                    actionButton("reset_filter_btn", "清空筛选条件", class = "btn-secondary", style = "width: 100%;"))
