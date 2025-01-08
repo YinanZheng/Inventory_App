@@ -734,7 +734,9 @@ handleOperation <- function(
   
   if (is.null(sku) || sku == "") {
     showNotification("请先扫描 SKU！", type = "error")
-    renderItemInfo(output, output_name, NULL, placeholder_300px_path, count_label, count_field)
+    shinyjs::delay(5000, {
+      renderItemInfo(output, output_name, NULL, placeholder_300px_path, count_label, count_field)
+    })    
     return()
   }
   

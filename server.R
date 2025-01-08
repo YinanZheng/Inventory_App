@@ -1144,6 +1144,8 @@ server <- function(input, output, session) {
     # 重置输入
     updateTextInput(session, "inbound_sku", value = "")
     updateNumericInput(session, "inbound_quantity", value = 1)
+    
+    runjs("document.getElementById('inbound_sku').focus();")
   })
   
   
