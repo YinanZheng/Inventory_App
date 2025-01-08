@@ -3113,30 +3113,17 @@ server <- function(input, output, session) {
           placeholder_150px_path,
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
-        # 
-        # # 从 unique_items_data() 中计算额外信息
-        # sku_stats <- unique_items_data() %>%
-        #   filter(SKU == sku) %>%
-        #   group_by(Status) %>%
-        #   summarise(Count = n(), .groups = "drop") %>%
-        #   pivot_wider(names_from = Status, values_from = Count, values_fill = 0) %>%
-        #   mutate(
-        #     美国库存数 = `美国入库`,
-        #     在途库存数 = `国内出库`,
-        #     国内库存数 = `国内入库`,
-        #     已售库存数 = coalesce(`国内售出`, 0) + coalesce(`美国售出`, 0) + coalesce(`美国调货`, 0) + coalesce(`美国发货`, 0)
-        #   )
-        # 
-        # # 如果未找到统计信息，使用默认值 0
-        # if (nrow(sku_stats) == 0) {
-        #   sku_stats <- tibble(
-        #     美国库存数 = 0,
-        #     在途库存数 = 0,
-        #     国内库存数 = 0,
-        #     已售库存数 = 0
-        #   )
-        # }
-        
+
+        # 从 unique_items_data() 中计算额外信息
+        sku_stats <- unique_items_data() %>%
+          filter(SKU == sku) %>%
+          summarise(
+            美国库存数 = sum(Status == "美国入库", na.rm = TRUE),
+            在途库存数 = sum(Status == "国内出库", na.rm = TRUE),
+            国内库存数 = sum(Status == "国内入库", na.rm = TRUE),
+            已售库存数 = sum(Status %in% c("国内售出", "美国售出", "美国调货", "美国发货"), na.rm = TRUE)
+          )
+      
         # 渲染图片和表格信息
         div(
           style = "display: flex; flex-direction: column; align-items: center; padding: 10px;",
@@ -3153,10 +3140,10 @@ server <- function(input, output, session) {
               tags$tr(tags$td(tags$b("分类：")), tags$td(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]))),
               tags$tr(tags$td(tags$b("平均单价：")), tags$td(sprintf("¥%.2f", sku_data$ProductCost[1]))),
               tags$tr(tags$td(tags$b("平均运费：")), tags$td(sprintf("¥%.2f", sku_data$ShippingCost[1]))),
-              # tags$tr(tags$td(tags$b("美国库存数：")), tags$td(sku_stats$美国库存数)),
-              # tags$tr(tags$td(tags$b("在途库存数：")), tags$td(sku_stats$在途库存数)),
-              # tags$tr(tags$td(tags$b("国内库存数：")), tags$td(sku_stats$国内库存数)),
-              # tags$tr(tags$td(tags$b("已售库存数：")), tags$td(sku_stats$已售库存数)),
+              tags$tr(tags$td(tags$b("国内库存数：")), tags$td(sku_stats$国内库存数)),
+              tags$tr(tags$td(tags$b("在途库存数：")), tags$td(sku_stats$在途库存数)),
+              tags$tr(tags$td(tags$b("美国库存数：")), tags$td(sku_stats$美国库存数)),
+              tags$tr(tags$td(tags$b("已售库存数：")), tags$td(sku_stats$已售库存数)),
               tags$tr(tags$td(tags$b("总库存数：")), tags$td(sku_data$Quantity[1]))
             )
           )
