@@ -3071,13 +3071,14 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听主页面和子页面的切换
-  observe({
-    # 当用户切换到“查询”主页面或“商品状态”分页时，触发刷新
+  observeEvent({
+    list(input$inventory_china, input$query_tabs)  # 仅在这些输入发生变化时触发
+  }, {
     if (input$inventory_china == "查询" && input$query_tabs == "商品状态") {
       inventory_refresh_trigger(!inventory_refresh_trigger())
       showNotification("库存表已更新！", type = "message")
     }
-  })
+  }, ignoreInit = TRUE)  # 忽略初始值
   
   # 物品表过滤模块
   itemFilterServer(
