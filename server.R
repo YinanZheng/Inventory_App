@@ -298,21 +298,19 @@ server <- function(input, output, session) {
     }
     
     # 根据运单号筛选，处理前缀不定的情况
-    cleaned_filter_tracking_id <- trimws(input$filter_tracking_id)
-    cleaned_filter_tracking_id <- gsub("[^0-9]", "", cleaned_filter_tracking_id)
+    cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(input$filter_tracking_id))
     
-    # 确保 cleaned_filter_tracking_id 不为空并且有效
     if (!is.null(cleaned_filter_tracking_id) && nzchar(cleaned_filter_tracking_id)) {
       data <- data %>%
         filter(
           !is.na(UsTrackingNumber) &  # 确保运单号字段不为空
             UsTrackingNumber != "" &  # 确保运单号不是空字符串
-            (UsTrackingNumber == cleaned_filter_tracking_id |  # 完整匹配
-               (!is.na(cleaned_filter_tracking_id) && nzchar(cleaned_filter_tracking_id) &&
-                  stri_detect_fixed(cleaned_filter_tracking_id, UsTrackingNumber)))  # 子字符串匹配
+            (
+              UsTrackingNumber == cleaned_filter_tracking_id |  # 完整匹配
+                grepl(cleaned_filter_tracking_id, UsTrackingNumber, fixed = TRUE)  # 子字符串匹配
+            )
         )
     }
-    
     
     # 根据顾客姓名筛选
     if (!is.null(input$filter_customer_name) && input$filter_customer_name != "") {
