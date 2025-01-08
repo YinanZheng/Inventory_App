@@ -2312,10 +2312,11 @@ server <- function(input, output, session) {
       
       order_statuses <- unique(possible_sub_orders$OrderStatus)
       tracking_numbers <- unique(possible_sub_orders$UsTrackingNumber)
+      platforms <- unique(possible_sub_orders$Platform)
       
-      # 检查订单状态和运单号是否满足合并条件
-      if (!all(order_statuses == "备货") || length(tracking_numbers) > 1) {
-        showNotification("子单的订单状态必须全部为 '备货' 且运单号必须一致，无法合并！", type = "error")
+      # 检查订单状态、运单号和平台是否满足合并条件
+      if (!all(order_statuses == "备货") || length(tracking_numbers) > 1 || length(platforms) > 1) {
+        showNotification("子单的订单状态必须全部为 '备货'，运单号和平台必须一致，无法合并！", type = "error")
         return()
       }
       
