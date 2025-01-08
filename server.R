@@ -90,6 +90,12 @@ server <- function(input, output, session) {
     })
   })
   
+  # 商品名自动联想
+  item_names <- reactive({
+    req(inventory())
+    unique(inventory()$ItemName)  # 提取唯一的商品名
+  })
+  
   # 物品追踪表
   unique_items_data <- reactive({
     # 当 refresh_trigger 改变时触发更新
@@ -620,43 +626,39 @@ server <- function(input, output, session) {
     }
   })
   
-  # 商品名自动联想
-  item_names <- reactive({
-    req(inventory())
-    unique(inventory()$ItemName)  # 提取唯一的商品名
-  })
+  # observeEvent(input$new_name, {
+  #   current_input <- trimws(input$new_name)
+  #   if (current_input == "") {
+  #     runjs("$('#name_hint').text('');")  # 清空提示
+  #   } else {
+  #     suggestions <- item_names()[startsWith(item_names(), current_input)]  # 匹配前缀
+  #     if (length(suggestions) > 0) {
+  #       hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))
+  #       # 动态计算输入框宽度
+  #       runjs(sprintf("
+  #       const inputElement = document.getElementById('new_name');
+  #       const inputValue = '%s';
+  #       const span = document.createElement('span');
+  #       span.style.visibility = 'hidden';
+  #       span.style.position = 'absolute';
+  #       span.style.whiteSpace = 'nowrap';
+  #       span.style.fontSize = window.getComputedStyle(inputElement).fontSize;
+  #       span.innerHTML = inputValue.replace(/ /g, '&nbsp;');
+  #       document.body.appendChild(span);
+  #       const inputWidth = span.offsetWidth;
+  #       document.body.removeChild(span);
+  #       const hintElement = document.getElementById('name_hint');
+  #       hintElement.textContent = '%s';
+  #       hintElement.style.left = `${inputWidth + 17}px`;
+  #       hintElement.style.fontStyle = 'italic'; // 设置斜体字
+  #     ", current_input, hint))  # 提示文字动态对齐到输入末尾
+  #     } else {
+  #       runjs("$('#name_hint').text('');")  # 无匹配时清空提示
+  #     }
+  #   }
+  # })
   
-  observeEvent(input$new_name, {
-    current_input <- trimws(input$new_name)
-    if (current_input == "") {
-      runjs("$('#name_hint').text('');")  # 清空提示
-    } else {
-      suggestions <- item_names()[startsWith(item_names(), current_input)]  # 匹配前缀
-      if (length(suggestions) > 0) {
-        hint <- substr(suggestions[1], nchar(current_input) + 1, nchar(suggestions[1]))
-        # 动态计算输入框宽度
-        runjs(sprintf("
-        const inputElement = document.getElementById('new_name');
-        const inputValue = '%s';
-        const span = document.createElement('span');
-        span.style.visibility = 'hidden';
-        span.style.position = 'absolute';
-        span.style.whiteSpace = 'nowrap';
-        span.style.fontSize = window.getComputedStyle(inputElement).fontSize;
-        span.innerHTML = inputValue.replace(/ /g, '&nbsp;');
-        document.body.appendChild(span);
-        const inputWidth = span.offsetWidth;
-        document.body.removeChild(span);
-        const hintElement = document.getElementById('name_hint');
-        hintElement.textContent = '%s';
-        hintElement.style.left = `${inputWidth + 17}px`;
-        hintElement.style.fontStyle = 'italic'; // 设置斜体字
-      ", current_input, hint))  # 提示文字动态对齐到输入末尾
-      } else {
-        runjs("$('#name_hint').text('');")  # 无匹配时清空提示
-      }
-    }
-  })
+  autocompleteInputServer("purchase", get_suggestions = item_names())  # 返回商品名列表
   
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
@@ -1417,9 +1419,9 @@ server <- function(input, output, session) {
           
           fluidRow(
             column(6, 
-                   textInput("filter_sku", "SKU", placeholder = "输入SKU", width = "100%")),
+                   textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
             column(6, 
-                   textInput("filter_item_name", "商品名", placeholder = "输入商品名", width = "100%"))
+                   textInput("filter_item_name", "商品名反查", placeholder = "输入商品名", width = "100%"))
           ),
           
           fluidRow(

@@ -172,20 +172,21 @@ ui <- navbarPage(
         fluidRow(
           column(
             7,
-            div(
-              style = "position: relative; width: 100%;",
-              div(
-                style = "position: absolute; top: 50%; left: 10px; transform: translateY(17%); color: grey; 
-               font-size: 15px; pointer-events: none; white-space: nowrap; overflow: hidden;",
-                id = "name_hint"
-              ),
-              textInput(
-                inputId = "new_name",
-                label = "商品名：",
-                placeholder = "请输入商品名...",
-                width = "100%"
-              )
-            )
+            # div(
+            #   style = "position: relative; width: 100%;",
+            #   div(
+            #     style = "position: absolute; top: 50%; left: 10px; transform: translateY(17%); color: grey; 
+            #    font-size: 15px; pointer-events: none; white-space: nowrap; overflow: hidden;",
+            #     id = "name_hint"
+            #   ),
+            #   textInput(
+            #     inputId = "new_name",
+            #     label = "商品名：",
+            #     placeholder = "请输入商品名...",
+            #     width = "100%"
+            #   )
+            # )
+            autocompleteInputUI("purchase", label = "商品名：", placeholder = "请输入商品名...")
           ),  
           column(5, dateInput(
             inputId = "purchase_date",
