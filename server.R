@@ -297,10 +297,13 @@ server <- function(input, output, session) {
       data <- data %>% filter(grepl(cleaned_filter_order_id, OrderID, ignore.case = TRUE))
     }
     
-    # 根据运单号筛选
+    # 根据运单号筛选，处理前缀不定的情况
     cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(input$filter_tracking_id))
     if (!is.null(cleaned_filter_tracking_id) && cleaned_filter_tracking_id != "") {
-      data <- data %>% filter(stri_detect_fixed(cleaned_filter_tracking_id, UsTrackingNumber))
+      data <- data %>%
+        filter(!is.na(UsTrackingNumber) &  # 确保运单号字段不为空
+                 (UsTrackingNumber == cleaned_filter_tracking_id | 
+                    stri_detect_fixed(cleaned_filter_tracking_id, UsTrackingNumber)))  # 完整匹配或子字符串匹配
     }
     
     # 根据顾客姓名筛选
