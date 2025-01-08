@@ -3482,7 +3482,7 @@ server <- function(input, output, session) {
         DomesticShippingCost = "平摊运费",
         PurchaseTime = "采购日",
         Status = "库存态",
-        Defect = "物品态"
+        Defect = "瑕疵态"
       ))
       
       # 按 SKU 计算全局库存统计
@@ -3493,9 +3493,9 @@ server <- function(input, output, session) {
           国内库存数 = sum(`库存态` == "国内入库"),
           在途库存数 = sum(`库存态` == "国内出库"),
           美国库存数 = sum(`库存态` == "美国入库"),
-          无瑕 = sum(`物品态` == "无瑕"),
-          瑕疵 = sum(`物品态` == "瑕疵"),
-          修复 = sum(`物品态` == "修复"),
+          无瑕 = sum(`瑕疵态` == "无瑕"),
+          瑕疵 = sum(`瑕疵态` == "瑕疵"),
+          修复 = sum(`瑕疵态` == "修复"),
           .groups = "drop"
         )
       
@@ -3730,7 +3730,7 @@ server <- function(input, output, session) {
   # 使用 uniqueItemsTableServer 渲染表格
   unique_items_table_admin_selected_row <- callModule(uniqueItemsTableServer, "admin_items_table", 
                                                       column_mapping = c(common_columns, list(
-                                                        Defect = "物品态",
+                                                        Defect = "瑕疵态",
                                                         PurchaseTime = "采购日",
                                                         DomesticEntryTime = "入库日",
                                                         DomesticExitTime = "出库日",
