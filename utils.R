@@ -674,7 +674,9 @@ handleSkuInput <- function(
   
   if (is.null(sku) || sku == "") {
     # 如果 SKU 为空，渲染默认空的商品信息
-    renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
+    shinyjs::delay(5000, {
+      renderItemInfo(output, output_name, NULL, placeholder_300px_path, count_label, count_field)
+    })
     return(NULL) # 返回 NULL
   }
   
