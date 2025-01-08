@@ -134,7 +134,7 @@ server <- function(input, output, session) {
   ")
   })
   
-  # 加载 makers 和 item names
+  # 加载当前已有的 makers 和 item names 的对应关系
   observe({
     unique_data <- unique_items_data()  # 数据源
     makers_items <- unique_data %>%
@@ -151,7 +151,7 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM orders")
   })
   
-  ##################################################################################
+  ####################################################################################################################################
   
   # 采购页过滤
   filtered_unique_items_data_purchase <- reactive({
@@ -318,7 +318,7 @@ server <- function(input, output, session) {
     data
   })
   
-  ##########################################################
+  ###
   
   # 物品管理页过滤
   filtered_unique_items_data_manage <- reactive({
@@ -454,7 +454,7 @@ server <- function(input, output, session) {
                                                        ItemCount = "数量")
                                                      ), data = filtered_unique_items_data_sold)
   
-  #################
+  ####################################################################################################################################
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
                                                        column_mapping <- c(common_columns, list(
@@ -530,6 +530,8 @@ server <- function(input, output, session) {
                                    data = filtered_orders,  # 数据源
                                    selection = "single" # 单选模式
   )
+  
+  
   
   ####################################################################################################################################
   
