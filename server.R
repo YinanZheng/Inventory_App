@@ -504,7 +504,8 @@ server <- function(input, output, session) {
                                                          DomesticExitTime = "出库日",
                                                          DomesticSoldTime = "售出日",
                                                          OrderID = "订单号")
-                                                       ), selection = "multiple", data = filtered_unique_items_data_manage)
+                                                       ), selection = "multiple", data = filtered_unique_items_data_manage,
+                                                       option = modifyList(table_default_options, list(scrollY = "730px", searching = TRUE)))
   
   unique_items_table_defect_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_defect",
                                                        column_mapping <- c(common_columns, list(
@@ -512,7 +513,8 @@ server <- function(input, output, session) {
                                                          DomesticEntryTime = "入库日",
                                                          Defect = "瑕疵态",
                                                          DefectNotes = "瑕疵备注")
-                                                       ), selection = "multiple", data = filtered_unique_items_data_defect)
+                                                       ), selection = "multiple", data = filtered_unique_items_data_defect,
+                                                       option = modifyList(table_default_options, list(scrollY = "730px", searching = TRUE)))
   
   unique_items_table_logistics_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_logistics",
                                                           column_mapping = c(common_columns, list(
@@ -522,7 +524,8 @@ server <- function(input, output, session) {
                                                             IntlShippingCost = "国际运费",
                                                             IntlTracking = "国际运单"
                                                           )), selection = "multiple",
-                                                          data = filtered_unique_items_data_logistics)
+                                                          data = filtered_unique_items_data_logistics,
+                                                          option = modifyList(table_default_options, list(scrollY = "730px", searching = TRUE)))
   
   output$filtered_inventory_table_query <- renderDT({  # input$filtered_inventory_table_query_rows_selected
     column_mapping <- list(
