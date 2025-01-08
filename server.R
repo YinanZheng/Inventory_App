@@ -281,6 +281,11 @@ server <- function(input, output, session) {
   })
   
   # 售出-订单管理分页过滤
+  debounced_item_name <- debounce(
+    reactive({ trimws(input[["sold-item_name"]]) }),  # 确保输入值是去除空格的
+    millis = 300  # 设置防抖时间为 300 毫秒（可根据需要调整）
+  )
+  
   filtered_orders <- reactive({
     req(orders())  # 确保订单数据存在
     
@@ -331,9 +336,9 @@ server <- function(input, output, session) {
       data <- data %>% filter(OrderID %in% sku_orders)
     }
     
-    if (!is.null(input[["sold-item_name"]]) && input[["sold-item_name"]] != "") {
+    if (!is.null(debounced_item_name()) && debounced_item_name() != "") {
       item_orders <- unique_items_data() %>%
-        filter(grepl(trimws(input[["sold-item_name"]]), ItemName, ignore.case = TRUE)) %>%
+        filter(grepl(debounced_item_name(), ItemName, ignore.case = TRUE)) %>%
         pull(OrderID) %>%  # 提取与商品名相关的订单号
         unique()
       
