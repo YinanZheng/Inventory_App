@@ -965,7 +965,7 @@ ui <- navbarPage(
         class = "main-panel",
         # 使用 tabsetPanel 来组织分页
         tabsetPanel(
-          type = "query_tabs", # 使用 tabs 样式
+          id = "query_tabs",
           tabPanel(
             "商品状态",
             fluidRow(
