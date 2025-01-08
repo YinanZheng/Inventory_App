@@ -3070,12 +3070,12 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 监听标签页切换事件
-  observeEvent(input$main_tabs, {
-    if (input$main_tabs == "查询") {
-      # 切换到“查询”页面时，手动触发刷新
+  # 监听主页面和子页面的切换
+  observe({
+    # 当用户切换到“查询”主页面或“商品状态”分页时，触发刷新
+    if (input$main_tabs == "查询" && input$tabs == "商品状态") {
       inventory_refresh_trigger(!inventory_refresh_trigger())
-      showNotification("库存数据已更新！", type = "message")
+      showNotification("库存表已更新！", type = "message")
     }
   })
   
