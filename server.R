@@ -658,7 +658,7 @@ server <- function(input, output, session) {
   #   }
   # })
   
-  autocompleteInputServer("purchase", get_suggestions = item_names())  # 返回商品名列表
+  autocompleteInputServer("purchase", get_suggestions = item_names)  # 返回商品名列表
   
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
