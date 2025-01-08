@@ -298,12 +298,7 @@ server <- function(input, output, session) {
     
     # 根据运单号筛选，处理前缀多余情况
     if (!is.null(input$filter_tracking_id) && input$filter_tracking_id != "") {
-      cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(input$filter_tracking_id))
-      # 如果运单号长度超过 22，则去掉前 8 位
-      if (nchar(cleaned_filter_tracking_id) > 22) {
-        cleaned_filter_tracking_id <- substr(cleaned_filter_tracking_id, 9, nchar(cleaned_filter_tracking_id))
-      }
-      data <- data %>% filter(UsTrackingNumber == cleaned_filter_tracking_id)  # 完全匹配
+      data <- match_tracking_number(data, "UsTrackingNumber", input$filter_tracking_id)
     }
 
     # 根据顾客姓名筛选

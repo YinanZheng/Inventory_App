@@ -1455,6 +1455,31 @@ get_shelf_items <- function(data, sku, valid_status = c("美国入库", "国内�
   return(result)
 }
 
+match_tracking_number <- function(data, tracking_number_column, input_tracking_id) {
+  # 清理输入运单号
+  cleaned_tracking_id <- gsub("[^0-9]", "", trimws(input_tracking_id))
+  
+  # 初次精准匹配
+  matched_data <- data %>%
+    filter(
+      !is.na(.data[[tracking_number_column]]) &
+        .data[[tracking_number_column]] != "" &
+        .data[[tracking_number_column]] == cleaned_tracking_id
+    )
+  
+  # 如果首次匹配为空且输入运单号长度超过 22，则截取后 22 位进行二次匹配
+  if (nrow(matched_data) == 0 && nchar(cleaned_tracking_id) > 22) {
+    trimmed_tracking_id <- substr(cleaned_tracking_id, 9, nchar(cleaned_tracking_id))
+    matched_data <- data %>%
+      filter(
+        !is.na(.data[[tracking_number_column]]) &
+          .data[[tracking_number_column]] != "" &
+          .data[[tracking_number_column]] == trimmed_tracking_id
+      )
+  }
+  
+  return(matched_data)
+}
 
 
 # 清理未被记录的图片 (每天运行一次)
