@@ -84,6 +84,8 @@ git pull origin main
 cd /srv/shiny-server/inventory-us
 git pull origin main
 
+cd /srv/shiny-server/inventory
+git pull origin main
 
 ### Restart shiny server
 sudo systemctl restart shiny-server
