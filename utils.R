@@ -675,7 +675,7 @@ handleSkuInput <- function(
   if (is.null(sku) || sku == "") {
     # 如果 SKU 为空，渲染默认空的商品信息
     shinyjs::delay(5000, {
-      renderItemInfo(output, output_name, NULL, placeholder_300px_path, count_label, count_field)
+      renderItemInfo(output, output_name, NULL, placeholder_path, count_label, count_field)
     })
     return(NULL) # 返回 NULL
   }
@@ -1217,95 +1217,6 @@ add_new_inventory_record <- function(con, sku, maker, major_type, minor_type, it
   })
 }
 
-adjust_inventory <- function(con, sku, adjustment, maker = NULL, major_type = NULL, 
-                             minor_type = NULL, item_name = NULL, quantity = NULL, 
-                             product_cost = NULL, unit_shipping_cost = NULL, image_path = NULL) {
-  tryCatch({
-    sku <- trimws(sku)  # 清理空格
-    # 查询现有库存
-    existing_item <- dbGetQuery(con, "SELECT * FROM inventory WHERE SKU = ?", params = list(sku))
-    
-    # 从 unique_items 表获取历史总数量
-    historical_quantity <- dbGetQuery(con, "
-      SELECT COUNT(*) AS TotalQuantity 
-      FROM unique_items 
-      WHERE SKU = ?", params = list(sku))$TotalQuantity[1]
-    
-    if (nrow(existing_item) > 0) {
-      # SKU 已存在，计算新的库存和成本
-      new_quantity <- existing_item$Quantity + adjustment
-      
-      # 判断是否需要更新成本
-      needs_cost_update <- !is.null(product_cost) && !is.null(quantity) && quantity > 0
-      
-      # 更新平均成本和运费
-      if (needs_cost_update) {
-        # 如果历史总数量为 0，直接使用新的采购成本
-        if (historical_quantity == 0) {
-          new_ave_product_cost <- product_cost
-          new_ave_shipping_cost <- unit_shipping_cost
-        } else {
-          # 基于 unique_items 的历史总数量计算加权平均成本
-          new_ave_product_cost <- ((existing_item$ProductCost * historical_quantity) + 
-                                     (product_cost * quantity)) / (historical_quantity + quantity)
-          new_ave_shipping_cost <- ((existing_item$ShippingCost * historical_quantity) + 
-                                      (unit_shipping_cost * quantity)) / (historical_quantity + quantity)
-        }
-      } else {
-        # 如果不需要更新成本，保持原有成本不变
-        new_ave_product_cost <- existing_item$ProductCost
-        new_ave_shipping_cost <- existing_item$ShippingCost
-      }
-      
-      # 库存不足的校验（仅在减少库存时检查）
-      if (adjustment < 0 && new_quantity < 0) {
-        showNotification("库存不足，无法完成操作！", type = "error")
-        return(FALSE)
-      }
-      
-      # 更新库存和成本到数据库
-      dbExecute(con, "UPDATE inventory 
-                      SET Quantity = ?, ProductCost = ?, ShippingCost = ? 
-                      WHERE SKU = ?", 
-                params = list(
-                  new_quantity, 
-                  round(new_ave_product_cost, 2), 
-                  round(new_ave_shipping_cost, 2), 
-                  sku
-                ))
-      
-      showNotification(paste("库存已成功调整! SKU:", sku), type = "message")
-      return(TRUE)
-    } else {
-      # SKU 不存在时的处理，仅在 adjustment >= 0 时允许新增
-      if (adjustment >= 0 && !is.null(maker) && !is.null(major_type) && 
-          !is.null(minor_type) && !is.null(item_name) && !is.null(quantity) && 
-          !is.null(product_cost)) {
-        
-        dbExecute(con, "INSERT INTO inventory 
-                        (SKU, Maker, MajorType, MinorType, ItemName, Quantity, ProductCost, ShippingCost, ItemImagePath) 
-                        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                  params = list(
-                    sku, maker, major_type, minor_type, item_name, 
-                    0, 
-                    round(product_cost, 2), 
-                    round(unit_shipping_cost, 2), 
-                    image_path
-                  ))
-        
-        showNotification(paste("新商品成功登记! SKU:", sku, ", 商品名:", item_name), type = "message")
-        return(TRUE)
-      } else {
-        showNotification("库存调整失败：SKU 不存在且缺少新增商品的必要信息！", type = "error")
-        return(FALSE)
-      }
-    }
-  }, error = function(e) {
-    # 错误处理
-    showNotification(paste("调整库存时发生错误：", e$message), type = "error")
-    return(FALSE)
-  })
-}
 
 renderOrderItems <- function(output, output_name, order_items, deletable = FALSE) {
   # 如果没有物品，返回提示信息
