@@ -287,9 +287,9 @@ server <- function(input, output, session) {
     }
     
     # 根据运单号筛选
-    cleaned_filter_tracking_id <- trimws(input$filter_tracking_id)
+    cleaned_filter_tracking_id <- gsub("[^0-9]", "", trimws(input$filter_tracking_id))
     if (!is.null(cleaned_filter_tracking_id) && cleaned_filter_tracking_id != "") {
-      data <- data %>% filter(grepl(cleaned_filter_tracking_id, UsTrackingNumber, ignore.case = TRUE))
+      data <- data %>% filter(stri_detect_fixed(cleaned_filter_tracking_id, UsTrackingNumber))
     }
     
     # 根据顾客姓名筛选
