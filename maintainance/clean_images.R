@@ -1,5 +1,5 @@
 library(DBI)
 
-source("utils.R", local = TRUE)
+source("/srv/shiny-server/inventory/utils.R", local = TRUE)
 
 clean_untracked_images()
