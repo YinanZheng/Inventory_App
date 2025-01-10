@@ -43,7 +43,7 @@ itemFilterUI <- function(
                label = "库存状态",
                choices = c("所有状态" = "", "采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "美国调货", "退货"),
                selected = "",
-               width = "100%"
+               width = "100%", class = "custom-selectize"
              )
       ),
       column(12, 
