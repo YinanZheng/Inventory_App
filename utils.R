@@ -1073,7 +1073,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       showNotification("订单信息已更新！", type = "message")
     } else {
       dbExecute(con, "
-        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, CustomerNetName, Platform, OrderImagePath, OrderStatus)
+        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, CustomerNetName, Platform, OrderImagePath, OrderStatus, HasPDF)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 params = list(
                   order_id,
