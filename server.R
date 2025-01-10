@@ -1562,6 +1562,66 @@ server <- function(input, output, session) {
   
   ######
   
+  #运单PDF上传模块
+  observeEvent(input$shiplabel_pdf_upload, {
+    req(input$shiplabel_pdf_upload)
+    
+    # PDF 文件路径
+    pdf_path <- input$shiplabel_pdf_upload$datapath
+    
+    tryCatch({
+      # 检查 PDF 的页数
+      pdf_info <- pdftools::pdf_info(pdf_path)
+      if (pdf_info$pages != 1) {
+        output$upload_status_message <- renderUI({
+          tags$p("仅允许上传单页运单文件，请重新上传。", style = "color: red;")
+        })
+        return()
+      }
+      
+      # 将 PDF 转换为图片
+      images <- pdftools::pdf_convert(pdf_path, dpi = 300)
+      eng <- tesseract("eng")
+      
+      # 提取文本并搜索运单号
+      tracking_number <- NULL
+      text <- tesseract::ocr(images[1], engine = eng)  # 只处理第一页
+      matches <- regmatches(text, gregexpr("\\b\\d{4} \\d{4} \\d{4} \\d{4} \\d{4} \\d{2}\\b", text))
+      if (length(unlist(matches)) > 0) {
+        tracking_number <- gsub(" ", "", unlist(matches)[1])  # 移除空格
+      }
+      
+      if (is.null(tracking_number)) {
+        output$upload_status_message <- renderUI({
+          tags$p("未能提取运单号，请手动输入。", style = "color: red;")
+        })
+        return()
+      }
+      
+      # 将提取的运单号填充到输入框
+      updateTextInput(session, "tracking_number", value = tracking_number)
+      
+      # 目标文件夹
+      dest_dir <- "/var/uploads/shiplabels"
+      if (!dir.exists(dest_dir)) dir.create(dest_dir, recursive = TRUE)
+      
+      # 保存文件到目标目录
+      dest_file <- file.path(dest_dir, paste0(tracking_number, ".pdf"))
+      file.rename(pdf_path, dest_file)
+      
+      # 上传成功提示
+      output$upload_status_message <- renderUI({
+        tags$p("运单上传成功！", style = "color: green;")
+      })
+    }, error = function(e) {
+      output$upload_status_message <- renderUI({
+        tags$p("文件上传失败！", style = "color: red;")
+      })
+    })
+  })
+  
+  
+  
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
   
