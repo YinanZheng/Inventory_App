@@ -22,7 +22,7 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     if ("HasPDF" %in% colnames(original_data) && "运单" %in% column_names) {
       table <- table %>%
         formatStyle(
-          "tracking_number",
+          "运单",
           backgroundColor = styleEqual(
             c(1, 0),  # 根据原始数据中的 HasPDF 列值
             c("#95b3fc", "transparent")  # HasPDF 为 1 时浅蓝色背景，为 0 时透明
