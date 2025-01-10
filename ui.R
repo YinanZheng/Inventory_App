@@ -472,16 +472,11 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(3, div(style = "font-size: 12px;", checkboxInput("is_transfer_order", "调货", value = FALSE))),
-            column(3, div(style = "font-size: 12px;", checkboxInput("is_preorder", "预定", value = FALSE))),
-            column(6, selectizeInput(
-              "preorder_supplier",
-              "预定单供应商:",
-              choices = NULL,
-              width = "100%",
-              options = list(placeholder = '填选供应商...', maxOptions = 500)
-            ))
+            column(6, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
+            column(6, div(checkboxInput("is_preorder", "预定", value = FALSE))),
           ),
+          
+          selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...', maxOptions = 500)),
           
           # 运单号
           textInput("tracking_number", "运单号", placeholder = "输入运单号或上传运单PDF提取", width = "100%"),
