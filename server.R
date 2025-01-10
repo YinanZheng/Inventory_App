@@ -1495,10 +1495,10 @@ server <- function(input, output, session) {
   
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
-    
-    # 使用 orders() 数据替代 SQL 查询
     tryCatch({
-      # 检查是否有匹配结果且存在有效的 CustomerNetName
+      result <- orders() %>%
+        filter(grepl(input$customer_name, CustomerName, ignore.case = TRUE))  # 模糊匹配顾客姓名
+      
       valid_result <- result %>%
         filter(!is.na(CustomerNetName) & CustomerNetName != "") %>%  # 过滤有效的网名
         slice_head(n = 1)  # 仅返回第一条有网名的记录
