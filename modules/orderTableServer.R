@@ -19,7 +19,7 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     table <- datatable_and_names$datatable
     
     # 根据 HasPDF 列高亮运单号（即使 HasPDF 列不可见）
-    if ("HasPDF" %in% colnames(original_data) && "tracking_number" %in% column_names) {
+    if ("HasPDF" %in% colnames(original_data) && "运单" %in% column_names) {
       table <- table %>%
         formatStyle(
           "tracking_number",
