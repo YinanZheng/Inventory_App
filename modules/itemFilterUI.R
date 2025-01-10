@@ -2,6 +2,7 @@ itemFilterUI <- function(
     id, 
     border_color = "#007BFF", 
     text_color = "#007BFF", 
+    use_status = TRUE,
     use_purchase_date = TRUE, 
     use_sold_date = FALSE, 
     use_exit_date = FALSE
@@ -28,23 +29,34 @@ itemFilterUI <- function(
       )
     ),
     
-    # 供应商和商品名筛选行
+    if(use_status) {
+      fluidRow(
+        column(7, 
+               selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
+                              options = list(placeholder = '名称(或拼音)...', 
+                                             maxOptions = 500,
+                                             create = FALSE))
+        ),
+        column(5, 
+               selectInput(
+                 inputId = ns("status"),
+                 label = "库存状态",
+                 choices = c("所有状态" = "", "采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "美国调货", "退货"),
+                 selected = "",
+                 width = "100%"
+               ),
+        ))
+    } else {
+      fluidRow(
+        column(12, 
+               selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
+                              options = list(placeholder = '名称(或拼音)...', 
+                                             maxOptions = 500,
+                                             create = FALSE))
+        ))
+    }
+    
     fluidRow(
-      column(7, 
-             selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
-                            options = list(placeholder = '名称(或拼音)...', 
-                                           maxOptions = 500,
-                                           create = FALSE))
-      ),
-      column(5, 
-             selectInput(
-               inputId = ns("status"),
-               label = "库存状态",
-               choices = c("所有状态" = "", "采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "美国调货", "退货"),
-               selected = "",
-               width = "100%"
-             ),
-      ),
       column(12, 
              selectizeInput(
                ns("name"),                
