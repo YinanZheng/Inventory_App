@@ -1498,18 +1498,19 @@ server <- function(input, output, session) {
     
     # 使用 orders() 数据替代 SQL 查询
     tryCatch({
-      # 模糊匹配顾客姓名
-      result <- orders() %>%
-        filter(grepl(input$customer_name, CustomerName, ignore.case = TRUE)) %>%
-        slice_head(n = 1)  # 限制返回一条记录
+      # 检查是否有匹配结果且存在有效的 CustomerNetName
+      valid_result <- result %>%
+        filter(!is.na(CustomerNetName) & CustomerNetName != "") %>%  # 过滤有效的网名
+        slice_head(n = 1)  # 仅返回第一条有网名的记录
       
-      if (nrow(result) > 0) {
-        return(result$CustomerNetName[1])  # 返回第一个匹配的网名
+      # 返回第一个有效的网名或 NULL
+      if (nrow(valid_result) > 0) {
+        return(valid_result$CustomerNetName[1])
       } else {
-        return(NULL)  # 如果没有匹配结果，返回 NULL
+        return(NULL)  # 没有匹配的网名
       }
     }, error = function(e) {
-      showNotification("查询数据库时出错，请检查连接或输入值", type = "error")
+      showNotification("网名查找出错！", type = "error")
       return(NULL)
     })
   })
