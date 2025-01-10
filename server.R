@@ -2328,11 +2328,6 @@ server <- function(input, output, session) {
             # 恢复库存数量
             adjust_inventory_quantity(con, item$SKU, adjustment = 1)  # 增加库存数量
             
-            if (is.null(timestamp_column)) {
-              showNotification(paste0("物品 ", item$UniqueID, " 的状态无法恢复：未找到对应时间戳。"), type = "error")
-              return()
-            }
-            
             # 恢复物品状态
             update_status(
               con = con,
