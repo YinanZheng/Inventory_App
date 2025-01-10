@@ -384,7 +384,6 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "defect_filter-maker",
-      status_input_id = "defect_filter-status",
       item_name_input_id = "defect_filter-name",
       purchase_date_range_id = "defect_filter-purchase_date_range"
     )
@@ -460,7 +459,6 @@ server <- function(input, output, session) {
       data = unique_items_data(),
       input = input,
       maker_input_id = "download_maker",
-      status_input_id = "download_filter-status",
       item_name_input_id = "download_item_name",
       purchase_date_range_id = "download_date_range"
     )
