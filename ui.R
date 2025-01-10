@@ -467,7 +467,7 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入", width = "100%")),
+            column(6, textInput("customer_name", "顾客姓名", placeholder = "请输入或运单提取", width = "100%")),
             column(6, textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"))
           ),
           
@@ -479,7 +479,7 @@ ui <- navbarPage(
           selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...', maxOptions = 500)),
           
           # 运单号
-          textInput("tracking_number", "运单号", placeholder = "输入运单号或上传运单PDF提取", width = "100%"),
+          textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
           
           # 运单PDF 文件上传组件
           fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
