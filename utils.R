@@ -1295,7 +1295,12 @@ renderOrderItems <- function(output, output_name, order_items, deletable = FALSE
           ),
           tags$tr(
             tags$td(tags$strong("状态:"), style = "padding: 0px;"),
-            tags$td(item$Status)
+            tags$td(
+              paste0(
+                item$Status,
+                " (", ifelse(is.na(item$IntlTracking) || item$IntlTracking == "", "未邮寄", "已邮寄"), ")"
+              )
+            )
           ),
           tags$tr(
             tags$td(tags$strong("瑕疵态:"), style = "padding: 0px;"),

@@ -469,7 +469,7 @@ server <- function(input, output, session) {
                                                           DomesticEntryTime = "入库日",
                                                           Defect = "瑕疵态",
                                                           ItemCount = "数量")
-                                                        ), selection = "single", data = filtered_unique_items_data_inbound)
+                                                        ), selection = "multiple", data = filtered_unique_items_data_inbound)
   
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
                                                          column_mapping <- c(common_columns, list(
