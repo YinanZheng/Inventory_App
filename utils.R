@@ -1127,7 +1127,7 @@ update_label_status_column <- function(con, pdf_directory = "/var/uploads/shipla
         END"
       )
     } else {
-      "'无'"  # 如果没有任何文件，则所有状态设置为 '无'
+      '无'  # 如果没有任何文件，则所有状态设置为 '无'
     }
     
     update_query <- paste0(
