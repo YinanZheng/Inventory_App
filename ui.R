@@ -465,9 +465,9 @@ ui <- navbarPage(
               )
             )
           ),
-          
-          textInput("customer_name", "顾客姓名", placeholder = "请输入或运单提取", width = "100%")),
-          textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%")),
+     
+          textInput("customer_name", "顾客姓名", placeholder = "请输入或运单提取", width = "100%"),
+          textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"),
           
           fluidRow(
             column(6, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
