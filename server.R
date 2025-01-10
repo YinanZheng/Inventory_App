@@ -1779,7 +1779,7 @@ server <- function(input, output, session) {
     sanitized_order_id <- gsub("#", "", trimws(input$order_id))
     
     # 调用封装函数登记订单
-    register_order(
+    order_registered <- register_order(
       order_id = sanitized_order_id,
       customer_name = input$customer_name,
       customer_netname = input$customer_netname,
@@ -1795,6 +1795,11 @@ server <- function(input, output, session) {
       is_preorder = input$is_preorder,
       preorder_supplier = input$preorder_supplier
     )
+    
+    # 如果订单登记失败，直接退出
+    if (!order_registered) {
+      return()
+    }
     
     orders_refresh_trigger(!orders_refresh_trigger())
   })
@@ -2050,7 +2055,6 @@ server <- function(input, output, session) {
       
       # 如果订单登记失败，直接退出
       if (!order_registered) {
-        showNotification("订单登记失败，无法完成售出操作！", type = "error")
         return()
       }
       
