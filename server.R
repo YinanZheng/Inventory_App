@@ -1601,6 +1601,15 @@ server <- function(input, output, session) {
       # 将提取的运单号填充到输入框
       updateTextInput(session, "tracking_number", value = tracking_number)
       
+      
+      if (!file.exists(pdf_path)) {
+        print("临时文件不存在，可能已被删除。")
+        output$upload_status_message <- renderUI({
+          tags$p("文件上传失败，临时文件丢失。", style = "color: red;")
+        })
+        return()
+      }
+      
       # 保存文件到目标目录
       dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
       file.copy(pdf_path, dest_file, overwrite = TRUE)
