@@ -558,6 +558,7 @@ server <- function(input, output, session) {
                                      CustomerNetName = "网名",
                                      Platform = "平台",
                                      UsTrackingNumber = "运单",
+                                     HasPDF = "PDF",
                                      OrderStatus = "状态",
                                      OrderNotes = "备注"
                                    ),

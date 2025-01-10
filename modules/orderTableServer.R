@@ -5,6 +5,8 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     # 获取原始数据
     original_data <- data()  # 原始传入的 reactive 数据
     
+    original_data$HasPDF <- ifelse(original_data$HasPDF == 1, "已上传", "无")
+    
     # 初始化渲染表
     datatable_and_names <- render_table_with_images(
       data = original_data,                 # 使用传递的 reactive 数据源
@@ -18,14 +20,18 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     column_names <- datatable_and_names$column_names
     table <- datatable_and_names$datatable
     
-    # 根据 HasPDF 列高亮运单号（即使 HasPDF 列不可见）
-    if ("HasPDF" %in% colnames(original_data) && "运单" %in% column_names) {
+    # 根据 HasPDF 列高亮运单号
+    if ("PDF" %in% column_names) {
       table <- table %>%
         formatStyle(
-          "运单",
+          "PDF",
           backgroundColor = styleEqual(
-            c(1, 0),  # 根据原始数据中的 HasPDF 列值
-            c("#95b3fc", "transparent")  # HasPDF 为 1 时浅蓝色背景，为 0 时透明
+            c("已上传", "无"),
+            c("#95b3fc", "transparent")
+          ),
+          color = styleEqual(
+            c("已上传", "无"),
+            c("black", "black")
           )
         )
     }
