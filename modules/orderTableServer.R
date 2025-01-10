@@ -5,7 +5,7 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     # 获取原始数据
     original_data <- data()  # 原始传入的 reactive 数据
     
-    original_data$HasPDF <- ifelse(original_data$HasPDF == 1, "已上传", "无")
+    original_data$HasPDF <- ifelse(original_data$HasPDF == 1, "有", "无")
     
     # 初始化渲染表
     datatable_and_names <- render_table_with_images(
