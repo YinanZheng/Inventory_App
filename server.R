@@ -1592,7 +1592,7 @@ server <- function(input, output, session) {
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
         
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
-        # updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1])
+        # updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1]) # 交给网名自动填写功能
         
         if (!is.null(existing_order$OrderStatus[1]) && !is.na(existing_order$OrderStatus[1])) {
           if (existing_order$OrderStatus[1] == "调货") {
