@@ -97,10 +97,10 @@ ui <- navbarPage(
       }
       
       /* 自定义 selectInput 样式 */
-      .custom-select-input .form-control {
+      .custom-select .select-input {
         font-size: 12px !important; /* 设置输入框字体大小 */
       }
-      .custom-select-input .dropdown-menu {
+      .custom-select .select-dropdown-content {
         font-size: 12px !important; /* 设置下拉菜单字体大小 */
       }
     
