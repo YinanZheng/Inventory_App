@@ -960,6 +960,19 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       }
     }
     
+    # 确认是否有 PDF 运单文件
+    has_pdf <- if (!is.null(tracking_number)) {
+      file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))
+    } else {
+      FALSE
+    }
+    
+    # 如果状态为 "调货" 且未上传运单 PDF，显示通知并阻止提交
+    if (order_status == "调货" && !has_pdf) {
+      showNotification("调货订单必须上传运单 PDF。", type = "error")
+      return(FALSE)
+    }
+    
     # 如果为预订单，生成或更新供应商备注
     if (is_preorder && !is.null(preorder_supplier)) {
       supplier_prefix <- "【供应商】"
@@ -1028,13 +1041,6 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       } else {
         order_image_path <- NA  # 确保为长度为 1 的 NA
       }
-    }
-    
-    # 确认是否有 PDF 运单文件
-    has_pdf <- if (!is.null(tracking_number)) {
-      file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))
-    } else {
-      FALSE
     }
     
     # 确保所有参数为长度为 1 的值
