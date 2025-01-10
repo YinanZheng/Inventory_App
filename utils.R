@@ -1112,31 +1112,37 @@ update_label_status_column <- function(con, pdf_directory = "/var/uploads/shipla
   existing_files <- list.files(pdf_directory, full.names = FALSE)
   existing_tracking_numbers <- gsub("\\.pdf$", "", existing_files)  # 提取运单号
   
-  # 构建 SQL 更新逻辑
   tryCatch({
-    case_statements <- if (length(existing_tracking_numbers) > 0) {
-      paste0(
-        "CASE 
-          WHEN LabelStatus = '打印' AND UsTrackingNumber NOT IN (", 
-        paste(sprintf("'%s'", existing_tracking_numbers), collapse = ","),
-        ") THEN '无' 
-          WHEN UsTrackingNumber IN (", 
-        paste(sprintf("'%s'", existing_tracking_numbers), collapse = ","),
-        ") AND LabelStatus != '打印' THEN '上传' 
-          ELSE LabelStatus 
-        END"
-      )
-    } else {
-      '无'  # 如果没有任何文件，则所有状态设置为 '无'
-    }
+    # 动态生成 CASE 语句
+    case_statements <- paste0(
+      "CASE 
+        WHEN UsTrackingNumber IS NULL OR UsTrackingNumber = '' THEN '无'
+        WHEN UsTrackingNumber IS NOT NULL AND UsTrackingNumber IN (",
+      if (length(existing_tracking_numbers) > 0) {
+        paste(sprintf("'%s'", existing_tracking_numbers), collapse = ",")
+      } else {
+        "''"
+      },
+      ") THEN 
+          CASE 
+            WHEN LabelStatus = '下载' THEN '上传'
+            ELSE '上传'
+          END
+        ELSE '无'
+      END"
+    )
     
+    # 构建 SQL 更新语句
     update_query <- paste0(
       "UPDATE orders 
        SET LabelStatus = ", case_statements
     )
     
+    # 执行 SQL 更新
     dbExecute(con, update_query)
+    message("LabelStatus 列已更新成功。")
   }, error = function(e) {
+    stop(paste("更新 LabelStatus 列时发生错误：", e$message))
   })
 }
 
