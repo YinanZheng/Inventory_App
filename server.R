@@ -1603,7 +1603,7 @@ server <- function(input, output, session) {
       
       # 保存文件到目标目录
       dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
-      file.rename(pdf_path, dest_file)
+      file.copy(pdf_path, dest_file, overwrite = TRUE)
       
       # 上传成功提示
       output$upload_status_message <- renderUI({
