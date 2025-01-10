@@ -1386,7 +1386,7 @@ server <- function(input, output, session) {
       
       # 渲染动态侧边栏
       output$dynamic_sidebar <- renderUI({
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745")
+        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("所有状态" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
       })
       
       # 确保模块仅绑定一次

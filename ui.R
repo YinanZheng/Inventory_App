@@ -216,7 +216,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745"),
+        itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("所有状态" = "", "采购", "国内入库")),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
@@ -348,7 +348,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745"),
+        itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("所有状态" = "", "国内入库", "国内出库")),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
