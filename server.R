@@ -1601,13 +1601,15 @@ server <- function(input, output, session) {
       # 将提取的运单号填充到输入框
       updateTextInput(session, "tracking_number", value = tracking_number)
       
+      shinyjs::disable("tracking_number")
+      
       # 保存文件到目标目录
       dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
       file.copy(pdf_path, dest_file, overwrite = TRUE)
 
       # 上传成功提示
       output$upload_status_message <- renderUI({
-        tags$p("运单上传成功！", style = "color: green;")
+        tags$p("运单上传成功！运单号已识别并锁定", style = "color: green;")
       })
     }, error = function(e) {
       output$upload_status_message <- renderUI({
@@ -1620,7 +1622,7 @@ server <- function(input, output, session) {
       output$upload_status_message <- renderUI({
         NULL  # 清空提示信息
       })
-    }, delay = 5)  # 延迟 5 秒后执行
+    }, delay = 3)  # 延迟 3 秒后执行
   })
   
   # 出售订单图片处理模块
