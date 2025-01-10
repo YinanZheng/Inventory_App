@@ -87,14 +87,6 @@ ui <- navbarPage(
         padding-top: 0px;
         background-color: #ffffff;
       }
-      
-      /* 自定义 selectize 样式 */
-      .custom-selectize .selectize-input {
-        font-size: 14px !important; /* 设置输入框字体大小 */
-      }
-      .custom-selectize .selectize-dropdown-content {
-        font-size: 14px !important; /* 设置下拉菜单字体大小 */
-      }
     
       table.dataTable thead th {
         white-space: nowrap; /* 表头内容强制不换行 */

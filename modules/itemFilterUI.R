@@ -34,8 +34,7 @@ itemFilterUI <- function(
              selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
                             options = list(placeholder = '名称(或拼音)...', 
                                            maxOptions = 500,
-                                           create = FALSE)),
-             class = "custom-selectize"
+                                           create = FALSE))
       ),
       column(6, 
              selectInput(
@@ -44,7 +43,7 @@ itemFilterUI <- function(
                choices = c("所有状态" = "", "采购", "国内入库", "国内出库", "国内售出", "美国入库", "美国售出", "美国调货", "退货"),
                selected = "",
                width = "100%"
-             ), class = "custom-select-input"
+             ),
       ),
       column(12, 
              selectizeInput(
@@ -55,10 +54,7 @@ itemFilterUI <- function(
                  placeholder = "商品名...",
                  create = FALSE
                ),
-               width = "100%"
-             ),
-             class = "custom-selectize"
-      )
+             ))
     ),
     
     # 日期范围筛选部分
