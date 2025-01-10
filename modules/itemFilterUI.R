@@ -36,7 +36,7 @@ itemFilterUI <- function(
                                            maxOptions = 500,
                                            create = FALSE))
       ),
-      column(6, 
+      column(5, 
              selectInput(
                inputId = "status",
                label = "库存状态",

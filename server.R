@@ -265,6 +265,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "sold_filter-maker",
+      item_status_input_id = "sold_filter-status",
       item_name_input_id = "sold_filter-name",
       purchase_date_range_id = "sold_filter-purchase_date_range"
     )
