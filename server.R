@@ -496,8 +496,9 @@ server <- function(input, output, session) {
                                                          DomesticEntryTime = "入库日",
                                                          DomesticExitTime = "出库日",
                                                          DomesticSoldTime = "售出日",
-                                                         UsRelocationTime = "调货日",
-                                                         UsShippingTime = "发货日",
+                                                         UsEntryTime = "美入库日",
+                                                         UsRelocationTime = "美调货日",
+                                                         UsShippingTime = "美发货日",
                                                          OrderID = "订单号")
                                                        ), selection = "multiple", data = filtered_unique_items_data_manage,
                                                        option = modifyList(table_default_options, list(scrollY = "730px", searching = TRUE)))
