@@ -2,14 +2,9 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
                              options = modifyList(table_default_options, list(scrollY = "360px"))) {
   output$order_table <- renderDT({
     
-    # 获取原始数据
-    original_data <- data()  # 原始传入的 reactive 数据
-    
-    original_data$HasPDF <- ifelse(original_data$HasPDF == 1, "有", "无")
-    
     # 初始化渲染表
     datatable_and_names <- render_table_with_images(
-      data = original_data,                 # 使用传递的 reactive 数据源
+      data = data(),                 # 使用传递的 reactive 数据源
       column_mapping = column_mapping, # 映射用户友好的列名
       selection = selection,
       image_column = "OrderImagePath", # 图片列映射
