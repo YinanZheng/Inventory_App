@@ -1496,15 +1496,12 @@ server <- function(input, output, session) {
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
     
-    # 安全查询数据库，模糊匹配顾客姓名
-    query <- "SELECT CustomerName, CustomerNetName 
-            FROM orders 
-            WHERE CustomerName LIKE ?
-            LIMIT 1"
-    
-    # 捕获错误，防止崩溃
+    # 使用 orders() 数据替代 SQL 查询
     tryCatch({
-      result <- dbGetQuery(con, query, params = list(paste0("%", input$customer_name, "%")))
+      # 模糊匹配顾客姓名
+      result <- orders() %>%
+        filter(grepl(input$customer_name, CustomerName, ignore.case = TRUE)) %>%
+        slice_head(n = 1)  # 限制返回一条记录
       
       if (nrow(result) > 0) {
         return(result$CustomerNetName[1])  # 返回第一个匹配的网名
