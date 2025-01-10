@@ -1584,27 +1584,13 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 将 PDF 转换为图片
-      images <- pdftools::pdf_convert(pdf_path, dpi = 300)
-      eng <- tesseract("eng")
-      
-      # 提取文本并搜索运单号
-      tracking_number <- NULL
-      text <- tesseract::ocr(images[1], engine = eng)  # 只处理第一页
-      matches <- regmatches(text, gregexpr("\\b\\d{4} \\d{4} \\d{4} \\d{4} \\d{4} \\d{2}\\b", text))
-      if (length(unlist(matches)) > 0) {
-        tracking_number <- gsub(" ", "", unlist(matches)[1])  # 移除空格
-      }
-      
-      if (is.null(tracking_number)) {
-        output$upload_status_message <- renderUI({
-          tags$p("未能提取运单号，请手动输入。", style = "color: red;")
-        })
-        return()
-      }
+      label_info <- extract_shipping_label_info(pdf_path)
+
+      # 提取的姓名填充到输入框
+      updateTextInput(session, "customer_name", value = label_info$customer_name)
       
       # 将提取的运单号填充到输入框
-      updateTextInput(session, "tracking_number", value = tracking_number)
+      updateTextInput(session, "tracking_number", value = label_info$tracking_number)
       shinyjs::disable("tracking_number")
       
       # 保存文件到目标目录

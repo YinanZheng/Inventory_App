@@ -1147,6 +1147,79 @@ update_label_status_column <- function(con, pdf_directory = "/var/uploads/shipla
   })
 }
 
+
+# 从运单PDF提取收件人和运单号信息
+extract_shipping_label_info <- function(pdf_path, dpi = 300) {
+  # 将 PDF 转换为图片
+  images <- pdf_convert(pdf_path, dpi = dpi)
+  
+  # 加载 OCR 引擎
+  eng <- tesseract("eng")
+  
+  # 提取第一页文本
+  ocr_text <- tesseract::ocr(images[1], engine = eng)
+  
+  # 分行拆分文本
+  lines <- unlist(strsplit(ocr_text, "\n"))
+  
+  # 初始化变量
+  customer_name <- NA
+  tracking_number <- NA
+  
+  # 找到 "USPS TRACKING" 所在的行
+  usps_line_index <- which(stri_detect_fixed(lines, "USPS TRACKING", case_insensitive = TRUE))
+  
+  if (length(usps_line_index) > 0) {
+    # 向前数第三行和第四行获取潜在姓名行
+    name_line_indices <- usps_line_index - c(3, 4)
+    name_line_indices <- name_line_indices[name_line_indices > 0]  # 确保索引有效
+    
+    potential_names <- lines[name_line_indices]
+    
+    # 检查每一行是否可能是名字
+    for (potential_name in potential_names) {
+      if (!is.na(potential_name)) {
+        # 清理名字，去掉前缀或无用字符
+        first_upper_pos <- stri_locate_first_regex(potential_name, "[A-Z]")[1]
+        if (!is.na(first_upper_pos)) {
+          potential_name <- substr(potential_name, first_upper_pos, nchar(potential_name))
+        }
+        potential_name <- stri_trim_both(potential_name)
+        
+        # 校正名字，只保留有效单词
+        words <- unlist(stri_split_fixed(potential_name, " "))
+        valid_words <- words[nchar(words) >= 3]  # 仅保留长度大于等于 3 的单词
+        if (length(valid_words) > 0) {
+          potential_name <- stri_join(valid_words, collapse = " ")
+        } else {
+          next  # 跳过无效名字行
+        }
+        
+        # 检查名字格式（支持 1 到 4 个单词）
+        if (stri_detect_regex(
+          potential_name, "^([A-Z]+|[A-Z][a-z]+)(\\s([A-Z]+|[A-Z][a-z]+)){0,3}$"
+        )) {
+          customer_name <- potential_name
+          break
+        }
+      }
+    }
+  }
+  
+  # 提取运单号
+  matches <- regmatches(ocr_text, gregexpr("\\b\\d{4} \\d{4} \\d{4} \\d{4} \\d{4} \\d{2}\\b", ocr_text))
+  if (length(unlist(matches)) > 0) {
+    tracking_number <- gsub(" ", "", unlist(matches)[1])  # 移除空格
+  }
+  
+  # 返回姓名和运单号
+  return(list(
+    customer_name = toupper(customer_name),
+    tracking_number = tracking_number
+  ))
+}
+
+
 # 动态生成 input 命名空间
 get_input_id <- function(base_id, suffix) {
   # 提取 "XXX" 的前缀部分
