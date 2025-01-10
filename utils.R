@@ -1030,6 +1030,13 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       }
     }
     
+    # 确认是否有 PDF 运单文件
+    has_pdf <- if (!is.null(tracking_number)) {
+      file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))
+    } else {
+      FALSE
+    }
+    
     # 确保所有参数为长度为 1 的值
     tracking_number <- tracking_number %||% NA
     order_notes <- order_notes %||% NA
@@ -1048,7 +1055,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
             CustomerName = COALESCE(?, CustomerName),
             CustomerNetName = COALESCE(?, CustomerNetName),
             Platform = COALESCE(?, Platform),
-            OrderStatus = ?
+            OrderStatus = ?,
+            HasPDF = ?
         WHERE OrderID = ?",
                 params = list(
                   order_image_path,
@@ -1058,6 +1066,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
                   customer_netname,
                   platform,
                   order_status,
+                  as.integer(has_pdf),
                   order_id
                 )
       )
@@ -1065,7 +1074,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     } else {
       dbExecute(con, "
         INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, CustomerNetName, Platform, OrderImagePath, OrderStatus)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 params = list(
                   order_id,
                   tracking_number,
@@ -1074,7 +1083,8 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
                   customer_netname,
                   platform,
                   order_image_path,
-                  order_status
+                  order_status,
+                  as.integer(has_pdf)
                 )
       )
       showNotification("订单已成功登记！", type = "message")
@@ -1085,6 +1095,34 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     return(FALSE)
   })
 }
+
+
+update_has_pdf_column <- function(con, pdf_directory = "/var/uploads/shiplabels") {
+  # 列出所有 PDF 文件
+  existing_files <- list.files(pdf_directory, full.names = FALSE)
+  existing_tracking_numbers <- gsub("\\.pdf$", "", existing_files)  # 提取运单号
+  
+  # 更新数据库
+  tryCatch({
+    # 重置所有 HasPDF 为 0
+    dbExecute(con, "UPDATE orders SET HasPDF = 0")
+    
+    # 批量更新 HasPDF 为 1
+    if (length(existing_tracking_numbers) > 0) {
+      update_query <- "
+        UPDATE orders
+        SET HasPDF = 1
+        WHERE tracking_number IN (%s)
+      "
+      dbExecute(con, sprintf(update_query, paste(sprintf("'%s'", existing_tracking_numbers), collapse = ",")))
+    }
+    message("HasPDF 列已更新成功。")
+  }, error = function(e) {
+    stop(paste("更新 HasPDF 列时发生错误：", e$message))
+  })
+}
+
+
 
 # 动态生成 input 命名空间
 get_input_id <- function(base_id, suffix) {

@@ -1,9 +1,13 @@
 orderTableServer <- function(input, output, session, column_mapping, selection = "single", data, 
                              options = modifyList(table_default_options, list(scrollY = "360px"))) {
   output$order_table <- renderDT({
+    
+    # 获取原始数据
+    original_data <- data()  # 原始传入的 reactive 数据
+    
     # 初始化渲染表
     datatable_and_names <- render_table_with_images(
-      data = data(),                 # 使用传递的 reactive 数据源
+      data = original_data,                 # 使用传递的 reactive 数据源
       column_mapping = column_mapping, # 映射用户友好的列名
       selection = selection,
       image_column = "OrderImagePath", # 图片列映射
@@ -13,6 +17,18 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     # 获取数据列名
     column_names <- datatable_and_names$column_names
     table <- datatable_and_names$datatable
+    
+    # 根据 HasPDF 列高亮运单号（即使 HasPDF 列不可见）
+    if ("HasPDF" %in% colnames(original_data) && "tracking_number" %in% column_names) {
+      table <- table %>%
+        formatStyle(
+          "tracking_number",
+          backgroundColor = styleEqual(
+            c(1, 0),  # 根据原始数据中的 HasPDF 列值
+            c("#95b3fc", "transparent")  # HasPDF 为 1 时浅蓝色背景，为 0 时透明
+          )
+        )
+    }
     
     # 平台字段高亮
     if ("平台" %in% column_names) {
