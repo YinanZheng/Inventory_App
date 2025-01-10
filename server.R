@@ -560,7 +560,8 @@ server <- function(input, output, session) {
                                      UsTrackingNumber = "运单号",
                                      LabelStatus = "运单PDF",
                                      OrderStatus = "状态",
-                                     OrderNotes = "备注"
+                                     OrderNotes = "备注",
+                                     created_at = "创建时间"
                                    ),
                                    data = filtered_orders,  # 数据源
                                    selection = "single" # 单选模式
