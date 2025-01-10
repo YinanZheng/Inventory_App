@@ -1107,98 +1107,44 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
 }
 
 # 更新运单PDF状态列
-# update_label_status_column <- function(con, pdf_directory = "/var/uploads/shiplabels") {
-#   # 列出所有 PDF 文件
-#   existing_files <- list.files(pdf_directory, full.names = FALSE)
-#   existing_tracking_numbers <- gsub("\\.pdf$", "", existing_files)  # 提取运单号
-#   
-#   tryCatch({
-#     # 动态生成 CASE 语句
-#     case_statements <- paste0(
-#       "CASE 
-#         WHEN UsTrackingNumber IS NULL OR UsTrackingNumber = '' THEN '无'
-#         WHEN UsTrackingNumber IS NOT NULL AND UsTrackingNumber IN (",
-#       if (length(existing_tracking_numbers) > 0) {
-#         paste(sprintf("'%s'", existing_tracking_numbers), collapse = ",")
-#       } else {
-#         "''"
-#       },
-#       ") THEN 
-#           CASE 
-#             WHEN LabelStatus = '下载' THEN '上传'
-#             ELSE '上传'
-#           END
-#         ELSE '无'
-#       END"
-#     )
-#     
-#     # 构建 SQL 更新语句
-#     update_query <- paste0(
-#       "UPDATE orders 
-#        SET LabelStatus = ", case_statements
-#     )
-#     
-#     # 执行 SQL 更新
-#     dbExecute(con, update_query)
-#     message("LabelStatus 列已更新成功。")
-#   }, error = function(e) {
-#     stop(paste("更新 LabelStatus 列时发生错误：", e$message))
-#   })
-# }
-
 update_label_status_column <- function(con, pdf_directory = "/var/uploads/shiplabels") {
   # 列出所有 PDF 文件
   existing_files <- list.files(pdf_directory, full.names = FALSE)
   existing_tracking_numbers <- gsub("\\.pdf$", "", existing_files)  # 提取运单号
-  
+
   tryCatch({
-    # 构建 SQL 更新逻辑
-    update_query <- paste0(
-      "WITH RankedOrders AS (
-         SELECT 
-           OrderID,
-           UsTrackingNumber,
-           LabelStatus,
-           ROW_NUMBER() OVER (ORDER BY updated_at) AS TempOrder
-         FROM orders
-       ),
-       UpdatedLabelStatus AS (
-         SELECT
-           OrderID,
-           CASE 
-             WHEN UsTrackingNumber IS NULL OR UsTrackingNumber = '' THEN '无'
-             WHEN UsTrackingNumber IN (",
+    # 动态生成 CASE 语句
+    case_statements <- paste0(
+      "CASE
+        WHEN UsTrackingNumber IS NULL OR UsTrackingNumber = '' THEN '无'
+        WHEN UsTrackingNumber IS NOT NULL AND UsTrackingNumber IN (",
       if (length(existing_tracking_numbers) > 0) {
         paste(sprintf("'%s'", existing_tracking_numbers), collapse = ",")
       } else {
         "''"
       },
-      ") THEN 
-               CASE 
-                 WHEN LabelStatus = '下载' THEN '上传'
-                 ELSE '上传'
-               END
-             ELSE '无'
-           END AS NewLabelStatus,
-           TempOrder
-         FROM RankedOrders
-       )
-       UPDATE orders o
-       JOIN UpdatedLabelStatus uls ON o.OrderID = uls.OrderID
-       SET 
-         o.LabelStatus = uls.NewLabelStatus
-       ORDER BY uls.TempOrder"
+      ") THEN
+          CASE
+            WHEN LabelStatus = '下载' THEN '上传'
+            ELSE '上传'
+          END
+        ELSE '无'
+      END"
     )
-    
+
+    # 构建 SQL 更新语句
+    update_query <- paste0(
+      "UPDATE orders
+       SET LabelStatus = ", case_statements
+    )
+
     # 执行 SQL 更新
     dbExecute(con, update_query)
-    message("LabelStatus 列已更新成功，并保持原始顺序。")
+    message("LabelStatus 列已更新成功。")
   }, error = function(e) {
     stop(paste("更新 LabelStatus 列时发生错误：", e$message))
   })
 }
-
-
 
 # 动态生成 input 命名空间
 get_input_id <- function(base_id, suffix) {
