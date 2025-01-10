@@ -54,7 +54,7 @@ server <- function(input, output, session) {
   })
   
   # 更新orders表中已有运单pdf的情况
-  update_has_pdf_column(con)
+  update_label_status_column(con)
   
   ####################################################################################################################################
   
@@ -557,8 +557,8 @@ server <- function(input, output, session) {
                                      CustomerName = "姓名",
                                      CustomerNetName = "网名",
                                      Platform = "平台",
-                                     UsTrackingNumber = "运单",
-                                     HasPDF = "PDF",
+                                     UsTrackingNumber = "运单号",
+                                     LabelStatus = "运单PDF",
                                      OrderStatus = "状态",
                                      OrderNotes = "备注"
                                    ),

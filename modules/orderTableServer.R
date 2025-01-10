@@ -20,18 +20,18 @@ orderTableServer <- function(input, output, session, column_mapping, selection =
     column_names <- datatable_and_names$column_names
     table <- datatable_and_names$datatable
     
-    # 根据 HasPDF 列高亮运单号
-    if ("PDF" %in% column_names) {
+    # 运单状态字段高亮
+    if ("运单PDF" %in% column_names) {
       table <- table %>%
         formatStyle(
-          "PDF",
+          "运单PDF",
           backgroundColor = styleEqual(
-            c("已上传", "无"),
-            c("#95b3fc", "transparent")
+            c("无", "已上传", "已下载"),
+            c("#f6f2ff", "#95b3fc", "#b89afc")
           ),
           color = styleEqual(
-            c("已上传", "无"),
-            c("black", "black")
+            c("无", "已上传", "已下载"),
+            c("black", "black", "black")
           )
         )
     }

@@ -960,16 +960,20 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
       }
     }
     
-    # 确认是否有 PDF 运单文件
-    has_pdf <- if (!is.null(tracking_number)) {
-      file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))
+    # 确认运单 PDF 文件的状态
+    label_status <- if (!is.null(tracking_number)) {
+      if (file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))) {
+        "上传"
+      } else {
+        "无"
+      }
     } else {
-      FALSE
+      "无"
     }
     
-    # 如果状态为 "调货" 且未上传运单 PDF，显示通知并阻止提交
-    if (order_status == "调货" && !has_pdf) {
-      showNotification("调货订单必须上传运单 PDF。", type = "error")
+    # 如果状态为 "调货" 且 LabelStatus 为 "无"，显示错误通知
+    if (order_status == "调货" && label_status == "无") {
+      showNotification("调货订单必须上传运单 PDF！", type = "error")
       return(FALSE)
     }
     
@@ -1062,7 +1066,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
             CustomerNetName = COALESCE(?, CustomerNetName),
             Platform = COALESCE(?, Platform),
             OrderStatus = ?,
-            HasPDF = ?
+            LabelStatus = ?
         WHERE OrderID = ?",
                 params = list(
                   order_image_path,
@@ -1072,14 +1076,14 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
                   customer_netname,
                   platform,
                   order_status,
-                  as.integer(has_pdf),
+                  label_status,
                   order_id
                 )
       )
       showNotification("订单信息已更新！", type = "message")
     } else {
       dbExecute(con, "
-        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, CustomerNetName, Platform, OrderImagePath, OrderStatus, HasPDF)
+        INSERT INTO orders (OrderID, UsTrackingNumber, OrderNotes, CustomerName, CustomerNetName, Platform, OrderImagePath, OrderStatus, LabelStatus)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)",
                 params = list(
                   order_id,
@@ -1090,7 +1094,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
                   platform,
                   order_image_path,
                   order_status,
-                  as.integer(has_pdf)
+                  label_status
                 )
       )
       showNotification("订单已成功登记！", type = "message")
@@ -1102,31 +1106,40 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
   })
 }
 
-
-update_has_pdf_column <- function(con, pdf_directory = "/var/uploads/shiplabels") {
+# 更新运单PDF状态列
+update_label_status_column <- function(con, pdf_directory = "/var/uploads/shiplabels") {
   # 列出所有 PDF 文件
   existing_files <- list.files(pdf_directory, full.names = FALSE)
   existing_tracking_numbers <- gsub("\\.pdf$", "", existing_files)  # 提取运单号
   
-  # 更新数据库
+  # 构建 SQL 更新逻辑
   tryCatch({
-    # 重置所有 HasPDF 为 0
-    dbExecute(con, "UPDATE orders SET HasPDF = 0")
-    
-    # 批量更新 HasPDF 为 1
-    if (length(existing_tracking_numbers) > 0) {
-      update_query <- "
-        UPDATE orders
-        SET HasPDF = 1
-        WHERE UsTrackingNumber IN (%s)
-      "
-      dbExecute(con, sprintf(update_query, paste(sprintf("'%s'", existing_tracking_numbers), collapse = ",")))
+    case_statements <- if (length(existing_tracking_numbers) > 0) {
+      paste0(
+        "CASE 
+          WHEN LabelStatus = '打印' AND UsTrackingNumber NOT IN (", 
+        paste(sprintf("'%s'", existing_tracking_numbers), collapse = ","),
+        ") THEN '无' 
+          WHEN UsTrackingNumber IN (", 
+        paste(sprintf("'%s'", existing_tracking_numbers), collapse = ","),
+        ") AND LabelStatus != '打印' THEN '上传' 
+          ELSE LabelStatus 
+        END"
+      )
+    } else {
+      "'无'"  # 如果没有任何文件，则所有状态设置为 '无'
     }
-    message("HasPDF 列已更新成功。")
+    
+    update_query <- paste0(
+      "UPDATE orders 
+       SET LabelStatus = ", case_statements
+    )
+    
+    dbExecute(con, update_query)
   }, error = function(e) {
-    stop(paste("更新 HasPDF 列时发生错误：", e$message))
   })
 }
+
 
 
 
