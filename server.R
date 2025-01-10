@@ -461,7 +461,7 @@ server <- function(input, output, session) {
                                                          column_mapping <- c(common_columns, list(
                                                            PurchaseTime = "采购日",
                                                            ItemCount = "数量")
-                                                         ), data = filtered_unique_items_data_purchase)
+                                                         ), selection = "single", data = filtered_unique_items_data_purchase)
   
   unique_items_table_inbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_inbound",
                                                         column_mapping <- c(common_columns, list(
@@ -469,21 +469,21 @@ server <- function(input, output, session) {
                                                           DomesticEntryTime = "入库日",
                                                           Defect = "瑕疵态",
                                                           ItemCount = "数量")
-                                                        ), selection = "multiple", data = filtered_unique_items_data_inbound)
+                                                        ), selection = "single", data = filtered_unique_items_data_inbound)
   
   unique_items_table_outbound_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_outbound", 
                                                          column_mapping <- c(common_columns, list(
                                                            PurchaseTime = "采购日",
                                                            DomesticExitTime = "出库日",
                                                            ItemCount = "数量")
-                                                         ), data = filtered_unique_items_data_outbound)
+                                                         ), selection = "single", data = filtered_unique_items_data_outbound)
   
   unique_items_table_sold_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_sold",
                                                      column_mapping <- c(common_columns, list(
                                                        PurchaseTime = "采购日",
                                                        DomesticSoldTime = "售出日",
                                                        ItemCount = "数量")
-                                                     ), data = filtered_unique_items_data_sold)
+                                                     ), selection = "single", data = filtered_unique_items_data_sold)
   
   ####################################################################################################################################
   
@@ -1332,11 +1332,20 @@ server <- function(input, output, session) {
     runjs("document.getElementById('outbound_sku').focus();")
   })
   
-  # 监听选中行并更新出库 SKU
+  # 监听选中行并显示大图与物品信息
   observeEvent(unique_items_table_outbound_selected_row(), {
     if (!is.null(unique_items_table_outbound_selected_row()) && length(unique_items_table_outbound_selected_row()) > 0) {
       selected_sku <- filtered_unique_items_data_outbound()[unique_items_table_outbound_selected_row(), "SKU", drop = TRUE]
-      updateTextInput(session, "outbound_sku", value = selected_sku)
+      handleSkuInput(
+        sku_input = selected_sku,
+        output_name = "outbound_item_info",
+        count_label = "可出库数",
+        count_field = "AvailableForOutbound",
+        con = con,
+        output = output,
+        placeholder_path = placeholder_300px_path,
+        host_url = host_url
+      )
     }
   })
   
