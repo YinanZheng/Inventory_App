@@ -488,6 +488,7 @@ ui <- navbarPage(
           
           # 运单PDF 文件上传组件
           fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
+          helpText("请上传单页的运单PDF文件，文件大小不超过 5MB"),
           uiOutput("upload_status_message"),
           
           tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
