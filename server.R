@@ -1603,26 +1603,8 @@ server <- function(input, output, session) {
       
       # 保存文件到目标目录
       dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
-      # file.copy(pdf_path, dest_file, overwrite = TRUE)
-      # 
-      
-      if (!file.exists(pdf_path)) {
-        showNotification("临时文件不存在，无法复制文件。")
-        output$upload_status_message <- renderUI({
-          tags$p("文件上传失败，临时文件已丢失。", style = "color: red;")
-        })
-        return()
-      }
-      
-      success <- file.copy(pdf_path, dest_file, overwrite = TRUE)
-      if (!success) {
-        showNotification(paste("文件复制失败：源路径 -", pdf_path, "目标路径 -", dest_file))
-        output$upload_status_message <- renderUI({
-          tags$p("文件保存失败，请检查路径或权限。", style = "color: red;")
-        })
-        return()
-      }
-      
+      file.copy(pdf_path, dest_file, overwrite = TRUE)
+
       # 上传成功提示
       output$upload_status_message <- renderUI({
         tags$p("运单上传成功！", style = "color: green;")
