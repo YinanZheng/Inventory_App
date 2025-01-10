@@ -486,6 +486,9 @@ ui <- navbarPage(
           # 运单号
           textInput("tracking_number", "运单号", placeholder = "请输入运单号", width = "100%"),
           
+          # 运单PDF 文件上传组件
+          fileInput("shiplabel_pdf_upload", "选择运单PDF文件:", accept = ".pdf", width = "100%"),
+          
           tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
           
           # 订单图片上传
