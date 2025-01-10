@@ -24,8 +24,8 @@ server <- function(input, output, session) {
   # 触发order刷新
   orders_refresh_trigger <- reactiveVal(FALSE)
   
-  # 用于存储 PDF 文件路径
-  select_pdf_file_path <- reactiveVal(NULL)
+  # 用于存储 barcode PDF 文件路径
+  barcode_pdf_file_path <- reactiveVal(NULL)
   
   # 初始化货架和箱子内物品（售出分页）
   shelf_items <- reactiveVal(create_empty_shelf_box())
@@ -1207,7 +1207,7 @@ server <- function(input, output, session) {
         page_height = page_height,
         unit = size_unit
       )
-      select_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
+      barcode_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
       
       showNotification("选中商品条形码已生成！", type = "message")
       shinyjs::enable("download_select_pdf")  # 启用下载按钮
@@ -1220,12 +1220,12 @@ server <- function(input, output, session) {
   # 下载选中商品条形码 PDF
   output$download_select_pdf <- downloadHandler(
     filename = function() {
-      basename(select_pdf_file_path())  # 生成文件名
+      basename(barcode_pdf_file_path())  # 生成文件名
     },
     content = function(file) {
-      file.copy(select_pdf_file_path(), file, overwrite = TRUE)
+      file.copy(barcode_pdf_file_path(), file, overwrite = TRUE)
       shinyjs::disable("download_select_pdf")  # 禁用下载按钮
-      select_pdf_file_path(NULL)  # 清空路径
+      barcode_pdf_file_path(NULL)  # 清空路径
     }
   )
   
@@ -1601,18 +1601,19 @@ server <- function(input, output, session) {
       # 将提取的运单号填充到输入框
       updateTextInput(session, "tracking_number", value = tracking_number)
       
+      # 保存文件到目标目录
+      dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
+      # file.copy(pdf_path, dest_file, overwrite = TRUE)
+      # 
       
-      if (!file.exists(pdf_path)) {
-        print("临时文件不存在，可能已被删除。")
+      success <- file.copy(pdf_path, dest_file, overwrite = TRUE)
+      if (!success) {
+        showNotification(paste("文件复制失败：源路径 -", pdf_path, "目标路径 -", dest_file))
         output$upload_status_message <- renderUI({
-          tags$p("文件上传失败，临时文件丢失。", style = "color: red;")
+          tags$p("文件保存失败，请检查路径或权限。", style = "color: red;")
         })
         return()
       }
-      
-      # 保存文件到目标目录
-      dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
-      file.copy(pdf_path, dest_file, overwrite = TRUE)
       
       # 上传成功提示
       output$upload_status_message <- renderUI({
