@@ -1594,7 +1594,7 @@ server <- function(input, output, session) {
       shinyjs::disable("tracking_number")
       
       # 保存文件到目标目录
-      dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
+      dest_file <- file.path("/var/uploads/shiplabels", paste0(label_info$tracking_number, ".pdf"))
       file.copy(pdf_path, dest_file, overwrite = TRUE)
 
       # 上传成功提示
