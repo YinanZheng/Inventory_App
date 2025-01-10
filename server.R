@@ -1606,6 +1606,14 @@ server <- function(input, output, session) {
       # file.copy(pdf_path, dest_file, overwrite = TRUE)
       # 
       
+      if (!file.exists(pdf_path)) {
+        showNotification("临时文件不存在，无法复制文件。")
+        output$upload_status_message <- renderUI({
+          tags$p("文件上传失败，临时文件已丢失。", style = "color: red;")
+        })
+        return()
+      }
+      
       success <- file.copy(pdf_path, dest_file, overwrite = TRUE)
       if (!success) {
         showNotification(paste("文件复制失败：源路径 -", pdf_path, "目标路径 -", dest_file))
