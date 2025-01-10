@@ -96,6 +96,14 @@ ui <- navbarPage(
         font-size: 12px !important; /* 设置下拉菜单字体大小 */
       }
       
+      /* 自定义 selectInput 样式 */
+      .custom-select-input .form-control {
+        font-size: 12px !important; /* 设置输入框字体大小 */
+      }
+      .custom-select-input .dropdown-menu {
+        font-size: 12px !important; /* 设置下拉菜单字体大小 */
+      }
+    
       table.dataTable thead th {
         white-space: nowrap; /* 表头内容强制不换行 */
       }
