@@ -964,7 +964,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 确认运单 PDF 文件的状态
     label_status <- if (!is.null(tracking_number)) {
       if (file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))) {
-        "上传"
+        "已传"
       } else {
         "无"
       }
