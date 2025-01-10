@@ -1616,8 +1616,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
-  
   # 出售订单图片处理模块
   image_sold <- imageModuleServer("image_sold")
   
@@ -1701,15 +1699,8 @@ server <- function(input, output, session) {
         # 如果订单记录不存在，清空出order ID以外所有相关字段
         showNotification("未找到对应订单记录，可登记新订单", type = "warning")
         
-        # 重置所有输入框
-        updateSelectInput(session, "platform", selected = "")
-        updateTextInput(session, "customer_name", value = "")
-        updateTextInput(session, "customer_netname", value = "")
-        updateCheckboxInput(session, "is_preorder", value = FALSE)
-        updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-        updateTextInput(session, "tracking_number", value = "")
-        image_sold$reset()
-        updateTextAreaInput(session, "order_notes", value = "")
+        # 重置所有输入框, 除了order ID
+        reset_order_form(session, image_sold, keep_order_id = TRUE)
         
         # 动态更新按钮为“登记订单”
         output$register_order_button_ui <- renderUI({

@@ -1348,7 +1348,7 @@ generate_montage <- function(image_paths, output_path, geometry = "+5+5") {
   return(output_path)
 }
 
-reset_order_form <- function(session, image_module) {
+reset_order_form <- function(session, image_module, keep_order_id = FALSE) {
   updateTextInput(session, "order_id", value = "")
   updateSelectInput(session, "platform", selected = "")
   updateTextInput(session, "customer_name", value = "")
@@ -1356,6 +1356,7 @@ reset_order_form <- function(session, image_module) {
   updateCheckboxInput(session, "is_preorder", value = FALSE)
   updateCheckboxInput(session, "is_transfer_order", value = FALSE)
   updateTextInput(session, "tracking_number", value = "")
+  shinyjs::reset("shiplabel_pdf_upload")
   image_module$reset()
   updateTextAreaInput(session, "order_notes", value = "")
 }

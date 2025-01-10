@@ -484,7 +484,7 @@ ui <- navbarPage(
           ),
           
           # 运单号
-          textInput("tracking_number", "运单号", placeholder = "输入运单号或上传运单提取", width = "100%"),
+          textInput("tracking_number", "运单号", placeholder = "输入运单号或上传运单PDF提取", width = "100%"),
           
           # 运单PDF 文件上传组件
           fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
