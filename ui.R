@@ -487,16 +487,7 @@ ui <- navbarPage(
           textInput("tracking_number", "运单号", placeholder = "输入运单号或上传运单提取", width = "100%"),
           
           # 运单PDF 文件上传组件
-          fluidRow(
-            column(
-              width = 9, # 设置文件上传组件的宽度
-              fileInput("shiplabel_pdf_upload", "选择运单PDF文件:", accept = ".pdf", width = "100%")
-            ),
-            column(
-              width = 3, # 设置上传按钮的宽度
-              actionButton("upload_shiplabel_btn", "上传", icon = icon("upload"), class = "btn-primary", style = "width: 100%; margin-top: 25px;") # 调整顶部间距
-            )
-          ),
+          fileInput("shiplabel_pdf_upload", "选择运单PDF文件:", accept = ".pdf", width = "100%"),
           uiOutput("upload_status_message"),
           
           tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
