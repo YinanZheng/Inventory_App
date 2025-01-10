@@ -1357,6 +1357,7 @@ reset_order_form <- function(session, image_module, keep_order_id = FALSE) {
   updateCheckboxInput(session, "is_transfer_order", value = FALSE)
   updateTextInput(session, "tracking_number", value = "")
   shinyjs::reset("shiplabel_pdf_upload")
+  shinyjs::enable("tracking_number")
   image_module$reset()
   updateTextAreaInput(session, "order_notes", value = "")
 }

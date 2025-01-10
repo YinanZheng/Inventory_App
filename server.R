@@ -1600,7 +1600,6 @@ server <- function(input, output, session) {
       
       # 将提取的运单号填充到输入框
       updateTextInput(session, "tracking_number", value = tracking_number)
-      
       shinyjs::disable("tracking_number")
       
       # 保存文件到目标目录
