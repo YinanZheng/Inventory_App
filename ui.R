@@ -764,7 +764,7 @@ ui <- navbarPage(
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
 
-        itemFilterUI(id = "defect_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
+        itemFilterUI(id = "defect_filter", border_color = "#28A745", text_color = "#28A745", use_status = FALSE, use_purchase_date = TRUE),
         
         tags$hr(), # 分隔线
         
