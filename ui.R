@@ -90,18 +90,10 @@ ui <- navbarPage(
       
       /* 自定义 selectize 样式 */
       .custom-selectize .selectize-input {
-        font-size: 12px !important; /* 设置输入框字体大小 */
+        font-size: 14px !important; /* 设置输入框字体大小 */
       }
       .custom-selectize .selectize-dropdown-content {
-        font-size: 12px !important; /* 设置下拉菜单字体大小 */
-      }
-      
-      /* 自定义 selectInput 样式 */
-      .custom-select .select-input {
-        font-size: 12px !important; /* 设置输入框字体大小 */
-      }
-      .custom-select .select-dropdown-content {
-        font-size: 12px !important; /* 设置下拉菜单字体大小 */
+        font-size: 14px !important; /* 设置下拉菜单字体大小 */
       }
     
       table.dataTable thead th {
