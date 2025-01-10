@@ -1599,7 +1599,7 @@ server <- function(input, output, session) {
 
       # 上传成功提示
       output$upload_status_message <- renderUI({
-        tags$p("运单上传成功！运单号已识别并锁定", style = "color: green;")
+        tags$p("运单上传成功！运单信息已识别", style = "color: green;")
       })
     }, error = function(e) {
       output$upload_status_message <- renderUI({
