@@ -203,7 +203,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "inbound_filter-maker",
-      item_status_input_id = "inbound_filter-status",
+      status_input_id = "inbound_filter-status",
       item_name_input_id = "inbound_filter-name",
       purchase_date_range_id = "inbound_filter-purchase_date_range"
     )
@@ -235,7 +235,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "outbound_filter-maker",
-      item_status_input_id = "outbound_filter-status",
+      status_input_id = "outbound_filter-status",
       item_name_input_id = "outbound_filter-name",
       purchase_date_range_id = "outbound_filter-purchase_date_range"
     )
@@ -267,7 +267,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "sold_filter-maker",
-      item_status_input_id = "sold_filter-status",
+      status_input_id = "sold_filter-status",
       item_name_input_id = "sold_filter-name",
       purchase_date_range_id = "sold_filter-purchase_date_range"
     )
@@ -367,7 +367,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "manage_filter-maker",
-      item_status_input_id = "manage_filter-status",
+      status_input_id = "manage_filter-status",
       item_name_input_id = "manage_filter-name",
       purchase_date_range_id = "manage_filter-purchase_date_range"
     )
@@ -384,7 +384,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "defect_filter-maker",
-      item_status_input_id = "defect_filter-status",
+      status_input_id = "defect_filter-status",
       item_name_input_id = "defect_filter-name",
       purchase_date_range_id = "defect_filter-purchase_date_range"
     )
@@ -413,7 +413,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "logistic_filter-maker",
-      item_status_input_id = "logistic_filter-status",
+      status_input_id = "logistic_filter-status",
       item_name_input_id = "logistic_filter-name",
       sold_date_range_id = "logistic_filter-sold_date_range",
       exit_date_range_id = "logistic_filter-exit_date_range"
@@ -460,7 +460,7 @@ server <- function(input, output, session) {
       data = unique_items_data(),
       input = input,
       maker_input_id = "download_maker",
-      item_status_input_id = "download_filter-status",
+      status_input_id = "download_filter-status",
       item_name_input_id = "download_item_name",
       purchase_date_range_id = "download_date_range"
     )
