@@ -172,6 +172,7 @@ server <- function(input, output, session) {
       data = data,
       input = input,
       maker_input_id = "purchase_filter-maker",
+      status_input_id = "purchase_filter-status",
       item_name_input_id = "purchase_filter-name"
     )
     

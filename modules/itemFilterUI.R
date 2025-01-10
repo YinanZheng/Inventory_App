@@ -30,7 +30,7 @@ itemFilterUI <- function(
     
     # 供应商和商品名筛选行
     fluidRow(
-      column(6, 
+      column(7, 
              selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
                             options = list(placeholder = '名称(或拼音)...', 
                                            maxOptions = 500,

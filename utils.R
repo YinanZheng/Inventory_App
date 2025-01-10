@@ -1252,6 +1252,7 @@ filter_unique_items_data_by_inputs <- function(
     data, 
     input, 
     maker_input_id, 
+    status_input_id,
     item_name_input_id, 
     purchase_date_range_id = NULL, 
     sold_date_range_id = NULL,
@@ -1262,6 +1263,11 @@ filter_unique_items_data_by_inputs <- function(
   # 按供应商筛选
   if (!is.null(input[[maker_input_id]]) && length(input[[maker_input_id]]) > 0 && any(input[[maker_input_id]] != "")) {
     data <- data %>% filter(Maker %in% input[[maker_input_id]])
+  }
+  
+  # 按库存状态筛选
+  if (!is.null(input[[status_input_id]]) && length(input[[status_input_id]]) > 0 && any(input[[status_input_id]] != "")) {
+    data <- data %>% filter(Status %in% input[[status_input_id]])
   }
   
   # 按商品名称筛选
