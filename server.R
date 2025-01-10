@@ -1693,6 +1693,13 @@ server <- function(input, output, session) {
         }
         
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
+        # 检查 LabelStatus
+        if (existing_order$LabelStatus[1] != "无") {
+          shinyjs::disable("tracking_number")  # 禁用输入框
+        } else {
+          shinyjs::enable("tracking_number")  # 启用输入框（以防之前禁用过）
+        }
+        
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
         
         # 动态更新按钮为“更新订单”
