@@ -18,6 +18,8 @@ library(plotly)
 library(openxlsx)
 library(lubridate)
 library(tidyr)
+library(tesseract)
+library(pdftools)
 
 # Source all modular functions
 source("./modules/typeModuleUI.R", local = TRUE)

@@ -1601,12 +1601,8 @@ server <- function(input, output, session) {
       # 将提取的运单号填充到输入框
       updateTextInput(session, "tracking_number", value = tracking_number)
       
-      # 目标文件夹
-      dest_dir <- "/var/uploads/shiplabels"
-      if (!dir.exists(dest_dir)) dir.create(dest_dir, recursive = TRUE)
-      
       # 保存文件到目标目录
-      dest_file <- file.path(dest_dir, paste0(tracking_number, ".pdf"))
+      dest_file <- file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf"))
       file.rename(pdf_path, dest_file)
       
       # 上传成功提示
@@ -1615,7 +1611,7 @@ server <- function(input, output, session) {
       })
     }, error = function(e) {
       output$upload_status_message <- renderUI({
-        tags$p("文件上传失败！", style = "color: red;")
+        tags$p(paste0("文件上传失败！", e), style = "color: red;")
       })
     })
   })
