@@ -358,6 +358,24 @@ update_status <- function(con, unique_id, new_status = NULL, defect_status = NUL
                           shipping_method = NULL, clear_shipping_method = FALSE, 
                           refresh_trigger = NULL, update_timestamp = TRUE, 
                           clear_status_timestamp = NULL) {
+  # 检查 UniqueID 是否存在
+  current_status <- dbGetQuery(con, paste0(
+    "SELECT Status, updated_at FROM unique_items WHERE UniqueID = '", unique_id, "'"
+  ))
+  
+  if (nrow(current_status) == 0) {
+    showNotification("UniqueID not found", type = "error")
+    return()
+  }
+  
+  # 如果 new_status 发生变化，记录状态历史
+  if (!is.null(new_status) && current_status$Status != new_status) {
+    dbExecute(con, paste0(
+      "INSERT INTO item_status_history (UniqueID, previous_status, previous_status_timestamp) VALUES ('",
+      unique_id, "', '", current_status$Status, "', '", current_status$updated_at, "')"
+    ))
+  }
+  
   # 构建动态 SQL 子句
   set_clauses <- c(
     if (!is.null(new_status)) {

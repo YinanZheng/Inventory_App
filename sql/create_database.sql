@@ -73,6 +73,7 @@ CREATE TABLE `orders` (
   `OrderImagePath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `OrderNotes` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `OrderStatus` enum('备货','预定','调货','装箱','发出','在途','送达') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `LabelStatus` enum('无','已传','印出') COLLATE utf8mb4_unicode_ci DEFAULT '无',
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`OrderID`),
@@ -89,3 +90,10 @@ CREATE TABLE `intl_shipments` (
   PRIMARY KEY (`TrackingNumber`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE `item_status_history` (
+  `UniqueID` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `previous_status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国调货','退货') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `previous_status_timestamp` timestamp NULL DEFAULT NULL,
+  `change_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`UniqueID`,`change_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 

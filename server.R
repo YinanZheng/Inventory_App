@@ -2216,22 +2216,30 @@ server <- function(input, output, session) {
     current_items <- associated_items()
 
     # 移除对应的物品
+    deleted_item <- current_items %>% filter(UniqueID == input$delete_card)
     updated_items <- current_items %>% filter(UniqueID != input$delete_card)
     associated_items(updated_items)  # 更新物品列表
 
-    # 移除物品逆向操作
-    deleted_item <- current_items %>% filter(UniqueID == input$delete_card)
-
-    # 归还库存
-    adjust_inventory_quantity(con, deleted_item$SKU, adjustment = 1)  # 增加库存数量
-
-    # 恢复物品状态到“国内入库”
-    update_status(
-      con = con,
-      unique_id = deleted_item$UniqueID,
-      new_status = "国内入库",
-      clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
-    )
+    # 查询物品原始状态
+    original_state <- dbGetQuery(con, paste0(
+      "SELECT * FROM item_status_history WHERE UniqueID = '", deleted_item$UniqueID, "' ORDER BY change_time DESC LIMIT 1"
+    ))
+    
+    if (nrow(original_state) > 0) {
+      # 恢复库存数量
+      adjust_inventory_quantity(con, deleted_item$SKU, adjustment = 1)  # 增加库存数量
+      
+      # 恢复物品状态到原始状态
+      update_status(
+        con = con,
+        unique_id = deleted_item$UniqueID,
+        new_status = original_state$previous_status,
+        clear_status_timestamp = deleted_item$Status
+      )
+    } else {
+      showNotification("未找到物品的原始状态记录，无法恢复。", type = "error")
+      return()
+    }
     
     # 清空物品的 OrderID
     update_order_id(
