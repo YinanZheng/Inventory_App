@@ -2312,30 +2312,44 @@ server <- function(input, output, session) {
     
     tryCatch({
       # 获取与订单关联的物品
-      associated_items <- dbGetQuery(con, "SELECT * FROM unique_items WHERE OrderID = ?", params = list(order_id))
+      associated_items <- unique_items_data() %>% filter(OrderID == order_id)
       
       if (nrow(associated_items) > 0) {
         # 遍历关联物品进行逆向操作
         lapply(1:nrow(associated_items), function(i) {
           item <- associated_items[i, ]
           
-          # 逆向调整库存
-          adjust_inventory_quantity(con, item$SKU, adjustment = 1)  # 增加库存数量
+          # 查询物品的原始状态
+          original_state <- dbGetQuery(con, paste0(
+            "SELECT * FROM item_status_history WHERE UniqueID = '", item$UniqueID, "' ORDER BY change_time DESC LIMIT 1"
+          ))
           
-          # 恢复物品状态到“国内入库”
-          update_status(
-            con = con,
-            unique_id = item$UniqueID,
-            new_status = "国内入库",
-            clear_status_timestamp = "国内售出" # 同时清空国内售出的时间戳
-          )
-          
-          # 清空物品的 OrderID
-          update_order_id(
-            con = con,
-            unique_id = item$UniqueID,
-            order_id = NULL  # 清空订单号
-          )
+          if (nrow(original_state) > 0) {
+            # 恢复库存数量
+            adjust_inventory_quantity(con, item$SKU, adjustment = 1)  # 增加库存数量
+            
+            if (is.null(timestamp_column)) {
+              showNotification(paste0("物品 ", item$UniqueID, " 的状态无法恢复：未找到对应时间戳。"), type = "error")
+              return()
+            }
+            
+            # 恢复物品状态
+            update_status(
+              con = con,
+              unique_id = item$UniqueID,
+              new_status = original_state$previous_status,
+              clear_status_timestamp = item$Status
+            )
+            
+            # 清空物品的 OrderID
+            update_order_id(
+              con = con,
+              unique_id = item$UniqueID,
+              order_id = NULL  # 清空订单号
+            )
+          } else {
+            showNotification(paste0("物品 ", item$UniqueID, " 无状态历史记录，无法恢复。"), type = "error")
+          }
         })
       }
       
