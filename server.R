@@ -346,8 +346,8 @@ server <- function(input, output, session) {
       data <- data %>% filter(OrderID %in% item_orders)
     }
     
-    # 按更新时间倒序排列
-    data <- data %>% arrange(desc(updated_at))
+    # 按录入时间倒序排列
+    data <- data %>% arrange(desc(created_at))
     
     data
   })
