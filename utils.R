@@ -930,6 +930,7 @@ apply_dynamic_styles <- function(table, column_names) {
   return(table)
 }
 
+# 订单注册与更新
 register_order <- function(order_id, customer_name, customer_netname, platform, order_notes, tracking_number, 
                            image_data, con, orders, box_items, unique_items_data, 
                            is_transfer_order = NULL, is_preorder = NULL, preorder_supplier = NULL) {
