@@ -1614,6 +1614,13 @@ server <- function(input, output, session) {
         tags$p(paste0("文件上传失败！", e), style = "color: red;")
       })
     })
+    
+    # 延时清空提示信息
+    later::later(function() {
+      output$upload_status_message <- renderUI({
+        NULL  # 清空提示信息
+      })
+    }, delay = 5)  # 延迟 5 秒后执行
   })
   
   # 出售订单图片处理模块
