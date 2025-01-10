@@ -1112,7 +1112,7 @@ update_has_pdf_column <- function(con, pdf_directory = "/var/uploads/shiplabels"
       update_query <- "
         UPDATE orders
         SET HasPDF = 1
-        WHERE tracking_number IN (%s)
+        WHERE UsTrackingNumber IN (%s)
       "
       dbExecute(con, sprintf(update_query, paste(sprintf("'%s'", existing_tracking_numbers), collapse = ",")))
     }
