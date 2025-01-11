@@ -380,27 +380,27 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    data <- filter_unique_items_data_by_inputs(
-      data = data,
-      input = input,
-      maker_input_id = "defect_filter-maker",
-      item_name_input_id = "defect_filter-name",
-      purchase_date_range_id = "defect_filter-purchase_date_range"
-    )
-    
-    # 默认过滤条件：状态为“国内入库”且 Defect 不为“未知”
-    data <- data[!is.na(data$Defect) & data$Defect != "未知" & data$Status == "国内入库", ]
-    
-    # 处理开关互斥逻辑
-    if (isTRUE(input$show_defects_only)) {
-      # 如果仅显示瑕疵品
-      data <- data[data$Defect == "瑕疵", ]
-    } else if (isTRUE(input$show_perfects_only)) {
-      # 如果仅显示无瑕品
-      data <- data[data$Defect == "无瑕", ]
-    }
-    
-    data
+    # data <- filter_unique_items_data_by_inputs(
+    #   data = data,
+    #   input = input,
+    #   maker_input_id = "defect_filter-maker",
+    #   item_name_input_id = "defect_filter-name",
+    #   purchase_date_range_id = "defect_filter-purchase_date_range"
+    # )
+    # 
+    # # 默认过滤条件：状态为“国内入库”且 Defect 不为“未知”
+    # data <- data[!is.na(data$Defect) & data$Defect != "未知" & data$Status == "国内入库", ]
+    # 
+    # # 处理开关互斥逻辑
+    # if (isTRUE(input$show_defects_only)) {
+    #   # 如果仅显示瑕疵品
+    #   data <- data[data$Defect == "瑕疵", ]
+    # } else if (isTRUE(input$show_perfects_only)) {
+    #   # 如果仅显示无瑕品
+    #   data <- data[data$Defect == "无瑕", ]
+    # }
+    # 
+    # data
   })
   
   # 国际物流筛选
