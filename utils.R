@@ -1256,72 +1256,74 @@ get_input_id <- function(base_id, suffix) {
 filter_unique_items_data_by_inputs <- function(
     data, 
     input, 
-    maker_input_id, 
+    maker_input_id = NULL, 
     status_input_id = NULL,
-    item_name_input_id, 
+    item_name_input_id = NULL, 
     purchase_date_range_id = NULL, 
     sold_date_range_id = NULL,
     exit_date_range_id = NULL
 ) {
   req(data)  # 确保数据不为空
   
-  # 按供应商筛选
-  if (!is.null(input[[maker_input_id]]) && length(input[[maker_input_id]]) > 0 && any(input[[maker_input_id]] != "")) {
-    data <- data %>% filter(Maker %in% input[[maker_input_id]])
+  # 通用筛选函数
+  filter_data <- function(condition, filter_expr) {
+    if (condition) data <<- data %>% filter(!!filter_expr)
   }
+  
+  # 按供应商筛选
+  filter_data(
+    !is.null(maker_input_id) && !is.null(input[[maker_input_id]]) && any(input[[maker_input_id]] != ""),
+    Maker %in% input[[maker_input_id]]
+  )
   
   # 按库存状态筛选
-  if (!is.null(input[[status_input_id]]) && length(input[[status_input_id]]) > 0 && any(input[[status_input_id]] != "")) {
-    data <- data %>% filter(Status %in% input[[status_input_id]])
-  }
+  filter_data(
+    !is.null(status_input_id) && !is.null(input[[status_input_id]]) && any(input[[status_input_id]] != ""),
+    Status %in% input[[status_input_id]]
+  )
   
   # 按商品名称筛选
-  if (!is.null(input[[item_name_input_id]]) && input[[item_name_input_id]] != "") {
-    data <- data %>% filter(ItemName == input[[item_name_input_id]])
-  }
+  filter_data(
+    !is.null(item_name_input_id) && !is.null(input[[item_name_input_id]]) && input[[item_name_input_id]] != "",
+    ItemName == input[[item_name_input_id]]
+  )
   
   # 按采购日期筛选
-  if (!is.null(purchase_date_range_id) && !is.null(input[[purchase_date_range_id]]) && length(input[[purchase_date_range_id]]) == 2) {
-    purchase_date_range <- as.Date(input[[purchase_date_range_id]])
-    data <- data %>% filter(as.Date(PurchaseTime) >= purchase_date_range[1], as.Date(PurchaseTime) <= purchase_date_range[2])
+  filter_data(
+    !is.null(purchase_date_range_id) && !is.null(input[[purchase_date_range_id]]) && length(input[[purchase_date_range_id]]) == 2,
+    as.Date(PurchaseTime) >= as.Date(input[[purchase_date_range_id]][1]) &
+      as.Date(PurchaseTime) <= as.Date(input[[purchase_date_range_id]][2])
+  )
+  
+  # 按售出日期筛选
+  if (!is.null(sold_date_range_id) && !is.null(input[[sold_date_range_id]]) && length(input[[sold_date_range_id]]) == 2) {
+    sold_date_range <- as.Date(input[[sold_date_range_id]])
+    only_show_sold_id <- paste0(sold_date_range_id, "_only_show_sold")
+    filter_data(
+      !is.null(input[[only_show_sold_id]]) && input[[only_show_sold_id]],
+      Status == "国内售出" &
+        as.Date(DomesticSoldTime) >= sold_date_range[1] &
+        as.Date(DomesticSoldTime) <= sold_date_range[2]
+    )
+    data <- data %>% select(-DomesticExitTime)  # 去掉“国内出库”列
   }
   
-  # 按售出日期筛选，仅对库存状态为‘国内售出’的物品有效
-  if (!is.null(sold_date_range_id) && 
-      !is.null(input[[sold_date_range_id]]) && 
-      length(input[[sold_date_range_id]]) == 2) {
-    
-    only_show_sold_id <- get_input_id(sold_date_range_id, "only_show_sold")
-    
-    if (!is.null(input[[only_show_sold_id]]) && input[[only_show_sold_id]]) {
-      sold_date_range <- as.Date(input[[sold_date_range_id]])
-      data <- data %>%
-        filter(Status == "国内售出", # 仅对状态为‘国内售出’的记录
-               as.Date(DomesticSoldTime) >= sold_date_range[1], 
-               as.Date(DomesticSoldTime) <= sold_date_range[2]) %>%
-        select(-DomesticExitTime) # 去掉“国内出库”列
-    }
+  # 按出库日期筛选
+  if (!is.null(exit_date_range_id) && !is.null(input[[exit_date_range_id]]) && length(input[[exit_date_range_id]]) == 2) {
+    exit_date_range <- as.Date(input[[exit_date_range_id]])
+    only_show_exit_id <- paste0(exit_date_range_id, "_only_show_exit")
+    filter_data(
+      !is.null(input[[only_show_exit_id]]) && input[[only_show_exit_id]],
+      Status == "国内出库" &
+        as.Date(DomesticExitTime) >= exit_date_range[1] &
+        as.Date(DomesticExitTime) <= exit_date_range[2]
+    )
+    data <- data %>% select(-DomesticSoldTime)  # 去掉“国内售出”列
   }
   
-  # 按出库日期筛选，仅对库存状态为‘国内出库’的物品有效
-  if (!is.null(exit_date_range_id) && 
-      !is.null(input[[exit_date_range_id]]) && 
-      length(input[[exit_date_range_id]]) == 2) {
-    
-    only_show_exit_id <- get_input_id(exit_date_range_id, "only_show_exit")
-    
-    if (!is.null(input[[only_show_exit_id]]) && input[[only_show_exit_id]]) {
-      exit_date_range <- as.Date(input[[exit_date_range_id]])
-      data <- data %>%
-        filter(Status == "国内出库", # 仅对状态为‘国内出库’的记录
-               as.Date(DomesticExitTime) >= exit_date_range[1], 
-               as.Date(DomesticExitTime) <= exit_date_range[2]) %>%
-        select(-DomesticSoldTime) # 去掉“国内售出”列
-    }
-  }
-  
-  data
+  return(data)
 }
+
 
 adjust_inventory_quantity <- function(con, sku, adjustment) {
   tryCatch({
