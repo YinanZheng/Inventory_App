@@ -380,13 +380,13 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
-    # data <- filter_unique_items_data_by_inputs(
-    #   data = data,
-    #   input = input,
-    #   maker_input_id = "defect_filter-maker",
-    #   item_name_input_id = "defect_filter-name",
-    #   purchase_date_range_id = "defect_filter-purchase_date_range"
-    # )
+    data <- filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "defect_filter-maker",
+      item_name_input_id = "defect_filter-name",
+      purchase_date_range_id = "defect_filter-purchase_date_range"
+    )
    
     # 默认过滤条件：状态为“国内入库”且 Defect 不为“未知”
     data <- data[!is.na(data$Defect) & data$Defect != "未知" & data$Status == "国内入库", ]
@@ -1521,8 +1521,11 @@ server <- function(input, output, session) {
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
     tryCatch({
+      # 将用户输入和数据中的姓名都转换为大写
+      customer_name_upper <- toupper(input$customer_name)
       result <- orders() %>%
-        filter(grepl(input$customer_name, CustomerName, ignore.case = TRUE))  # 模糊匹配顾客姓名
+        mutate(CustomerNameUpper = toupper(CustomerName)) %>%  # 添加大写姓名列
+        filter(grepl(customer_name_upper, CustomerNameUpper))  # 模糊匹配大写姓名
       
       valid_result <- result %>%
         filter(!is.na(CustomerNetName) & CustomerNetName != "") %>%  # 过滤有效的网名
@@ -1539,6 +1542,7 @@ server <- function(input, output, session) {
       return(NULL)
     })
   })
+  
   
   # 缓存最近查询过的顾客姓名与网名
   cache <- reactiveVal(list())
