@@ -1197,6 +1197,11 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
     # 检查每一行是否可能是名字
     for (potential_name in potential_names) {
       if (!is.na(potential_name)) {
+        # 排除包含数字的行
+        if (stri_detect_regex(potential_name, "\\d")) {
+          next  # 跳过包含数字的行
+        }
+        
         # 清理名字，去掉前缀或无用字符
         first_upper_pos <- stri_locate_first_regex(potential_name, "[A-Z]")[1]
         if (!is.na(first_upper_pos)) {
@@ -1232,7 +1237,7 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
   
   # 返回姓名和运单号
   return(list(
-    customer_name = toupper(customer_name),
+    customer_name = if (!is.na(customer_name)) toupper(customer_name) else NA,
     tracking_number = tracking_number
   ))
 }
