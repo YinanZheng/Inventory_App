@@ -3959,6 +3959,18 @@ server <- function(input, output, session) {
     showNotification("记录成功", type = "message")
   })
   
+  observe({
+    # 如果用户输入了转入金额，则清空转出金额
+    if (!is.null(input$amount_in) && input$amount_in > 0) {
+      updateNumericInput(session, "amount_out", value = 0)  # 清空转出金额
+    }
+    
+    # 如果用户输入了转出金额，则清空转入金额
+    if (!is.null(input$amount_out) && input$amount_out > 0) {
+      updateNumericInput(session, "amount_in", value = 0)  # 清空转入金额
+    }
+  })
+  
   observeEvent(input$delete_transaction, {
     current_tab <- input$tabs
     account_type <- switch(
@@ -3990,6 +4002,8 @@ server <- function(input, output, session) {
     }
   })
   
+  ##
+  
   output$salary_card_table <- renderDT({
     dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '工资卡' ORDER BY TransactionTime DESC")
   })
@@ -4006,6 +4020,7 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '一般户卡' ORDER BY TransactionTime DESC")
   })
   
+  ##
   
   output$salary_balance <- renderText({
     balance <- dbGetQuery(con, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '工资卡'")
