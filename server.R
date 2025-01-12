@@ -3534,7 +3534,7 @@ server <- function(input, output, session) {
   
   observeEvent(event_data("plotly_click", source = "expense_chart"), {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
-    print(clicked_point) # 输出点击事件数据
+    message(clicked_point) # 输出点击事件数据
   })
   
   # 筛选物品详情数据
