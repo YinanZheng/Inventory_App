@@ -3454,7 +3454,6 @@ server <- function(input, output, session) {
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 根据用户选择的内容决定显示的 Y 轴数据
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
@@ -3479,28 +3478,28 @@ server <- function(input, output, session) {
       )
     
     # 绘制柱状图
-    plot_ly(data, x = ~GroupDate, y = ~get(y_var), type = "bar",
+    plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
             name = NULL, marker = list(color = color),
             text = ~round(get(y_var), 2), # 显示数值，保留两位小数
             textposition = "outside",
-            source = "expense_chart") %>% # 数值显示在柱顶外侧
+            source = "expense_chart") %>%
       layout(
         xaxis = list(
-          title = "", # 移除 X 轴标题
+          title = "",
           tickvals = data$GroupLabel, # 使用新的时间范围标签
-          tickangle = -45, # 倾斜日期标签
+          tickangle = -45,
           tickfont = list(size = 12),
-          showgrid = FALSE # 隐藏网格线
+          showgrid = FALSE
         ),
         yaxis = list(
-          title = "采购开销（元）", # 隐藏 Y 轴标题
+          title = "采购开销（元）",
           tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 调整 Y 轴范围，留出空间显示数值
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2)
         ),
-        margin = list(l = 50, r = 20, t = 20, b = 50), # 调整边距
-        showlegend = FALSE, # 隐藏图例
-        plot_bgcolor = "#F9F9F9", # 背景颜色
-        paper_bgcolor = "#FFFFFF" # 图表纸张背景颜色
+        margin = list(l = 50, r = 20, t = 20, b = 50),
+        showlegend = FALSE,
+        plot_bgcolor = "#F9F9F9",
+        paper_bgcolor = "#FFFFFF"
       )
   })
   
