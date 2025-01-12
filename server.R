@@ -3198,7 +3198,7 @@ server <- function(input, output, session) {
       showNotification("库存表已加载！", type = "message")
     }
     
-    if (input$inventory_china == "查询" && input$query_tabs == "库存概览") {
+    if (input$inventory_china == "查询" && input$query_tabs == "库存总览") {
       item_status_history_refresh_trigger(!(item_status_history_refresh_trigger))
       showNotification("库存状态历史已加载！", type = "message")
     }
