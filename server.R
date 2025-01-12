@@ -3448,7 +3448,7 @@ server <- function(input, output, session) {
   })
   
   # 开销柱状图  
-  output$bar_chart <- renderPlotly({
+  output$expense_chart <- renderPlotly({
     data <- expense_summary_data()
     
     # 获取用户选择的 Y 轴变量及颜色
