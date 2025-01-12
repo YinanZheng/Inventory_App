@@ -3558,7 +3558,7 @@ server <- function(input, output, session) {
   output$us_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$us$shipping) })
   
   output$sold_total_count <- renderText({ overview_data()$sold$count })
-  output$sold_total_count <- renderText({
+  output$sold_total_count_with_shipping <- renderText({
     count <- overview_data()$sold$count
     us_shipping_count <- overview_data()$sold$us_shipping_count
     paste0(count, " (", us_shipping_count, ")")
