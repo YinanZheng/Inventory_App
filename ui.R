@@ -1136,7 +1136,7 @@ ui <- navbarPage(
                   class = "card",
                   style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                   tags$h4("库存状态流转桑基图", style = "color: #007BFF; font-weight: bold; text-align: center;"),
-                  sankeyNetworkOutput("status_sankey", height = "400px")
+                  sankeyNetworkOutput("status_sankey", height = "350px")
                 )
               )
             )
