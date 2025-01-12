@@ -4015,17 +4015,17 @@ server <- function(input, output, session) {
     return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
   })
   
-  output$salary_balance <- renderText({
+  output$dollar_balance <- renderText({
     balance <- dbGetQuery(con, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '美元卡'")
     return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
   })
   
-  output$salary_balance <- renderText({
+  output$purchase_balance <- renderText({
     balance <- dbGetQuery(con, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '买货卡'")
     return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
   })
   
-  output$salary_balance <- renderText({
+  output$general_balance <- renderText({
     balance <- dbGetQuery(con, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '一般户卡'")
     return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
   })
