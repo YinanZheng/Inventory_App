@@ -3946,37 +3946,88 @@ server <- function(input, output, session) {
   
   observeEvent(input$record_transaction, {
     req(input$amount_in >= 0, input$amount_out >= 0)
+    current_tab <- input$tabs
+    account_type <- switch(
+      current_tab,
+      "工资卡" = "工资卡",
+      "美元卡" = "美元卡",
+      "买货卡" = "买货卡",
+      "一般户卡" = "一般户卡"
+    )
     dbExecute(
-      con,
+      conn,
       "INSERT INTO transactions (AccountType, AmountIn, AmountOut, Remarks) VALUES (?, ?, ?, ?)",
-      params = list("工资卡", input$amount_in, input$amount_out, input$remarks) # 根据实际需求修改账户类型
+      params = list(account_type, input$amount_in, input$amount_out, input$remarks)
     )
     showNotification("记录成功", type = "message")
   })
   
-  output$account_overview_table <- renderDT({
-    dbGetQuery(con, "
-    SELECT AccountType AS '账户类型',
-           SUM(AmountIn) - SUM(AmountOut) AS '余额'
-    FROM transactions
-    GROUP BY AccountType
-  ")
+  observeEvent(input$delete_transaction, {
+    current_tab <- input$tabs
+    account_type <- switch(
+      current_tab,
+      "工资卡" = "工资卡",
+      "美元卡" = "美元卡",
+      "买货卡" = "买货卡",
+      "一般户卡" = "一般户卡"
+    )
+    selected_rows <- switch(
+      current_tab,
+      "工资卡" = input$salary_card_table_rows_selected,
+      "美元卡" = input$dollar_card_table_rows_selected,
+      "买货卡" = input$purchase_card_table_rows_selected,
+      "一般户卡" = input$general_card_table_rows_selected
+    )
+    
+    if (length(selected_rows) > 0) {
+      # 获取选中行的 TransactionID
+      record_to_delete <- dbGetQuery(
+        conn,
+        paste0("SELECT TransactionID FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC LIMIT ?, 1"),
+        params = list(account_type, selected_rows - 1)
+      )
+      dbExecute(conn, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
+      showNotification("记录已删除", type = "warning")
+    } else {
+      showNotification("请选择要删除的记录", type = "error")
+    }
   })
   
   output$salary_card_table <- renderDT({
-    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '工资卡'")
+    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '工资卡' ORDER BY TransactionTime DESC")
   })
   
   output$dollar_card_table <- renderDT({
-    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '美元卡'")
+    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '美元卡' ORDER BY TransactionTime DESC")
   })
   
   output$purchase_card_table <- renderDT({
-    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '买货卡'")
+    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '买货卡' ORDER BY TransactionTime DESC")
   })
   
   output$general_card_table <- renderDT({
-    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '一般户卡'")
+    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '一般户卡' ORDER BY TransactionTime DESC")
+  })
+  
+  
+  output$salary_balance <- renderText({
+    balance <- dbGetQuery(conn, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '工资卡'")
+    return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
+  })
+  
+  output$salary_balance <- renderText({
+    balance <- dbGetQuery(conn, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '美元卡'")
+    return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
+  })
+  
+  output$salary_balance <- renderText({
+    balance <- dbGetQuery(conn, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '买货卡'")
+    return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
+  })
+  
+  output$salary_balance <- renderText({
+    balance <- dbGetQuery(conn, "SELECT SUM(AmountIn) - SUM(AmountOut) AS Balance FROM transactions WHERE AccountType = '一般户卡'")
+    return(sprintf("¥%.2f", balance$Balance[1] %||% 0))
   })
   
   
