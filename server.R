@@ -3476,16 +3476,17 @@ server <- function(input, output, session) {
           input$precision == "月" ~ format(GroupDate, "%Y-%m"),
           input$precision == "年" ~ format(GroupDate, "%Y")
         )
-      ) %>%
-      left_join(
-        unique_items_data() %>%
-          group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
-          summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
-        by = "GroupDate"
-      ) %>%
-      mutate(
-        CheckStatus = ifelse(AllChecked, "green", "gray") # 状态颜色
-      )
+      ) 
+    # %>%
+      # left_join(
+      #   unique_items_data() %>%
+      #     group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
+      #     summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
+      #   by = "GroupDate"
+      # ) %>%
+      # mutate(
+      #   CheckStatus = ifelse(AllChecked, "green", "gray") # 状态颜色
+      # )
     
     # 绘制柱状图
     p <- plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
