@@ -3463,7 +3463,8 @@ server <- function(input, output, session) {
           ),
           input$precision == "月" ~ format(GroupDate, "%b %Y"),
           input$precision == "年" ~ format(GroupDate, "%Y")
-        )
+        ),
+        GroupLabel = as.character(GroupLabel) # 强制转换为字符类型
       )
     
     y_var <- switch(input$expense_type,
