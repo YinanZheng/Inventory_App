@@ -1062,24 +1062,23 @@ server <- function(input, output, session) {
     # 如果启用自动入库功能，直接执行入库逻辑
     if (input$auto_inbound && !is.null(pending_quantity) && pending_quantity > 0) {
       unique_ID <- handleOperation(
-        operation_name = "入库",
-        sku_input = input$inbound_sku,
+        unique_items_data(),
+        operation_name = "入库", 
+        sku_field = "inbound_sku",
         output_name = "inbound_item_info",
         query_status = "采购",
         update_status_value = "国内入库",
-        count_label = "待入库数",
-        count_field = "PendingQuantity",
-        con = con,
-        output = output,
-        refresh_trigger = NULL,
-        session = session,
-        input = input
+        count_label = "待入库数", 
+        count_field = "PendingQuantity", 
+        refresh_trigger = NULL, # 批量处理完了再触发刷新      
+        con,                  
+        input, output, session
       )
       
       # 检查是否成功处理
       if (!is.null(unique_ID) && unique_ID != "") {
         # 更新库存数据
-        adjust_inventory_quantity(con, input$inbound_sku, adjustment = 1)
+        adjust_inventory_quantity(con, input$inbound_sku, adjustment = 1) #采购入库后 库存+1
         
         # 显示成功通知
         showNotification(paste0("SKU ", input$inbound_sku, " 的一个物品已自动入库！"), type = "message")
@@ -1116,18 +1115,17 @@ server <- function(input, output, session) {
     # 批量处理入库逻辑
     for (i in seq_len(inbound_quantity)) {
       unique_ID <- handleOperation(
-        operation_name = "入库",
-        sku_input = input$inbound_sku,
+        unique_items_data(),
+        operation_name = "入库", 
+        sku_field = "inbound_sku",
         output_name = "inbound_item_info",
         query_status = "采购",
         update_status_value = "国内入库",
-        count_label = "待入库数",
-        count_field = "PendingQuantity",
-        con = con,
-        output = output,
-        refresh_trigger = NULL,
-        session = session,
-        input = input
+        count_label = "待入库数", 
+        count_field = "PendingQuantity", 
+        refresh_trigger = NULL, # 批量处理完了再触发刷新      
+        con,                  
+        input, output, session
       )
       
       # 如果未找到对应的 UniqueID，停止后续操作
@@ -1287,20 +1285,19 @@ server <- function(input, output, session) {
     
     # 调用出库处理逻辑
     handleOperation(
-      operation_name = "出库",
-      sku_input = input$outbound_sku,
+      unique_items_data(),
+      operation_name = "出库", 
+      sku_field = "outbound_sku",
       output_name = "outbound_item_info",
       query_status = "国内入库",
       update_status_value = "国内出库",
-      count_label = "可出库数",
-      count_field = "AvailableForOutbound",
-      con = con,
-      output = output,
-      refresh_trigger = unique_items_data_refresh_trigger,
-      session = session,
-      input = input
+      count_label = "可出库数", 
+      count_field = "AvailableForOutbound", 
+      refresh_trigger = unique_items_data_refresh_trigger,     
+      con,                  
+      input, output, session
     )
-    
+
     # 清空 SKU 输入框
     updateTextInput(session, "outbound_sku", value = "")
     runjs("document.getElementById('outbound_sku').focus();")
@@ -1309,19 +1306,19 @@ server <- function(input, output, session) {
   # 手动确认出库逻辑
   observeEvent(input$confirm_outbound_btn, {
     handleOperation(
-      operation_name = "出库",
-      sku_input = input$outbound_sku,
+      unique_items_data(),
+      operation_name = "出库", 
+      sku_field = "outbound_sku",
       output_name = "outbound_item_info",
       query_status = "国内入库",
       update_status_value = "国内出库",
-      count_label = "可出库数",
-      count_field = "AvailableForOutbound",
-      con = con,
-      output = output,
-      refresh_trigger = unique_items_data_refresh_trigger,
-      session = session,
-      input = input
+      count_label = "可出库数", 
+      count_field = "AvailableForOutbound", 
+      refresh_trigger = unique_items_data_refresh_trigger,     
+      con,                  
+      input, output, session
     )
+    
     updateTextInput(session, "outbound_sku", value = "")
     runjs("document.getElementById('outbound_sku').focus();")
   })
@@ -1329,21 +1326,21 @@ server <- function(input, output, session) {
   # 撤回出库逻辑
   observeEvent(input$revert_outbound_btn, {
     handleOperation(
-      operation_name = "撤回",
-      sku_input = input$outbound_sku,
+      unique_items_data(),
+      operation_name = "撤回", 
+      sku_field = "outbound_sku",
       output_name = "outbound_item_info",
       query_status = "国内出库",
       update_status_value = "国内入库",
-      count_label = "可出库数",
-      count_field = "AvailableForOutbound",
-      con = con,
-      output = output,
-      refresh_trigger = unique_items_data_refresh_trigger,
-      session = session,
-      input = input,
+      count_label = "可出库数", 
+      count_field = "AvailableForOutbound", 
+      refresh_trigger = unique_items_data_refresh_trigger, 
       clear_field = "DomesticExitTime", # 清空出库日期字段
-      clear_shipping_method = TRUE # 清空出库国际运输方式
+      clear_shipping_method = TRUE, # 清空出库国际运输方式
+      con,                  
+      input, output, session
     )
+    
     updateTextInput(session, "outbound_sku", value = "")
     runjs("document.getElementById('outbound_sku').focus();")
   })
