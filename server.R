@@ -3378,6 +3378,8 @@ server <- function(input, output, session) {
     })
   })
   
+  #################################################################
+  
   # 开销统计
   expense_summary_data <- reactive({
     req(input$time_range) # 确保时间范围存在
@@ -3507,12 +3509,15 @@ server <- function(input, output, session) {
       )
   })
   
+  #################################################################
+  
   # 库存总览数据统计
   overview_data <- reactive({
     data <- unique_items_data()
     domestic <- data %>% filter(Status == "国内入库")
     logistics <- data %>% filter(Status == "国内出库")
     us <- data %>% filter(Status == "美国入库")
+    sold <- data %>% filter(Status %in% c("国内售出", "美国调货", "美国发货"))
     
     list(
       domestic = list(
@@ -3529,6 +3534,12 @@ server <- function(input, output, session) {
         count = nrow(us),
         value = sum(us$ProductCost, na.rm = TRUE),
         shipping = sum(us$IntlShippingCost + us$DomesticShippingCost, na.rm = TRUE)
+      ),
+      sold = list(
+        count = nrow(sold),
+        us_shipping_count = nrow(sold %>% filter(Status == "美国发货")),
+        value = sum(sold$ProductCost, na.rm = TRUE),
+        shipping = sum(sold$IntlShippingCost + sold$DomesticShippingCost, na.rm = TRUE)
       )
     )
   })
@@ -3546,7 +3557,12 @@ server <- function(input, output, session) {
   output$us_total_value <- renderText({ sprintf("¥%.2f", overview_data()$us$value) })
   output$us_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$us$shipping) })
   
+  output$sold_total_count <- renderText({ overview_data()$sold$count })
+  output$sold_us_shipping_count <- renderText({ sprintf("(%d)", overview_data()$sold$us_shipping_count) })
+  output$sold_total_value <- renderText({ sprintf("¥%.2f", overview_data()$sold$value) })
+  output$sold_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$sold$shipping) })
   
+  #################################################################
   
   # 清空sku输入框
   observeEvent(input$clear_query_sku_btn, {

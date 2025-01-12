@@ -1019,7 +1019,7 @@ ui <- navbarPage(
             fluidRow(
               # 国内库存卡片
               column(
-                4,
+                3,
                 div(
                   class = "card",
                   style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -1029,13 +1029,13 @@ ui <- navbarPage(
                     tags$h3(textOutput("domestic_total_count"), style = "color: #007BFF; font-weight: bold;"),
                     tags$p("物品总数")
                   ),
-                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("domestic_total_value"), style = "color: #007BFF;"),
                     tags$p("货物价值")
                   ),
-                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("domestic_shipping_cost"), style = "color: #007BFF;"),
@@ -1045,7 +1045,7 @@ ui <- navbarPage(
               ),
               # 国际物流卡片
               column(
-                4,
+                3,
                 div(
                   class = "card",
                   style = "padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -1055,13 +1055,13 @@ ui <- navbarPage(
                     tags$h3(textOutput("logistics_total_count"), style = "color: #28A745; font-weight: bold;"),
                     tags$p("物品总数")
                   ),
-                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("logistics_total_value"), style = "color: #28A745;"),
                     tags$p("货物价值")
                   ),
-                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("logistics_shipping_cost"), style = "color: #28A745;"),
@@ -1071,7 +1071,7 @@ ui <- navbarPage(
               ),
               # 美国库存卡片
               column(
-                4,
+                3,
                 div(
                   class = "card",
                   style = "padding: 20px; border: 1px solid #6F42C1; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -1081,16 +1081,49 @@ ui <- navbarPage(
                     tags$h3(textOutput("us_total_count"), style = "color: #6F42C1; font-weight: bold;"),
                     tags$p("物品总数")
                   ),
-                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("us_total_value"), style = "color: #6F42C1;"),
                     tags$p("货物价值")
                   ),
-                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("us_shipping_cost"), style = "color: #6F42C1;"),
+                    tags$p("运费成本")
+                  )
+                )
+              ),
+              # 商品售出卡片
+              column(
+                3,
+                div(
+                  class = "card",
+                  style = "padding: 20px; border: 1px solid #FF5733; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  tags$h4("商品售出", style = "color: #FF5733; font-weight: bold; text-align: center;"),
+                  div(
+                    style = "text-align: center; margin-top: 10px;",
+                    tags$h3(
+                      textOutput("sold_total_count"),
+                      tags$span(
+                        paste0(" (", textOutput("sold_us_shipping_count"), ")"),
+                        style = "font-size: 16px; color: #666;"
+                      ),
+                      style = "color: #FF5733; font-weight: bold;"
+                    ),
+                    tags$p("物品总数（已投递）")
+                  ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                  div(
+                    style = "text-align: center; margin-top: 10px;",
+                    tags$h4(textOutput("sold_total_value"), style = "color: #FF5733;"),
+                    tags$p("货物价值")
+                  ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                  div(
+                    style = "text-align: center; margin-top: 10px;",
+                    tags$h4(textOutput("sold_shipping_cost"), style = "color: #FF5733;"),
                     tags$p("运费成本")
                   )
                 )
