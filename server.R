@@ -3476,15 +3476,13 @@ server <- function(input, output, session) {
           input$precision == "月" ~ format(GroupDate, "%Y-%m"),
           input$precision == "年" ~ format(GroupDate, "%Y")
         )
-      ) 
-    # %>%
-      # left_join(
-      #   unique_items_data() %>%
-      #     group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
-      #     summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
-      #   by = "GroupDate"
-      # ) 
-    %>%
+      ) %>% 
+      left_join(
+        unique_items_data() %>% filter(!is.na(PurchaseTime) & PurchaseTime >= start_date & PurchaseTime <= end_date) %>%
+        group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
+        summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
+      by = "GroupDate"
+    ) %>%
       mutate(
         CheckStatus = ifelse(AllChecked, "green", "gray") # 状态颜色
       )
@@ -3496,19 +3494,19 @@ server <- function(input, output, session) {
                  textposition = "outside",
                  source = "expense_chart")
     
-    # 在柱子顶部添加小符号
-    p <- p %>%
-      add_trace(
-        x = ~GroupLabel,
-        y = ~get(y_var) * 1.05, # 符号位置在柱子顶部稍高处
-        mode = "markers",
-        marker = list(
-          symbol = "check",
-          size = 16,
-          color = "gray" # 根据核对状态动态设置颜色
-        ),
-        showlegend = FALSE # 不显示图例
-      )
+    # # 在柱子顶部添加小符号
+    # p <- p %>%
+    #   add_trace(
+    #     x = ~GroupLabel,
+    #     y = ~get(y_var) * 1.05, # 符号位置在柱子顶部稍高处
+    #     mode = "markers",
+    #     marker = list(
+    #       symbol = "check",
+    #       size = 16,
+    #       color = ~CheckStatus # 根据核对状态动态设置颜色
+    #     ),
+    #     showlegend = FALSE # 不显示图例
+    #   )
 
     # 布局调整
     p %>%
