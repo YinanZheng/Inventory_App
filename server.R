@@ -3465,6 +3465,19 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
+    # 根据精度生成时间范围标签
+    data <- data %>%
+      mutate(
+        GroupLabel = case_when(
+          input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
+          input$precision == "周" ~ paste(format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
+                                         "至",
+                                         format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")),
+          input$precision == "月" ~ paste(format(GroupDate, "%Y-%m")),
+          input$precision == "年" ~ paste(format(GroupDate, "%Y"))
+        )
+      )
+    
     # 绘制柱状图
     plot_ly(data, x = ~GroupDate, y = ~get(y_var), type = "bar",
             name = NULL, marker = list(color = color),
@@ -3513,16 +3526,12 @@ server <- function(input, output, session) {
   
   # 筛选物品详情数据
   filtered_items <- reactive({
-    req(selected_date()) # 确保用户已经点击了某个柱状图的 bar
-    data <- expense_summary_data() # 原始采购数据
-    items_data <- unique_items_data() # 物品详细数据
+    req(selected_range()) # 确保时间范围存在
+    range <- selected_range()
     
-    # 根据时间点或范围筛选
-    selected_group_date <- as.Date(selected_date())
-    items_data <- items_data %>%
-      filter(PurchaseTime == selected_group_date)
-    
-    items_data
+    # 从物品数据中筛选出时间范围内的数据
+    unique_items_data() %>%
+      filter(PurchaseTime >= range[1] & PurchaseTime <= range[2])
   })
   
   # 渲染筛选
