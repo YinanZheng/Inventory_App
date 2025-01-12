@@ -3947,7 +3947,7 @@ server <- function(input, output, session) {
   observeEvent(input$record_transaction, {
     req(input$amount_in >= 0, input$amount_out >= 0)
     dbExecute(
-      conn,
+      con,
       "INSERT INTO transactions (AccountType, AmountIn, AmountOut, Remarks) VALUES (?, ?, ?, ?)",
       params = list("工资卡", input$amount_in, input$amount_out, input$remarks) # 根据实际需求修改账户类型
     )
@@ -3955,7 +3955,7 @@ server <- function(input, output, session) {
   })
   
   output$account_overview_table <- renderDT({
-    dbGetQuery(conn, "
+    dbGetQuery(con, "
     SELECT AccountType AS '账户类型',
            SUM(AmountIn) - SUM(AmountOut) AS '余额'
     FROM transactions
@@ -3964,19 +3964,19 @@ server <- function(input, output, session) {
   })
   
   output$salary_card_table <- renderDT({
-    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '工资卡'")
+    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '工资卡'")
   })
   
   output$dollar_card_table <- renderDT({
-    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '美元卡'")
+    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '美元卡'")
   })
   
   output$purchase_card_table <- renderDT({
-    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '买货卡'")
+    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '买货卡'")
   })
   
   output$general_card_table <- renderDT({
-    dbGetQuery(conn, "SELECT * FROM transactions WHERE AccountType = '一般户卡'")
+    dbGetQuery(con, "SELECT * FROM transactions WHERE AccountType = '一般户卡'")
   })
   
   
