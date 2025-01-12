@@ -2098,7 +2098,6 @@ server <- function(input, output, session) {
         
         if (is.na(new_status)) {
           showNotification(paste("无法确定 SKU", sku, "的目标状态，操作已终止！"), type = "error")
-          stop("目标状态未知")
         }
         
         # 更新 unique_items 表中的状态
