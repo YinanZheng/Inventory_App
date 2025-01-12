@@ -3199,7 +3199,7 @@ server <- function(input, output, session) {
     }
     
     if (input$inventory_china == "查询" && input$query_tabs == "库存总览") {
-      item_status_history_refresh_trigger(!(item_status_history_refresh_trigger))
+      item_status_history_refresh_trigger(!item_status_history_refresh_trigger())
       showNotification("库存状态历史已加载！", type = "message")
     }
   }, ignoreInit = TRUE)  # 忽略初始值
