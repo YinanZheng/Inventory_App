@@ -3485,6 +3485,7 @@ server <- function(input, output, session) {
       layout(
         xaxis = list(
           title = "",
+          type = "category", # 强制设置为类别类型
           tickvals = data$GroupLabel, # 使用新的时间范围标签
           tickangle = -45,
           tickfont = list(size = 12),
