@@ -3492,11 +3492,11 @@ server <- function(input, output, session) {
             text = ~round(get(y_var), 2),
             textposition = "outside",
             source = "expense_chart") %>%
-      add_trace(
-        x = ~GroupLabel, y = ~SymbolPosition, mode = "markers",
-        marker = list(symbol = "check", size = 16, color = ~CheckStatus),
-        showlegend = FALSE
-      ) %>%
+      # add_trace(
+      #   x = ~GroupLabel, y = ~SymbolPosition, mode = "markers",
+      #   marker = list(symbol = "check", size = 16, color = ~CheckStatus),
+      #   showlegend = FALSE
+      # ) %>%
       layout(
         xaxis = list(
           title = "",
