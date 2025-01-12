@@ -24,6 +24,9 @@ server <- function(input, output, session) {
   # 触发order刷新
   orders_refresh_trigger <- reactiveVal(FALSE)
   
+  # 触发item_status_history刷新
+  item_status_history_refresh_trigger <- reactiveVal(FALSE)
+  
   # 用于存储 barcode PDF 文件路径
   barcode_pdf_file_path <- reactiveVal(NULL)
   
@@ -99,6 +102,8 @@ server <- function(input, output, session) {
     unique(inventory()$ItemName)  # 提取唯一的商品名
   })
   
+  ####################################################################################################################################
+  
   # 物品追踪表
   unique_items_data <- reactive({
     # 当 refresh_trigger 改变时触发更新
@@ -153,11 +158,20 @@ server <- function(input, output, session) {
     makers_items_map(makers_items)  # 更新 reactiveVal
   })
   
+  ####################################################################################################################################
+  
   # 订单表
   orders <- reactive({
-    # 当 refresh_trigger 改变时触发更新
     orders_refresh_trigger()
     dbGetQuery(con, "SELECT * FROM orders")
+  })
+
+  ####################################################################################################################################
+  
+  # 物品状态历史表
+  item_status_history <- reactive({
+    item_status_history_refresh_trigger()
+    dbGetQuery(con, "SELECT * FROM item_status_history")
   })
   
   ####################################################################################################################################
@@ -3181,7 +3195,12 @@ server <- function(input, output, session) {
   }, {
     if (input$inventory_china == "查询" && input$query_tabs == "商品状态") {
       inventory_refresh_trigger(!inventory_refresh_trigger())
-      showNotification("库存表已更新！", type = "message")
+      showNotification("库存表已加载！", type = "message")
+    }
+    
+    if (input$inventory_china == "查询" && input$query_tabs == "库存概览") {
+      item_status_history_refresh_trigger(!(item_status_history_refresh_trigger))
+      showNotification("库存状态历史已加载！", type = "message")
     }
   }, ignoreInit = TRUE)  # 忽略初始值
   
@@ -3567,10 +3586,6 @@ server <- function(input, output, session) {
   output$sold_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$sold$shipping) })
   
   # 状态流转桑基图
-  item_status_history <- reactive({
-    dbGetQuery(con, "SELECT * FROM item_status_history")
-  })
-  
   output$status_sankey <- renderSankeyNetwork({
     links <- item_status_history() %>%
       group_by(source = previous_status, target = lead(previous_status)) %>%
