@@ -3504,6 +3504,9 @@ server <- function(input, output, session) {
       )
   })
   
+  message(plotly::event_data("plotly_registered"))
+  
+  
   selected_range <- reactiveVal(NULL) # 存储时间范围
   
   observeEvent(event_data("plotly_click", source = "expense_chart"), {
