@@ -3446,7 +3446,12 @@ server <- function(input, output, session) {
     # 将时间序列与统计数据合并，填充缺失值为 0
     complete_data <- time_df %>%
       left_join(summarized_data, by = "GroupDate") %>%
-      replace_na(list(TotalExpense = 0, ProductCost = 0, ShippingCost = 0))
+      replace_na(list(
+        TotalExpense = 0,
+        ProductCost = 0,
+        ShippingCost = 0,
+        AllChecked = FALSE # 默认未核对
+      ))
     
     complete_data
   })
