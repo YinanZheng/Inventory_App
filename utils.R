@@ -352,7 +352,7 @@ render_table_with_images <- function(data,
   )
 }
 
-
+# 更新物品状态
 update_status <- function(con, unique_id, new_status = NULL, defect_status = NULL, 
                           shipping_method = NULL, clear_shipping_method = FALSE, 
                           refresh_trigger = NULL, update_timestamp = TRUE, 
@@ -439,7 +439,7 @@ update_status <- function(con, unique_id, new_status = NULL, defect_status = NUL
   }
 }
 
-
+# 更新订单ID
 update_order_id <- function(con, unique_ids, order_id) {
   tryCatch({
     # 检查输入的 unique_ids 是否为空
@@ -479,9 +479,7 @@ update_order_id <- function(con, unique_ids, order_id) {
   })
 }
 
-
-
-# 定义确认框
+# 定义确认框-物品管理页删除物品用
 deleteConfirmationModal <- function(item_count) {
   modalDialog(
     title = "确认删除",
@@ -493,6 +491,7 @@ deleteConfirmationModal <- function(item_count) {
   )
 }
 
+# 获取sku信息与可操作性数量（入库，出库）
 fetchSkuOperationData <- function(sku, con) {
   # 查询 SKU 的基本信息和相关状态数据
   query <- "
@@ -516,54 +515,7 @@ fetchSkuOperationData <- function(sku, con) {
   dbGetQuery(con, query, params = list(sku))
 }
 
-
-plotBarChart <- function(data, x, y, x_label, y_label, colors) {
-  # 检查数据是否为空
-  if (nrow(data) == 0 || is.null(data[[y]]) || length(data[[y]]) == 0) {
-    return(plotly::plot_ly(type = "scatter", mode = "text") %>%
-             plotly::add_text(x = 0.5, y = 0.5, text = "无库存状态数据", textfont = list(size = 20, color = "red")))
-  }
-  
-  # 使用 plotly 绘制柱状图
-  plotly::plot_ly(
-    data = data,
-    x = ~get(x),
-    y = ~get(y),
-    type = "bar",
-    marker = list(color = colors[seq_along(data[[y]])]) # 设置颜色
-  ) %>%
-    plotly::layout(
-      xaxis = list(title = x_label),
-      yaxis = list(title = y_label),
-      title = "状态分布",
-      showlegend = FALSE
-    )
-}
-
-
-plotPieChart <- function(data, labels, values, colors) {
-  # 检查数据是否为空
-  if (nrow(data) == 0 || is.null(data[[values]]) || length(data[[values]]) == 0) {
-    return(plotly::plot_ly(type = "scatter", mode = "text") %>%
-             plotly::add_text(x = 0.5, y = 0.5, text = "无瑕疵情况数据", textfont = list(size = 20, color = "red")))
-  }
-  
-  # 使用 plotly 绘制饼图
-  plotly::plot_ly(
-    data = data,
-    labels = ~get(labels),
-    values = ~get(values),
-    type = "pie",
-    textinfo = "label+percent",
-    marker = list(colors = colors[seq_along(data[[values]])]) # 设置颜色
-  ) %>%
-    plotly::layout(
-      title = "瑕疵情况分布",
-      showlegend = TRUE
-    )
-}
-
-
+# 渲染物品信息（入库，出库页）
 renderItemInfo <- function(output, output_name, item_info, img_path, count_label = "待入库数", count_field = "PendingQuantity") {
   # 如果 item_info 为空或没有数据，构造一个默认空数据框
   if (is.null(item_info) || nrow(item_info) == 0) {
@@ -880,6 +832,7 @@ add_defective_note <- function(con, unique_id, note_content, status_label = "瑕
   }
 }
 
+# 应用unique_items_data()的状态渲染样式
 apply_dynamic_styles <- function(table, column_names) {
   # 库存态样式
   if ("库存态" %in% column_names) {
@@ -1149,7 +1102,6 @@ update_label_status_column <- function(con, pdf_directory = "/var/uploads/shipla
   })
 }
 
-
 # 从运单PDF提取收件人和运单号信息
 extract_shipping_label_info <- function(pdf_path, dpi = 300) {
   # 将 PDF 转换为图片
@@ -1226,7 +1178,6 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
   ))
 }
 
-
 # 从输入数据中筛选数据
 filter_unique_items_data_by_inputs <- function(
     data, 
@@ -1298,7 +1249,7 @@ filter_unique_items_data_by_inputs <- function(
   return(data)
 }
 
-
+# 编辑库存数量
 adjust_inventory_quantity <- function(con, sku, adjustment) {
   tryCatch({
     sku <- trimws(sku)  # 清理空格
@@ -1330,6 +1281,7 @@ adjust_inventory_quantity <- function(con, sku, adjustment) {
   })
 }
 
+# 添加新物品记录（采购）
 add_new_inventory_record <- function(con, sku, maker, major_type, minor_type, item_name, quantity, image_path = NULL) {
   tryCatch({
     sku <- trimws(sku)  # 清理空格
@@ -1356,7 +1308,7 @@ add_new_inventory_record <- function(con, sku, maker, major_type, minor_type, it
   })
 }
 
-
+# 渲染订单物品卡片
 renderOrderItems <- function(output, output_name, order_items, deletable = FALSE) {
   # 如果没有物品，返回提示信息
   if (is.null(order_items) || nrow(order_items) == 0) {
@@ -1487,6 +1439,7 @@ generate_montage <- function(image_paths, output_path, geometry = "+5+5") {
   return(output_path)
 }
 
+# 重置订单表
 reset_order_form <- function(session, image_module, keep_order_id = FALSE) {
   if(!keep_order_id){
     updateTextInput(session, "order_id", value = "")
@@ -1503,6 +1456,7 @@ reset_order_form <- function(session, image_module, keep_order_id = FALSE) {
   updateTextAreaInput(session, "order_notes", value = "")
 }
 
+# 数据下载分页的高级下拉菜单
 createSearchableDropdown <- function(input_id, label, data, placeholder = "搜索...") {
   # 将数据转换为 Dropdown 所需格式
   options <- if (length(data) > 0) {
@@ -1578,6 +1532,7 @@ createSearchableDropdown <- function(input_id, label, data, placeholder = "搜�
   )
 }
 
+# 带优先级的货架数据
 get_shelf_items <- function(data, sku, valid_status = c("美国入库", "国内出库", "国内入库"),
                             defect_filter = "瑕疵", status_priority = c("美国入库" = 1, "国内出库" = 2, "国内入库" = 3)) {
   # 检查是否提供了优先级
@@ -1603,6 +1558,7 @@ get_shelf_items <- function(data, sku, valid_status = c("美国入库", "国内�
   return(result)
 }
 
+# 订单管理过滤用
 match_tracking_number <- function(data, tracking_number_column, input_tracking_id) {
   # 清理输入运单号
   cleaned_tracking_id <- gsub("[^0-9]", "", trimws(input_tracking_id))
