@@ -3502,9 +3502,6 @@ server <- function(input, output, session) {
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
-    
-    message(plotly::event_data("plotly_registered"))
-    
   })
   
   
@@ -3515,18 +3512,52 @@ server <- function(input, output, session) {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
     if (!is.null(clicked_point)) {
       precision <- input$precision # 当前精度（天、周、月、年）
-      clicked_date <- as.Date(clicked_point$x) # 点击的时间点
+      clicked_label <- clicked_point$x # 点击的 GroupLabel
       
-      # 根据精度计算时间范围
+      # 根据精度解析日期范围
       range <- switch(precision,
-                      "天" = c(clicked_date, clicked_date),
-                      "周" = c(floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
-                      "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
-                      "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
+                      "天" = {
+                        # 直接将 GroupLabel 转为日期
+                        clicked_date <- tryCatch(as.Date(clicked_label), error = function(e) NULL)
+                        if (is.null(clicked_date)) {
+                          showNotification("日期格式解析失败", type = "error")
+                          return()
+                        }
+                        c(clicked_date, clicked_date)
+                      },
+                      "周" = {
+                        # 从 "YYYY-MM-DD 至 YYYY-MM-DD" 提取开始和结束日期
+                        date_parts <- strsplit(clicked_label, " 至 ")[[1]]
+                        if (length(date_parts) != 2) {
+                          showNotification("周标签解析失败", type = "error")
+                          return()
+                        }
+                        c(as.Date(date_parts[1]), as.Date(date_parts[2]))
+                      },
+                      "月" = {
+                        # 从 "YYYY-MM" 转换为整月范围
+                        clicked_month <- tryCatch(as.Date(paste0(clicked_label, "-01")), error = function(e) NULL)
+                        if (is.null(clicked_month)) {
+                          showNotification("月标签解析失败", type = "error")
+                          return()
+                        }
+                        c(floor_date(clicked_month, "month"), ceiling_date(clicked_month, "month") - 1)
+                      },
+                      "年" = {
+                        # 从 "YYYY" 转换为整年范围
+                        clicked_year <- tryCatch(as.Date(paste0(clicked_label, "-01-01")), error = function(e) NULL)
+                        if (is.null(clicked_year)) {
+                          showNotification("年标签解析失败", type = "error")
+                          return()
+                        }
+                        c(floor_date(clicked_year, "year"), ceiling_date(clicked_year, "year") - 1)
+                      }
       )
       selected_range(range)
+      showNotification(sprintf("选定范围：%s 至 %s", range[1], range[2]), type = "message")
     }
   })
+  
   
   # 筛选物品详情数据
   filtered_items <- reactive({
