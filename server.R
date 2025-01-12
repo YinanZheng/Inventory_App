@@ -3507,6 +3507,67 @@ server <- function(input, output, session) {
       )
   })
   
+  # 库存总览数据统计
+  overview_data <- reactive({
+    data <- unique_items_data()
+    domestic <- data %>% filter(Status == "国内入库")
+    logistics <- data %>% filter(Status == "国内出库")
+    us <- data %>% filter(Status == "美国入库")
+    
+    list(
+      domestic = list(
+        count = nrow(domestic),
+        value = sum(domestic$ProductCost, na.rm = TRUE),
+        shipping = sum(domestic$IntlShippingCost + domestic$DomesticShippingCost, na.rm = TRUE)
+      ),
+      logistics = list(
+        count = nrow(logistics),
+        value = sum(logistics$ProductCost, na.rm = TRUE),
+        shipping = sum(logistics$IntlShippingCost + logistics$DomesticShippingCost, na.rm = TRUE)
+      ),
+      us = list(
+        count = nrow(us),
+        value = sum(us$ProductCost, na.rm = TRUE),
+        shipping = sum(us$IntlShippingCost + us$DomesticShippingCost, na.rm = TRUE)
+      )
+    )
+  })
+  
+  # 输出卡片数据
+  output$domestic_total_count <- renderText({ overview_data()$domestic$count })
+  output$domestic_total_value <- renderText({ sprintf("¥%.2f", overview_data()$domestic$value) })
+  output$domestic_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$domestic$shipping) })
+  
+  output$logistics_total_count <- renderText({ overview_data()$logistics$count })
+  output$logistics_total_value <- renderText({ sprintf("¥%.2f", overview_data()$logistics$value) })
+  output$logistics_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$logistics$shipping) })
+  
+  output$us_total_count <- renderText({ overview_data()$us$count })
+  output$us_total_value <- renderText({ sprintf("¥%.2f", overview_data()$us$value) })
+  output$us_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$us$shipping) })
+  
+  # 绘制库存分布对比图
+  output$inventory_overview_chart <- renderPlotly({
+    data <- overview_data()
+    
+    plot_data <- data.frame(
+      Category = c("国内库存", "国际物流", "美国库存"),
+      TotalValue = c(data$domestic$value, data$logistics$value, data$us$value),
+      ShippingCost = c(data$domestic$shipping, data$logistics$shipping, data$us$shipping)
+    )
+    
+    plot_ly(data = plot_data, x = ~Category, y = ~TotalValue, type = "bar", name = "货物价值", marker = list(color = "#007BFF")) %>%
+      add_trace(y = ~ShippingCost, name = "运费成本", marker = list(color = "#FF5733")) %>%
+      layout(
+        barmode = "group",
+        xaxis = list(title = ""),
+        yaxis = list(title = "金额（元）"),
+        title = "库存分布对比图",
+        legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.2)
+      )
+  })
+  
+  
   
   # 清空sku输入框
   observeEvent(input$clear_query_sku_btn, {
