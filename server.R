@@ -3510,7 +3510,7 @@ server <- function(input, output, session) {
   
   observeEvent(event_data("plotly_click", source = "expense_chart"), {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
-    print(clicked_point) # 输出调试信息
+    message(clicked_point) # 输出调试信息
     
     if (!is.null(clicked_point)) {
       precision <- input$precision # 当前精度（天、周、月、年）
