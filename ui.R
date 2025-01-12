@@ -1105,15 +1105,12 @@ ui <- navbarPage(
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h3(
-                      textOutput("sold_total_count"),
-                      tags$span(
-                        paste0(" (", textOutput("sold_us_shipping_count"), ")"),
-                        style = "font-size: 16px; color: #666;"
-                      ),
+                      textOutput("sold_total_count_with_shipping"),
                       style = "color: #FF5733; font-weight: bold;"
                     ),
                     tags$p("物品总数（已投递）")
-                  ),
+                  )
+                  ,
                   tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
                   div(
                     style = "text-align: center; margin-top: 10px;",
