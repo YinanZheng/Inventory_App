@@ -3483,7 +3483,7 @@ server <- function(input, output, session) {
         by = "GroupDate"
       ) %>%
       mutate(
-        CheckStatus = ifelse(AllChecked, "green", "gray"),
+        CheckStatus = ifelse(is.na(AllChecked), "gray", ifelse(AllChecked, "green", "gray")),      
         SymbolPosition = ifelse(get(y_var) == 0, 0.05, get(y_var) * 1.05)
       )
     
