@@ -3449,59 +3449,62 @@ server <- function(input, output, session) {
   
   # 开销柱状图  
   output$expense_chart <- renderPlotly({
+    # 数据和颜色映射
     data <- expense_summary_data()
     
-    # 获取用户选择的 Y 轴变量及颜色
+    data <- data %>%
+      mutate(
+        GroupDate = case_when(
+          input$precision == "天" ~ as.Date(GroupDate),
+          input$precision == "周" ~ floor_date(GroupDate, "week"),
+          input$precision == "月" ~ floor_date(GroupDate, "month"),
+          input$precision == "年" ~ floor_date(GroupDate, "year")
+        )
+      ) %>%
+      group_by(GroupDate) %>%
+      summarise(
+        TotalExpense = sum(TotalExpense, na.rm = TRUE),
+        ProductCost = sum(ProductCost, na.rm = TRUE),
+        ShippingCost = sum(ShippingCost, na.rm = TRUE)
+      )
+    
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
                     "shipping" = "ShippingCost")
-    
     color <- switch(input$expense_type,
                     "total" = "#007BFF",
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 根据精度生成时间范围标签并计算 CheckStatus
-    data <- data %>%
-      mutate(
-        GroupLabel = case_when(
-          input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
-          input$precision == "周" ~ paste(
-            format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
-            "至",
-            format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
-          ),
-          input$precision == "月" ~ format(GroupDate, "%Y-%m"),
-          input$precision == "年" ~ format(GroupDate, "%Y")
-        )
-      )
-    
     # 绘制柱状图
-    p <- plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
-                 name = NULL, marker = list(color = color),
-                 text = ~round(get(y_var), 2), # 显示数值，保留两位小数
-                 textposition = "outside",
-                 source = "expense_chart") %>%
-      event_register("plotly_click") %>% # 注册 plotly_click 事件
+    p <- plot_ly(
+      data,
+      x = ~GroupDate, # 直接使用日期列
+      y = ~get(y_var),
+      type = "bar",
+      marker = list(color = color),
+      text = ~round(get(y_var), 2),
+      textposition = "outside",
+      source = "expense_chart"
+    ) %>%
+      event_register("plotly_click") %>% # 注册点击事件
       layout(
         xaxis = list(
-          title = "",
-          tickvals = data$GroupLabel,
+          title = "日期",
           tickangle = -45,
           tickfont = list(size = 12),
           showgrid = FALSE
         ),
         yaxis = list(
           title = "采购开销（元）",
-          tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部符号留空间
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
         ),
-        margin = list(l = 50, r = 20, t = 20, b = 50),
-        showlegend = FALSE,
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
+    
+    p
   })
   
   
@@ -3510,56 +3513,29 @@ server <- function(input, output, session) {
   
   observeEvent(event_data("plotly_click", source = "expense_chart"), {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
-    message(clicked_point) # 输出调试信息
-    
     if (!is.null(clicked_point)) {
-      precision <- input$precision # 当前精度（天、周、月、年）
-      clicked_label <- clicked_point$x # 点击的 GroupLabel
+      clicked_date <- tryCatch(as.Date(clicked_point$x), error = function(e) NULL) # 确保解析为日期
+      if (is.null(clicked_date)) {
+        showNotification("日期解析失败", type = "error")
+        return()
+      }
       
-      # 根据精度解析日期范围
-      range <- switch(precision,
-                      "天" = {
-                        # 直接将 GroupLabel 转为日期
-                        clicked_date <- tryCatch(as.Date(clicked_label), error = function(e) NULL)
-                        if (is.null(clicked_date)) {
-                          showNotification("日期格式解析失败", type = "error")
-                          return()
-                        }
-                        c(clicked_date, clicked_date)
-                      },
-                      "周" = {
-                        # 从 "YYYY-MM-DD 至 YYYY-MM-DD" 提取开始和结束日期
-                        date_parts <- strsplit(clicked_label, " 至 ")[[1]]
-                        if (length(date_parts) != 2) {
-                          showNotification("周标签解析失败", type = "error")
-                          return()
-                        }
-                        c(as.Date(date_parts[1]), as.Date(date_parts[2]))
-                      },
-                      "月" = {
-                        # 从 "YYYY-MM" 转换为整月范围
-                        clicked_month <- tryCatch(as.Date(paste0(clicked_label, "-01")), error = function(e) NULL)
-                        if (is.null(clicked_month)) {
-                          showNotification("月标签解析失败", type = "error")
-                          return()
-                        }
-                        c(floor_date(clicked_month, "month"), ceiling_date(clicked_month, "month") - 1)
-                      },
-                      "年" = {
-                        # 从 "YYYY" 转换为整年范围
-                        clicked_year <- tryCatch(as.Date(paste0(clicked_label, "-01-01")), error = function(e) NULL)
-                        if (is.null(clicked_year)) {
-                          showNotification("年标签解析失败", type = "error")
-                          return()
-                        }
-                        c(floor_date(clicked_year, "year"), ceiling_date(clicked_year, "year") - 1)
-                      }
+      # 根据精度计算时间范围
+      range <- switch(input$precision,
+                      "天" = c(clicked_date, clicked_date),
+                      "周" = c(floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
+                      "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
+                      "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
       )
       selected_range(range)
       showNotification(sprintf("选定范围：%s 至 %s", range[1], range[2]), type = "message")
     }
   })
   
+  observeEvent(event_data("plotly_click", source = "expense_chart"), {
+    clicked_point <- event_data("plotly_click", source = "expense_chart")
+    print(clicked_point) # 输出点击事件数据
+  })
   
   # 筛选物品详情数据
   filtered_items <- reactive({
