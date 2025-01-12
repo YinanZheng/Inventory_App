@@ -4204,6 +4204,36 @@ server <- function(input, output, session) {
     })
   })
   
+  observeEvent(input$delete_transaction, {
+    current_tab <- input$tabs
+    account_type <- switch(
+      current_tab,
+      "工资卡" = "工资卡",
+      "美元卡" = "美元卡",
+      "买货卡" = "买货卡",
+      "一般户卡" = "一般户卡"
+    )
+    selected_rows <- switch(
+      current_tab,
+      "工资卡" = input$salary_card_table_rows_selected,
+      "美元卡" = input$dollar_card_table_rows_selected,
+      "买货卡" = input$purchase_card_table_rows_selected,
+      "一般户卡" = input$general_card_table_rows_selected
+    )
+    
+    if (length(selected_rows) > 0) {
+      # 获取选中行的 TransactionID
+      record_to_delete <- dbGetQuery(
+        conn,
+        paste0("SELECT TransactionID FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC LIMIT ?, 1"),
+        params = list(account_type, selected_rows - 1)
+      )
+      dbExecute(conn, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
+      showNotification("记录已删除", type = "warning")
+    } else {
+      showNotification("请选择要删除的记录", type = "error")
+    }
+  })
   
   
   #########################################################################################################################

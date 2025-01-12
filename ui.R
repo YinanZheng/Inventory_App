@@ -1230,7 +1230,8 @@ ui <- navbarPage(
         numericInput("amount_in", "转入金额:", value = 0, min = 0, width = "100%"),
         numericInput("amount_out", "转出金额:", value = 0, min = 0, width = "100%"),
         textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
-        actionButton("record_transaction", "登记", icon = icon("save"), class = "btn-primary", style = "width: 100%;")
+        actionButton("record_transaction", "登记", icon = icon("save"), class = "btn-primary", style = "width: 100%;"),
+        actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")
       ),
       div(
         class = "main-panel",
