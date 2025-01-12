@@ -3529,7 +3529,8 @@ server <- function(input, output, session) {
     
     # 从物品数据中筛选出时间范围内的数据
     unique_items_data() %>%
-      filter(PurchaseTime >= range[1] & PurchaseTime <= range[2])
+      filter(PurchaseTime >= range[1] & PurchaseTime <= range[2]) %>%
+      arrange(PurchaseTime) # 按采购时间升序排列
   })
   
   # 渲染筛选
