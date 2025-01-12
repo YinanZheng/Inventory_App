@@ -3454,6 +3454,7 @@ server <- function(input, output, session) {
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
+    # 获取用户选择的 Y 轴变量及颜色
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
@@ -3464,29 +3465,57 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 根据精度生成时间范围标签
+    # 根据精度生成时间范围标签并计算 CheckStatus
     data <- data %>%
       mutate(
         GroupLabel = case_when(
           input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
-          input$precision == "周" ~ paste(format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
-                                         "至",
-                                         format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")),
-          input$precision == "月" ~ paste(format(GroupDate, "%Y-%m")),
-          input$precision == "年" ~ paste(format(GroupDate, "%Y"))
+          input$precision == "周" ~ paste(
+            format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
+            "至",
+            format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
+          ),
+          input$precision == "月" ~ format(GroupDate, "%Y-%m"),
+          input$precision == "年" ~ format(GroupDate, "%Y")
         )
+      ) %>%
+      left_join(
+        unique_items_data() %>%
+          group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
+          summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
+        by = "GroupDate"
+      ) %>%
+      mutate(
+        CheckStatus = ifelse(AllChecked, "green", "gray") # 状态颜色
       )
     
     # 绘制柱状图
-    plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
-            name = NULL, marker = list(color = color),
-            text = ~round(get(y_var), 2), # 显示数值，保留两位小数
-            textposition = "outside",
-            source = "expense_chart") %>%
+    p <- plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
+                 name = NULL, marker = list(color = color),
+                 text = ~round(get(y_var), 2), # 显示数值，保留两位小数
+                 textposition = "outside",
+                 source = "expense_chart")
+    
+    # 在柱子顶部添加小符号
+    p <- p %>%
+      add_trace(
+        x = ~GroupLabel,
+        y = ~get(y_var) * 1.05, # 符号位置在柱子顶部稍高处
+        mode = "markers",
+        marker = list(
+          symbol = "check",
+          size = 16,
+          color = ~CheckStatus # 根据核对状态动态设置颜色
+        ),
+        showlegend = FALSE # 不显示图例
+      )
+    
+    # 布局调整
+    p %>%
       layout(
         xaxis = list(
           title = "",
-          tickvals = data$GroupLabel, # 使用新的时间范围标签
+          tickvals = data$GroupLabel,
           tickangle = -45,
           tickfont = list(size = 12),
           showgrid = FALSE
@@ -3494,7 +3523,7 @@ server <- function(input, output, session) {
         yaxis = list(
           title = "采购开销（元）",
           tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2)
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部符号留空间
         ),
         margin = list(l = 50, r = 20, t = 20, b = 50),
         showlegend = FALSE,
