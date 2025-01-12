@@ -3487,8 +3487,7 @@ server <- function(input, output, session) {
       layout(
         xaxis = list(
           title = "", # 移除 X 轴标题
-          tickvals = data$GroupDate, # 显示完整时间序列
-          ticktext = format(data$GroupDate, "%Y-%m-%d"), # 格式化为日期
+          tickvals = data$GroupLabel, # 使用新的时间范围标签
           tickangle = -45, # 倾斜日期标签
           tickfont = list(size = 12),
           showgrid = FALSE # 隐藏网格线
