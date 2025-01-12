@@ -3536,7 +3536,9 @@ server <- function(input, output, session) {
   # 渲染筛选
   callModule(uniqueItemsTableServer, "expense_details_table",
              column_mapping = c(common_columns, list(
-               PurchaseTime = "采购时间"
+               PurchaseTime = "采购时间",
+               DomesticShippingCost = "国内运费",
+               IntlShippingCost = "国际运费"
              )),
              data = filtered_items
   )

@@ -55,6 +55,7 @@ CREATE TABLE `unique_items` (
   `OrderID` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `PurchaseCheck` tinyint(1) NOT NULL DEFAULT '0',
   PRIMARY KEY (`UniqueID`),
   KEY `SKU` (`SKU`),
   KEY `fk_orders_orderid` (`OrderID`),
