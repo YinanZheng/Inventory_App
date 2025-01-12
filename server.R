@@ -3402,31 +3402,25 @@ server <- function(input, output, session) {
   
   # 开销统计
   expense_summary_data <- reactive({
-    req(input$time_range) # 确保时间范围存在
+    req(input$time_range)
     data <- unique_items_data()
     
-    # 获取时间范围
     start_date <- as.Date(input$time_range[1])
     end_date <- as.Date(input$time_range[2])
     
-    # 根据统计单位生成完整时间序列
     time_sequence <- switch(input$precision,
                             "天" = seq.Date(from = start_date, to = end_date, by = "day"),
                             "周" = seq.Date(from = floor_date(start_date, "week"),
-                                           to = floor_date(end_date, "week"),
-                                           by = "week"),
+                                           to = floor_date(end_date, "week"), by = "week"),
                             "月" = seq.Date(from = floor_date(start_date, "month"),
-                                           to = floor_date(end_date, "month"),
-                                           by = "month"),
+                                           to = floor_date(end_date, "month"), by = "month"),
                             "年" = seq.Date(from = floor_date(start_date, "year"),
-                                           to = floor_date(end_date, "year"),
-                                           by = "year"))
+                                           to = floor_date(end_date, "year"), by = "year"))
     
-    # 转换为数据框
     time_df <- data.frame(GroupDate = time_sequence)
     
-    # 数据过滤并按选择的单位分组
     summarized_data <- data %>%
+      filter(!is.na(PurchaseTime) & PurchaseTime >= start_date & PurchaseTime <= end_date) %>%
       mutate(
         GroupDate = case_when(
           input$precision == "天" ~ as.Date(PurchaseTime),
@@ -3436,21 +3430,19 @@ server <- function(input, output, session) {
         )
       ) %>%
       group_by(GroupDate) %>%
-      summarize(
+      summarise(
         TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
         ShippingCost = sum(DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         .groups = "drop"
       )
     
-    # 将时间序列与统计数据合并，填充缺失值为 0
     complete_data <- time_df %>%
       left_join(summarized_data, by = "GroupDate") %>%
       replace_na(list(
         TotalExpense = 0,
         ProductCost = 0,
-        ShippingCost = 0,
-        AllChecked = FALSE # 默认未核对
+        ShippingCost = 0
       ))
     
     complete_data
@@ -3460,7 +3452,6 @@ server <- function(input, output, session) {
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 获取用户选择的 Y 轴变量及颜色
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
@@ -3471,7 +3462,6 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 根据精度生成时间范围标签并计算 CheckStatus
     data <- data %>%
       mutate(
         GroupLabel = case_when(
@@ -3487,37 +3477,26 @@ server <- function(input, output, session) {
       ) %>%
       left_join(
         unique_items_data() %>%
+          filter(!is.na(PurchaseTime) & PurchaseTime >= min(data$GroupDate) & PurchaseTime <= max(data$GroupDate)) %>%
           group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
-          summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
+          summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"),
         by = "GroupDate"
       ) %>%
       mutate(
-        CheckStatus = ifelse(AllChecked, "green", "gray") # 状态颜色
+        CheckStatus = ifelse(AllChecked, "green", "gray"),
+        SymbolPosition = ifelse(get(y_var) == 0, 0.05, get(y_var) * 1.05)
       )
     
-    # 绘制柱状图
-    p <- plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
-                 name = NULL, marker = list(color = color),
-                 text = ~round(get(y_var), 2), # 显示数值，保留两位小数
-                 textposition = "outside",
-                 source = "expense_chart")
-    
-    # 在柱子顶部添加小符号
-    p <- p %>%
+    plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
+            marker = list(color = color),
+            text = ~round(get(y_var), 2),
+            textposition = "outside",
+            source = "expense_chart") %>%
       add_trace(
-        x = ~GroupLabel,
-        y = ~get(y_var) * 1.05, # 符号位置在柱子顶部稍高处
-        mode = "markers",
-        marker = list(
-          symbol = "check",
-          size = 16,
-          color = ~CheckStatus # 根据核对状态动态设置颜色
-        ),
-        showlegend = FALSE # 不显示图例
-      )
-    
-    # 布局调整
-    p %>%
+        x = ~GroupLabel, y = ~SymbolPosition, mode = "markers",
+        marker = list(symbol = "check", size = 16, color = ~CheckStatus),
+        showlegend = FALSE
+      ) %>%
       layout(
         xaxis = list(
           title = "",
@@ -3529,10 +3508,9 @@ server <- function(input, output, session) {
         yaxis = list(
           title = "采购开销（元）",
           tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部符号留空间
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2)
         ),
         margin = list(l = 50, r = 20, t = 20, b = 50),
-        showlegend = FALSE,
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
