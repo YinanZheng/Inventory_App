@@ -3455,7 +3455,7 @@ server <- function(input, output, session) {
     data <- expense_summary_data() %>%
       mutate(
         GroupLabel = case_when(
-          input$precision == "天" ~ GroupDate,
+          input$precision == "天" ~ format(GroupDate, "%y-%m-%d"),
           input$precision == "周" ~ paste(
             format(floor_date(GroupDate, "week"), "%y-%m-%d"),
             "至",
@@ -3463,7 +3463,7 @@ server <- function(input, output, session) {
           ),
           input$precision == "月" ~ format(GroupDate, "%b %Y"),
           input$precision == "年" ~ format(GroupDate, "%Y")
-        )
+        ),
       )
     
     y_var <- switch(input$expense_type,
