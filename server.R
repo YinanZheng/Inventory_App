@@ -3492,14 +3492,22 @@ server <- function(input, output, session) {
       )
   })
   
-  # 用于存储点击的时间点
-  selected_date <- reactiveVal(NULL)
+  selected_range <- reactiveVal(NULL) # 存储时间范围
   
-  # 监听柱状图的点击事件
   observeEvent(event_data("plotly_click", source = "expense_chart"), {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
     if (!is.null(clicked_point)) {
-      selected_date(clicked_point$x) # 获取点击的 X 轴时间点
+      precision <- input$precision # 当前精度（天、周、月、年）
+      clicked_date <- as.Date(clicked_point$x) # 点击的时间点
+      
+      # 根据精度计算时间范围
+      range <- switch(precision,
+                      "天" = c(clicked_date, clicked_date),
+                      "周" = c(floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
+                      "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
+                      "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
+      )
+      selected_range(range)
     }
   })
   
