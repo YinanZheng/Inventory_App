@@ -3469,7 +3469,8 @@ server <- function(input, output, session) {
     plot_ly(data, x = ~GroupDate, y = ~get(y_var), type = "bar",
             name = NULL, marker = list(color = color),
             text = ~round(get(y_var), 2), # 显示数值，保留两位小数
-            textposition = "outside") %>% # 数值显示在柱顶外侧
+            textposition = "outside",
+            source = "expense_chart") %>% # 数值显示在柱顶外侧
       layout(
         xaxis = list(
           title = "", # 移除 X 轴标题
@@ -3490,6 +3491,39 @@ server <- function(input, output, session) {
         paper_bgcolor = "#FFFFFF" # 图表纸张背景颜色
       )
   })
+  
+  # 用于存储点击的时间点
+  selected_date <- reactiveVal(NULL)
+  
+  # 监听柱状图的点击事件
+  observeEvent(event_data("plotly_click", source = "expense_chart"), {
+    clicked_point <- event_data("plotly_click", source = "expense_chart")
+    if (!is.null(clicked_point)) {
+      selected_date(clicked_point$x) # 获取点击的 X 轴时间点
+    }
+  })
+  
+  # 筛选物品详情数据
+  filtered_items <- reactive({
+    req(selected_date()) # 确保用户已经点击了某个柱状图的 bar
+    data <- expense_summary_data() # 原始采购数据
+    items_data <- unique_items_data() # 物品详细数据
+    
+    # 根据时间点或范围筛选
+    selected_group_date <- as.Date(selected_date())
+    items_data <- items_data %>%
+      filter(PurchaseTime == selected_group_date)
+    
+    items_data
+  })
+  
+  # 渲染筛选
+  callModule(uniqueItemsTableServer, "expense_details_table",
+             column_mapping = c(common_columns, list(
+               PurchaseTime = "采购时间"
+             )),
+             data = filtered_items
+  )
   
   # 总开销分布
   output$pie_chart <- renderPlotly({
