@@ -3960,21 +3960,25 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$amount_in, {
-    # 当用户修改转入金额时
-    if (input$amount_in > 0) {
-      # 清空转出金额
-      updateNumericInput(session, "amount_out", value = 0)
-      showNotification("转入金额已填写，转出金额已被清空。", type = "warning")
+    # 如果输入为空或者小于等于 0，不执行任何操作
+    if (is.null(input$amount_in) || input$amount_in <= 0) {
+      return()
     }
+    
+    # 当用户修改转入金额时
+    updateNumericInput(session, "amount_out", value = 0)  # 清空转出金额
+    showNotification("转入金额已填写，转出金额已被清空。", type = "warning")
   })
   
   observeEvent(input$amount_out, {
-    # 当用户修改转出金额时
-    if (input$amount_out > 0) {
-      # 清空转入金额
-      updateNumericInput(session, "amount_in", value = 0)
-      showNotification("转出金额已填写，转入金额已被清空。", type = "warning")
+    # 如果输入为空或者小于等于 0，不执行任何操作
+    if (is.null(input$amount_out) || input$amount_out <= 0) {
+      return()
     }
+    
+    # 当用户修改转出金额时
+    updateNumericInput(session, "amount_in", value = 0)  # 清空转入金额
+    showNotification("转出金额已填写，转入金额已被清空。", type = "warning")
   })
   
   observeEvent(input$delete_transaction, {
