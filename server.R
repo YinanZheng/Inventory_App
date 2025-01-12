@@ -3452,19 +3452,7 @@ server <- function(input, output, session) {
   
   # 开销柱状图  
   output$bar_chart <- renderPlotly({
-    data <- expense_summary_data() %>%
-      mutate(
-        GroupLabel = case_when(
-          input$precision == "天" ~ format(GroupDate, "%y-%m-%d"),
-          input$precision == "周" ~ paste(
-            format(floor_date(GroupDate, "week"), "%y-%m-%d"),
-            "至",
-            format(ceiling_date(GroupDate, "week") - 1, "%y-%m-%d")
-          ),
-          input$precision == "月" ~ format(GroupDate, "%b %Y"),
-          input$precision == "年" ~ format(GroupDate, "%Y")
-        ),
-      )
+    data <- expense_summary_data()
     
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
@@ -3476,9 +3464,23 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
+    # 根据精度生成时间范围标签
+    data <- data %>%
+      mutate(
+        GroupLabel = case_when(
+          input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
+          input$precision == "周" ~ paste(format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
+                                         "至",
+                                         format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")),
+          input$precision == "月" ~ paste(format(GroupDate, "%Y-%m")),
+          input$precision == "年" ~ paste(format(GroupDate, "%Y"))
+        )
+      )
+    
+    # 绘制柱状图
     plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
             name = NULL, marker = list(color = color),
-            text = ~round(get(y_var), 2),
+            text = ~round(get(y_var), 2), # 显示数值，保留两位小数
             textposition = "outside",
             source = "expense_chart") %>%
       layout(
