@@ -3452,6 +3452,7 @@ server <- function(input, output, session) {
   output$bar_chart <- renderPlotly({
     data <- expense_summary_data()
     
+    # 获取用户选择的 Y 轴变量及颜色
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
@@ -3462,6 +3463,7 @@ server <- function(input, output, session) {
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
+    # 根据精度生成时间范围标签并计算 CheckStatus
     data <- data %>%
       mutate(
         GroupLabel = case_when(
@@ -3477,26 +3479,37 @@ server <- function(input, output, session) {
       ) %>%
       left_join(
         unique_items_data() %>%
-          filter(!is.na(PurchaseTime) & PurchaseTime >= min(data$GroupDate) & PurchaseTime <= max(data$GroupDate)) %>%
           group_by(GroupDate = floor_date(PurchaseTime, input$precision)) %>%
-          summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"),
+          summarise(AllChecked = all(PurchaseCheck == 1, na.rm = TRUE), .groups = "drop"), # 核对状态
         by = "GroupDate"
       ) %>%
       mutate(
-        CheckStatus = ifelse(is.na(AllChecked), "gray", ifelse(AllChecked, "green", "gray")),      
-        SymbolPosition = ifelse(get(y_var) == 0, 0.05, get(y_var) * 1.05)
+        CheckStatus = ifelse(AllChecked, "green", "gray") # 状态颜色
       )
     
-    plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
-            marker = list(color = color),
-            text = ~round(get(y_var), 2),
-            textposition = "outside",
-            source = "expense_chart") %>%
-      # add_trace(
-      #   x = ~GroupLabel, y = ~SymbolPosition, mode = "markers",
-      #   marker = list(symbol = "check", size = 16, color = ~CheckStatus),
-      #   showlegend = FALSE
-      # ) %>%
+    # 绘制柱状图
+    p <- plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
+                 name = NULL, marker = list(color = color),
+                 text = ~round(get(y_var), 2), # 显示数值，保留两位小数
+                 textposition = "outside",
+                 source = "expense_chart")
+    
+    # 在柱子顶部添加小符号
+    # p <- p %>%
+    #   add_trace(
+    #     x = ~GroupLabel,
+    #     y = ~get(y_var) * 1.05, # 符号位置在柱子顶部稍高处
+    #     mode = "markers",
+    #     marker = list(
+    #       symbol = "check",
+    #       size = 16,
+    #       color = ~CheckStatus # 根据核对状态动态设置颜色
+    #     ),
+    #     showlegend = FALSE # 不显示图例
+    #   )
+    
+    # 布局调整
+    p %>%
       layout(
         xaxis = list(
           title = "",
@@ -3508,9 +3521,10 @@ server <- function(input, output, session) {
         yaxis = list(
           title = "采购开销（元）",
           tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2)
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部符号留空间
         ),
         margin = list(l = 50, r = 20, t = 20, b = 50),
+        showlegend = FALSE,
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
