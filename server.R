@@ -3568,8 +3568,7 @@ server <- function(input, output, session) {
   
   # 状态流转桑基图
   item_status_history <- reactive({
-    query <- "SELECT * FROM item_status_history"
-    dbGetQuery(db_connection, query)
+    dbGetQuery(con, "SELECT * FROM item_status_history")
   })
   
   output$status_sankey <- renderSankeyNetwork({
