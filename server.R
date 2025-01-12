@@ -3959,15 +3959,21 @@ server <- function(input, output, session) {
     showNotification("记录成功", type = "message")
   })
   
-  observe({
-    # 如果用户输入了转入金额，则清空转出金额
-    if (!is.null(input$amount_in) && input$amount_in > 0) {
-      updateNumericInput(session, "amount_out", value = 0)  # 清空转出金额
+  observeEvent(input$amount_in, {
+    # 当用户修改转入金额时
+    if (input$amount_in > 0) {
+      # 清空转出金额
+      updateNumericInput(session, "amount_out", value = 0)
+      showNotification("转入金额已填写，转出金额已被清空。", type = "warning")
     }
-    
-    # 如果用户输入了转出金额，则清空转入金额
-    if (!is.null(input$amount_out) && input$amount_out > 0) {
-      updateNumericInput(session, "amount_in", value = 0)  # 清空转入金额
+  })
+  
+  observeEvent(input$amount_out, {
+    # 当用户修改转出金额时
+    if (input$amount_out > 0) {
+      # 清空转入金额
+      updateNumericInput(session, "amount_in", value = 0)
+      showNotification("转出金额已填写，转入金额已被清空。", type = "warning")
     }
   })
   
