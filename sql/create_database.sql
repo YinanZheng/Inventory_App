@@ -98,3 +98,14 @@ CREATE TABLE `item_status_history` (
   `change_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`UniqueID`,`change_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
+
+CREATE TABLE `transactions` (
+  `TransactionID` int NOT NULL AUTO_INCREMENT,
+  `AccountType` enum('工资卡','美元卡','买货卡','一般户卡') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `AmountIn` decimal(10,2) DEFAULT '0.00',
+  `AmountOut` decimal(10,2) DEFAULT '0.00',
+  `Balance` decimal(10,2) GENERATED ALWAYS AS ((`AmountIn` - `AmountOut`)) STORED,
+  `Remarks` text COLLATE utf8mb4_unicode_ci,
+  `TransactionTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`TransactionID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci

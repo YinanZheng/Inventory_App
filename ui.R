@@ -1221,6 +1221,31 @@ ui <- navbarPage(
   ), # End of 数据下载 tab
   
   tabPanel(
+    "账务管理", icon = icon("wallet"),
+    div(
+      class = "layout-container",
+      div(
+        class = "sticky-sidebar",
+        tags$h4("登记账务", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+        numericInput("amount_in", "转入金额:", value = 0, min = 0, width = "100%"),
+        numericInput("amount_out", "转出金额:", value = 0, min = 0, width = "100%"),
+        textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
+        actionButton("record_transaction", "登记", icon = icon("save"), class = "btn-primary", style = "width: 100%;")
+      ),
+      div(
+        class = "main-panel",
+        tabsetPanel(
+          tabPanel("账户总览", DTOutput("account_overview_table")),
+          tabPanel("工资卡", DTOutput("salary_card_table")),
+          tabPanel("美元卡", DTOutput("dollar_card_table")),
+          tabPanel("买货卡", DTOutput("purchase_card_table")),
+          tabPanel("一般户卡", DTOutput("general_card_table"))
+        )
+      )
+    )
+  ), # End of 账务管理
+  
+  tabPanel(
     "管理员", icon = icon("user-shield"),
     div(
       class = "layout-container",
