@@ -3468,18 +3468,14 @@ server <- function(input, output, session) {
     data <- data %>%
       mutate(
         GroupLabel = case_when(
-          input$precision == "天" ~ format(GroupDate, "'%y-%m-%d"),
+          input$precision == "天" ~ format(GroupDate, "%y-%m-%d"), # 天：两位年份
           input$precision == "周" ~ paste(
-            format(floor_date(GroupDate, "week"), "'%y-%m-%d"),
+            format(floor_date(GroupDate, "week"), "%y-%m-%d"),
             "至",
-            format(ceiling_date(GroupDate, "week") - 1, "'%y-%m-%d")
+            format(ceiling_date(GroupDate, "week") - 1, "%y-%m-%d")
           ), # 周：两位年份范围
-          input$precision == "月" ~ paste(
-            format(floor_date(GroupDate, "month"), "'%y-%m-%d"),
-            "至",
-            format(ceiling_date(GroupDate, "month") - 1, "'%y-%m-%d")
-          ), # 月：两位年份范围
-          input$precision == "年" ~ format(GroupDate, "'%y")
+          input$precision == "月" ~ format(GroupDate, "%b %Y"), # 月：两位年份和月份
+          input$precision == "年" ~ format(GroupDate, "%Y") # 年：两位年份
         )
       )
     
