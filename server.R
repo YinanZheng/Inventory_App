@@ -3546,27 +3546,6 @@ server <- function(input, output, session) {
   output$us_total_value <- renderText({ sprintf("¥%.2f", overview_data()$us$value) })
   output$us_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$us$shipping) })
   
-  # 绘制库存分布对比图
-  output$inventory_overview_chart <- renderPlotly({
-    data <- overview_data()
-    
-    plot_data <- data.frame(
-      Category = c("国内库存", "国际物流", "美国库存"),
-      TotalValue = c(data$domestic$value, data$logistics$value, data$us$value),
-      ShippingCost = c(data$domestic$shipping, data$logistics$shipping, data$us$shipping)
-    )
-    
-    plot_ly(data = plot_data, x = ~Category, y = ~TotalValue, type = "bar", name = "货物价值", marker = list(color = "#007BFF")) %>%
-      add_trace(y = ~ShippingCost, name = "运费成本", marker = list(color = "#FF5733")) %>%
-      layout(
-        barmode = "group",
-        xaxis = list(title = ""),
-        yaxis = list(title = "金额（元）"),
-        title = "库存分布对比图",
-        legend = list(orientation = "h", x = 0.5, xanchor = "center", y = -0.2)
-      )
-  })
-  
   
   
   # 清空sku输入框

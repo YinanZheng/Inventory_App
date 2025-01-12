@@ -1017,7 +1017,7 @@ ui <- navbarPage(
           tabPanel(
             "库存总览",
             fluidRow(
-              # 卡片显示数据
+              # 国内库存卡片
               column(
                 4,
                 div(
@@ -1029,11 +1029,13 @@ ui <- navbarPage(
                     tags$h3(textOutput("domestic_total_count"), style = "color: #007BFF; font-weight: bold;"),
                     tags$p("物品总数")
                   ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("domestic_total_value"), style = "color: #007BFF;"),
                     tags$p("货物价值")
                   ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("domestic_shipping_cost"), style = "color: #007BFF;"),
@@ -1041,6 +1043,7 @@ ui <- navbarPage(
                   )
                 )
               ),
+              # 国际物流卡片
               column(
                 4,
                 div(
@@ -1052,11 +1055,13 @@ ui <- navbarPage(
                     tags$h3(textOutput("logistics_total_count"), style = "color: #28A745; font-weight: bold;"),
                     tags$p("物品总数")
                   ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("logistics_total_value"), style = "color: #28A745;"),
                     tags$p("货物价值")
                   ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("logistics_shipping_cost"), style = "color: #28A745;"),
@@ -1064,6 +1069,7 @@ ui <- navbarPage(
                   )
                 )
               ),
+              # 美国库存卡片
               column(
                 4,
                 div(
@@ -1075,30 +1081,18 @@ ui <- navbarPage(
                     tags$h3(textOutput("us_total_count"), style = "color: #6F42C1; font-weight: bold;"),
                     tags$p("物品总数")
                   ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("us_total_value"), style = "color: #6F42C1;"),
                     tags$p("货物价值")
                   ),
+                  tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"), # 分割线
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("us_shipping_cost"), style = "color: #6F42C1;"),
                     tags$p("运费成本")
                   )
-                )
-              )
-            ),
-            tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),
-            
-            # 柱状图显示货物价值与运费成本对比
-            fluidRow(
-              column(
-                12,
-                div(
-                  class = "card",
-                  style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                  tags$h4("库存分布对比", style = "color: #007BFF; font-weight: bold; text-align: center; margin-bottom: 20px;"),
-                  plotlyOutput("inventory_overview_chart", height = "400px")
                 )
               )
             )
