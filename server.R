@@ -3502,9 +3502,11 @@ server <- function(input, output, session) {
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
+    
+    message(plotly::event_data("plotly_registered"))
+    
   })
   
-  message(plotly::event_data("plotly_registered"))
   
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
