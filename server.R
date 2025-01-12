@@ -3483,10 +3483,8 @@ server <- function(input, output, session) {
                  name = NULL, marker = list(color = color),
                  text = ~round(get(y_var), 2), # 显示数值，保留两位小数
                  textposition = "outside",
-                 source = "expense_chart")
-
-    # 布局调整
-    p %>%
+                 source = "expense_chart") %>%
+      event_register("plotly_click") %>% # 注册 plotly_click 事件
       layout(
         xaxis = list(
           title = "",
