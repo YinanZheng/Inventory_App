@@ -3340,19 +3340,23 @@ server <- function(input, output, session) {
       return()
     }
     
+    # 动态生成备注信息
+    transfer_remarks_from <- paste0("[转出至 ", input$to_account, "] ", input$transfer_remarks)
+    transfer_remarks_to <- paste0("[从 ", input$from_account, " 转入] ", input$transfer_remarks)
+    
     tryCatch({
       # 记录转出
       dbExecute(
         con,
         "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
-        params = list(input$from_account, -input$transfer_amount, input$transfer_remarks)
+        params = list(input$from_account, -input$transfer_amount, transfer_remarks_from)
       )
       
       # 记录转入
       dbExecute(
         con,
         "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
-        params = list(input$to_account, input$transfer_amount, input$transfer_remarks)
+        params = list(input$to_account, input$transfer_amount, transfer_remarks_to)
       )
       
       showNotification("资金转移记录成功！", type = "message")
