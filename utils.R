@@ -1620,19 +1620,19 @@ refreshTransactionTable <- function(account_type) {
   if (account_type == "工资卡") {
     output$salary_card_table <- renderDT({
       renderTransactionTable("工资卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px"), rownames = FALSE))
+    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
   } else if (account_type == "美元卡") {
     output$dollar_card_table <- renderDT({
       renderTransactionTable("美元卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px"), rownames = FALSE))
+    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
   } else if (account_type == "买货卡") {
     output$purchase_card_table <- renderDT({
       renderTransactionTable("买货卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px"), rownames = FALSE))
+    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
   } else if (account_type == "一般户卡") {
     output$general_card_table <- renderDT({
       renderTransactionTable("一般户卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px"), rownames = FALSE))
+    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
   }
 }
 
