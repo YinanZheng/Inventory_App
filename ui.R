@@ -917,11 +917,10 @@ ui <- navbarPage(
           inline = TRUE
         ),
         
-        # 指定转款日期的勾选框和日期选择器
-        checkboxInput("use_custom_date", "指定转款日期", value = FALSE),
-        conditionalPanel(
-          condition = "input.use_custom_date == true",
-          dateInput("custom_date", "选择日期:", value = Sys.Date(), width = "100%")
+        # 指定转款选择器
+        fluidRow(
+          column(6, dateInput("custom_date", "转款日期:", value = Sys.Date(), width = "100%")),
+          column(6, timeInput("custom_time", "转款时间:", value = Sys.time(), width = "100%"))
         ),
         
         # 订单图片上传
