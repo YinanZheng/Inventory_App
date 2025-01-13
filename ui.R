@@ -920,7 +920,7 @@ ui <- navbarPage(
         # 指定转款选择器
         fluidRow(
           column(6, dateInput("custom_date", "转款日期:", value = Sys.Date(), width = "100%")),
-          column(6, timeInput("custom_time", "转款时间:", value = Sys.time(), width = "100%"))
+          column(6, timeInput("custom_time", "转款时间:", value = format(Sys.time(), "%H:%M:%S"), width = "100%"))
         ),
         
         # 订单图片上传
