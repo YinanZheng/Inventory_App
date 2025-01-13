@@ -100,15 +100,5 @@ table_default_options <<- list(
 # 定义瑕疵和修复的状态
 defect_statuses <<- c("瑕疵", "修复", "无瑕")
 
-# 定义账户名字
-account_type <<- switch(
-  input$transaction_tabs,
-  "工资卡" = "工资卡",
-  "美元卡" = "美元卡",
-  "买货卡" = "买货卡",
-  "一般户卡" = "一般户卡",
-  NULL
-)
-
 # 定义管理员密码
 admin_password <<- "1029"

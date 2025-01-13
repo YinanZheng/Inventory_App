@@ -3246,6 +3246,8 @@ server <- function(input, output, session) {
     # 根据交易类型设置金额的符号
     amount <- if (input$transaction_type == "in") input$amount else -input$amount
     
+    account_type <- getAccountType(input)
+    
     if (is.null(account_type)) {
       showNotification("请选择有效的账户类型！", type = "error")
       return()
@@ -3278,6 +3280,8 @@ server <- function(input, output, session) {
   # 删除转账记录
   observeEvent(input$delete_transaction, {
     current_tab <- input$transaction_tabs
+    
+    account_type <- getAccountType(input)
     
     if (is.null(account_type)) {
       showNotification("请选择有效的账户类型！", type = "error")

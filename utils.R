@@ -1658,6 +1658,17 @@ renderTransactionTable <- function(account_type) {
   return(data)
 }
 
+getAccountType <- function(input) {
+  switch(
+    input$transaction_tabs,
+    "工资卡" = "工资卡",
+    "美元卡" = "美元卡",
+    "买货卡" = "买货卡",
+    "一般户卡" = "一般户卡",
+    NULL
+  )
+}
+
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
   # 数据库连接信息
