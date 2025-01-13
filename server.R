@@ -3658,7 +3658,7 @@ server <- function(input, output, session) {
           color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 根据状态设置深绿色或浅灰色
           line = list(width = 0) # 移除外边框
         ),
-        text = ~ifelse(AllPurchaseCheck, "\u2714", ""), # 使用 Unicode 的白色勾
+        text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用 Unicode 的白色勾
         textfont = list(
           size = 14, # 增大字体，增强可见度
           color = "white", # 勾的颜色为白色
