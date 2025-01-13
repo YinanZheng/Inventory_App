@@ -3656,7 +3656,7 @@ server <- function(input, output, session) {
         text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用更粗的 Unicode 勾 (✓)
         textfont = list(
           size = 18, # 增大字体，增强可见度
-          color = ~ifelse(AllPurchaseCheck, "#006400", "#D3D3D3"), # 深绿色和浅灰色
+          color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 深绿色和浅灰色
           weight = "bold" # 加粗字体
         ),
         marker = NULL, # 明确移除 marker 属性
