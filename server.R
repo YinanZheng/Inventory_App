@@ -3582,6 +3582,7 @@ server <- function(input, output, session) {
         TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
         ShippingCost = sum(DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
+        AllPurchaseCheck = all(PurchaseCheck == 1, na.rm = TRUE), # 是否全部为1
         .groups = "drop"
       )
     
@@ -3716,6 +3717,7 @@ server <- function(input, output, session) {
                DomesticShippingCost = "国内运费",
                IntlShippingCost = "国际运费",
                PurchaseTime = "采购时间"
+               PurchaseCheck = "核对"
              )),
              data = filtered_items
   )
