@@ -944,25 +944,25 @@ ui <- navbarPage(
             column(3, div(
               class = "card shadow-sm",
               style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("工资卡", style = "font-weight: bold;"),
+              tags$h4("工资卡(567)", style = "font-weight: bold;"),
               tags$h3(textOutput("salary_balance"))
             )),
             column(3, div(
               class = "card shadow-sm",
               style = "background-color: #28A745; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("美元卡", style = "font-weight: bold;"),
+              tags$h4("美元卡(553)", style = "font-weight: bold;"),
               tags$h3(textOutput("dollar_balance"))
             )),
             column(3, div(
               class = "card shadow-sm",
               style = "background-color: #FFC107; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("买货卡", style = "font-weight: bold;"),
+              tags$h4("买货卡(139)", style = "font-weight: bold;"),
               tags$h3(textOutput("purchase_balance"))
             )),
             column(3, div(
               class = "card shadow-sm",
               style = "background-color: #6C757D; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("一般户卡", style = "font-weight: bold;"),
+              tags$h4("一般户卡(541)", style = "font-weight: bold;"),
               tags$h3(textOutput("general_balance"))
             ))
           )),
