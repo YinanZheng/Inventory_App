@@ -966,10 +966,10 @@ ui <- navbarPage(
               tags$h3(textOutput("general_balance"))
             ))
           )),
-          tabPanel("工资卡", DTOutput("salary_card_table")),
-          tabPanel("美元卡", DTOutput("dollar_card_table")),
-          tabPanel("买货卡", DTOutput("purchase_card_table")),
-          tabPanel("一般户卡", DTOutput("general_card_table"))
+          tabPanel(title = "工资卡(567)", value = "工资卡", DTOutput("salary_card_table")),
+          tabPanel(title = "美元卡(553)", value = "美元卡", DTOutput("dollar_card_table")),
+          tabPanel(title = "买货卡(139)", value = "买货卡", DTOutput("purchase_card_table")),
+          tabPanel(title = "一般户卡(541)", value = "一般户卡", DTOutput("general_card_table"))
         )
       )
     )
