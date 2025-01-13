@@ -2042,46 +2042,72 @@ server <- function(input, output, session) {
       # 从 unique_items_data 获取货架中符合条件的物品
       all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
       
-      # 如果货架中没有符合条件的物品，提示错误
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
       
-      # 从箱子中获取当前 SKU 的已选数量
-      box_data <- box_items()
-      box_sku_count <- sum(box_data$SKU == scanned_sku)
+      # 检查是否为 "美国入库" 状态且仅剩一件
+      us_stock_count <- sum(all_shelf_items$Status == "美国入库")
       
-      # 如果箱子中物品数量 >= 货架中物品总量，则阻止操作
-      if (box_sku_count >= nrow(all_shelf_items)) {
-        showNotification("该 SKU 的所有物品已移入箱子，无法继续添加！", type = "error")
+      if (any(all_shelf_items$Status == "美国入库") && us_stock_count <= 1) {
+        # 弹出模态框，提醒用户核实后再操作
+        showModal(modalDialog(
+          title = "注意",
+          p("此商品在美国库存仅剩一件，请沟通核实后再进行调货"),
+          footer = tagList(
+            actionButton("verify_and_proceed", "已核实, 继续调货", class = "btn-primary"),
+            modalButton("取消")
+          ),
+          easyClose = FALSE
+        ))
+        
+        # 监听 "已核实" 按钮事件，确认操作
+        observeEvent(input$verify_and_proceed, {
+          removeModal()  # 关闭模态框
+          process_box_addition(scanned_sku, all_shelf_items)  # 继续处理移入箱子操作
+        })
+        
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
       
-      # 获取优先级最高的物品
-      selected_item <- all_shelf_items[box_sku_count + 1, ]
-      
-      # 更新箱子内容
-      current_box <- box_items()
-      box_items(bind_rows(selected_item, current_box))
-      
-      # 更新货架上的物品
-      updated_shelf <- all_shelf_items[!all_shelf_items$UniqueID %in% box_items()$UniqueID, ]
-      shelf_items(updated_shelf)
-      
-      # 通知用户
-      showNotification(paste("物品已移入箱子！SKU:", scanned_sku), type = "message")
-      
-      # 清空输入框
-      updateTextInput(session, "sku_to_box", value = "")
+      # 如果不需要弹窗，直接处理入箱
+      process_box_addition(scanned_sku, all_shelf_items)
       
     }, error = function(e) {
       # 捕获错误并通知用户
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
   })
+  
+  # 定义移入箱子的逻辑
+  process_box_addition <- function(scanned_sku, all_shelf_items) {
+    # 从箱子中获取当前 SKU 的已选数量
+    box_data <- box_items()
+    box_sku_count <- sum(box_data$SKU == scanned_sku)
+    
+    # 如果箱子中物品数量 >= 货架中物品总量，则阻止操作
+    if (box_sku_count >= nrow(all_shelf_items)) {
+      showNotification("该 SKU 的所有物品已移入箱子，无法继续添加！", type = "error")
+      return()
+    }
+    
+    # 获取优先级最高的物品
+    selected_item <- all_shelf_items[box_sku_count + 1, ]
+    
+    # 更新箱子内容
+    current_box <- box_items()
+    box_items(bind_rows(selected_item, current_box))
+    
+    # 更新货架上的物品
+    updated_shelf <- all_shelf_items[!all_shelf_items$UniqueID %in% box_items()$UniqueID, ]
+    shelf_items(updated_shelf)
+    
+    # 通知用户
+    showNotification(paste("物品已移入箱子！SKU:", scanned_sku), type = "message")
+  }
   
   # 确认售出
   observeEvent(input$confirm_order_btn, {
