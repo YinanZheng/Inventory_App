@@ -3802,6 +3802,8 @@ server <- function(input, output, session) {
       group_by(source = previous_status, target = next_status) %>%
       summarise(value = n(), .groups = "drop")  # 汇总每对状态的流转次数
     
+    links <- as.data.frame(links)
+    
     # 定义节点
     nodes <- data.frame(name = unique(c(links$source, links$target)))
     
