@@ -3600,9 +3600,10 @@ server <- function(input, output, session) {
   output$expense_chart <- renderPlotly({
     data <- expense_summary_data()
     
-    # 验证数据是否为空，提前退出
-    if (nrow(data) == 0) {
-      return(plotly_empty() %>% layout(title = "无数据可显示"))
+    # 如果数据为空，提前返回空图表
+    if (is.null(data) || nrow(data) == 0) {
+      return(plotly_empty(type = "bar") %>% 
+               layout(title = "无数据可显示"))
     }
     
     # 获取用户选择的 Y 轴变量及颜色
@@ -3630,8 +3631,8 @@ server <- function(input, output, session) {
         )
       )
     
-    # 绘制柱状图
-    p <- plot_ly(
+    # 绘制柱状图并注册事件
+    plot <- plot_ly(
       data,
       x = ~GroupLabel,
       y = ~get(y_var),
@@ -3640,9 +3641,14 @@ server <- function(input, output, session) {
       marker = list(color = color),
       text = ~round(get(y_var), 2),
       textposition = "outside",
-      source = "expense_chart" # 与事件监听保持一致
-    ) %>%
-      event_register("plotly_click") %>% # 注册事件
+      source = "expense_chart" # 确保 source 唯一
+    )
+    
+    # 在此处注册事件，确保在 plotly 对象构建时完成
+    plot <- event_register(plot, "plotly_click")
+    
+    # 添加布局和其他设置
+    plot <- plot %>%
       layout(
         xaxis = list(
           title = "",
@@ -3662,7 +3668,7 @@ server <- function(input, output, session) {
         paper_bgcolor = "#FFFFFF"
       )
     
-    return(p)
+    return(plot)
   })
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
