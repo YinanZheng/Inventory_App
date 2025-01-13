@@ -2340,7 +2340,12 @@ server <- function(input, output, session) {
         clear_status_timestamp = deleted_item$Status
       )
     } else {
-      showNotification("未找到物品的原始状态记录，请联系管理员更新物品状态", type = "error")
+      showModal(modalDialog(
+        title = "错误",
+        "未找到物品上一个状态记录，请联系管理员手动更改物品库存状态。",
+        footer = modalButton("关闭"),
+        easyClose = TRUE
+      ))    
     }
     
     # 清空物品的 OrderID
