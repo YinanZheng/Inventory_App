@@ -980,18 +980,6 @@ ui <- navbarPage(
           fluidRow(
             column(3, div(
               class = "card shadow-sm",
-              style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("工资卡(567)", style = "font-weight: bold;"),
-              tags$h3(textOutput("salary_balance"))
-            )),
-            column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #28A745; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("美元卡(553)", style = "font-weight: bold;"),
-              tags$h3(textOutput("dollar_balance"))
-            )),
-            column(3, div(
-              class = "card shadow-sm",
               style = "background-color: #FFC107; color: white; padding: 20px; text-align: center; border-radius: 8px;",
               tags$h4("买货卡(139)", style = "font-weight: bold;"),
               tags$h3(textOutput("purchase_balance"))
@@ -1001,12 +989,24 @@ ui <- navbarPage(
               style = "background-color: #6C757D; color: white; padding: 20px; text-align: center; border-radius: 8px;",
               tags$h4("一般户卡(541)", style = "font-weight: bold;"),
               tags$h3(textOutput("general_balance"))
+            )),
+            column(3, div(
+              class = "card shadow-sm",
+              style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
+              tags$h4("工资卡(567)", style = "font-weight: bold;"),
+              tags$h3(textOutput("salary_balance"))
+            )),
+            column(3, div(
+              class = "card shadow-sm",
+              style = "background-color: #28A745; color: white; padding: 20px; text-align: center; border-radius: 8px;",
+              tags$h4("美元卡(553)", style = "font-weight: bold;"),
+              tags$h3(textOutput("dollar_balance"))
             ))
           )),
-          tabPanel(title = "工资卡(567)", value = "工资卡", DTOutput("salary_card_table")),
-          tabPanel(title = "美元卡(553)", value = "美元卡", DTOutput("dollar_card_table")),
           tabPanel(title = "买货卡(139)", value = "买货卡", DTOutput("purchase_card_table")),
-          tabPanel(title = "一般户卡(541)", value = "一般户卡", DTOutput("general_card_table"))
+          tabPanel(title = "一般户卡(541)", value = "一般户卡", DTOutput("general_card_table")),
+          tabPanel(title = "工资卡(567)", value = "工资卡", DTOutput("salary_card_table")),
+          tabPanel(title = "美元卡(553)", value = "美元卡", DTOutput("dollar_card_table"))
         )
       )
     )
