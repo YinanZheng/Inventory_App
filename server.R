@@ -3665,6 +3665,12 @@ server <- function(input, output, session) {
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
   
+  options(warning.expression = {
+    w <- conditionMessage(last.warning)
+    if (!grepl("The 'plotly_click' event tied a source ID", w)) {
+      message(w)
+    }
+  })
   
   # 将点击事件封装为 reactive
   click_data <- reactive({
