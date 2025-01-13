@@ -3596,10 +3596,15 @@ server <- function(input, output, session) {
     complete_data
   })
   
-  # 开销柱状图  
+  # 定义 reactiveVal 用于存储观察器状态
+  is_observer_suspended <- reactiveVal(TRUE)
+  
+  # 存储选定的时间范围
+  selected_range <- reactiveVal(NULL) # 存储时间范围
+  
+  # 开销柱状图
   output$expense_chart <- renderPlotly({
     req(expense_summary_data())
-    
     data <- expense_summary_data()
     
     # 获取用户选择的 Y 轴变量及颜色
@@ -3627,8 +3632,8 @@ server <- function(input, output, session) {
         )
       )
     
-    # 绘制柱状图
-    plot_ly(
+    # 创建柱状图
+    p <- plot_ly(
       data,
       x = ~GroupLabel,
       y = ~get(y_var),
@@ -3660,20 +3665,18 @@ server <- function(input, output, session) {
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
+    
+    # 激活观察器
+    if (is_observer_suspended()) {
+      observer$resume()
+      is_observer_suspended(FALSE)
+    }
+    
+    p
   })
   
-  
-  selected_range <- reactiveVal(NULL) # 存储时间范围
-  
-  
-  # 将点击事件封装为 reactive
-  click_data <- reactive({
-    # 确保图表已渲染，并捕获点击事件数据
-    req(expense_summary_data(), input$precision)  # 确保精度已定义
-    event_data("plotly_click", source = "expense_chart")
-  })
-  
-  observeEvent(event_data("plotly_click", source = "expense_chart"), suspended = TRUE, {
+  # 定义观察器，初始状态为 suspended = TRUE
+  observer <- observeEvent(event_data("plotly_click", source = "expense_chart"), suspended = TRUE, {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
     if (!is.null(clicked_point)) {
       precision <- input$precision # 当前精度（天、周、月、年）
