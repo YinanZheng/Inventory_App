@@ -3795,6 +3795,32 @@ server <- function(input, output, session) {
     )
   })
   
+  observeEvent(input$confirm_expense_check_btn, {
+    req(filtered_items()) # 确保筛选出的物品数据存在
+    
+    # 获取筛选出的物品
+    items_to_update <- filtered_items()
+    
+    if (nrow(items_to_update) == 0) {
+      showNotification("当前筛选无物品可核对，请选择有效的柱子！", type = "error")
+      return(NULL)
+    }
+    
+    # 更新数据库中的 PurchaseCheck 为 1
+    tryCatch({
+      dbExecute(
+        con,
+        "UPDATE unique_items SET PurchaseCheck = 1 WHERE UniqueID IN (?)",
+        params = list(items_to_update$UniqueID)
+      )
+      
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+      showNotification(paste("成功更新", nrow(items_to_update), "条物品的开销核对状态！"), type = "message")
+    }, error = function(e) {
+      showNotification("更新失败，请检查数据库连接！", type = "error")
+    })
+  })
   
   
   #################################################################
