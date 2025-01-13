@@ -3650,15 +3650,16 @@ server <- function(input, output, session) {
       event_register("plotly_click") %>%
       add_trace(
         type = "scatter",
-        mode = "text", # 使用 text 模式显示 Unicode 字符
+        mode = "text", # 仅使用文本模式
         x = ~GroupLabel,
-        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在顶部留出空间
-        text = ~ifelse(AllPurchaseCheck, "\u2713", "\u2713"), # 使用 Unicode 字符 ✓ 表示勾
+        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
+        text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用更粗的 Unicode 勾 (✓)
         textfont = list(
-          size = 14, # 调整字体大小
-          color = ~ifelse(AllPurchaseCheck, "#006400", "#D3D3D3") # 深绿色和浅灰色
+          size = 18, # 增大字体，增强可见度
+          color = ~ifelse(AllPurchaseCheck, "#006400", "#D3D3D3"), # 深绿色和浅灰色
+          weight = "bold" # 加粗字体
         ),
-        showlegend = FALSE # 隐藏图例
+        showlegend = FALSE # 不显示图例
       ) %>%
       # 添加布局和其他设置
       layout(
