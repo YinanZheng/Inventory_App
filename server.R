@@ -4059,12 +4059,16 @@ server <- function(input, output, session) {
     )
     
     if (length(selected_rows) > 0) {
-      # 获取选中行的 TransactionID
-      record_to_delete <- dbGetQuery(
-        con,
-        "SELECT TransactionID FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC LIMIT ?, 1",
-        params = list(account_type, selected_rows - 1)
+      # 手动构造 LIMIT 的参数
+      row_index <- selected_rows - 1
+      
+      # 查询选中记录的 TransactionID
+      query <- sprintf(
+        "SELECT TransactionID FROM transactions WHERE AccountType = '%s' ORDER BY TransactionTime DESC LIMIT %d, 1",
+        account_type, row_index
       )
+      
+      record_to_delete <- dbGetQuery(con, query)
       
       if (nrow(record_to_delete) > 0) {
         # 执行删除
