@@ -3602,84 +3602,70 @@ server <- function(input, output, session) {
     
     # 如果数据为空，提前返回空图表
     if (is.null(data) || nrow(data) == 0) {
-      return(plotly_empty(type = "bar") %>% 
-               layout(title = "无数据可显示"))
-    }
-    
-    # 获取用户选择的 Y 轴变量及颜色
-    y_var <- switch(input$expense_type,
-                    "total" = "TotalExpense",
-                    "cost" = "ProductCost",
-                    "shipping" = "ShippingCost")
-    color <- switch(input$expense_type,
-                    "total" = "#007BFF",
-                    "cost" = "#4CAF50",
-                    "shipping" = "#FF5733")
-    
-    # 根据精度生成时间范围标签
-    data <- data %>%
-      mutate(
-        GroupLabel = case_when(
-          input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
-          input$precision == "周" ~ paste(
-            format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
-            "至",
-            format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
-          ),
-          input$precision == "月" ~ format(GroupDate, "%Y-%m"),
-          input$precision == "年" ~ format(GroupDate, "%Y")
+      plotly_empty(type = "bar") %>%
+        layout(title = "无数据可显示")
+    } else {
+      # 获取用户选择的 Y 轴变量及颜色
+      y_var <- switch(input$expense_type,
+                      "total" = "TotalExpense",
+                      "cost" = "ProductCost",
+                      "shipping" = "ShippingCost")
+      color <- switch(input$expense_type,
+                      "total" = "#007BFF",
+                      "cost" = "#4CAF50",
+                      "shipping" = "#FF5733")
+      
+      # 根据精度生成时间范围标签
+      data <- data %>%
+        mutate(
+          GroupLabel = case_when(
+            input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
+            input$precision == "周" ~ paste(
+              format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
+              "至",
+              format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
+            ),
+            input$precision == "月" ~ format(GroupDate, "%Y-%m"),
+            input$precision == "年" ~ format(GroupDate, "%Y")
+          )
         )
-      )
-    
-    # 绘制柱状图并注册事件
-    plot <- plot_ly(
-      data,
-      x = ~GroupLabel,
-      y = ~get(y_var),
-      type = "bar",
-      name = NULL,
-      marker = list(color = color),
-      text = ~round(get(y_var), 2),
-      textposition = "outside",
-      source = "expense_chart" # 确保 source 唯一
-    )
-    
-    # 在此处注册事件，确保在 plotly 对象构建时完成
-    plot <- event_register(plot, "plotly_click")
-    
-    # 直接检查是否注册成功
-    showNotification(
-      ifelse(
-        is.null(plot$x$attrs[[1]]$events),
-        "事件未注册！",
-        paste("注册成功：", paste(plot$x$attrs[[1]]$events, collapse = ", "))
-      ),
-      type = "message"
-    )
-    
-    # 添加布局和其他设置
-    plot <- plot %>%
-      layout(
-        xaxis = list(
-          title = "",
-          tickvals = data$GroupLabel,
-          tickangle = -45,
-          tickfont = list(size = 12),
-          showgrid = FALSE
-        ),
-        yaxis = list(
-          title = "采购开销（元）",
-          tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
-        ),
-        margin = list(l = 50, r = 20, t = 20, b = 50),
-        showlegend = FALSE,
-        plot_bgcolor = "#F9F9F9",
-        paper_bgcolor = "#FFFFFF"
-      )
-    
-    return(plot)
+      
+      # 绘制柱状图
+      plot_ly(
+        data,
+        x = ~GroupLabel,
+        y = ~get(y_var),
+        type = "bar",
+        name = NULL,
+        marker = list(color = color),
+        text = ~round(get(y_var), 2),
+        textposition = "outside",
+        source = "expense_chart" # 确保 source 唯一
+      ) %>%
+        # 注册事件
+        event_register("plotly_click") %>%
+        # 添加布局和其他设置
+        layout(
+          xaxis = list(
+            title = "",
+            tickvals = data$GroupLabel,
+            tickangle = -45,
+            tickfont = list(size = 12),
+            showgrid = FALSE
+          ),
+          yaxis = list(
+            title = "采购开销（元）",
+            tickfont = list(size = 12),
+            range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
+          ),
+          margin = list(l = 50, r = 20, t = 20, b = 50),
+          showlegend = FALSE,
+          plot_bgcolor = "#F9F9F9",
+          paper_bgcolor = "#FFFFFF"
+        )
+    }
   })
+  
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
   
