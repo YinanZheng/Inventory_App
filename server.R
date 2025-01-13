@@ -3980,7 +3980,7 @@ server <- function(input, output, session) {
     
     # 获取账户类型
     account_type <- switch(
-      input$transaction_tabs,
+      input$tabs,
       "工资卡" = "工资卡",
       "美元卡" = "美元卡",
       "买货卡" = "买货卡",
@@ -4006,20 +4006,50 @@ server <- function(input, output, session) {
       updateNumericInput(session, "amount", value = NULL)
       updateRadioButtons(session, "transaction_type", selected = NULL)
       updateTextAreaInput(session, "remarks", value = "")
+      
+      # 自动刷新表格
+      if (account_type == "工资卡") {
+        output$salary_card_table <- renderDT({
+          renderTransactionTable("工资卡")
+        })
+      } else if (account_type == "美元卡") {
+        output$dollar_card_table <- renderDT({
+          renderTransactionTable("美元卡")
+        })
+      } else if (account_type == "买货卡") {
+        output$purchase_card_table <- renderDT({
+          renderTransactionTable("买货卡")
+        })
+      } else if (account_type == "一般户卡") {
+        output$general_card_table <- renderDT({
+          renderTransactionTable("一般户卡")
+        })
+      }
     }, error = function(e) {
       showNotification(paste("记录失败：", e$message), type = "error")
     })
   })
   
+  
   observeEvent(input$delete_transaction, {
     current_tab <- input$transaction_tabs
+    
+    # 确定账户类型
     account_type <- switch(
       current_tab,
       "工资卡" = "工资卡",
       "美元卡" = "美元卡",
       "买货卡" = "买货卡",
-      "一般户卡" = "一般户卡"
+      "一般户卡" = "一般户卡",
+      NULL
     )
+    
+    if (is.null(account_type)) {
+      showNotification("请选择有效的账户类型！", type = "error")
+      return()
+    }
+    
+    # 获取选中的行
     selected_rows <- switch(
       current_tab,
       "工资卡" = input$salary_card_table_rows_selected,
@@ -4032,15 +4062,45 @@ server <- function(input, output, session) {
       # 获取选中行的 TransactionID
       record_to_delete <- dbGetQuery(
         con,
-        paste0("SELECT TransactionID FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC LIMIT ?, 1"),
+        "SELECT TransactionID FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC LIMIT ?, 1",
         params = list(account_type, selected_rows - 1)
       )
-      dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
-      showNotification("记录已删除", type = "warning")
+      
+      if (nrow(record_to_delete) > 0) {
+        # 执行删除
+        tryCatch({
+          dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
+          showNotification("记录已删除", type = "warning")
+          
+          # 自动刷新表格
+          if (account_type == "工资卡") {
+            output$salary_card_table <- renderDT({
+              renderTransactionTable("工资卡")
+            })
+          } else if (account_type == "美元卡") {
+            output$dollar_card_table <- renderDT({
+              renderTransactionTable("美元卡")
+            })
+          } else if (account_type == "买货卡") {
+            output$purchase_card_table <- renderDT({
+              renderTransactionTable("买货卡")
+            })
+          } else if (account_type == "一般户卡") {
+            output$general_card_table <- renderDT({
+              renderTransactionTable("一般户卡")
+            })
+          }
+        }, error = function(e) {
+          showNotification(paste("删除失败：", e$message), type = "error")
+        })
+      } else {
+        showNotification("无法找到选中的记录！", type = "error")
+      }
     } else {
       showNotification("请选择要删除的记录", type = "error")
     }
   })
+  
   
   #####
   
@@ -4335,37 +4395,6 @@ server <- function(input, output, session) {
       # 捕获错误并通知用户
       showNotification(paste("修改库存总数时发生错误：", e$message), type = "error")
     })
-  })
-  
-  observeEvent(input$delete_transaction, {
-    current_tab <- input$tabs
-    account_type <- switch(
-      current_tab,
-      "工资卡" = "工资卡",
-      "美元卡" = "美元卡",
-      "买货卡" = "买货卡",
-      "一般户卡" = "一般户卡"
-    )
-    selected_rows <- switch(
-      current_tab,
-      "工资卡" = input$salary_card_table_rows_selected,
-      "美元卡" = input$dollar_card_table_rows_selected,
-      "买货卡" = input$purchase_card_table_rows_selected,
-      "一般户卡" = input$general_card_table_rows_selected
-    )
-    
-    if (length(selected_rows) > 0) {
-      # 获取选中行的 TransactionID
-      record_to_delete <- dbGetQuery(
-        conn,
-        paste0("SELECT TransactionID FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC LIMIT ?, 1"),
-        params = list(account_type, selected_rows - 1)
-      )
-      dbExecute(conn, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
-      showNotification("记录已删除", type = "warning")
-    } else {
-      showNotification("请选择要删除的记录", type = "error")
-    }
   })
   
   
