@@ -3652,7 +3652,7 @@ server <- function(input, output, session) {
         type = "scatter",
         mode = "markers",
         x = ~GroupLabel,
-        y = ~get(y_var) * 1.1, # 顶部偏移
+        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.05), # 在顶部留 5% 高度
         marker = list(
           symbol = "check",
           size = 12,
