@@ -3216,6 +3216,120 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
+  ## 账务管理分页                                               ##
+  ##                                                            ##
+  ################################################################
+  
+  # 分页切换更新
+  observe({
+    if (input$transaction_tabs == "账户余额总览") {
+      updateAccountOverview()
+    }
+    if (input$transaction_tabs == "工资卡") {
+      refreshTransactionTable("工资卡")
+    }
+    if (input$transaction_tabs == "美元卡") {
+      refreshTransactionTable("美元卡")
+    }
+    if (input$transaction_tabs == "买货卡") {
+      refreshTransactionTable("买货卡")
+    }
+    if (input$transaction_tabs == "一般户卡") {
+      refreshTransactionTable("一般户卡")
+    }
+  })
+  
+  # 登记转账记录
+  observeEvent(input$record_transaction, {
+    req(!is.null(input$amount), input$amount > 0, !is.null(input$transaction_type))
+    
+    # 根据交易类型设置金额的符号
+    amount <- if (input$transaction_type == "in") input$amount else -input$amount
+    
+    if (is.null(account_type)) {
+      showNotification("请选择有效的账户类型！", type = "error")
+      return()
+    }
+    
+    # 插入交易记录
+    tryCatch({
+      dbExecute(
+        con,
+        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
+        params = list(account_type, amount, input$remarks)
+      )
+      showNotification("记录成功！", type = "message")
+      
+      # 重置输入框
+      updateNumericInput(session, "amount", value = NULL)
+      updateRadioButtons(session, "transaction_type", selected = NULL)
+      updateTextAreaInput(session, "remarks", value = "")
+      
+      # 自动刷新账户余额总览统计
+      updateAccountOverview()
+      
+      # 自动刷新表格
+      refreshTransactionTable(account_type)
+    }, error = function(e) {
+      showNotification(paste("记录失败：", e$message), type = "error")
+    })
+  })
+  
+  # 删除转账记录
+  observeEvent(input$delete_transaction, {
+    current_tab <- input$transaction_tabs
+    
+    if (is.null(account_type)) {
+      showNotification("请选择有效的账户类型！", type = "error")
+      return()
+    }
+    
+    # 获取选中的行
+    selected_rows <- switch(
+      current_tab,
+      "工资卡" = input$salary_card_table_rows_selected,
+      "美元卡" = input$dollar_card_table_rows_selected,
+      "买货卡" = input$purchase_card_table_rows_selected,
+      "一般户卡" = input$general_card_table_rows_selected
+    )
+    
+    if (length(selected_rows) > 0) {
+      # 手动构造 LIMIT 的参数
+      row_index <- selected_rows - 1
+      
+      # 查询选中记录的 TransactionID
+      query <- sprintf(
+        "SELECT TransactionID FROM transactions WHERE AccountType = '%s' ORDER BY TransactionTime DESC LIMIT %d, 1",
+        account_type, row_index
+      )
+      record_to_delete <- dbGetQuery(con, query)
+      
+      if (nrow(record_to_delete) > 0) {
+        tryCatch({
+          # 删除选中的记录
+          dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
+          showNotification("记录已删除", type = "warning")
+          
+          # 自动刷新账户余额总览统计
+          updateAccountOverview()
+          
+          # 自动刷新表格
+          refreshTransactionTable(account_type)
+        }, error = function(e) {
+          showNotification(paste("删除失败：", e$message), type = "error")
+        })
+      } else {
+        showNotification("无法找到选中的记录！", type = "error")
+      }
+    } else {
+      showNotification("请选择要删除的记录", type = "error")
+    }
+  })
+  
+  
+  
+  ################################################################
+  ##                                                            ##
   ## 查询分页                                                   ##
   ##                                                            ##
   ################################################################
@@ -3963,217 +4077,7 @@ server <- function(input, output, session) {
       showNotification("Excel 文件已成功下载", type = "message", duration = 5)
     }
   )
-  
-  
-  
-  ################################################################
-  ##                                                            ##
-  ## 账务管理分页                                               ##
-  ##                                                            ##
-  ################################################################
-  
-  calculate_balance <- function(account_type) {
-    query <- "
-    SELECT 
-      SUM(Amount) AS Balance
-    FROM transactions
-    WHERE AccountType = ?
-  "
-    result <- dbGetQuery(con, query, params = list(account_type))
-    balance <- result$Balance[1] %||% 0  # 如果结果为空，则返回 0
-    return(sprintf("¥%.2f", balance))
-  }
-  
-  updateAccountOverview <- function() {
-    output$salary_balance <- renderText({
-      calculate_balance("工资卡")
-    })
-    
-    output$dollar_balance <- renderText({
-      calculate_balance("美元卡")
-    })
-    
-    output$purchase_balance <- renderText({
-      calculate_balance("买货卡")
-    })
-    
-    output$general_balance <- renderText({
-      calculate_balance("一般户卡")
-    })
-  }
-  
-  refreshTransactionTable <- function(account_type) {
-    if (account_type == "工资卡") {
-      output$salary_card_table <- renderDT({
-        renderTransactionTable("工资卡")
-      })
-    } else if (account_type == "美元卡") {
-      output$dollar_card_table <- renderDT({
-        renderTransactionTable("美元卡")
-      })
-    } else if (account_type == "买货卡") {
-      output$purchase_card_table <- renderDT({
-        renderTransactionTable("买货卡")
-      })
-    } else if (account_type == "一般户卡") {
-      output$general_card_table <- renderDT({
-        renderTransactionTable("一般户卡")
-      })
-    }
-  }
-  
-  observe({
-    if (input$transaction_tabs == "账户余额总览") {
-      updateAccountOverview()
-    }
-  })
-  
-  observeEvent(input$record_transaction, {
-    req(!is.null(input$amount), input$amount > 0, !is.null(input$transaction_type))
-    
-    # 根据交易类型设置金额的符号
-    amount <- if (input$transaction_type == "in") input$amount else -input$amount
-    
-    # 获取账户类型
-    account_type <- switch(
-      input$transaction_tabs,
-      "工资卡" = "工资卡",
-      "美元卡" = "美元卡",
-      "买货卡" = "买货卡",
-      "一般户卡" = "一般户卡",
-      NULL
-    )
-    
-    if (is.null(account_type)) {
-      showNotification("请选择有效的账户类型！", type = "error")
-      return()
-    }
-    
-    # 插入交易记录
-    tryCatch({
-      dbExecute(
-        con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
-        params = list(account_type, amount, input$remarks)
-      )
-      showNotification("记录成功！", type = "message")
-      
-      # 重置输入框
-      updateNumericInput(session, "amount", value = NULL)
-      updateRadioButtons(session, "transaction_type", selected = NULL)
-      updateTextAreaInput(session, "remarks", value = "")
-      
-      # 自动刷新账户余额总览统计
-      updateAccountOverview()
-      
-      # 自动刷新表格
-      refreshTransactionTable(account_type)
-    }, error = function(e) {
-      showNotification(paste("记录失败：", e$message), type = "error")
-    })
-  })
-  
-  
-  observeEvent(input$delete_transaction, {
-    current_tab <- input$transaction_tabs
-    
-    # 确定账户类型
-    account_type <- switch(
-      current_tab,
-      "工资卡" = "工资卡",
-      "美元卡" = "美元卡",
-      "买货卡" = "买货卡",
-      "一般户卡" = "一般户卡",
-      NULL
-    )
-    
-    if (is.null(account_type)) {
-      showNotification("请选择有效的账户类型！", type = "error")
-      return()
-    }
-    
-    # 获取选中的行
-    selected_rows <- switch(
-      current_tab,
-      "工资卡" = input$salary_card_table_rows_selected,
-      "美元卡" = input$dollar_card_table_rows_selected,
-      "买货卡" = input$purchase_card_table_rows_selected,
-      "一般户卡" = input$general_card_table_rows_selected
-    )
-    
-    if (length(selected_rows) > 0) {
-      # 手动构造 LIMIT 的参数
-      row_index <- selected_rows - 1
-      
-      # 查询选中记录的 TransactionID
-      query <- sprintf(
-        "SELECT TransactionID FROM transactions WHERE AccountType = '%s' ORDER BY TransactionTime DESC LIMIT %d, 1",
-        account_type, row_index
-      )
-      record_to_delete <- dbGetQuery(con, query)
-      
-      if (nrow(record_to_delete) > 0) {
-        tryCatch({
-          # 删除选中的记录
-          dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
-          showNotification("记录已删除", type = "warning")
-          
-          # 自动刷新账户余额总览统计
-          updateAccountOverview()
-          
-          # 自动刷新表格
-          refreshTransactionTable(account_type)
-        }, error = function(e) {
-          showNotification(paste("删除失败：", e$message), type = "error")
-        })
-      } else {
-        showNotification("无法找到选中的记录！", type = "error")
-      }
-    } else {
-      showNotification("请选择要删除的记录", type = "error")
-    }
-  })
-  
-  
-  #####
-  
-  renderTransactionTable <- function(account_type) {
-    query <- "SELECT TransactionTime, Amount, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
-    data <- dbGetQuery(con, query, params = list(account_type))
-    
-    # 添加“转入金额”和“转出金额”两列，并修改列名
-    data <- data %>%
-      mutate(
-        转账时间 = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
-        转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 保留两位小数
-        转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA)     # 保留两位小数
-      ) %>%
-      select(
-        转账时间,  # 时间列
-        转入金额, 
-        转出金额, 
-        备注 = Remarks  # 更改列名
-      )
-    
-    return(data)
-  }
-  
-  output$salary_card_table <- renderDT({
-    renderTransactionTable("工资卡")
-  }, options = modifyList(table_default_options, list(scrollY = "500px")))
-  
-  output$dollar_card_table <- renderDT({
-    renderTransactionTable("美元卡")
-  }, options = modifyList(table_default_options, list(scrollY = "500px")))
-  
-  output$purchase_card_table <- renderDT({
-    renderTransactionTable("买货卡")
-  }, options = modifyList(table_default_options, list(scrollY = "500px")))
-  
-  output$general_card_table <- renderDT({
-    renderTransactionTable("一般户卡")
-  }, options = modifyList(table_default_options, list(scrollY = "500px")))
-  
+
   
   
   ################################################################

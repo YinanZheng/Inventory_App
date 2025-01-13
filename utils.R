@@ -1583,6 +1583,80 @@ match_tracking_number <- function(data, tracking_number_column, input_tracking_i
   return(matched_data)
 }
 
+# 计算账户余额-账务管理用
+calculate_balance <- function(account_type) {
+  query <- "
+    SELECT 
+      SUM(Amount) AS Balance
+    FROM transactions
+    WHERE AccountType = ?
+  "
+  result <- dbGetQuery(con, query, params = list(account_type))
+  balance <- result$Balance[1] %||% 0  # 如果结果为空，则返回 0
+  return(sprintf("¥%.2f", balance))
+}
+
+# 更新账户余额显示-账务管理用
+updateAccountOverview <- function() {
+  output$salary_balance <- renderText({
+    calculate_balance("工资卡")
+  })
+  
+  output$dollar_balance <- renderText({
+    calculate_balance("美元卡")
+  })
+  
+  output$purchase_balance <- renderText({
+    calculate_balance("买货卡")
+  })
+  
+  output$general_balance <- renderText({
+    calculate_balance("一般户卡")
+  })
+}
+
+# 刷新账目记录-账务管理用
+refreshTransactionTable <- function(account_type) {
+  if (account_type == "工资卡") {
+    output$salary_card_table <- renderDT({
+      renderTransactionTable("工资卡")
+    }, options = modifyList(table_default_options, list(scrollY = "600px")))
+  } else if (account_type == "美元卡") {
+    output$dollar_card_table <- renderDT({
+      renderTransactionTable("美元卡")
+    }, options = modifyList(table_default_options, list(scrollY = "600px")))
+  } else if (account_type == "买货卡") {
+    output$purchase_card_table <- renderDT({
+      renderTransactionTable("买货卡")
+    }, options = modifyList(table_default_options, list(scrollY = "600px")))
+  } else if (account_type == "一般户卡") {
+    output$general_card_table <- renderDT({
+      renderTransactionTable("一般户卡")
+    }, options = modifyList(table_default_options, list(scrollY = "600px")))
+  }
+}
+
+# 渲染账目记录表
+renderTransactionTable <- function(account_type) {
+  query <- "SELECT TransactionTime, Amount, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
+  data <- dbGetQuery(con, query, params = list(account_type))
+  
+  # 添加“转入金额”和“转出金额”两列，并修改列名
+  data <- data %>%
+    mutate(
+      转账时间 = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
+      转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 保留两位小数
+      转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA)     # 保留两位小数
+    ) %>%
+    select(
+      转账时间,  # 时间列
+      转入金额, 
+      转出金额, 
+      备注 = Remarks  # 更改列名
+    )
+  
+  return(data)
+}
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {

@@ -41,6 +41,9 @@ source("./modules/autocompleteInputServer.R", local = TRUE)
 
 source("utils.R", local = TRUE)
 
+# 全局禁用行名
+options(DT.options = list(rownames = FALSE))
+
 # 定义轮询间隔（以毫秒为单位）
 poll_interval <<- 10000  # 每 10 秒检查一次
 
@@ -83,6 +86,7 @@ status_columns <<- list(
   "退货" = "ReturnTime"
 )
 
+# 定义默认表格渲染选项
 table_default_options <<- list(
   scrollY = "730px",
   scrollX = TRUE,
@@ -96,10 +100,15 @@ table_default_options <<- list(
 # 定义瑕疵和修复的状态
 defect_statuses <<- c("瑕疵", "修复", "无瑕")
 
-# 自定义函数
-`%||%` <- function(a, b) {
-  if (!is.null(a)) a else b
-}
+# 定义账户名字
+account_type <<- switch(
+  input$transaction_tabs,
+  "工资卡" = "工资卡",
+  "美元卡" = "美元卡",
+  "买货卡" = "买货卡",
+  "一般户卡" = "一般户卡",
+  NULL
+)
 
 # 定义管理员密码
 admin_password <<- "1029"
