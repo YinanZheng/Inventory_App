@@ -925,7 +925,7 @@ ui <- navbarPage(
         ),
         
         # 订单图片上传
-        imageModuleUI("image_transaction", label = "转账证据上传", label_color = "#007BFF"),
+        imageModuleUI("image_transactions", label = "转账证据上传", label_color = "#007BFF"),
         
         textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
         
