@@ -3598,72 +3598,68 @@ server <- function(input, output, session) {
   
   # 开销柱状图  
   output$expense_chart <- renderPlotly({
+    req(expense_summary_data())
+    
     data <- expense_summary_data()
     
-    # 如果数据为空，提前返回空图表
-    if (is.null(data) || nrow(data) == 0) {
-      plotly_empty(type = "bar") %>%
-        layout(title = "无数据可显示")
-    } else {
-      # 获取用户选择的 Y 轴变量及颜色
-      y_var <- switch(input$expense_type,
-                      "total" = "TotalExpense",
-                      "cost" = "ProductCost",
-                      "shipping" = "ShippingCost")
-      color <- switch(input$expense_type,
-                      "total" = "#007BFF",
-                      "cost" = "#4CAF50",
-                      "shipping" = "#FF5733")
-      
-      # 根据精度生成时间范围标签
-      data <- data %>%
-        mutate(
-          GroupLabel = case_when(
-            input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
-            input$precision == "周" ~ paste(
-              format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
-              "至",
-              format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
-            ),
-            input$precision == "月" ~ format(GroupDate, "%Y-%m"),
-            input$precision == "年" ~ format(GroupDate, "%Y")
-          )
-        )
-      
-      # 绘制柱状图
-      plot_ly(
-        data,
-        x = ~GroupLabel,
-        y = ~get(y_var),
-        type = "bar",
-        name = NULL,
-        marker = list(color = color),
-        text = ~round(get(y_var), 2),
-        textposition = "outside",
-        source = "expense_chart" # 确保 source 唯一
-      ) %>%
-        # 注册事件
-        event_register("plotly_click") %>%
-        # 添加布局和其他设置
-        layout(
-          xaxis = list(
-            title = "",
-            tickvals = data$GroupLabel,
-            tickangle = -45,
-            tickfont = list(size = 12),
-            showgrid = FALSE
+    # 获取用户选择的 Y 轴变量及颜色
+    y_var <- switch(input$expense_type,
+                    "total" = "TotalExpense",
+                    "cost" = "ProductCost",
+                    "shipping" = "ShippingCost")
+    color <- switch(input$expense_type,
+                    "total" = "#007BFF",
+                    "cost" = "#4CAF50",
+                    "shipping" = "#FF5733")
+    
+    # 根据精度生成时间范围标签
+    data <- data %>%
+      mutate(
+        GroupLabel = case_when(
+          input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
+          input$precision == "周" ~ paste(
+            format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
+            "至",
+            format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
           ),
-          yaxis = list(
-            title = "采购开销（元）",
-            tickfont = list(size = 12),
-            range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
-          ),
-          margin = list(l = 50, r = 20, t = 20, b = 50),
-          showlegend = FALSE,
-          plot_bgcolor = "#F9F9F9",
-          paper_bgcolor = "#FFFFFF"
+          input$precision == "月" ~ format(GroupDate, "%Y-%m"),
+          input$precision == "年" ~ format(GroupDate, "%Y")
         )
-    }
+      )
+    
+    # 绘制柱状图
+    plot_ly(
+      data,
+      x = ~GroupLabel,
+      y = ~get(y_var),
+      type = "bar",
+      name = NULL,
+      marker = list(color = color),
+      text = ~round(get(y_var), 2),
+      textposition = "outside",
+      source = "expense_chart" # 确保 source 唯一
+    ) %>%
+      # 注册事件
+      event_register("plotly_click") %>%
+      # 添加布局和其他设置
+      layout(
+        xaxis = list(
+          title = "",
+          tickvals = data$GroupLabel,
+          tickangle = -45,
+          tickfont = list(size = 12),
+          showgrid = FALSE
+        ),
+        yaxis = list(
+          title = "采购开销（元）",
+          tickfont = list(size = 12),
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
+        ),
+        margin = list(l = 50, r = 20, t = 20, b = 50),
+        showlegend = FALSE,
+        plot_bgcolor = "#F9F9F9",
+        paper_bgcolor = "#FFFFFF"
+      )
   })
   
   
