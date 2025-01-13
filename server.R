@@ -3648,6 +3648,7 @@ server <- function(input, output, session) {
     plot <- event_register(plot, "plotly_click")
     
     # 测试注册是否成功
+    message("test")  # 检查 plotly 内部状态
     message(plot$x$attrs[[1]]$events)  # 检查 plotly 内部状态
     
     # 添加布局和其他设置
