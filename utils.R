@@ -1613,6 +1613,17 @@ updateAccountOverview <- function() {
   output$general_balance <- renderText({
     calculate_balance("一般户卡")
   })
+  
+  output$total_balance <- renderText({
+    total <- sum(
+      as.numeric(gsub("[^0-9.-]", "", calculate_balance("工资卡"))),
+      as.numeric(gsub("[^0-9.-]", "", calculate_balance("美元卡"))),
+      as.numeric(gsub("[^0-9.-]", "", calculate_balance("买货卡"))),
+      as.numeric(gsub("[^0-9.-]", "", calculate_balance("一般户卡"))),
+      na.rm = TRUE
+    )
+    sprintf("¥%.2f", total)
+  })
 }
 
 # 刷新账目记录-账务管理用

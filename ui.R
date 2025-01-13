@@ -931,7 +931,16 @@ ui <- navbarPage(
         class = "main-panel",
         tabsetPanel(
           id = "transaction_tabs",  # 绑定到 input$tabs
-          tabPanel("账户余额总览", fluidRow(
+          tabPanel("账户余额总览", 
+          fluidRow(
+           column(12, div(
+             class = "card shadow-sm",
+             style = "background-color: #343A40; color: white; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;",
+             tags$h4("总余额", style = "font-weight: bold;"),
+             tags$h3(textOutput("total_balance"))
+           ))
+          ),
+          fluidRow(
             column(3, div(
               class = "card shadow-sm",
               style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
