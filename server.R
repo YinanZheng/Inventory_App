@@ -4075,21 +4075,21 @@ server <- function(input, output, session) {
   #####
   
   renderTransactionTable <- function(account_type) {
-    # 查询原始数据
     query <- "SELECT TransactionTime, Amount, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
     data <- dbGetQuery(con, query, params = list(account_type))
     
     # 添加“转入金额”和“转出金额”两列，并修改列名
     data <- data %>%
       mutate(
-        转入金额 = ifelse(Amount > 0, Amount, NA),      # Amount > 0 为转入
-        转出金额 = ifelse(Amount < 0, abs(Amount), NA)  # Amount < 0 为转出
+        转账时间 = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
+        转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 保留两位小数
+        转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA)     # 保留两位小数
       ) %>%
       select(
-        转账时间 = TransactionTime,  # 更改列名
+        转账时间,  # 时间列
         转入金额, 
         转出金额, 
-        备注 = Remarks               # 更改列名
+        备注 = Remarks  # 更改列名
       )
     
     return(data)
