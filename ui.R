@@ -1078,13 +1078,7 @@ ui <- navbarPage(
                     column(3, plotlyOutput("pie_chart", height = "350px"))  # 20% 宽度饼图
                   ),
                   tags$hr(style = "margin: 10px 0; border: 1px solid #ddd;"), # 添加分隔线
-                  actionButton(
-                    inputId = "confirm_expense_check_btn", 
-                    label = "确认开销核对", 
-                    icon = icon("check-circle"), 
-                    class = "btn-success",
-                    style = "width: 100%; margin-top: 5px;"
-                  ),
+                  uiOutput("confirm_expense_check_ui"),
                   uniqueItemsTableUI("expense_details_table") # 物品详情表
                 )
               )
