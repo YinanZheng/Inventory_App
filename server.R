@@ -3792,23 +3792,29 @@ server <- function(input, output, session) {
     # 获取物品状态历史数据
     history_data <- item_status_history()
     
-    # 按照物品的 UniqueID 和状态流转顺序分组
+    # 确保状态流转顺序正确
     links <- history_data %>%
       group_by(UniqueID) %>%
-      arrange(StatusChangeTime, .by_group = TRUE) %>%
-      mutate(next_status = lead(previous_status)) %>%
+      arrange(previous_status_timestamp, .by_group = TRUE) %>%
+      mutate(next_status = lead(previous_status)) %>%  # 获取下一个状态
       filter(!is.na(next_status)) %>%  # 过滤掉没有后续状态的记录
       ungroup() %>%
       group_by(source = previous_status, target = next_status) %>%
-      summarise(value = n(), .groups = "drop")
+      summarise(value = n(), .groups = "drop")  # 汇总每对状态的流转次数
     
     # 定义节点
     nodes <- data.frame(name = unique(c(links$source, links$target)))
     
-    # 调整 source 和 target 为索引
+    # 映射 source 和 target 到节点索引
     links <- links %>%
       mutate(source = match(source, nodes$name) - 1,
              target = match(target, nodes$name) - 1)
+    
+    # 校验 links 和 nodes 是否有效
+    if (nrow(links) == 0 || nrow(nodes) == 0) {
+      showNotification("没有可用的状态流转数据，请检查数据源。", type = "error")
+      return(NULL)
+    }
     
     # 渲染桑基图
     sankeyNetwork(
@@ -3822,6 +3828,7 @@ server <- function(input, output, session) {
       nodeWidth = 30
     )
   })
+  
   
   #################################################################
   
