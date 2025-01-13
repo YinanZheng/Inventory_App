@@ -925,7 +925,37 @@ ui <- navbarPage(
         
         # 删除按钮
         actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
-                     class = "btn-danger", style = "width: 100%;")
+                     class = "btn-danger", style = "width: 100%; margin-bottom: 20px;"),
+        
+        tags$h4("资金转移", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+        
+        # 转移金额输入框
+        numericInput("transfer_amount", "转移金额:", value = NULL, min = 0, width = "100%"),
+        
+        # 转出账户选择
+        selectInput(
+          inputId = "from_account",
+          label = "转出账户:",
+          choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
+          selected = NULL,
+          width = "100%"
+        ),
+        
+        # 转入账户选择
+        selectInput(
+          inputId = "to_account",
+          label = "转入账户:",
+          choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
+          selected = NULL,
+          width = "100%"
+        ),
+        
+        # 备注输入框
+        textAreaInput("transfer_remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
+        
+        # 转移登记按钮
+        actionButton("record_transfer", "记录转移", icon = icon("exchange-alt"), 
+                     class = "btn-success", style = "width: 100%;")
       ),
       div(
         class = "main-panel",
