@@ -3648,6 +3648,19 @@ server <- function(input, output, session) {
     ) %>%
       # 注册事件
       event_register("plotly_click") %>%
+      add_trace(
+        type = "scatter",
+        mode = "markers",
+        x = ~GroupLabel,
+        y = ~get(y_var) * 1.1, # 顶部偏移
+        marker = list(
+          symbol = "check",
+          size = 12,
+          color = ~ifelse(AllPurchaseCheck, "green", "gray"), # 根据 AllPurchaseCheck 设置颜色
+          line = list(width = 2, color = "black")
+        ),
+        showlegend = FALSE
+      ) %>%
       # 添加布局和其他设置
       layout(
         xaxis = list(
