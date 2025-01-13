@@ -2329,9 +2329,6 @@ server <- function(input, output, session) {
     ))
     
     if (nrow(original_state) > 0) {
-      # 恢复库存数量
-      adjust_inventory_quantity(con, deleted_item$SKU, adjustment = 1)  # 增加库存数量
-      
       # 恢复物品状态到原始状态
       update_status(
         con = con,
@@ -2342,11 +2339,14 @@ server <- function(input, output, session) {
     } else {
       showModal(modalDialog(
         title = "错误",
-        "未找到物品上一个状态记录，请联系管理员手动更改物品库存状态。",
+        paste0("未找到物品 (SKU: ", deleted_item$SKU, ") 之前的库存状态记录，请联系管理员手动更改物品库存状态"),
         footer = modalButton("关闭"),
         easyClose = TRUE
       ))    
     }
+    
+    # 恢复库存数量
+    adjust_inventory_quantity(con, deleted_item$SKU, adjustment = 1)  # 增加库存数量
     
     # 清空物品的 OrderID
     update_order_id(
