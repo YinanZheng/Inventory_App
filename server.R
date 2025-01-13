@@ -3670,7 +3670,12 @@ server <- function(input, output, session) {
   click_data <- reactive({
     # 确保图表已渲染，并捕获点击事件数据
     req(expense_summary_data(), input$precision)  # 确保精度已定义
-    event_data("plotly_click", source = "expense_chart")
+    suppressWarnings(
+      expr = {
+        event_data("plotly_click", source = "expense_chart")
+      },
+      classes = "plotly_unregistered_event_warning"
+    )  
   })
   
   observeEvent(click_data(), {
