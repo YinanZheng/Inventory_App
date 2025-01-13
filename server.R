@@ -3789,17 +3789,38 @@ server <- function(input, output, session) {
   
   # 状态流转桑基图
   output$status_sankey <- renderSankeyNetwork({
-    links <- item_status_history() %>%
-      group_by(source = previous_status, target = lead(previous_status)) %>%
+    # 获取物品状态历史数据
+    history_data <- item_status_history()
+    
+    # 按照物品的 UniqueID 和状态流转顺序分组
+    links <- history_data %>%
+      group_by(UniqueID) %>%
+      arrange(StatusChangeTime, .by_group = TRUE) %>%
+      mutate(next_status = lead(previous_status)) %>%
+      filter(!is.na(next_status)) %>%  # 过滤掉没有后续状态的记录
+      ungroup() %>%
+      group_by(source = previous_status, target = next_status) %>%
       summarise(value = n(), .groups = "drop")
     
+    # 定义节点
     nodes <- data.frame(name = unique(c(links$source, links$target)))
     
+    # 调整 source 和 target 为索引
     links <- links %>%
-      mutate(source = match(source, nodes$name) - 1, target = match(target, nodes$name) - 1)
+      mutate(source = match(source, nodes$name) - 1,
+             target = match(target, nodes$name) - 1)
     
-    sankeyNetwork(Links = links, Nodes = nodes, Source = "source", Target = "target",
-                  Value = "value", NodeID = "name", fontSize = 12, nodeWidth = 30)
+    # 渲染桑基图
+    sankeyNetwork(
+      Links = links,
+      Nodes = nodes,
+      Source = "source",
+      Target = "target",
+      Value = "value",
+      NodeID = "name",
+      fontSize = 12,
+      nodeWidth = 30
+    )
   })
   
   #################################################################
@@ -3827,7 +3848,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  
   # 动态生成供应商筛选器
   output$download_maker_ui <- renderUI({
     makers <- unique_items_data() %>% pull(Maker) %>% unique()
@@ -3839,7 +3859,6 @@ server <- function(input, output, session) {
       placeholder = "搜索供应商..."
     )
   })
-  
   
   # 监听供应商选择变化并动态更新商品名称
   observe({
@@ -3877,7 +3896,6 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "download_item_name", choices = "", selected = "")
     updateDateRangeInput(session, "download_date_range", start = Sys.Date() - 365, end = Sys.Date())
   })
-  
   
   # 下载物品汇总表为 Excel
   output$download_details_xlsx <- downloadHandler(
@@ -4003,7 +4021,6 @@ server <- function(input, output, session) {
       showNotification("Excel 文件已成功下载", type = "message", duration = 5)
     }
   )
-  
   
   # 下载物品明细表为 Excel
   output$download_summary_xlsx <- downloadHandler(
