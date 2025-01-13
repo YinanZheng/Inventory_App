@@ -1669,6 +1669,11 @@ getAccountType <- function(input) {
   )
 }
 
+`%||%` <- function(a, b) {
+  if (!is.null(a)) a else b
+}
+
+
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
   # 数据库连接信息
