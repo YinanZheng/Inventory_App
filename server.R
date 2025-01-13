@@ -2158,12 +2158,32 @@ server <- function(input, output, session) {
     
     # 动态更新标题
     output$associated_items_title <- renderUI({
+      # 获取相关物品和状态
+      items <- associated_items() 
+      
+      # 检查是否所有物品状态为“美国发货”
+      all_us_shipping <- all(items$Status == "美国发货")
+      
+      # 如果所有物品都是美国发货，找到最晚的发货时间
+      latest_shipping_time <- if (all_us_shipping) {
+        max(items$UsShippingTime, na.rm = TRUE)  # 获取最晚的发货时间
+      } else {
+        NULL
+      }
+      
       div(
         style = "display: flex; align-items: center; justify-content: space-between;",
         
         # 左侧标题
         tags$h4(
-          sprintf("#%s - %s 的订单物品", order_id, customer_name),
+          sprintf("#%s - %s 的订单物品%s",
+                  order_id,
+                  customer_name,
+                  if (!is.null(latest_shipping_time)) {
+                    sprintf("（发货日期：%s）", latest_shipping_time)
+                  } else {
+                    ""
+                  }),
           style = "color: #007BFF; font-weight: bold; margin: 0;"
         ),
         
