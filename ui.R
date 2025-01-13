@@ -924,6 +924,9 @@ ui <- navbarPage(
           dateInput("custom_date", "选择日期:", value = Sys.Date(), width = "100%")
         ),
         
+        # 订单图片上传
+        imageModuleUI("image_transaction", label = "转账证据上传", label_color = "#007BFF"),
+        
         textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
         
         # 提交按钮
