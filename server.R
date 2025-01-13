@@ -3972,6 +3972,44 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  updateAccountOverview <- function() {
+    output$salary_balance <- renderText({
+      calculate_balance("工资卡")
+    })
+    
+    output$dollar_balance <- renderText({
+      calculate_balance("美元卡")
+    })
+    
+    output$purchase_balance <- renderText({
+      calculate_balance("买货卡")
+    })
+    
+    output$general_balance <- renderText({
+      calculate_balance("一般户卡")
+    })
+  }
+  
+  refreshTransactionTable <- function(account_type) {
+    if (account_type == "工资卡") {
+      output$salary_card_table <- renderDT({
+        renderTransactionTable("工资卡")
+      })
+    } else if (account_type == "美元卡") {
+      output$dollar_card_table <- renderDT({
+        renderTransactionTable("美元卡")
+      })
+    } else if (account_type == "买货卡") {
+      output$purchase_card_table <- renderDT({
+        renderTransactionTable("买货卡")
+      })
+    } else if (account_type == "一般户卡") {
+      output$general_card_table <- renderDT({
+        renderTransactionTable("一般户卡")
+      })
+    }
+  }
+  
   observeEvent(input$record_transaction, {
     req(!is.null(input$amount), input$amount > 0, !is.null(input$transaction_type))
     
@@ -4007,24 +4045,11 @@ server <- function(input, output, session) {
       updateRadioButtons(session, "transaction_type", selected = NULL)
       updateTextAreaInput(session, "remarks", value = "")
       
+      # 自动刷新账户总览统计
+      updateAccountOverview()
+      
       # 自动刷新表格
-      if (account_type == "工资卡") {
-        output$salary_card_table <- renderDT({
-          renderTransactionTable("工资卡")
-        })
-      } else if (account_type == "美元卡") {
-        output$dollar_card_table <- renderDT({
-          renderTransactionTable("美元卡")
-        })
-      } else if (account_type == "买货卡") {
-        output$purchase_card_table <- renderDT({
-          renderTransactionTable("买货卡")
-        })
-      } else if (account_type == "一般户卡") {
-        output$general_card_table <- renderDT({
-          renderTransactionTable("一般户卡")
-        })
-      }
+      refreshTransactionTable(account_type)
     }, error = function(e) {
       showNotification(paste("记录失败：", e$message), type = "error")
     })
@@ -4067,33 +4092,19 @@ server <- function(input, output, session) {
         "SELECT TransactionID FROM transactions WHERE AccountType = '%s' ORDER BY TransactionTime DESC LIMIT %d, 1",
         account_type, row_index
       )
-      
       record_to_delete <- dbGetQuery(con, query)
       
       if (nrow(record_to_delete) > 0) {
-        # 执行删除
         tryCatch({
+          # 删除选中的记录
           dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
           showNotification("记录已删除", type = "warning")
           
+          # 自动刷新账户总览统计
+          updateAccountOverview()
+          
           # 自动刷新表格
-          if (account_type == "工资卡") {
-            output$salary_card_table <- renderDT({
-              renderTransactionTable("工资卡")
-            })
-          } else if (account_type == "美元卡") {
-            output$dollar_card_table <- renderDT({
-              renderTransactionTable("美元卡")
-            })
-          } else if (account_type == "买货卡") {
-            output$purchase_card_table <- renderDT({
-              renderTransactionTable("买货卡")
-            })
-          } else if (account_type == "一般户卡") {
-            output$general_card_table <- renderDT({
-              renderTransactionTable("一般户卡")
-            })
-          }
+          refreshTransactionTable(account_type)
         }, error = function(e) {
           showNotification(paste("删除失败：", e$message), type = "error")
         })
