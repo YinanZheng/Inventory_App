@@ -2161,6 +2161,17 @@ server <- function(input, output, session) {
       # 获取相关物品和状态
       items <- associated_items() 
       
+      # 如果 items 为空，显示默认标题
+      if (is.null(items) || nrow(items) == 0) {
+        return(div(
+          style = "display: flex; align-items: center; justify-content: space-between;",
+          tags$h4(
+            sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
+            style = "color: #007BFF; font-weight: bold; margin: 0;"
+          )
+        ))
+      }
+      
       # 检查是否所有物品状态为“美国发货”
       all_us_shipping <- all(items$Status == "美国发货")
       
