@@ -3680,7 +3680,13 @@ server <- function(input, output, session) {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
     if (!is.null(clicked_point)) {
       precision <- input$precision # 当前精度（天、周、月、年）
-      clicked_date <- as.Date(clicked_point$x) # 点击的时间点
+
+      # 根据精度解析点击的时间点
+      clicked_date <- switch(
+        precision,
+        "年" = as.Date(paste0(clicked_point$x, "-01-01")), # 对"年"进行特殊处理
+        as.Date(clicked_point$x) # 其他情况直接转为日期
+      )
       
       # 根据精度计算时间范围
       range <- switch(precision,
