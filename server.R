@@ -4023,7 +4023,7 @@ server <- function(input, output, session) {
   }
   
   observe({
-    if (input$transaction_tabs == "账户总览") {
+    if (input$transaction_tabs == "账户余额总览") {
       updateAccountOverview()
     }
   })
@@ -4063,7 +4063,7 @@ server <- function(input, output, session) {
       updateRadioButtons(session, "transaction_type", selected = NULL)
       updateTextAreaInput(session, "remarks", value = "")
       
-      # 自动刷新账户总览统计
+      # 自动刷新账户余额总览统计
       updateAccountOverview()
       
       # 自动刷新表格
@@ -4118,7 +4118,7 @@ server <- function(input, output, session) {
           dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
           showNotification("记录已删除", type = "warning")
           
-          # 自动刷新账户总览统计
+          # 自动刷新账户余额总览统计
           updateAccountOverview()
           
           # 自动刷新表格
