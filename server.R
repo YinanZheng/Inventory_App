@@ -3665,17 +3665,12 @@ server <- function(input, output, session) {
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
   
-  # # 将点击事件封装为 reactive
-  # click_data <- reactive({
-  #   # 确保图表已渲染，并捕获点击事件数据
-  #   req(expense_summary_data(), input$precision)  # 确保精度已定义
-  #   suppressWarnings(
-  #     expr = {
-  #       event_data("plotly_click", source = "expense_chart")
-  #     },
-  #     classes = "plotly_unregistered_event_warning"
-  #   )  
-  # })
+  # 将点击事件封装为 reactive
+  click_data <- reactive({
+    # 确保图表已渲染，并捕获点击事件数据
+    req(expense_summary_data(), input$precision)  # 确保精度已定义
+    event_data("plotly_click", source = "expense_chart")
+  })
   
   observeEvent(click_data(), {
     # 获取点击事件数据
