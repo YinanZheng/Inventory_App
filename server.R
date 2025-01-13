@@ -2340,8 +2340,7 @@ server <- function(input, output, session) {
         clear_status_timestamp = deleted_item$Status
       )
     } else {
-      showNotification("未找到物品的原始状态记录，无法恢复。", type = "error")
-      return()
+      showNotification("未找到物品的原始状态记录，请联系管理员更新物品状态", type = "error")
     }
     
     # 清空物品的 OrderID
