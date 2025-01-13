@@ -3405,6 +3405,7 @@ server <- function(input, output, session) {
           
           # 重新计算所有balance记录
           update_balance(account_type, con)
+          showNotification("余额记录已重新计算", type = "message")
           
           # 自动刷新账户余额总览统计
           updateAccountOverview()
