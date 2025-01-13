@@ -3942,43 +3942,36 @@ server <- function(input, output, session) {
   ################################################################
   
   observeEvent(input$record_transaction, {
-    req(input$amount_in >= 0, input$amount_out >= 0)
-    current_tab <- input$tabs
+    # 验证金额和交易类型
+    req(!is.null(input$amount), input$amount > 0, !is.null(input$transaction_type))
+    
+    # 根据交易类型处理金额
+    amount_in <- if (input$transaction_type == "in") input$amount else 0
+    amount_out <- if (input$transaction_type == "out") input$amount else 0
+    
+    # 插入交易记录
     account_type <- switch(
-      current_tab,
+      input$tabs,
       "工资卡" = "工资卡",
       "美元卡" = "美元卡",
       "买货卡" = "买货卡",
       "一般户卡" = "一般户卡"
     )
+    
     dbExecute(
       con,
       "INSERT INTO transactions (AccountType, AmountIn, AmountOut, Remarks) VALUES (?, ?, ?, ?)",
-      params = list(account_type, input$amount_in, input$amount_out, input$remarks)
+      params = list(account_type, amount_in, amount_out, input$remarks)
     )
+    
+    # 提示成功
     showNotification("记录成功", type = "message")
-  })
-  
-  observeEvent(input$amount_in, {
-    # 如果输入为空或者小于等于 0，不执行任何操作
-    if (is.null(input$amount_in) || input$amount_in <= 0) {
-      return()
-    }
     
-    # 当用户修改转入金额时
-    updateNumericInput(session, "amount_out", value = 0)  # 清空转出金额
-    showNotification("转入金额已填写，转出金额已被清空。", type = "warning")
-  })
-  
-  observeEvent(input$amount_out, {
-    # 如果输入为空或者小于等于 0，不执行任何操作
-    if (is.null(input$amount_out) || input$amount_out <= 0) {
-      return()
-    }
+    # 重置金额输入框
+    updateNumericInput(session, "amount", value = NULL)
     
-    # 当用户修改转出金额时
-    updateNumericInput(session, "amount_in", value = 0)  # 清空转入金额
-    showNotification("转出金额已填写，转入金额已被清空。", type = "warning")
+    # 重置交易类型
+    updateRadioButtons(session, "transaction_type", selected = NULL)
   })
   
   observeEvent(input$delete_transaction, {
