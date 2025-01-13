@@ -3330,6 +3330,44 @@ server <- function(input, output, session) {
     }
   })
   
+  # 资金转移
+  observeEvent(input$record_transfer, {
+    req(!is.null(input$transfer_amount), input$transfer_amount > 0)
+    req(!is.null(input$from_account), !is.null(input$to_account))
+    
+    if (input$from_account == input$to_account) {
+      showNotification("转出账户和转入账户不能相同！", type = "error")
+      return()
+    }
+    
+    tryCatch({
+      # 记录转出
+      dbExecute(
+        con,
+        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
+        params = list(input$from_account, -input$transfer_amount, input$transfer_remarks)
+      )
+      
+      # 记录转入
+      dbExecute(
+        con,
+        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
+        params = list(input$to_account, input$transfer_amount, input$transfer_remarks)
+      )
+      
+      showNotification("资金转移记录成功！", type = "message")
+      
+      # 自动更新账户余额
+      updateAccountOverview()
+      
+      # 自动刷新表格
+      refreshTransactionTable(input$from_account)
+      refreshTransactionTable(input$to_account)
+    }, error = function(e) {
+      showNotification(paste("资金转移失败：", e$message), type = "error")
+    })
+  })
+  
   
   
   ################################################################
