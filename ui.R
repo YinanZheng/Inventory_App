@@ -931,7 +931,7 @@ ui <- navbarPage(
         class = "main-panel",
         tabsetPanel(
           id = "transaction_tabs",  # 绑定到 input$tabs
-          tabPanel("账户总览", fluidRow(
+          tabPanel("账户余额总览", fluidRow(
             column(3, div(
               class = "card shadow-sm",
               style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
