@@ -3650,7 +3650,7 @@ server <- function(input, output, session) {
       event_register("plotly_click") %>%
       add_trace(
         type = "scatter",
-        mode = "text", # 仅使用文本模式
+        mode = "text+markers", # 仅使用文本模式
         x = ~GroupLabel,
         y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
         text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用更粗的 Unicode 勾 (✓)
