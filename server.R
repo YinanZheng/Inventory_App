@@ -3650,16 +3650,15 @@ server <- function(input, output, session) {
       event_register("plotly_click") %>%
       add_trace(
         type = "scatter",
-        mode = "markers",
+        mode = "text", # 使用 text 模式显示 Unicode 字符
         x = ~GroupLabel,
-        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在顶部留 5% 高度
-        marker = list(
-          symbol = "check",
-          size = 12,
-          color = ~ifelse(AllPurchaseCheck, "green", "gray"), # 根据 AllPurchaseCheck 设置颜色
-          line = list(width = 2, color = "black")
+        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在顶部留出空间
+        text = ~ifelse(AllPurchaseCheck, "\u2713", "\u2713"), # 使用 Unicode 字符 ✓ 表示勾
+        textfont = list(
+          size = 14, # 调整字体大小
+          color = ~ifelse(AllPurchaseCheck, "#006400", "#D3D3D3") # 深绿色和浅灰色
         ),
-        showlegend = FALSE
+        showlegend = FALSE # 隐藏图例
       ) %>%
       # 添加布局和其他设置
       layout(
