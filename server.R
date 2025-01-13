@@ -1914,23 +1914,45 @@ server <- function(input, output, session) {
       if (status == "美国入库" && us_stock_count <= 1) {
         showModal(modalDialog(
           title = "注意",
-          "此商品在美国库存仅剩一件，请沟通核实后再做入箱操作",
-          footer = modalButton("确认"),
-          easyClose = TRUE
+          tagList(
+            p("此商品在美国库存仅剩一件，请沟通核实后再进行调货。"),
+            actionButton("verify_and_proceed", "已核实, 可以调货", class = "btn-primary")
+          ),
+          footer = modalButton("取消"),
+          easyClose = FALSE
         ))
       } else {
-        # 更新箱子内容
-        current_box <- box_items()
-        box_items(bind_rows(selected_item, current_box))
-        
-        # 更新货架上的物品，移除已选的
-        updated_shelf <- shelf_data[-selected_row, ]
-        shelf_items(updated_shelf)
-        
-        showNotification("物品已移入箱子！", type = "message")
+        # 直接执行入箱操作
+        updateBox(selected_item, selected_row, shelf_data)
       }
     }
   })
+  
+  observeEvent(input$verify_and_proceed, {
+    removeModal()  # 移除弹窗
+    selected_row <- input$shelf_table_rows_selected
+    shelf_data <- shelf_items()
+    
+    if (!is.null(selected_row) && nrow(shelf_data) >= selected_row) {
+      selected_item <- shelf_data[selected_row, ]  # 获取选中的物品
+      
+      # 执行入箱操作
+      updateBox(selected_item, selected_row, shelf_data)
+    }
+  })
+  
+  updateBox <- function(selected_item, selected_row, shelf_data) {
+    # 更新箱子内容
+    current_box <- box_items()
+    box_items(bind_rows(selected_item, current_box))
+    
+    # 更新货架上的物品，移除已选的
+    updated_shelf <- shelf_data[-selected_row, ]
+    shelf_items(updated_shelf)
+    
+    showNotification("物品已移入箱子！", type = "message")
+  }
+  
   
   # 点击箱子物品，还回货架
   observeEvent(input$box_table_rows_selected, {
