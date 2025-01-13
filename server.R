@@ -3650,18 +3650,22 @@ server <- function(input, output, session) {
       event_register("plotly_click") %>%
       add_trace(
         type = "scatter",
-        mode = "text+markers", # 仅使用文本模式
+        mode = "markers+text", # 同时使用 markers 和 text 模式
         x = ~GroupLabel,
         y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
-        text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用更粗的 Unicode 勾 (✓)
+        marker = list(
+          size = 20, # 圆点的大小
+          color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 根据状态设置深绿色或浅灰色
+          line = list(width = 0) # 移除外边框
+        ),
+        text = ~ifelse(AllPurchaseCheck, "\u2714", ""), # 使用 Unicode 的白色勾
         textfont = list(
-          size = 18, # 增大字体，增强可见度
-          color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 深绿色和浅灰色
+          size = 14, # 增大字体，增强可见度
+          color = "white", # 勾的颜色为白色
           weight = "bold" # 加粗字体
         ),
-        marker = list(
-          opacity = 0 # 设置透明度为 0，完全隐藏 marker
-        ),        showlegend = FALSE # 不显示图例
+        textposition = "middle center", # 勾的位置在圆点正中央
+        showlegend = FALSE # 不显示图例
       ) %>%
       # 添加布局和其他设置
       layout(
