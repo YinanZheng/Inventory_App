@@ -1584,42 +1584,47 @@ match_tracking_number <- function(data, tracking_number_column, input_tracking_i
 }
 
 # 计算账户余额-账务管理用
-calculate_balance <- function(account_type) {
+get_balance <- function(account_type) {
+  # 查询指定账户的最新余额（按时间排序）
   query <- "
-    SELECT 
-      SUM(Amount) AS Balance
+    SELECT Balance
     FROM transactions
     WHERE AccountType = ?
+    ORDER BY TransactionTime DESC
+    LIMIT 1
   "
   result <- dbGetQuery(con, query, params = list(account_type))
-  balance <- result$Balance[1] %||% 0  # 如果结果为空，则返回 0
-  return(sprintf("¥%.2f", balance))
+  
+  # 如果没有记录，则余额为 0
+  balance <- result$Balance[1] %||% 0  # 使用 %||% 防止 NULL
+  return(sprintf("¥%.2f", balance))   # 格式化为货币格式
 }
+
 
 # 更新账户余额显示-账务管理用
 updateAccountOverview <- function() {
   output$salary_balance <- renderText({
-    calculate_balance("工资卡")
+    get_balance("工资卡")
   })
   
   output$dollar_balance <- renderText({
-    calculate_balance("美元卡")
+    get_balance("美元卡")
   })
   
   output$purchase_balance <- renderText({
-    calculate_balance("买货卡")
+    get_balance("买货卡")
   })
   
   output$general_balance <- renderText({
-    calculate_balance("一般户卡")
+    get_balance("一般户卡")
   })
   
   output$total_balance <- renderText({
     total <- sum(
-      as.numeric(gsub("[^0-9.-]", "", calculate_balance("工资卡"))),
-      as.numeric(gsub("[^0-9.-]", "", calculate_balance("美元卡"))),
-      as.numeric(gsub("[^0-9.-]", "", calculate_balance("买货卡"))),
-      as.numeric(gsub("[^0-9.-]", "", calculate_balance("一般户卡"))),
+      as.numeric(gsub("[^0-9.-]", "", get_balance("工资卡"))),
+      as.numeric(gsub("[^0-9.-]", "", get_balance("美元卡"))),
+      as.numeric(gsub("[^0-9.-]", "", get_balance("买货卡"))),
+      as.numeric(gsub("[^0-9.-]", "", get_balance("一般户卡"))),
       na.rm = TRUE
     )
     sprintf("¥%.2f", total)
@@ -1649,21 +1654,23 @@ refreshTransactionTable <- function(account_type) {
 
 # 渲染账目记录表
 renderTransactionTable <- function(account_type) {
-  query <- "SELECT TransactionTime, Amount, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
+  query <- "SELECT TransactionTime, Amount, Balance, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
   data <- dbGetQuery(con, query, params = list(account_type))
   
-  # 添加“转入金额”和“转出金额”两列，并修改列名
+  # 添加“转入金额”和“转出金额”两列，并格式化输出
   data <- data %>%
     mutate(
       转账时间 = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
-      转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 保留两位小数
-      转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA)     # 保留两位小数
+      转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
+      转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),     # 转出金额
+      当前余额 = sprintf("%.2f", Balance)                                 # 当前余额（保留两位小数）
     ) %>%
     select(
       转账时间,  # 时间列
       转入金额, 
       转出金额, 
-      备注 = Remarks  # 更改列名
+      当前余额,  # 添加“当前余额”列
+      备注 = Remarks  # 更改列名为“备注”
     )
   
   rownames(data) <- NULL  # 移除数据框的行名
@@ -1671,6 +1678,7 @@ renderTransactionTable <- function(account_type) {
   return(data)
 }
 
+# 从分页上获取当前账户名
 getAccountType <- function(input) {
   switch(
     input$transaction_tabs,
@@ -1681,6 +1689,24 @@ getAccountType <- function(input) {
     NULL
   )
 }
+
+# 定义一个函数封装更新逻辑
+update_balance <- function(account_type, con) {
+  # 初始化会话变量
+  dbExecute(con, "SET @current_balance = 0;")
+  
+  # 执行更新语句
+  query <- paste0(
+    "UPDATE transactions ",
+    "SET Balance = (@current_balance := @current_balance + Amount) ",
+    "WHERE AccountType = '", account_type, "' ",
+    "ORDER BY TransactionTime;"
+  )
+  
+  dbExecute(con, query)
+}
+
+
 
 `%||%` <- function(a, b) {
   if (!is.null(a)) a else b

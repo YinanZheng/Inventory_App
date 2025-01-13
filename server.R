@@ -3403,6 +3403,9 @@ server <- function(input, output, session) {
           dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
           showNotification("记录已删除", type = "warning")
           
+          # 重新计算所有balance记录
+          update_balance(account_type, con)
+          
           # 自动刷新账户余额总览统计
           updateAccountOverview()
           
@@ -3434,18 +3437,18 @@ server <- function(input, output, session) {
     transfer_remarks_to <- paste0("[从 ", input$from_account, " 转入] ", input$transfer_remarks)
     
     tryCatch({
-      # 记录转出
+      # 插入转出记录
       dbExecute(
         con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
-        params = list(input$from_account, -input$transfer_amount, transfer_remarks_from)
+        "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
+        params = list(input$from_account, -input$transfer_amount, transfer_remarks_from, Sys.time())
       )
       
-      # 记录转入
+      # 插入转入记录
       dbExecute(
         con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
-        params = list(input$to_account, input$transfer_amount, transfer_remarks_to)
+        "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
+        params = list(input$to_account, input$transfer_amount, transfer_remarks_to, Sys.time())
       )
       
       showNotification("资金转移记录成功！", type = "message")

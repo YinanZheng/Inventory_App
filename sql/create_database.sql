@@ -93,18 +93,49 @@ CREATE TABLE `intl_shipments` (
 
 CREATE TABLE `item_status_history` (
   `UniqueID` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `previous_status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国调货','退货') COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `previous_status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国调货','退货','美国发货') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `previous_status_timestamp` timestamp NULL DEFAULT NULL,
   `change_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`UniqueID`,`change_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  
 
 CREATE TABLE `transactions` (
   `TransactionID` int NOT NULL AUTO_INCREMENT,
-  `AccountType` enum('工资卡','美元卡','买货卡','一般户卡') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `AmountIn` decimal(10,2) DEFAULT '0.00',
-  `AmountOut` decimal(10,2) DEFAULT '0.00',
-  `Remarks` text COLLATE utf8mb4_unicode_ci,
+  `AccountType` enum('工资卡','美元卡','买货卡','一般户卡') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Amount` decimal(10,2) NOT NULL,
+  `Balance` decimal(10,2) DEFAULT '0.00',
+  `Remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `TransactionTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`TransactionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+
+
+DELIMITER //
+
+CREATE TRIGGER after_transaction_insert
+AFTER INSERT ON `transactions`
+FOR EACH ROW
+BEGIN
+  DECLARE last_balance DECIMAL(10,2);
+
+  -- 获取同一账户的最新余额（除当前插入的记录）
+  SELECT Balance INTO last_balance
+  FROM transactions
+  WHERE AccountType = NEW.AccountType
+    AND TransactionID < NEW.TransactionID
+  ORDER BY TransactionTime DESC
+  LIMIT 1;
+
+  -- 如果没有上一次的记录，余额从 0 开始
+  IF last_balance IS NULL THEN
+    SET last_balance = 0.00;
+  END IF;
+
+  -- 更新当前记录的余额
+  UPDATE transactions
+  SET Balance = last_balance + NEW.Amount
+  WHERE TransactionID = NEW.TransactionID;
+END;
+//
+
+DELIMITER ;
