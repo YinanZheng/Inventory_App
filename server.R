@@ -3243,34 +3243,47 @@ server <- function(input, output, session) {
   observeEvent(input$record_transaction, {
     req(!is.null(input$amount), input$amount > 0, !is.null(input$transaction_type))
     
-    # 根据交易类型设置金额的符号
-    amount <- if (input$transaction_type == "in") input$amount else -input$amount
-    
-    account_type <- getAccountType(input)
+    # 确定账户类型
+    account_type <- switch(
+      input$transaction_tabs,
+      "工资卡" = "工资卡",
+      "美元卡" = "美元卡",
+      "买货卡" = "买货卡",
+      "一般户卡" = "一般户卡",
+      NULL
+    )
     
     if (is.null(account_type)) {
       showNotification("请选择有效的账户类型！", type = "error")
       return()
     }
     
-    # 插入交易记录
+    # 根据用户是否勾选“指定转款日期”，选择日期
+    transaction_date <- if (input$use_custom_date) {
+      as.Date(input$custom_date)  # 用户指定的日期
+    } else {
+      Sys.Date()  # 当前日期
+    }
+    
     tryCatch({
+      # 插入交易记录
+      amount <- if (input$transaction_type == "in") input$amount else -input$amount
       dbExecute(
         con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks) VALUES (?, ?, ?)",
-        params = list(account_type, amount, input$remarks)
+        "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
+        params = list(account_type, amount, input$remarks, transaction_date)
       )
       showNotification("记录成功！", type = "message")
       
       # 重置输入框
       updateNumericInput(session, "amount", value = NULL)
-      updateRadioButtons(session, "transaction_type", selected = NULL)
+      updateRadioButtons(session, "transaction_type", selected = "out")
       updateTextAreaInput(session, "remarks", value = "")
+      updateCheckboxInput(session, "use_custom_date", value = FALSE)
+      updateDateInput(session, "custom_date", value = Sys.Date())
       
-      # 自动刷新账户余额总览统计
+      # 自动更新账户余额和表格
       updateAccountOverview()
-      
-      # 自动刷新表格
       refreshTransactionTable(account_type)
     }, error = function(e) {
       showNotification(paste("记录失败：", e$message), type = "error")

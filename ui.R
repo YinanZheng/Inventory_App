@@ -912,9 +912,16 @@ ui <- navbarPage(
         radioButtons(
           inputId = "transaction_type",
           label = "交易类型:",
-          choices = c("转入" = "in", "转出" = "out"),
+          choices = c("转出" = "out", "转入" = "in"),
           selected = NULL,
           inline = TRUE
+        ),
+        
+        # 指定转款日期的勾选框和日期选择器
+        checkboxInput("use_custom_date", "指定转款日期", value = FALSE),
+        conditionalPanel(
+          condition = "input.use_custom_date == true",
+          dateInput("custom_date", "选择日期:", value = Sys.Date(), width = "100%")
         ),
         
         textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
