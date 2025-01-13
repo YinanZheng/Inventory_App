@@ -3773,6 +3773,22 @@ server <- function(input, output, session) {
       )
   })
   
+  
+  output$confirm_expense_check_ui <- renderUI({
+    req(selected_range()) # 确保有选定的时间范围
+    
+    range <- selected_range() # 获取当前选定的时间范围
+    
+    actionButton(
+      inputId = "confirm_expense_check_btn", 
+      label = paste0("确认开销核对（采购时间：", range[1], " 至 ", range[2], "）"),
+      icon = icon("check-circle"), 
+      class = "btn-success",
+      style = "width: 100%; margin-top: 5px;"
+    )
+  })
+  
+  
   #################################################################
   
   # 库存总览数据统计
