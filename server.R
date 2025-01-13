@@ -3972,6 +3972,18 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  calculate_balance <- function(account_type) {
+    query <- "
+    SELECT 
+      SUM(Amount) AS Balance
+    FROM transactions
+    WHERE AccountType = ?
+  "
+    result <- dbGetQuery(con, query, params = list(account_type))
+    balance <- result$Balance[1] %||% 0  # 如果结果为空，则返回 0
+    return(sprintf("¥%.2f", balance))
+  }
+  
   updateAccountOverview <- function() {
     output$salary_balance <- renderText({
       calculate_balance("工资卡")
@@ -4010,6 +4022,12 @@ server <- function(input, output, session) {
     }
   }
   
+  observe({
+    if (input$transaction_tabs == "账户总览") {
+      updateAccountOverview()
+    }
+  })
+  
   observeEvent(input$record_transaction, {
     req(!is.null(input$amount), input$amount > 0, !is.null(input$transaction_type))
     
@@ -4018,7 +4036,7 @@ server <- function(input, output, session) {
     
     # 获取账户类型
     account_type <- switch(
-      input$tabs,
+      input$transaction_tabs,
       "工资卡" = "工资卡",
       "美元卡" = "美元卡",
       "买货卡" = "买货卡",
@@ -4119,36 +4137,6 @@ server <- function(input, output, session) {
   
   #####
   
-  calculate_balance <- function(account_type) {
-    query <- "
-    SELECT 
-      SUM(Amount) AS Balance
-    FROM transactions
-    WHERE AccountType = ?
-  "
-    result <- dbGetQuery(con, query, params = list(account_type))
-    balance <- result$Balance[1] %||% 0  # 如果结果为空，则返回 0
-    return(sprintf("¥%.2f", balance))
-  }
-  
-  output$salary_balance <- renderText({
-    calculate_balance("工资卡")
-  })
-  
-  output$dollar_balance <- renderText({
-    calculate_balance("美元卡")
-  })
-  
-  output$purchase_balance <- renderText({
-    calculate_balance("买货卡")
-  })
-  
-  output$general_balance <- renderText({
-    calculate_balance("一般户卡")
-  })
-  
-  #####
-  
   renderTransactionTable <- function(account_type) {
     query <- "SELECT TransactionTime, Amount, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
     data <- dbGetQuery(con, query, params = list(account_type))
@@ -4172,19 +4160,19 @@ server <- function(input, output, session) {
   
   output$salary_card_table <- renderDT({
     renderTransactionTable("工资卡")
-  })
+  }, options = modifyList(table_default_options, list(scrollY = "500px")))
   
   output$dollar_card_table <- renderDT({
     renderTransactionTable("美元卡")
-  })
+  }, options = modifyList(table_default_options, list(scrollY = "500px")))
   
   output$purchase_card_table <- renderDT({
     renderTransactionTable("买货卡")
-  })
+  }, options = modifyList(table_default_options, list(scrollY = "500px")))
   
   output$general_card_table <- renderDT({
     renderTransactionTable("一般户卡")
-  })
+  }, options = modifyList(table_default_options, list(scrollY = "500px")))
   
   
   
