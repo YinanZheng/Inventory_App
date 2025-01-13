@@ -898,6 +898,74 @@ ui <- navbarPage(
   ), # end of 国际物流管理 tab
   
   tabPanel(
+    "账务管理", icon = icon("wallet"),
+    div(
+      class = "layout-container",
+      div(
+        class = "sticky-sidebar",
+        tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+        
+        # 单一金额输入框
+        numericInput("amount", "金额:", value = NULL, min = 0, width = "100%"),
+        
+        # 互斥勾选框
+        radioButtons(
+          inputId = "transaction_type",
+          label = "交易类型:",
+          choices = c("转入" = "in", "转出" = "out"),
+          selected = NULL,
+          inline = TRUE
+        ),
+        
+        textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
+        
+        # 提交按钮
+        actionButton("record_transaction", "登记", icon = icon("save"), 
+                     class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
+        
+        # 删除按钮
+        actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
+                     class = "btn-danger", style = "width: 100%;")
+      ),
+      div(
+        class = "main-panel",
+        tabsetPanel(
+          tabPanel("账户总览", fluidRow(
+            column(3, div(
+              class = "card shadow-sm",
+              style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
+              tags$h4("工资卡", style = "font-weight: bold;"),
+              tags$h3(textOutput("salary_balance"))
+            )),
+            column(3, div(
+              class = "card shadow-sm",
+              style = "background-color: #28A745; color: white; padding: 20px; text-align: center; border-radius: 8px;",
+              tags$h4("美元卡", style = "font-weight: bold;"),
+              tags$h3(textOutput("dollar_balance"))
+            )),
+            column(3, div(
+              class = "card shadow-sm",
+              style = "background-color: #FFC107; color: white; padding: 20px; text-align: center; border-radius: 8px;",
+              tags$h4("买货卡", style = "font-weight: bold;"),
+              tags$h3(textOutput("purchase_balance"))
+            )),
+            column(3, div(
+              class = "card shadow-sm",
+              style = "background-color: #6C757D; color: white; padding: 20px; text-align: center; border-radius: 8px;",
+              tags$h4("一般户卡", style = "font-weight: bold;"),
+              tags$h3(textOutput("general_balance"))
+            ))
+          )),
+          tabPanel("工资卡", DTOutput("salary_card_table")),
+          tabPanel("美元卡", DTOutput("dollar_card_table")),
+          tabPanel("买货卡", DTOutput("purchase_card_table")),
+          tabPanel("一般户卡", DTOutput("general_card_table"))
+        )
+      )
+    )
+  ), # End of 账务管理
+  
+  tabPanel(
     "查询", icon = icon("search"), 
     div(
       class = "layout-container",  # Flexbox 容器
@@ -1219,72 +1287,6 @@ ui <- navbarPage(
       )
     )
   ), # End of 数据下载 tab
-  
-  tabPanel(
-    "账务管理", icon = icon("wallet"),
-    div(
-      class = "layout-container",
-      div(
-        class = "sticky-sidebar",
-        tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-        
-        # 单一金额输入框
-        numericInput("amount", "金额:", value = NULL, min = 0, width = "100%"),
-        
-        # 互斥勾选框
-        radioButtons(
-          inputId = "transaction_type",
-          label = "交易类型:",
-          choices = c("转入" = "in", "转出" = "out"),
-          selected = NULL,
-          inline = TRUE
-        ),
-        
-        # 提交按钮
-        actionButton("record_transaction", "登记", icon = icon("save"), 
-                     class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
-        
-        # 删除按钮
-        actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
-                     class = "btn-danger", style = "width: 100%;")
-      ),
-      div(
-        class = "main-panel",
-        tabsetPanel(
-          tabPanel("账户总览", fluidRow(
-            column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("工资卡", style = "font-weight: bold;"),
-              tags$h3(textOutput("salary_balance"))
-            )),
-            column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #28A745; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("美元卡", style = "font-weight: bold;"),
-              tags$h3(textOutput("dollar_balance"))
-            )),
-            column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #FFC107; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("买货卡", style = "font-weight: bold;"),
-              tags$h3(textOutput("purchase_balance"))
-            )),
-            column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #6C757D; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("一般户卡", style = "font-weight: bold;"),
-              tags$h3(textOutput("general_balance"))
-            ))
-          )),
-          tabPanel("工资卡", DTOutput("salary_card_table")),
-          tabPanel("美元卡", DTOutput("dollar_card_table")),
-          tabPanel("买货卡", DTOutput("purchase_card_table")),
-          tabPanel("一般户卡", DTOutput("general_card_table"))
-        )
-      )
-    )
-  ), # End of 账务管理
   
   tabPanel(
     "管理员", icon = icon("user-shield"),
