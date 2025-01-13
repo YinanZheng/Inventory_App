@@ -3716,7 +3716,7 @@ server <- function(input, output, session) {
              column_mapping = c(common_columns, list(
                DomesticShippingCost = "国内运费",
                IntlShippingCost = "国际运费",
-               PurchaseTime = "采购时间"
+               PurchaseTime = "采购时间",
                PurchaseCheck = "核对"
              )),
              data = filtered_items
