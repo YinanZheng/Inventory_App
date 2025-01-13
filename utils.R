@@ -1655,6 +1655,8 @@ renderTransactionTable <- function(account_type) {
       备注 = Remarks  # 更改列名
     )
   
+  rownames(data) <- NULL  # 移除数据框的行名
+  
   return(data)
 }
 
