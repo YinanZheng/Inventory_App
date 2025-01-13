@@ -3647,6 +3647,9 @@ server <- function(input, output, session) {
     # 在此处注册事件，确保在 plotly 对象构建时完成
     plot <- event_register(plot, "plotly_click")
     
+    # 测试注册是否成功
+    message(plot$x$attrs[[1]]$events)  # 检查 plotly 内部状态
+    
     # 添加布局和其他设置
     plot <- plot %>%
       layout(
