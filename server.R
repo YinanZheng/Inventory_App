@@ -3647,9 +3647,15 @@ server <- function(input, output, session) {
     # 在此处注册事件，确保在 plotly 对象构建时完成
     plot <- event_register(plot, "plotly_click")
     
-    # 测试注册是否成功
-    message("test")  # 检查 plotly 内部状态
-    message(plot$x$attrs[[1]]$events)  # 检查 plotly 内部状态
+    # 直接检查是否注册成功
+    showNotification(
+      ifelse(
+        is.null(plot$x$attrs[[1]]$events),
+        "事件未注册！",
+        paste("注册成功：", paste(plot$x$attrs[[1]]$events, collapse = ", "))
+      ),
+      type = "message"
+    )
     
     # 添加布局和其他设置
     plot <- plot %>%
