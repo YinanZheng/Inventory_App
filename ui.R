@@ -944,7 +944,7 @@ ui <- navbarPage(
           inputId = "from_account",
           label = "转出账户:",
           choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
-          selected = NULL,
+          selected = "美元卡",
           width = "100%"
         ),
         

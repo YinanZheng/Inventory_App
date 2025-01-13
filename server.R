@@ -3380,6 +3380,12 @@ server <- function(input, output, session) {
       # 自动刷新表格
       refreshTransactionTable(input$from_account)
       refreshTransactionTable(input$to_account)
+      
+      # 清空表单
+      updateNumericInput(session, "transfer_amount", value = NULL)  # 清空金额输入框
+      updateSelectInput(session, "from_account", selected = "美元卡")  # 重置转出账户
+      updateSelectInput(session, "to_account", selected = NULL)    # 重置转入账户
+      updateTextAreaInput(session, "transfer_remarks", value = "") # 清空备注输入框
     }, error = function(e) {
       showNotification(paste("资金转移失败：", e$message), type = "error")
     })
