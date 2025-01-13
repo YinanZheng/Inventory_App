@@ -3626,7 +3626,7 @@ server <- function(input, output, session) {
           input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
           input$precision == "周" ~ paste(
             format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
-            "至",
+            "\n至\n",
             format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
           ),
           input$precision == "月" ~ format(GroupDate, "%Y-%m"),
