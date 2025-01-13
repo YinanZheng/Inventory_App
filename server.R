@@ -3600,18 +3600,22 @@ server <- function(input, output, session) {
   output$expense_chart <- renderPlotly({
     data <- expense_summary_data()
     
+    # 验证数据是否为空，提前退出
+    if (nrow(data) == 0) {
+      return(plotly_empty() %>% layout(title = "无数据可显示"))
+    }
+    
     # 获取用户选择的 Y 轴变量及颜色
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
                     "shipping" = "ShippingCost")
-    
     color <- switch(input$expense_type,
                     "total" = "#007BFF",
                     "cost" = "#4CAF50",
                     "shipping" = "#FF5733")
     
-    # 根据精度生成时间范围标签并计算 CheckStatus
+    # 根据精度生成时间范围标签
     data <- data %>%
       mutate(
         GroupLabel = case_when(
@@ -3627,12 +3631,18 @@ server <- function(input, output, session) {
       )
     
     # 绘制柱状图
-    p <- plot_ly(data, x = ~GroupLabel, y = ~get(y_var), type = "bar",
-                 name = NULL, marker = list(color = color),
-                 text = ~round(get(y_var), 2), # 显示数值，保留两位小数
-                 textposition = "outside",
-                 source = "expense_chart") %>%
-      event_register("plotly_click") %>% # 注册 plotly_click 事件
+    p <- plot_ly(
+      data,
+      x = ~GroupLabel,
+      y = ~get(y_var),
+      type = "bar",
+      name = NULL,
+      marker = list(color = color),
+      text = ~round(get(y_var), 2),
+      textposition = "outside",
+      source = "expense_chart" # 与事件监听保持一致
+    ) %>%
+      event_register("plotly_click") %>% # 注册事件
       layout(
         xaxis = list(
           title = "",
@@ -3644,13 +3654,15 @@ server <- function(input, output, session) {
         yaxis = list(
           title = "采购开销（元）",
           tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部符号留空间
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
         ),
         margin = list(l = 50, r = 20, t = 20, b = 50),
         showlegend = FALSE,
         plot_bgcolor = "#F9F9F9",
         paper_bgcolor = "#FFFFFF"
       )
+    
+    return(p)
   })
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
