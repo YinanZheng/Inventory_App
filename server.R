@@ -3664,7 +3664,7 @@ server <- function(input, output, session) {
           color = "white", # 勾的颜色为白色
           weight = "bold" # 加粗字体
         ),
-        textposition = "middle center", # 勾的位置在圆点正中央
+        textposition = "bottom center", # 勾的位置在圆点正中央
         showlegend = FALSE # 不显示图例
       ) %>%
       # 添加布局和其他设置
