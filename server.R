@@ -3665,21 +3665,54 @@ server <- function(input, output, session) {
   
   selected_range <- reactiveVal(NULL) # 存储时间范围
   
-  observeEvent(event_data("plotly_click", source = "expense_chart"), {
-    clicked_point <- event_data("plotly_click", source = "expense_chart")
-    if (!is.null(clicked_point)) {
-      precision <- input$precision # 当前精度（天、周、月、年）
-      clicked_date <- as.Date(clicked_point$x) # 点击的时间点
-      
-      # 根据精度计算时间范围
-      range <- switch(precision,
-                      "天" = c(clicked_date, clicked_date),
-                      "周" = c(floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
-                      "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
-                      "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
-      )
-      selected_range(range)
+  
+  # 将点击事件封装为 reactive
+  click_data <- reactive({
+    # 确保图表已渲染，并捕获点击事件数据
+    req(expense_summary_data(), input$precision)  # 确保精度已定义
+    event_data("plotly_click", source = "expense_chart")
+  })
+  
+  observeEvent(click_data(), {
+    # 获取点击事件数据
+    clicked_point <- click_data()
+    
+    # 验证点击数据是否有效
+    req(clicked_point, clicked_point$x)  # 确保数据有效
+    
+    # 获取当前精度
+    precision <- input$precision
+    clicked_date <- tryCatch(as.Date(clicked_point$x), error = function(e) NULL)  # 转换日期
+    
+    # 验证日期有效性
+    if (is.null(clicked_date)) {
+      showNotification("无效的点击日期！", type = "error")
+      return()
     }
+    
+    # 根据精度计算时间范围
+    range <- switch(
+      precision,
+      "天" = c(clicked_date, clicked_date),
+      "周" = c(floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
+      "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
+      "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1),
+      NULL
+    )
+    
+    # 验证计算结果并更新范围
+    if (is.null(range)) {
+      showNotification("未能根据精度计算时间范围！", type = "error")
+      return()
+    }
+    
+    selected_range(range)
+    
+    # 提示用户选择的时间范围
+    showNotification(
+      paste0("已选择时间范围：", format(range[1]), " 到 ", format(range[2])),
+      type = "message"
+    )
   })
   
   # 筛选物品详情数据
