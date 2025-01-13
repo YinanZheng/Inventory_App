@@ -1914,11 +1914,11 @@ server <- function(input, output, session) {
       if (status == "美国入库" && us_stock_count <= 1) {
         showModal(modalDialog(
           title = "注意",
-          tagList(
-            p("此商品在美国库存仅剩一件，请沟通核实后再进行调货。"),
-            actionButton("verify_and_proceed", "已核实, 可以调货", class = "btn-primary")
+          p("此商品在美国库存仅剩一件，请核实后谨慎操作。"),
+          footer = tagList(
+            actionButton("verify_and_proceed", "已核实, 继续调货", class = "btn-primary"),
+            modalButton("取消")
           ),
-          footer = modalButton("取消"),
           easyClose = FALSE
         ))
       } else {
