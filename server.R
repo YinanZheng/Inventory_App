@@ -3591,7 +3591,8 @@ server <- function(input, output, session) {
       replace_na(list(
         TotalExpense = 0,
         ProductCost = 0,
-        ShippingCost = 0
+        ShippingCost = 0,
+        AllPurchaseCheck = FALSE # 默认设置为 FALSE
       ))
     
     complete_data
