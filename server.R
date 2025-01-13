@@ -1905,16 +1905,30 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row) && nrow(shelf_data) >= selected_row) {
       selected_item <- shelf_data[selected_row, ]  # 获取选中的物品
+      sku <- selected_item$SKU  # 获取SKU
+      status <- selected_item$Status  # 获取库存状态
       
-      # 更新箱子内容
-      current_box <- box_items()
-      box_items(bind_rows(selected_item, current_box))
+      # 查询当前 SKU 的美国入库库存数量
+      us_stock_count <- sum(shelf_data$SKU == sku & shelf_data$Status == "美国入库")
       
-      # 更新货架上的物品，移除已选的
-      updated_shelf <- shelf_data[-selected_row, ]
-      shelf_items(updated_shelf)
-      
-      showNotification("物品已移入箱子！", type = "message")
+      if (status == "美国入库" && us_stock_count <= 1) {
+        showModal(modalDialog(
+          title = "注意",
+          "此商品在美国库存仅剩一件，请沟通核实后再做入箱操作",
+          footer = modalButton("确认"),
+          easyClose = TRUE
+        ))
+      } else {
+        # 更新箱子内容
+        current_box <- box_items()
+        box_items(bind_rows(selected_item, current_box))
+        
+        # 更新货架上的物品，移除已选的
+        updated_shelf <- shelf_data[-selected_row, ]
+        shelf_items(updated_shelf)
+        
+        showNotification("物品已移入箱子！", type = "message")
+      }
     }
   })
   
