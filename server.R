@@ -3556,7 +3556,6 @@ server <- function(input, output, session) {
     start_date <- as.Date(input$time_range[1])
     end_date <- as.Date(input$time_range[2])
     
-    # 生成时间序列
     time_sequence <- switch(input$precision,
                             "天" = seq.Date(from = start_date, to = end_date, by = "day"),
                             "周" = seq.Date(from = floor_date(start_date, "week"),
@@ -3564,12 +3563,10 @@ server <- function(input, output, session) {
                             "月" = seq.Date(from = floor_date(start_date, "month"),
                                            to = floor_date(end_date, "month"), by = "month"),
                             "年" = seq.Date(from = floor_date(start_date, "year"),
-                                           to = floor_date(end_date, "year"))
-    )
+                                           to = floor_date(end_date, "year"), by = "year"))
     
     time_df <- data.frame(GroupDate = time_sequence)
     
-    # 汇总数据
     summarized_data <- data %>%
       filter(!is.na(PurchaseTime) & PurchaseTime >= start_date & PurchaseTime <= end_date) %>%
       mutate(
@@ -3585,18 +3582,15 @@ server <- function(input, output, session) {
         TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
         ShippingCost = sum(DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
-        AllPurchaseCheck = all(PurchaseCheck == 1, na.rm = TRUE), # 是否全部为1
         .groups = "drop"
       )
     
-    # 合并时间序列与汇总数据
     complete_data <- time_df %>%
       left_join(summarized_data, by = "GroupDate") %>%
       replace_na(list(
         TotalExpense = 0,
         ProductCost = 0,
-        ShippingCost = 0,
-        AllPurchaseCheck = FALSE # 默认设置为 FALSE
+        ShippingCost = 0
       ))
     
     complete_data
