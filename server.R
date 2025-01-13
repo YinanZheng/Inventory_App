@@ -4012,7 +4012,7 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$delete_transaction, {
-    current_tab <- input$tabs
+    current_tab <- input$transaction_tabs
     account_type <- switch(
       current_tab,
       "工资卡" = "工资卡",
