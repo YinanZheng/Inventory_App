@@ -3659,6 +3659,7 @@ server <- function(input, output, session) {
           color = ~ifelse(AllPurchaseCheck, "#006400", "#D3D3D3"), # 深绿色和浅灰色
           weight = "bold" # 加粗字体
         ),
+        marker = NULL, # 明确移除 marker 属性
         showlegend = FALSE # 不显示图例
       ) %>%
       # 添加布局和其他设置
