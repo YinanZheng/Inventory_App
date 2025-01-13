@@ -3262,7 +3262,7 @@ server <- function(input, output, session) {
     transaction_date <- if (input$use_custom_date) {
       as.Date(input$custom_date)  # 用户指定的日期
     } else {
-      Sys.Date()  # 当前日期
+      Sys.time()  # 当前日期和时间
     }
     
     tryCatch({
