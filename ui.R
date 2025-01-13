@@ -1041,7 +1041,7 @@ ui <- navbarPage(
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("domestic_shipping_cost"), style = "color: #007BFF;"),
-                    tags$p("运费成本")
+                    tags$p("运输成本")
                   )
                 )
               ),
@@ -1067,7 +1067,7 @@ ui <- navbarPage(
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("logistics_shipping_cost"), style = "color: #28A745;"),
-                    tags$p("运费成本")
+                    tags$p("运输成本")
                   )
                 )
               ),
@@ -1093,7 +1093,7 @@ ui <- navbarPage(
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("us_shipping_cost"), style = "color: #6F42C1;"),
-                    tags$p("运费成本")
+                    tags$p("运输成本")
                   )
                 )
               ),
@@ -1123,7 +1123,7 @@ ui <- navbarPage(
                   div(
                     style = "text-align: center; margin-top: 10px;",
                     tags$h4(textOutput("sold_shipping_cost"), style = "color: #FF5733;"),
-                    tags$p("运费成本")
+                    tags$p("运输成本")
                   )
                 )
               )
