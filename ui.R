@@ -930,6 +930,7 @@ ui <- navbarPage(
       div(
         class = "main-panel",
         tabsetPanel(
+          id = "transaction_tabs",  # 绑定到 input$tabs
           tabPanel("账户总览", fluidRow(
             column(3, div(
               class = "card shadow-sm",

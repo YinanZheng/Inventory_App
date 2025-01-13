@@ -3980,7 +3980,7 @@ server <- function(input, output, session) {
     
     # 获取账户类型
     account_type <- switch(
-      input$tabs,
+      input$transaction_tabs,
       "工资卡" = "工资卡",
       "美元卡" = "美元卡",
       "买货卡" = "买货卡",
