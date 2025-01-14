@@ -37,6 +37,9 @@ server <- function(input, output, session) {
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
   
+  # 创建全局环境变量用于存储缓存数据
+  cache_env <- new.env()
+  
   ####################################################################################################################################
   
   # 应用启动时加载数据: item_type_data
@@ -3324,6 +3327,10 @@ server <- function(input, output, session) {
   ## 账务管理分页                                               ##
   ##                                                            ##
   ################################################################
+  
+  # 初始化缓存结构
+  cache_env$transaction_data <- list()
+  cache_env$transaction_metadata <- list()
   
   # 分页切换更新
   observe({

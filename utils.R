@@ -1593,6 +1593,10 @@ match_tracking_number <- function(data, tracking_number_column, input_tracking_i
   return(matched_data)
 }
 
+
+#####
+
+
 # 计算账户余额-账务管理用
 get_balance <- function(account_type) {
   # 查询指定账户的最新余额（按时间排序）
@@ -1609,7 +1613,6 @@ get_balance <- function(account_type) {
   balance <- result$Balance[1] %||% 0  # 使用 %||% 防止 NULL
   return(sprintf("¥%.2f", balance))   # 格式化为货币格式
 }
-
 
 # 更新账户余额显示-账务管理用
 updateAccountOverview <- function() {
@@ -1653,7 +1656,7 @@ refreshTransactionTable <- function(account_type) {
   # 检查账户类型是否有效
   if (account_type %in% names(table_map)) {
     # 获取数据
-    data <- renderTransactionTable(account_type)
+    data <- fetchAndFormatTransactionData(account_type)
     
     # 定义列名映射，用于显示更友好的列标题
     column_mapping <- list(
@@ -1689,13 +1692,36 @@ refreshTransactionTable <- function(account_type) {
   }
 }
 
-# 渲染账目记录表
-renderTransactionTable <- function(account_type) {
+# 获取格式化好的账目记录表
+fetchAndFormatTransactionData <- function(account_type) {
+  # 获取账户数据的哈希值
+  metadata_query <- "
+    SELECT 
+      MD5(GROUP_CONCAT(TransactionTime, Amount, Balance, TransactionImagePath, Remarks ORDER BY TransactionTime DESC)) AS DataHash
+    FROM transactions
+    WHERE AccountType = ?
+  "
+  metadata <- dbGetQuery(con, metadata_query, params = list(account_type))
+  
+  data_hash <- metadata$DataHash[1]
+  
+  # 检查缓存是否有效
+  cached_metadata <- cache_env$transaction_metadata[[account_type]]
+  if (!is.null(cached_metadata)) {
+    cached_hash <- cached_metadata$data_hash
+    
+    # 如果哈希值未改变，返回缓存的数据
+    if (data_hash == cached_hash) {
+      return(cache_env$transaction_data[[account_type]])
+    }
+  }
+  
+  # 从数据库获取最新数据
   query <- "SELECT TransactionTime, Amount, Balance, TransactionImagePath, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
   data <- dbGetQuery(con, query, params = list(account_type))
   
-  # 添加“转入金额”和“转出金额”两列，并格式化输出
-  data <- data %>%
+  # 格式化数据
+  formatted_data <- data %>%
     mutate(
       TransactionTime = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
       AmountIn = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
@@ -1711,15 +1737,21 @@ renderTransactionTable <- function(account_type) {
       Remarks 
     )
   
-  rownames(data) <- NULL  # 移除数据框的行名
+  rownames(formatted_data) <- NULL  # 移除数据框的行名
   
-  return(data)
+  # 更新缓存
+  cache_env$transaction_data[[account_type]] <- formatted_data
+  cache_env$transaction_metadata[[account_type]] <- list(
+    data_hash = data_hash
+  )
+  
+  return(formatted_data)
 }
 
 # 从账目表中获取信息填入左侧
 fetchInputFromTable <- function(account_type, selected_row) {
   if (!is.null(selected_row)) {
-    data <- renderTransactionTable(account_type)
+    data <- fetchAndFormatTransactionData(account_type)
     selected_data <- data[selected_row, ]
     
     updateNumericInput(session, "amount", value = ifelse(!is.na(selected_data$AmountIn), 
@@ -1734,7 +1766,6 @@ fetchInputFromTable <- function(account_type, selected_row) {
   }
 }
 
-
 # 从分页上获取当前账户名
 getAccountType <- function(input) {
   switch(
@@ -1746,6 +1777,10 @@ getAccountType <- function(input) {
     NULL
   )
 }
+
+
+#####
+
 
 # 定义一个函数封装更新逻辑
 update_balance <- function(account_type, con) {
