@@ -4055,44 +4055,47 @@ server <- function(input, output, session) {
       # 将物品成本和国内运费分别登记到"一般户卡"
       grouped_expenses %>%
         rowwise() %>%
-        do({
-          # 仅在成本 > 0 时登记物品成本
-          if (.$TotalCost > 0) {
-            cost_transaction_id <- generate_transaction_id("买货卡", .$TotalCost, "核对物品成本", .$PurchaseTime)
-            showNotification(cost_transaction_id)
-            cost_remarks <- paste("[采购成本已核对]", "采购日期:", .$PurchaseTime)
-            
+        mutate(
+          # 生成物品成本的交易记录
+          CostTransaction = if (TotalCost > 0) {
+            remarks_cost <- paste("[采购成本已核对]", "采购日期:", PurchaseTime)
+            transaction_id <- generate_transaction_id("买货卡", TotalCost, remarks_cost, PurchaseTime)
             dbExecute(
               con,
               "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
               params = list(
-                cost_transaction_id,
-                "一般户卡",
-                .$TotalCost,
-                cost_remarks,
-                .$PurchaseTime
-              )
-            )
-          }
-          
-          # 仅在国内运费 > 0 时登记运费
-          if (.$TotalDomesticShipping > 0) {
-            shipping_transaction_id <- generate_transaction_id("买货卡", .$TotalDomesticShipping, "核对国内运费", .$PurchaseTime)
-            shipping_remarks <- paste("[国内运费已核对]", "采购日期:", .$PurchaseTime)
-            
-            dbExecute(
-              con,
-              "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
-              params = list(
-                shipping_transaction_id,
+                transaction_id,
                 "买货卡",
-                .$TotalDomesticShipping,
-                shipping_remarks,
-                .$PurchaseTime
+                -TotalCost,
+                remarks_cost,
+                PurchaseTime
               )
             )
+            list(transaction_id) # 返回记录的 ID
+          } else {
+            list(NULL) # 如果总成本为 0，返回 NULL
+          },
+          
+          # 生成国内运费的交易记录
+          ShippingTransaction = if (TotalDomesticShipping > 0) {
+            remarks_ship <- paste("[国内运费已核对]", "采购日期:", PurchaseTime)
+            transaction_id <- generate_transaction_id("买货卡", TotalDomesticShipping, remarks_ship, PurchaseTime)
+            dbExecute(
+              con,
+              "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+              params = list(
+                transaction_id,
+                "买货卡",
+                -TotalDomesticShipping,
+                remarks_ship,
+                PurchaseTime
+              )
+            )
+            list(transaction_id) # 返回记录的 ID
+          } else {
+            list(NULL) # 如果国内运费为 0，返回 NULL
           }
-        })
+        )
       
       showNotification("核对后的采购开销与国内运费已登记到'买货卡（139）'！", type = "message")
     }, error = function(e) {
