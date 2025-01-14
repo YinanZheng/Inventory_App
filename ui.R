@@ -1104,7 +1104,8 @@ ui <- navbarPage(
                            )),
                     column(2,
                            actionButton(
-                             inputId = "reset_time_range",
+                             "reset_time_range",
+                             label = "",
                              icon = icon("redo"), # 添加一个重置图标
                              class = "btn-warning", # 设置按钮样式
                              style = "margin-left: 10px; font-size: 14px;" # 设置样式
