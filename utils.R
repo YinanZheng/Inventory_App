@@ -1694,27 +1694,32 @@ refreshTransactionTable <- function(account_type) {
 
 # 获取格式化好的账目记录表
 fetchAndFormatTransactionData <- function(account_type) {
-  # 获取账户数据的哈希值
-  # metadata_query <- "
-  #   SELECT 
-  #     MD5(GROUP_CONCAT(TransactionTime, Amount, Balance, TransactionImagePath, Remarks ORDER BY TransactionTime DESC)) AS DataHash
-  #   FROM transactions
-  #   WHERE AccountType = ?
-  # "
-  # metadata <- dbGetQuery(con, metadata_query, params = list(account_type))
-  # 
-  # data_hash <- metadata$DataHash[1]
-  # 
-  # # 检查缓存是否有效
-  # cached_metadata <- cache_env$transaction_metadata[[account_type]]
-  # if (!is.null(cached_metadata)) {
-  #   cached_hash <- cached_metadata$data_hash
-  #   
-  #   # 如果哈希值未改变，返回缓存的数据
-  #   if (data_hash == cached_hash) {
-  #     return(cache_env$transaction_data[[account_type]])
-  #   }
-  # }
+  # 初始化缓存结构
+  if (is.null(cache_env$transaction_data)) {
+    cache_env$transaction_data <- list()
+  }
+  if (is.null(cache_env$transaction_metadata)) {
+    cache_env$transaction_metadata <- list()
+  }
+  
+  # 获取账户的最后更新时间
+  last_updated_query <- "
+    SELECT MAX(updated_at) AS LastUpdated
+    FROM transactions
+    WHERE AccountType = ?
+  "
+  last_updated_db <- dbGetQuery(con, last_updated_query, params = list(account_type))$LastUpdated[1]
+  
+  # 检查缓存是否有效
+  cached_metadata <- cache_env$transaction_metadata[[account_type]]
+  if (!is.null(cached_metadata)) {
+    cached_last_updated <- cached_metadata$last_updated
+    
+    # 如果更新时间未改变，返回缓存的数据
+    if (!is.na(last_updated_db) && last_updated_db == cached_last_updated) {
+      return(cache_env$transaction_data[[account_type]])
+    }
+  }
   
   # 从数据库获取最新数据
   query <- "SELECT TransactionTime, Amount, Balance, TransactionImagePath, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
@@ -1723,28 +1728,21 @@ fetchAndFormatTransactionData <- function(account_type) {
   # 格式化数据
   formatted_data <- data %>%
     mutate(
-      TransactionTime = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
-      AmountIn = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
-      AmountOut = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),     # 转出金额
-      Balance = sprintf("%.2f", Balance)  # 当前余额（保留两位小数）
+      TransactionTime = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),
+      AmountIn = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),
+      AmountOut = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),
+      Balance = sprintf("%.2f", Balance)
     ) %>%
-    select(
-      TransactionTime,  # 时间列
-      AmountIn, 
-      AmountOut, 
-      Balance,  # 添加“当前余额”列
-      TransactionImagePath,
-      Remarks 
-    )
+    select(TransactionTime, AmountIn, AmountOut, Balance, TransactionImagePath, Remarks)
   
-  rownames(formatted_data) <- NULL  # 移除数据框的行名
+  rownames(formatted_data) <- NULL
   
-  # # 更新缓存
-  # cache_env$transaction_data[[account_type]] <- formatted_data
-  # cache_env$transaction_metadata[[account_type]] <- list(
-  #   data_hash = data_hash
-  # )
-  # 
+  # 更新缓存
+  cache_env$transaction_data[[account_type]] <- formatted_data
+  cache_env$transaction_metadata[[account_type]] <- list(
+    last_updated = last_updated_db
+  )
+  
   return(formatted_data)
 }
 

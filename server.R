@@ -3328,10 +3328,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 初始化缓存结构
-  cache_env$transaction_data <- list()
-  cache_env$transaction_metadata <- list()
-  
   # 分页切换更新
   observe({
     if (input$transaction_tabs == "账户余额总览") {
