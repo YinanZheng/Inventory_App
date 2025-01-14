@@ -3996,12 +3996,6 @@ server <- function(input, output, session) {
       start = default_start,
       end = default_end
     )
-    
-    # 显示通知，告知用户时间范围已重置
-    showNotification(
-      paste("时间范围已重置为:", default_start, "至", default_end),
-      type = "message"
-    )
   })
   
   output$confirm_expense_check_ui <- renderUI({
