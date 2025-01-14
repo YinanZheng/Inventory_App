@@ -1760,7 +1760,7 @@ fetchInputFromTable <- function(account_type, selected_row) {
     updateTimeInput(session, "custom_time", value = format(as.POSIXct(selected_data$TransactionTime), "%H:%M:%S"))
     updateTextAreaInput(session, "remarks", value = selected_data$Remarks)
     
-    showNotification(paste0(account_type, " 的信息已填充到账务登记区域！"), type = "message")
+    return(selected_data$TransactionID)
   }
 }
 

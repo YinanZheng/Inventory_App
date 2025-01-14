@@ -3371,53 +3371,86 @@ server <- function(input, output, session) {
     transaction_date <- paste(input$custom_date, transaction_time)
     transaction_datetime <- as.POSIXct(transaction_date, format = "%Y-%m-%d %H:%M:%S")
     
-    # 生成 12 位 TransactionID
-    transaction_id <- generate_transaction_id(account_type, input$amount, input$remarks, transaction_datetime)
-    
-    # 处理 image_data 数据
-    image_path <- process_image_upload(
-      sku = transaction_id,
-      file_data = image_transactions$uploaded_file(),
-      pasted_data = image_transactions$pasted_file()
-    )
-    
-    tryCatch({
-      # 插入交易记录
-      amount <- if (input$transaction_type == "in") input$amount else -input$amount
-      dbExecute(
-        con,
-        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionImagePath, TransactionTime) VALUES (?, ?, ?, ?, ?, ?)",
-        params = list(transaction_id, account_type, amount, input$remarks, image_path, transaction_datetime)
-      )
-      showNotification("记录成功！", type = "message")
-      
-      # 检查是否为最新记录
-      latest_time <- dbGetQuery(
-        con,
-        "SELECT MAX(TransactionTime) AS LatestTime FROM transactions WHERE AccountType = ?",
-        params = list(account_type)
-      )$LatestTime[1]
-      
-      if (!is.null(latest_time) && transaction_datetime < as.POSIXct(latest_time)) {
-        # 如果插入记录不是最新的，则重新计算余额
-        update_balance(account_type, con)
-        showNotification("余额记录已重新计算", type = "message")
-      }
-      
-      # 重置输入框
-      updateNumericInput(session, "amount", value = NULL)
-      updateRadioButtons(session, "transaction_type", selected = "out")
-      updateDateInput(session, "custom_date", value = Sys.Date())
-      updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
-      updateTextAreaInput(session, "remarks", value = "")
-      image_transactions$reset()
-      
-      # 自动更新账户余额和表格
-      updateAccountOverview()
-      refreshTransactionTable(account_type)
-    }, error = function(e) {
-      showNotification(paste("记录失败：", e$message), type = "error")
-    })
+    # 区分“登记”和“更新”模式
+    if (is_update_mode()) {
+      # 更新逻辑
+      tryCatch({
+        dbExecute(
+          con,
+          "UPDATE transactions 
+         SET Amount = ?, Remarks = ?, TransactionTime = ?, TransactionImagePath = ?
+         WHERE TransactionID = ?",
+          params = list(
+            ifelse(input$transaction_type == "in", input$amount, -input$amount),
+            input$remarks,
+            transaction_datetime,
+            process_image_upload(
+              sku = selected_transaction(),
+              file_data = image_transactions$uploaded_file(),
+              pasted_data = image_transactions$pasted_file()
+            ),
+            selected_transaction()
+          )
+        )
+        showNotification("记录更新成功！", type = "message")
+        
+        # 重置为“登记”模式
+        is_update_mode(FALSE)
+        selected_transaction(NULL)
+        updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
+        
+        # 重置输入框
+        updateNumericInput(session, "amount", value = NULL)
+        updateRadioButtons(session, "transaction_type", selected = "out")
+        updateDateInput(session, "custom_date", value = Sys.Date())
+        updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
+        updateTextAreaInput(session, "remarks", value = "")
+        image_transactions$reset()
+        
+        # 自动更新账户余额和表格
+        updateAccountOverview()
+        refreshTransactionTable(account_type)
+      }, error = function(e) {
+        showNotification(paste("更新失败：", e$message), type = "error")
+      })
+    } else {
+      # 登记逻辑
+      tryCatch({
+        # 插入交易记录
+        transaction_id <- generate_transaction_id(account_type, input$amount, input$remarks, transaction_datetime)
+        dbExecute(
+          con,
+          "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionImagePath, TransactionTime) VALUES (?, ?, ?, ?, ?, ?)",
+          params = list(
+            transaction_id,
+            account_type,
+            ifelse(input$transaction_type == "in", input$amount, -input$amount),
+            input$remarks,
+            process_image_upload(
+              sku = transaction_id,
+              file_data = image_transactions$uploaded_file(),
+              pasted_data = image_transactions$pasted_file()
+            ),
+            transaction_datetime
+          )
+        )
+        showNotification("记录登记成功！", type = "message")
+        
+        # 重置输入框
+        updateNumericInput(session, "amount", value = NULL)
+        updateRadioButtons(session, "transaction_type", selected = "out")
+        updateDateInput(session, "custom_date", value = Sys.Date())
+        updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
+        updateTextAreaInput(session, "remarks", value = "")
+        image_transactions$reset()
+        
+        # 自动更新账户余额和表格
+        updateAccountOverview()
+        refreshTransactionTable(account_type)
+      }, error = function(e) {
+        showNotification(paste("登记失败：", e$message), type = "error")
+      })
+    }
   })
   
   # 删除转账记录
@@ -3542,28 +3575,88 @@ server <- function(input, output, session) {
     showNotification("表单已重置！", type = "message")
   })
   
+  
+  is_update_mode <- reactiveVal(FALSE)  # 初始化为登记模式
+  selected_transaction <- reactiveVal(NULL)  # 存储选中的记录 ID
+  
+  
   # 监听 工资卡 点选
   observeEvent(input$salary_card_table_rows_selected, {
-    fetchInputFromTable("工资卡", input$salary_card_table_rows_selected)
+    selected_row <- input$salary_card_table_rows_selected
+    
+    if (!is.null(selected_row)) {
+      # 获取选中行的数据
+      TransactionID <- fetchInputFromTable("工资卡", selected_row)
+      
+      # 记录当前选中的记录 ID
+      selected_transaction(TransactionID)
+      
+      # 切换按钮为“更新”
+      is_update_mode(TRUE)
+      updateActionButton(session, "record_transaction", label = "更新", icon = icon("edit"))
+      
+      showNotification("信息已加载，准备更新记录", type = "message")
+    }
   })
   
   # 监听 美元卡 点选
   observeEvent(input$dollar_card_table_rows_selected, {
-    fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected)
+    selected_row <- input$dollar_card_table_rows_selected
+    
+    if (!is.null(selected_row)) {
+      # 获取选中行的数据
+      TransactionID <- fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected)
+      
+      # 记录当前选中的记录 ID
+      selected_transaction(TransactionID)
+      
+      # 切换按钮为“更新”
+      is_update_mode(TRUE)
+      updateActionButton(session, "record_transaction", label = "更新", icon = icon("edit"))
+      
+      showNotification("信息已加载，准备更新记录", type = "message")
+    }
   })
   
   # 监听 买货卡 点选
   observeEvent(input$purchase_card_table_rows_selected, {
-    fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected)
+    selected_row <- input$purchase_card_table_rows_selected
+    
+    if (!is.null(selected_row)) {
+      # 获取选中行的数据
+      TransactionID <- fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected)
+      
+      # 记录当前选中的记录 ID
+      selected_transaction(TransactionID)
+      
+      # 切换按钮为“更新”
+      is_update_mode(TRUE)
+      updateActionButton(session, "record_transaction", label = "更新", icon = icon("edit"))
+      
+      showNotification("信息已加载，准备更新记录", type = "message")
+    }
   })
   
   # 监听 一般户卡 点选
   observeEvent(input$general_card_table_rows_selected, {
-    fetchInputFromTable("一般户卡", input$general_card_table_rows_selected)
+    selected_row <- input$general_card_table_rows_selected
+    
+    if (!is.null(selected_row)) {
+      # 获取选中行的数据
+      TransactionID <- fetchInputFromTable("一般户卡", input$general_card_table_rows_selected)
+      
+      # 记录当前选中的记录 ID
+      selected_transaction(TransactionID)
+      
+      # 切换按钮为“更新”
+      is_update_mode(TRUE)
+      updateActionButton(session, "record_transaction", label = "更新", icon = icon("edit"))
+      
+      showNotification("信息已加载，准备更新记录", type = "message")
+    }
   })
   
-  
-  
+
   ################################################################
   ##                                                            ##
   ## 查询分页                                                   ##
