@@ -1695,26 +1695,26 @@ refreshTransactionTable <- function(account_type) {
 # 获取格式化好的账目记录表
 fetchAndFormatTransactionData <- function(account_type) {
   # 获取账户数据的哈希值
-  metadata_query <- "
-    SELECT 
-      MD5(GROUP_CONCAT(TransactionTime, Amount, Balance, TransactionImagePath, Remarks ORDER BY TransactionTime DESC)) AS DataHash
-    FROM transactions
-    WHERE AccountType = ?
-  "
-  metadata <- dbGetQuery(con, metadata_query, params = list(account_type))
-  
-  data_hash <- metadata$DataHash[1]
-  
-  # 检查缓存是否有效
-  cached_metadata <- cache_env$transaction_metadata[[account_type]]
-  if (!is.null(cached_metadata)) {
-    cached_hash <- cached_metadata$data_hash
-    
-    # 如果哈希值未改变，返回缓存的数据
-    if (data_hash == cached_hash) {
-      return(cache_env$transaction_data[[account_type]])
-    }
-  }
+  # metadata_query <- "
+  #   SELECT 
+  #     MD5(GROUP_CONCAT(TransactionTime, Amount, Balance, TransactionImagePath, Remarks ORDER BY TransactionTime DESC)) AS DataHash
+  #   FROM transactions
+  #   WHERE AccountType = ?
+  # "
+  # metadata <- dbGetQuery(con, metadata_query, params = list(account_type))
+  # 
+  # data_hash <- metadata$DataHash[1]
+  # 
+  # # 检查缓存是否有效
+  # cached_metadata <- cache_env$transaction_metadata[[account_type]]
+  # if (!is.null(cached_metadata)) {
+  #   cached_hash <- cached_metadata$data_hash
+  #   
+  #   # 如果哈希值未改变，返回缓存的数据
+  #   if (data_hash == cached_hash) {
+  #     return(cache_env$transaction_data[[account_type]])
+  #   }
+  # }
   
   # 从数据库获取最新数据
   query <- "SELECT TransactionTime, Amount, Balance, TransactionImagePath, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
@@ -1739,12 +1739,12 @@ fetchAndFormatTransactionData <- function(account_type) {
   
   rownames(formatted_data) <- NULL  # 移除数据框的行名
   
-  # 更新缓存
-  cache_env$transaction_data[[account_type]] <- formatted_data
-  cache_env$transaction_metadata[[account_type]] <- list(
-    data_hash = data_hash
-  )
-  
+  # # 更新缓存
+  # cache_env$transaction_data[[account_type]] <- formatted_data
+  # cache_env$transaction_metadata[[account_type]] <- list(
+  #   data_hash = data_hash
+  # )
+  # 
   return(formatted_data)
 }
 
