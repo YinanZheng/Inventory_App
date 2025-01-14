@@ -3335,7 +3335,7 @@ server <- function(input, output, session) {
     }
     
     # 合并用户选择的日期和时间为完整时间戳
-    transaction_date <- as.POSIXct(paste(input$custom_date, format(input$custom_time, "%H:%M:%S")), format = "%Y-%m-%d %H:%M:%S")
+    transaction_datetime <- as.POSIXct(paste(input$custom_date, format(input$custom_time, "%H:%M:%S")), format = "%Y-%m-%d %H:%M:%S")
     
     tryCatch({
       # 插入交易记录
@@ -3343,7 +3343,7 @@ server <- function(input, output, session) {
       dbExecute(
         con,
         "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
-        params = list(account_type, amount, input$remarks, transaction_date)
+        params = list(account_type, amount, input$remarks, transaction_datetime)
       )
       showNotification("记录成功！", type = "message")
       
@@ -3351,8 +3351,8 @@ server <- function(input, output, session) {
       updateNumericInput(session, "amount", value = NULL)
       updateRadioButtons(session, "transaction_type", selected = "out")
       updateTextAreaInput(session, "remarks", value = "")
-      updateCheckboxInput(session, "use_custom_date", value = FALSE)
       updateDateInput(session, "custom_date", value = Sys.Date())
+      updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
       
       # 自动更新账户余额和表格
       updateAccountOverview()
