@@ -4098,6 +4098,11 @@ server <- function(input, output, session) {
         )
       
       showNotification("核对后的采购开销与国内运费已登记到'买货卡（139）'！", type = "message")
+      
+      # 重新计算所有balance记录
+      update_balance("买货卡", con)
+      showNotification("余额记录已重新计算", type = "message")
+      
     }, error = function(e) {
       showNotification(paste0("更新失败!", e), type = "error")
     })

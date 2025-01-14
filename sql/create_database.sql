@@ -113,24 +113,32 @@ CREATE TABLE `transactions` (
 
 DELIMITER //
 
-CREATE TRIGGER after_transaction_insert
-AFTER INSERT ON `transactions`
+CREATE TRIGGER before_transaction_insert
+BEFORE INSERT ON `transactions`
 FOR EACH ROW
 BEGIN
-DECLARE last_balance DECIMAL(10,2);
+  DECLARE last_balance DECIMAL(10,2);
 
+  -- 获取当前账户的最新余额
   SELECT Balance INTO last_balance
   FROM transactions
   WHERE AccountType = NEW.AccountType
   ORDER BY TransactionTime DESC
   LIMIT 1;
 
+  -- 如果没有之前的记录，初始化余额为 0
   IF last_balance IS NULL THEN
     SET last_balance = 0.00;
   END IF;
 
-  SET NEW.Balance = last_balance + NEW.Amount;
+  -- 仅当插入记录为最新记录时更新余额
+  IF NEW.TransactionTime >= (SELECT MAX(TransactionTime) 
+                             FROM transactions 
+                             WHERE AccountType = NEW.AccountType) THEN
+    SET NEW.Balance = last_balance + NEW.Amount;
+  END IF;
 END;
 //
 
 DELIMITER ;
+

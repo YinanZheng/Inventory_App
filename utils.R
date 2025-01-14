@@ -1657,12 +1657,12 @@ refreshTransactionTable <- function(account_type) {
     
     # 定义列名映射，用于显示更友好的列标题
     column_mapping <- list(
-      "转账时间" = "Transaction Time",
-      "转入金额" = "Credit",
-      "转出金额" = "Debit",
-      "当前余额" = "Balance",
-      "图片"   = "Image",
-      "备注"   = "Remarks"
+      "TransactionTime" = "转账时间",
+      "AmountIn" = "转入金额",
+      "AmountOut" = "转出金额",
+      "Balance" = "当前余额",
+      "TransactionImagePath"   = "转账截图",
+      "Remarks"   = "备注"
     )
     
     # 渲染表格
@@ -1698,19 +1698,18 @@ renderTransactionTable <- function(account_type) {
   # 添加“转入金额”和“转出金额”两列，并格式化输出
   data <- data %>%
     mutate(
-      转账时间 = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
-      转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
-      转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),     # 转出金额
-      当前余额 = sprintf("%.2f", Balance),  # 当前余额（保留两位小数）
-      图片 = TransactionImagePath,      
+      TransactionTime = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
+      AmountIn = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
+      AmountOut = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),     # 转出金额
+      Balance = sprintf("%.2f", Balance)  # 当前余额（保留两位小数）
     ) %>%
     select(
-      转账时间,  # 时间列
-      转入金额, 
-      转出金额, 
-      当前余额,  # 添加“当前余额”列
-      图片,
-      备注 = Remarks  # 更改列名为“备注”
+      TransactionTime,  # 时间列
+      AmountIn, 
+      AmountOut, 
+      Balance,  # 添加“当前余额”列
+      TransactionImagePath,
+      Remarks  # 更改列名为“备注”
     )
   
   rownames(data) <- NULL  # 移除数据框的行名
