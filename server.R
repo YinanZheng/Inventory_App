@@ -3539,6 +3539,27 @@ server <- function(input, output, session) {
     showNotification("表单已重置！", type = "message")
   })
   
+  # 监听 工资卡 点选
+  observeEvent(input$salary_card_table_rows_selected, {
+    fetchInputFromTable("工资卡", input$salary_card_table_rows_selected)
+  })
+  
+  # 监听 美元卡 点选
+  observeEvent(input$dollar_card_table_rows_selected, {
+    fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected)
+  })
+  
+  # 监听 买货卡 点选
+  observeEvent(input$purchase_card_table_rows_selected, {
+    fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected)
+  })
+  
+  # 监听 一般户卡 点选
+  observeEvent(input$general_card_table_rows_selected, {
+    fetchInputFromTable("一般户卡", input$general_card_table_rows_selected)
+  })
+  
+  
   
   ################################################################
   ##                                                            ##

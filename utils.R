@@ -1676,7 +1676,7 @@ refreshTransactionTable <- function(account_type) {
         paging = TRUE,
         pageLength = 30,
         dom = 'frtip',
-        searching = FALSE
+        searching = TRUE
       )
     )
     
@@ -1688,7 +1688,6 @@ refreshTransactionTable <- function(account_type) {
     showNotification("无效的账户类型！", type = "error")
   }
 }
-
 
 # 渲染账目记录表
 renderTransactionTable <- function(account_type) {
@@ -1716,6 +1715,25 @@ renderTransactionTable <- function(account_type) {
   
   return(data)
 }
+
+# 从账目表中获取信息填入左侧
+fetchInputFromTable <- function(account_type, selected_row) {
+  if (!is.null(selected_row)) {
+    data <- renderTransactionTable(account_type)
+    selected_data <- data[selected_row, ]
+    
+    updateNumericInput(session, "amount", value = ifelse(!is.na(selected_data$AmountIn), 
+                                                         as.numeric(selected_data$AmountIn), 
+                                                         as.numeric(selected_data$AmountOut)))
+    updateRadioButtons(session, "transaction_type", selected = ifelse(!is.na(selected_data$AmountIn), "in", "out"))
+    updateDateInput(session, "custom_date", value = as.Date(selected_data$TransactionTime))
+    updateTimeInput(session, "custom_time", value = format(as.POSIXct(selected_data$TransactionTime), "%H:%M:%S"))
+    updateTextAreaInput(session, "remarks", value = selected_data$Remarks)
+    
+    showNotification(paste0(account_type, " 的信息已填充到账务登记区域！"), type = "message")
+  }
+}
+
 
 # 从分页上获取当前账户名
 getAccountType <- function(input) {
