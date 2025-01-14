@@ -4059,6 +4059,7 @@ server <- function(input, output, session) {
           # 仅在成本 > 0 时登记物品成本
           if (.$TotalCost > 0) {
             cost_transaction_id <- generate_transaction_id("买货卡", .$TotalCost, "核对物品成本", .$PurchaseTime)
+            showNotification(cost_transaction_id)
             cost_remarks <- paste("[采购成本已核对]", "采购日期:", .$PurchaseTime)
             
             dbExecute(
