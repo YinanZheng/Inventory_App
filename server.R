@@ -2292,11 +2292,6 @@ server <- function(input, output, session) {
             style = "margin-left: auto; font-size: 14px; padding: 5px 10px;"
           )
         }
- 
-        if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "") {
-          downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                         style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
-        }
       )
     })
     
