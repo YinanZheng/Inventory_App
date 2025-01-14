@@ -3786,7 +3786,6 @@ server <- function(input, output, session) {
   
   # 定义 reactiveVal 用于存储观察器状态
   is_observer_click_suspended <- reactiveVal(TRUE)
-  is_observer_selected_suspended <- reactiveVal(TRUE)
   
   # 存储选定的时间范围
   selected_range <- reactiveVal(NULL) # 存储时间范围
@@ -3885,13 +3884,7 @@ server <- function(input, output, session) {
       observer_click$resume()
       is_observer_click_suspended(FALSE)
     }
-    
-    # 激活观察器
-    if (is_observer_selected_suspended()) {
-      observer_selected$resume()
-      is_observer_selected_suspended(FALSE)
-    }
-    
+
     p
   })
   
@@ -3915,35 +3908,16 @@ server <- function(input, output, session) {
                       "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
                       "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
       )
+      
+      # 调用 updateDateRangeInput 更新用户界面的时间范围选择
+      updateDateRangeInput(
+        session,
+        inputId = "time_range",
+        start = range[1],
+        end = range[2]
+      )
+      
       selected_range(range)
-    }
-  })
-  
-  # 定义框选观察器，初始状态为 suspended = TRUE
-  observer_selected <- observeEvent(event_data("plotly_selected", source = "expense_chart"), suspended = TRUE, {
-    selected_data <- event_data("plotly_selected", source = "expense_chart")
-    
-    # 如果有选中的柱子
-    if (!is.null(selected_data)) {
-      # 提取选中柱子的日期范围
-      selected_x <- selected_data$x
-      if (length(selected_x) > 0) {
-        # 假设 GroupLabel 是日期格式或者可解析为日期
-        start_date <- as.Date(min(selected_x))
-        end_date <- as.Date(max(selected_x))
-        
-        # 调试输出选中日期范围
-        showNotification(paste("起始日期:", start_date), type = "message")
-        showNotification(paste("结束日期:", end_date), type = "message")
-        
-        # 更新时间范围输入框
-        updateDateRangeInput(
-          session,
-          inputId = "time_range",
-          start = start_date,
-          end = end_date
-        )
-      }
     }
   })
 
@@ -3969,7 +3943,7 @@ server <- function(input, output, session) {
              data = filtered_items
   )
   
-  # 总开销分布
+  # 总开销分布饼图
   output$pie_chart <- renderPlotly({
     data <- expense_summary_data()
     
