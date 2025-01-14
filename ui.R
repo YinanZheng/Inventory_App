@@ -1124,7 +1124,7 @@ ui <- navbarPage(
                              label = "",
                              icon = icon("redo"), # 添加一个重置图标
                              class = "btn-warning", # 设置按钮样式
-                             style = "height: 35px; font-size: 12px;" # 设置样式
+                             style = "height: 50px; font-size: 14px;" # 设置样式
                            ))
                   ),
                   
