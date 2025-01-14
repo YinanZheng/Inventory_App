@@ -3404,9 +3404,10 @@ server <- function(input, output, session) {
       # 重置输入框
       updateNumericInput(session, "amount", value = NULL)
       updateRadioButtons(session, "transaction_type", selected = "out")
-      updateTextAreaInput(session, "remarks", value = "")
       updateDateInput(session, "custom_date", value = Sys.Date())
       updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
+      updateTextAreaInput(session, "remarks", value = "")
+      image_transactions$reset()
       
       # 自动更新账户余额和表格
       updateAccountOverview()
@@ -3451,7 +3452,6 @@ server <- function(input, output, session) {
         tryCatch({
           # 删除选中的记录
           dbExecute(con, "DELETE FROM transactions WHERE TransactionID = ?", params = list(record_to_delete$TransactionID))
-          showNotification("记录已删除", type = "warning")
           
           # 重新计算所有balance记录
           update_balance(account_type, con)
@@ -3524,7 +3524,20 @@ server <- function(input, output, session) {
   # 转账证据图片处理模块
   image_transactions <- imageModuleServer("image_transactions")
   
-
+  # 重置
+  observeEvent(input$reset_form, {
+    # 重置所有账务登记表单
+    updateNumericInput(session, "amount", value = NULL)
+    updateRadioButtons(session, "transaction_type", selected = "out")
+    updateDateInput(session, "custom_date", value = Sys.Date())
+    updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
+    updateTextAreaInput(session, "remarks", value = "")
+    
+    # 重置图片上传模块
+    image_transactions$reset()
+    
+    showNotification("表单已重置！", type = "message")
+  })
   
   
   ################################################################

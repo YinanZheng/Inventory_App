@@ -932,9 +932,19 @@ ui <- navbarPage(
         actionButton("record_transaction", "登记", icon = icon("save"), 
                      class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
         
-        # 删除按钮
-        actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
-                     class = "btn-danger", style = "width: 100%; margin-bottom: 20px;"),
+        # 删除和重置按钮同一行
+        fluidRow(
+          column(
+            width = 6,
+            actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
+                         class = "btn-danger", style = "width: 100%;")
+          ),
+          column(
+            width = 6,
+            actionButton("reset_form", "重置", icon = icon("redo"), 
+                         class = "btn-secondary", style = "width: 100%;")
+          )
+        ),
         
         tags$h4("资金转移", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
         
