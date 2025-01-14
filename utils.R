@@ -1661,15 +1661,15 @@ refreshTransactionTable <- function(account_type) {
       "AmountIn" = "转入金额",
       "AmountOut" = "转出金额",
       "Balance" = "当前余额",
-      "TransactionImagePath"   = "转账截图",
-      "Remarks"   = "备注"
+      "TransactionImagePath" = "转账截图",
+      "Remarks" = "备注"
     )
     
     # 渲染表格
     table_result <- render_table_with_images(
       data = data,
       column_mapping = column_mapping,
-      image_column = "图片",  # 图片列名
+      image_column = "TransactionImagePath",  # 图片列名
       options = list(
         scrollY = "600px",
         scrollX = TRUE,
@@ -1681,7 +1681,7 @@ refreshTransactionTable <- function(account_type) {
     )
     
     # 更新输出
-    output[[table_map[[account_type]]]] <- DT::renderDataTable({
+    output[[table_map[[account_type]]]] <- renderDT({
       table_result$datatable
     })
   } else {
@@ -1709,7 +1709,7 @@ renderTransactionTable <- function(account_type) {
       AmountOut, 
       Balance,  # 添加“当前余额”列
       TransactionImagePath,
-      Remarks  # 更改列名为“备注”
+      Remarks 
     )
   
   rownames(data) <- NULL  # 移除数据框的行名
