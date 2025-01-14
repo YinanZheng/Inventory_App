@@ -2256,7 +2256,7 @@ server <- function(input, output, session) {
             sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
             style = "color: #007BFF; font-weight: bold; margin: 0;"
           ),
-          if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "")
+          if(!is.null(label_pdf_file_path()) && label_pdf_file_path() != "")
           downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
                          style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
         ))
@@ -2298,7 +2298,7 @@ server <- function(input, output, session) {
           )
         },
         
-        if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "") {
+        if(!is.null(label_pdf_file_path()) && label_pdf_file_path() != "") {
           downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
                          style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
         }
