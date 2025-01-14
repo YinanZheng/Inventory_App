@@ -1102,7 +1102,14 @@ ui <- navbarPage(
                              start = Sys.Date() - 30, # 默认最近30天
                              end = Sys.Date()
                            )),
-                    column(3,
+                    column(2,
+                           actionButton(
+                             inputId = "reset_time_range",
+                             icon = icon("redo"), # 添加一个重置图标
+                             class = "btn-warning", # 设置按钮样式
+                             style = "margin-left: 10px; font-size: 14px;" # 设置样式
+                           )),
+                    column(2,
                            radioButtons(
                              "precision",
                              label = "选择统计精度",
@@ -1110,7 +1117,7 @@ ui <- navbarPage(
                              selected = "天",
                              inline = TRUE # 使选项横向排列
                            )),
-                    column(6,
+                    column(5,
                            radioButtons(
                              "expense_type",
                              label = "选择显示内容",
