@@ -3984,6 +3984,26 @@ server <- function(input, output, session) {
       )
   })
   
+  # 重置时间范围
+  observeEvent(input$reset_time_range, {
+    # 重置时间范围到默认值（最近30天）
+    default_start <- Sys.Date() - 30
+    default_end <- Sys.Date()
+    
+    updateDateRangeInput(
+      session,
+      inputId = "time_range",
+      start = default_start,
+      end = default_end
+    )
+    
+    # 显示通知，告知用户时间范围已重置
+    showNotification(
+      paste("时间范围已重置为:", default_start, "至", default_end),
+      type = "message"
+    )
+  })
+  
   output$confirm_expense_check_ui <- renderUI({
     req(selected_range()) # 确保有选定的时间范围
     
