@@ -3791,6 +3791,74 @@ server <- function(input, output, session) {
   # 存储选定的时间范围
   selected_range <- reactiveVal(NULL) # 存储时间范围
   
+  
+  # 创建柱状图函数
+  create_chart <- function(data, y_var, color, source) {
+    plot_ly(
+      data,
+      x = ~GroupLabel,
+      y = ~get(y_var),
+      type = "bar",
+      name = NULL,
+      marker = list(color = color),
+      text = ~round(get(y_var), 2),
+      textposition = "outside",
+      source = source
+    ) %>%
+      event_register("plotly_click") %>%
+      event_register("plotly_selected")
+  }
+  
+  # 添加圆底对勾的函数
+  add_annotations <- function(plot, data, y_var) {
+    plot %>%
+      add_trace(
+        type = "scatter",
+        mode = "markers+text", # 同时使用 markers 和 text 模式
+        x = ~GroupLabel,
+        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
+        marker = list(
+          size = 20, # 圆点的大小
+          color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 根据状态设置深绿色或浅灰色
+          line = list(width = 0) # 移除外边框
+        ),
+        text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用 Unicode 的白色勾
+        textfont = list(
+          size = 14, # 增大字体，增强可见度
+          color = "white", # 勾的颜色为白色
+          weight = "bold" # 加粗字体
+        ),
+        textposition = "middle center", # 勾的位置在圆点正中央
+        showlegend = FALSE # 不显示图例
+      )
+  }
+  
+  # 添加布局函数
+  add_layout <- function(plot, data, y_var) {
+    plot %>%
+      layout(
+        xaxis = list(
+          title = "",
+          tickvals = data$GroupLabel,
+          tickangle = -45,
+          tickfont = list(size = 12),
+          showgrid = FALSE
+        ),
+        yaxis = list(
+          title = "采购开销（元）",
+          tickfont = list(size = 12),
+          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
+        ),
+        margin = list(l = 50, r = 20, t = 20, b = 50),
+        showlegend = FALSE,
+        plot_bgcolor = "#F9F9F9",
+        paper_bgcolor = "#FFFFFF",
+        dragmode = "select" # 允许框选
+      )
+  }
+  
+  
+  
   # 开销柱状图
   output$expense_chart <- renderPlotly({
     req(expense_summary_data())
@@ -3825,75 +3893,24 @@ server <- function(input, output, session) {
         )
       )
     
-    # 创建柱状图
-    p <- plot_ly(
-      data,
-      x = ~GroupLabel,
-      y = ~get(y_var),
-      type = "bar",
-      name = NULL,
-      marker = list(color = color),
-      text = ~round(get(y_var), 2),
-      textposition = "outside",
-      source = "expense_chart" # 确保 source 唯一
-    ) %>%
-      # 注册事件
-      event_register("plotly_click") %>%
-      event_register("plotly_selected") %>%
-      # 显示圆底对勾
-      add_trace(
-        type = "scatter",
-        mode = "markers+text", # 同时使用 markers 和 text 模式
-        x = ~GroupLabel,
-        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
-        marker = list(
-          size = 20, # 圆点的大小
-          color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 根据状态设置深绿色或浅灰色
-          line = list(width = 0) # 移除外边框
-        ),
-        text = ~ifelse(AllPurchaseCheck, "\u2714", "\u2714"), # 使用 Unicode 的白色勾
-        textfont = list(
-          size = 14, # 增大字体，增强可见度
-          color = "white", # 勾的颜色为白色
-          weight = "bold" # 加粗字体
-        ),
-        textposition = "middle center", # 勾的位置在圆点正中央
-        showlegend = FALSE # 不显示图例
-      ) %>%
-      # 添加布局和其他设置
-      layout(
-        xaxis = list(
-          title = "",
-          tickvals = data$GroupLabel,
-          tickangle = -45,
-          tickfont = list(size = 12),
-          showgrid = FALSE
-        ),
-        yaxis = list(
-          title = "采购开销（元）",
-          tickfont = list(size = 12),
-          range = c(0, max(data[[y_var]], na.rm = TRUE) * 1.2) # 给顶部留空间
-        ),
-        margin = list(l = 50, r = 20, t = 20, b = 50),
-        showlegend = FALSE,
-        plot_bgcolor = "#F9F9F9",
-        paper_bgcolor = "#FFFFFF"
-      )
+    # 创建图表
+    chart <- create_chart(data, y_var, color, "expense_chart")
+    chart <- add_annotations(chart, data, y_var)
+    chart <- add_layout(chart, data, y_var)
     
     # 激活观察器
     if (is_observer_click_suspended()) {
       observer_click$resume()
       is_observer_click_suspended(FALSE)
     }
-    
-    # 激活观察器
     if (is_observer_selected_suspended()) {
       observer_selected$resume()
       is_observer_selected_suspended(FALSE)
     }
     
-    p
+    chart
   })
+  
   
   # 定义点击观察器，初始状态为 suspended = TRUE
   observer_click <- observeEvent(event_data("plotly_click", source = "expense_chart"), suspended = TRUE, {
