@@ -116,25 +116,19 @@ CREATE TRIGGER after_transaction_insert
 AFTER INSERT ON `transactions`
 FOR EACH ROW
 BEGIN
-  DECLARE last_balance DECIMAL(10,2);
+DECLARE last_balance DECIMAL(10,2);
 
-  -- 获取同一账户的最新余额（除当前插入的记录）
   SELECT Balance INTO last_balance
   FROM transactions
   WHERE AccountType = NEW.AccountType
-    AND TransactionID < NEW.TransactionID
   ORDER BY TransactionTime DESC
   LIMIT 1;
 
-  -- 如果没有上一次的记录，余额从 0 开始
   IF last_balance IS NULL THEN
     SET last_balance = 0.00;
   END IF;
 
-  -- 更新当前记录的余额
-  UPDATE transactions
-  SET Balance = last_balance + NEW.Amount
-  WHERE TransactionID = NEW.TransactionID;
+  SET NEW.Balance = last_balance + NEW.Amount;
 END;
 //
 

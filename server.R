@@ -3334,12 +3334,8 @@ server <- function(input, output, session) {
       return()
     }
     
-    # 根据用户是否勾选“指定转款日期”，选择日期
-    transaction_date <- if (input$use_custom_date) {
-      as.Date(input$custom_date)  # 用户指定的日期
-    } else {
-      Sys.time()  # 当前日期和时间
-    }
+    # 合并用户选择的日期和时间为完整时间戳
+    transaction_date <- as.POSIXct(paste(input$custom_date, format(input$custom_time, "%H:%M:%S")), format = "%Y-%m-%d %H:%M:%S")
     
     tryCatch({
       # 插入交易记录
