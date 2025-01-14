@@ -229,6 +229,16 @@ generate_sku <- function(item_type_data, major_type, minor_type, item_name, make
   paste0(major_type_sku, "-", minor_type_sku, "-", unique_code)
 }
 
+generate_transaction_id <- function(account_type, amount, remarks, transaction_datetime) {
+  # 将输入合并为字符串
+  input_string <- paste(account_type, amount, remarks, transaction_datetime, sep = "|")
+  
+  # 生成 SHA256 哈希值并截取前 12 位
+  transaction_id <- substr(digest(input_string, algo = "sha256"), 1, 12)
+  
+  return(transaction_id)
+}
+
 # Remove tone of letters
 remove_tone <- function(text) {
   # 替换规则：音调字母 -> 无音调字母
@@ -1654,7 +1664,7 @@ refreshTransactionTable <- function(account_type) {
 
 # 渲染账目记录表
 renderTransactionTable <- function(account_type) {
-  query <- "SELECT TransactionTime, Amount, Balance, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
+  query <- "SELECT TransactionTime, Amount, Balance, TransactionImagePath, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
   data <- dbGetQuery(con, query, params = list(account_type))
   
   # 添加“转入金额”和“转出金额”两列，并格式化输出
@@ -1663,7 +1673,8 @@ renderTransactionTable <- function(account_type) {
       转账时间 = format(as.POSIXct(TransactionTime), "%Y-%m-%d %H:%M:%S"),  # 格式化时间
       转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
       转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),     # 转出金额
-      当前余额 = sprintf("%.2f", Balance)                                 # 当前余额（保留两位小数）
+      当前余额 = sprintf("%.2f", Balance),  # 当前余额（保留两位小数）
+      图片 = render_image_column(TransactionImagePath)          
     ) %>%
     select(
       转账时间,  # 时间列

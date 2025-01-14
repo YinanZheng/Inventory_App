@@ -100,14 +100,15 @@ CREATE TABLE `item_status_history` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  
 
 CREATE TABLE `transactions` (
-  `TransactionID` int NOT NULL AUTO_INCREMENT,
+  `TransactionID` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
   `AccountType` enum('工资卡','美元卡','买货卡','一般户卡') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Amount` decimal(10,2) NOT NULL,
   `Balance` decimal(10,2) DEFAULT '0.00',
   `Remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
+  `TransactionImagePath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `TransactionTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`TransactionID`)
-) ENGINE=InnoDB AUTO_INCREMENT=27 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
 
 DELIMITER //

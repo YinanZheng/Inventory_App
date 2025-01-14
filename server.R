@@ -3339,13 +3339,23 @@ server <- function(input, output, session) {
     transaction_date <- paste(input$custom_date, transaction_time)
     transaction_datetime <- as.POSIXct(transaction_date, format = "%Y-%m-%d %H:%M:%S")
     
+    # 生成 12 位 TransactionID
+    transaction_id <- generate_transaction_id(account_type, input$amount, input$remarks, transaction_datetime)
+    
+    # 处理 image_data 数据
+    image_path <- process_image_upload(
+      sku = transaction_id,
+      file_data = image_transactions$uploaded_file(),
+      pasted_data = image_transactions$pasted_file()
+    )
+    
     tryCatch({
       # 插入交易记录
       amount <- if (input$transaction_type == "in") input$amount else -input$amount
       dbExecute(
         con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
-        params = list(account_type, amount, input$remarks, transaction_datetime)
+        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionImagePath, TransactionTime) VALUES (?, ?, ?, ?, ?, ?)",
+        params = list(transaction_id, account_type, amount, input$remarks, image_path, transaction_datetime)
       )
       showNotification("记录成功！", type = "message")
       
@@ -3471,6 +3481,8 @@ server <- function(input, output, session) {
   
   # 转账证据图片处理模块
   image_purchase <- imageModuleServer("image_transactions")
+  
+
   
   
   ################################################################
