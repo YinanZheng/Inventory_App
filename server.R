@@ -3956,10 +3956,6 @@ server <- function(input, output, session) {
             insidetextorientation = "radial",
             marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))) %>%
       layout(
-        title = list(
-          text = "总采购开销分布",
-          font = list(size = 16, color = "#333", family = "Arial")
-        ),
         annotations = list(
           x = 0.5, y = -0.1, # 调整注释的位置
           text = paste("统计时间范围：", time_range),
