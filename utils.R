@@ -234,7 +234,7 @@ generate_transaction_id <- function(account_type, amount, remarks, transaction_d
   input_string <- paste(account_type, amount, remarks, transaction_datetime, sep = "|")
   
   # 生成 SHA256 哈希值并截取前 12 位
-  transaction_id <- substr(digest(input_string, algo = "sha256"), 1, 12)
+  transaction_id <- substr(digest::digest(input_string, algo = "sha256"), 1, 12)
   
   return(transaction_id)
 }
