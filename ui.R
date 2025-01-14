@@ -942,7 +942,7 @@ ui <- navbarPage(
           column(
             width = 6,
             actionButton("reset_form", "重置", icon = icon("redo"), 
-                         class = "btn-secondary", style = "width: 100%;")
+                         class = "btn-info", style = "width: 100%;")
           )
         ),
         

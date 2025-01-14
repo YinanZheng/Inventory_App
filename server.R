@@ -3373,7 +3373,22 @@ server <- function(input, output, session) {
     
     # 区分“登记”和“更新”模式
     if (is_update_mode()) {
-      # 更新逻辑
+      transaction_id <- selected_transaction()
+      if (is.null(transaction_id) || length(transaction_id) != 1) {
+        showNotification("选中的 TransactionID 无效！", type = "error")
+        return()
+      }
+      
+      image_path <- process_image_upload(
+        sku = transaction_id,
+        file_data = image_transactions$uploaded_file(),
+        pasted_data = image_transactions$pasted_file()
+      )
+      
+      if (is.null(image_path) || length(image_path) != 1) {
+        image_path <- ""  # 设置默认值
+      }
+      
       tryCatch({
         dbExecute(
           con,
@@ -3384,12 +3399,8 @@ server <- function(input, output, session) {
             ifelse(input$transaction_type == "in", input$amount, -input$amount),
             input$remarks,
             transaction_datetime,
-            process_image_upload(
-              sku = selected_transaction(),
-              file_data = image_transactions$uploaded_file(),
-              pasted_data = image_transactions$pasted_file()
-            ),
-            selected_transaction()
+            image_path,
+            transaction_id
           )
         )
         showNotification("记录更新成功！", type = "message")
