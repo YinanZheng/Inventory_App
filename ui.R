@@ -1102,14 +1102,6 @@ ui <- navbarPage(
                              start = Sys.Date() - 30, # 默认最近30天
                              end = Sys.Date()
                            )),
-                    column(1,
-                           actionButton(
-                             "reset_time_range",
-                             label = "",
-                             icon = icon("redo"), # 添加一个重置图标
-                             class = "btn-warning", # 设置按钮样式
-                             style = "margin-top: 21px; height: 35px; font-size: 12px;" # 设置样式
-                           )),
                     column(3,
                            radioButtons(
                              "precision",
@@ -1125,6 +1117,14 @@ ui <- navbarPage(
                              choices = c("物品成本+国内运费" = "cost_domestic", "物品成本" = "cost", "国内运费" = "domestic_shipping", "国际运费" = "intl_shipping", "总开销" = "total"),
                              selected = "cost_domestic",
                              inline = TRUE # 使选项横向排列
+                           )),
+                    column(1,
+                           actionButton(
+                             "reset_time_range",
+                             label = "",
+                             icon = icon("redo"), # 添加一个重置图标
+                             class = "btn-warning", # 设置按钮样式
+                             style = "margin-top: 26px; height: 35px; font-size: 12px;" # 设置样式
                            ))
                   ),
                   
