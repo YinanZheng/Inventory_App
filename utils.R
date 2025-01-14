@@ -1722,7 +1722,7 @@ fetchAndFormatTransactionData <- function(account_type) {
   }
   
   # 从数据库获取最新数据
-  query <- "SELECT TransactionTime, Amount, Balance, TransactionImagePath, Remarks FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
+  query <- "SELECT * FROM transactions WHERE AccountType = ? ORDER BY TransactionTime DESC"
   data <- dbGetQuery(con, query, params = list(account_type))
   
   # 格式化数据
@@ -1732,8 +1732,7 @@ fetchAndFormatTransactionData <- function(account_type) {
       AmountIn = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),
       AmountOut = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),
       Balance = sprintf("%.2f", Balance)
-    ) %>%
-    select(TransactionTime, AmountIn, AmountOut, Balance, TransactionImagePath, Remarks)
+    )
   
   rownames(formatted_data) <- NULL
   
