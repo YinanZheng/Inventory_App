@@ -30,6 +30,9 @@ server <- function(input, output, session) {
   # 用于存储 barcode PDF 文件路径
   barcode_pdf_file_path <- reactiveVal(NULL)
   
+  # 用于存储运单 PDF 文件路径
+  label_pdf_file_path <- reactiveVal(NULL)
+  
   # 初始化货架和箱子内物品（售出分页）
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
@@ -2230,6 +2233,8 @@ server <- function(input, output, session) {
     customer_name <- selected_order$CustomerName
     order_status <- selected_order$OrderStatus
     
+    label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(selected_order$UsTrackingNumber, ".pdf")))
+    
     # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
     
@@ -2245,7 +2250,10 @@ server <- function(input, output, session) {
           tags$h4(
             sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
             style = "color: #007BFF; font-weight: bold; margin: 0;"
-          )
+          ),
+          if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "")
+          downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
+                         style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
         ))
       }
       
@@ -2291,6 +2299,15 @@ server <- function(input, output, session) {
     associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
   })
   
+  # 定义运单下载处理器
+  output$download_pdf_manage <- downloadHandler(
+    filename = function() {
+      basename(label_pdf_file_path())
+    },
+    content = function(file) {
+      file.copy(label_pdf_file_path(), file, overwrite = TRUE)
+    }
+  )
   
   observeEvent(input$complete_preorder, {
     req(selected_order_row())
