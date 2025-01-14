@@ -2234,6 +2234,8 @@ server <- function(input, output, session) {
     order_status <- selected_order$OrderStatus
     us_tracking_number <- selected_order$UsTrackingNumber
     
+    showNotification(us_tracking_number)
+    
     if(is.null(us_tracking_number) || us_tracking_number == "") {
       label_pdf_file_path(NULL)
     } else {
