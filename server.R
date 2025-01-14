@@ -3563,7 +3563,7 @@ server <- function(input, output, session) {
   # 重置
   observeEvent(input$reset_form, {
     # 重置所有账务登记表单
-    updateNumericInput(session, "amount", value = NULL)
+    updateNumericInput(session, "amount", value = 0)
     updateRadioButtons(session, "transaction_type", selected = "out")
     updateDateInput(session, "custom_date", value = Sys.Date())
     updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))

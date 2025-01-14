@@ -906,7 +906,7 @@ ui <- navbarPage(
         tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
         
         # 单一金额输入框
-        numericInput("amount", "金额:", value = NULL, min = 0, width = "100%"),
+        numericInput("amount", "金额:", value = 0, min = 0, width = "100%"),
         
         # 互斥勾选框
         radioButtons(
