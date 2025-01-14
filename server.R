@@ -3335,7 +3335,9 @@ server <- function(input, output, session) {
     }
     
     # 合并用户选择的日期和时间为完整时间戳
-    transaction_datetime <- as.POSIXct(paste(input$custom_date, format(input$custom_time, "%H:%M:%S")), format = "%Y-%m-%d %H:%M:%S")
+    transaction_time <- format(as.POSIXct(input$custom_time, format = "%H:%M:%S"), "%H:%M:%S")
+    transaction_date <- paste(input$custom_date, transaction_time)
+    transaction_datetime <- as.POSIXct(transaction_date, format = "%Y-%m-%d %H:%M:%S")
     
     tryCatch({
       # 插入交易记录
