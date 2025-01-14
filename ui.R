@@ -1095,14 +1095,14 @@ ui <- navbarPage(
                   
                   # 选择器行
                   fluidRow(
-                    column(4,                   
+                    column(3,                   
                            dateRangeInput(
                              "time_range",
                              label = "选择采购时间范围",
                              start = Sys.Date() - 30, # 默认最近30天
                              end = Sys.Date()
                            )),
-                    column(4,
+                    column(3,
                            radioButtons(
                              "precision",
                              label = "选择统计精度",
@@ -1110,12 +1110,12 @@ ui <- navbarPage(
                              selected = "天",
                              inline = TRUE # 使选项横向排列
                            )),
-                    column(4,
+                    column(6,
                            radioButtons(
                              "expense_type",
                              label = "选择显示内容",
-                             choices = c("成本+国内运费" = "cost_domestic", "物品成本" = "cost", "国内运费" = "domestic_shipping", "国际运费" = "intl_shipping", "总开销" = "total"),
-                             selected = "total",
+                             choices = c("物品成本+国内运费" = "cost_domestic", "物品成本" = "cost", "国内运费" = "domestic_shipping", "国际运费" = "intl_shipping", "总开销" = "total"),
+                             selected = "cost_domestic",
                              inline = TRUE # 使选项横向排列
                            ))
                   ),
