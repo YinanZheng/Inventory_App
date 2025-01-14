@@ -3877,8 +3877,7 @@ server <- function(input, output, session) {
         margin = list(l = 50, r = 20, t = 20, b = 50),
         showlegend = FALSE,
         plot_bgcolor = "#F9F9F9",
-        paper_bgcolor = "#FFFFFF",
-        dragmode = "select" # 允许框选
+        paper_bgcolor = "#FFFFFF"
       )
     
     # 激活观察器
@@ -3947,49 +3946,6 @@ server <- function(input, output, session) {
       }
     }
   })
-  
-  observeEvent(event_data("plotly_relayout", source = "expense_chart"), {
-    relayout_data <- event_data("plotly_relayout", source = "expense_chart")
-    
-    # 检查是否重置了轴（`xaxis.autorange` 和 `yaxis.autorange` 出现）
-    if (!is.null(relayout_data$`xaxis.autorange`) && !is.null(relayout_data$`yaxis.autorange`)) {
-      showNotification("重置图表成功", type = "message")
-      
-      # 在这里可以重置或刷新图表的布局
-      output$expense_chart <- renderPlotly({
-        data <- expense_summary_data()
-        y_var <- switch(input$expense_type,
-                        "total" = "TotalExpense",
-                        "cost" = "ProductCost",
-                        "domestic_shipping" = "DomesticShippingCost",
-                        "intl_shipping" = "IntlShippingCost",
-                        "cost_domestic" = "Cost_Domestic")
-        color <- switch(input$expense_type,
-                        "total" = "#007BFF",
-                        "cost" = "#4CAF50",
-                        "domestic_shipping" = "#FF5733",
-                        "intl_shipping" = "#FFC107",
-                        "cost_domestic" = "#17A2B8")
-        
-        plot_ly(
-          data,
-          x = ~GroupLabel,
-          y = ~get(y_var),
-          type = "bar",
-          marker = list(color = color)
-        ) %>%
-          layout(
-            dragmode = "select",  # 启用框选功能
-            xaxis = list(title = "", tickangle = -45),
-            yaxis = list(title = "采购开销（元）"),
-            showlegend = FALSE,
-            plot_bgcolor = "#F9F9F9",
-            paper_bgcolor = "#FFFFFF"
-          )
-      })
-    }
-  })
-  
   
   # 筛选物品详情数据
   filtered_items <- reactive({
