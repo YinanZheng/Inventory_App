@@ -2017,13 +2017,14 @@ server <- function(input, output, session) {
       # 通知用户
       showNotification(paste("物品已上货架！SKU:", scanned_sku), type = "message")
       
-      # 清空输入框
-      updateTextInput(session, "sku_to_shelf", value = "")
-      
     }, error = function(e) {
       # 捕获错误并通知用户
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
+    
+    # 清空输入框
+    updateTextInput(session, "sku_to_shelf", value = "")
+    
   })
   
   # 扫码入箱功能
@@ -2069,6 +2070,7 @@ server <- function(input, output, session) {
           process_box_addition(scanned_sku, all_shelf_items)  # 继续处理移入箱子操作
         })
         
+        # 清空输入框
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
@@ -2080,6 +2082,9 @@ server <- function(input, output, session) {
       # 捕获错误并通知用户
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
     })
+    
+    # 清空输入框
+    updateTextInput(session, "sku_to_box", value = "")
   })
   
   # 定义移入箱子的逻辑
