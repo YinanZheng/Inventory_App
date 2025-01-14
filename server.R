@@ -4009,11 +4009,7 @@ server <- function(input, output, session) {
         ),
         showlegend = FALSE,  # 隐藏图例
         paper_bgcolor = "#F9F9F9",  # 背景颜色
-        margin = list(l = 50, r = 30, t = 80, b = 50),  # 增加左右和底部边距
-        piecolorway = c("#4CAF50", "#FF5733", "#FFC107"),  # 配置饼图颜色
-        grid = list(
-          rows = 1, columns = 1  # 确保饼图居中
-        )
+        margin = list(l = 50, r = 30, t = 80, b = 50)  # 增加左右和底部边距
       )
   })
   
