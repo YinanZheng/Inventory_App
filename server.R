@@ -3929,6 +3929,9 @@ server <- function(input, output, session) {
       start_date <- as.Date(relayout_data$`xaxis.range[0]`)
       end_date <- as.Date(relayout_data$`xaxis.range[1]`)
 
+      showNotification(start_date)
+      showNotification(end_date)
+      
       # 更新时间范围输入框
       updateDateRangeInput(
         session,
