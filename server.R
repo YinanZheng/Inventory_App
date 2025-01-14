@@ -3938,10 +3938,12 @@ server <- function(input, output, session) {
     
     # 饼图数据：计算总开销分布
     total_product_cost <- sum(data$ProductCost, na.rm = TRUE)
-    total_shipping_cost <- sum(data$ShippingCost, na.rm = TRUE)
+    total_domestic_shipping_cost <- sum(data$DomesticShippingCost, na.rm = TRUE)
+    total_intl_shipping_cost <- sum(data$IntlShippingCost, na.rm = TRUE)
+    
     pie_data <- data.frame(
-      Category = c("商品成本", "运费开销"),
-      Value = c(total_product_cost, total_shipping_cost)
+      Category = c("商品成本", "国内运费", "国际运费"),
+      Value = c(total_product_cost, total_domestic_shipping_cost, total_intl_shipping_cost)
     )
     
     # 获取时间范围
@@ -3952,7 +3954,7 @@ server <- function(input, output, session) {
             textinfo = "value", # 仅显示实际数值
             hoverinfo = "label+percent", # 悬停时显示类别和百分比
             insidetextorientation = "radial",
-            marker = list(colors = c("#4CAF50", "#FF5733"))) %>%
+            marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))) %>%
       layout(
         title = list(
           text = "总采购开销分布",
