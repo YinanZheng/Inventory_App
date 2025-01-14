@@ -3388,6 +3388,19 @@ server <- function(input, output, session) {
       )
       showNotification("记录成功！", type = "message")
       
+      # 检查是否为最新记录
+      latest_time <- dbGetQuery(
+        con,
+        "SELECT MAX(TransactionTime) AS LatestTime FROM transactions WHERE AccountType = ?",
+        params = list(account_type)
+      )$LatestTime[1]
+      
+      if (!is.null(latest_time) && transaction_datetime < as.POSIXct(latest_time)) {
+        # 如果插入记录不是最新的，则重新计算余额
+        update_balance(account_type, con)
+        showNotification("余额记录已重新计算", type = "message")
+      }
+      
       # 重置输入框
       updateNumericInput(session, "amount", value = NULL)
       updateRadioButtons(session, "transaction_type", selected = "out")
