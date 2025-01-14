@@ -3919,24 +3919,24 @@ server <- function(input, output, session) {
     }
   })
   
-  # 定义框选观察器，初始状态为 suspended = TRUE
-  observer_relayout <- observeEvent(event_data("plotly_relayout", source = "expense_chart", suspended = TRUE), {
-    relayout_data <- event_data("plotly_relayout", source = "expense_chart")
-    
-    # 检查是否有选中范围
-    if (!is.null(relayout_data$`xaxis.range[0]`) && !is.null(relayout_data$`xaxis.range[1]`)) {
-      start_date <- as.Date(relayout_data$`xaxis.range[0]`)
-      end_date <- as.Date(relayout_data$`xaxis.range[1]`)
-      
-      # 更新时间范围输入框
-      updateDateRangeInput(
-        session,
-        inputId = "time_range",
-        start = start_date,
-        end = end_date
-      )
-    }
-  })
+  # # 定义框选观察器，初始状态为 suspended = TRUE
+  # observer_relayout <- observeEvent(event_data("plotly_relayout", source = "expense_chart", suspended = TRUE), {
+  #   relayout_data <- event_data("plotly_relayout", source = "expense_chart")
+  #   
+  #   # 检查是否有选中范围
+  #   if (!is.null(relayout_data$`xaxis.range[0]`) && !is.null(relayout_data$`xaxis.range[1]`)) {
+  #     start_date <- as.Date(relayout_data$`xaxis.range[0]`)
+  #     end_date <- as.Date(relayout_data$`xaxis.range[1]`)
+  #     
+  #     # 更新时间范围输入框
+  #     updateDateRangeInput(
+  #       session,
+  #       inputId = "time_range",
+  #       start = start_date,
+  #       end = end_date
+  #     )
+  #   }
+  # })
   
   
   # 筛选物品详情数据
