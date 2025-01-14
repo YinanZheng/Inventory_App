@@ -2232,8 +2232,13 @@ server <- function(input, output, session) {
     order_id <- selected_order$OrderID
     customer_name <- selected_order$CustomerName
     order_status <- selected_order$OrderStatus
+    us_tracking_number <- selected_order$UsTrackingNumber
     
-    label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(selected_order$UsTrackingNumber, ".pdf")))
+    if(is.null(us_tracking_number) || us_tracking_number == "") {
+      label_pdf_file_path(NULL)
+    } else {
+      label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(us_tracking_number, ".pdf")))
+    }
     
     # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
