@@ -1650,14 +1650,40 @@ refreshTransactionTable <- function(account_type) {
     "一般户卡" = "general_card_table"
   )
   
-  # 根据账户类型动态更新对应表格
+  # 检查账户类型是否有效
   if (account_type %in% names(table_map)) {
-    output[[table_map[[account_type]]]] <- renderDT({
-      renderTransactionTable(account_type)
-    }, 
-    options = modifyList(table_default_options, list(scrollY = "600px")), 
-    escape = FALSE,  # 禁用 HTML 转义
-    rownames = FALSE)  # 移除行名
+    # 获取数据
+    data <- renderTransactionTable(account_type)
+    
+    # 定义列名映射，用于显示更友好的列标题
+    column_mapping <- list(
+      "转账时间" = "Transaction Time",
+      "转入金额" = "Credit",
+      "转出金额" = "Debit",
+      "当前余额" = "Balance",
+      "图片"   = "Image",
+      "备注"   = "Remarks"
+    )
+    
+    # 渲染表格
+    table_result <- render_table_with_images(
+      data = data,
+      column_mapping = column_mapping,
+      image_column = "图片",  # 图片列名
+      options = list(
+        scrollY = "600px",
+        scrollX = TRUE,
+        paging = TRUE,
+        pageLength = 30,
+        dom = 'frtip',
+        searching = FALSE
+      )
+    )
+    
+    # 更新输出
+    output[[table_map[[account_type]]]] <- DT::renderDataTable({
+      table_result$datatable
+    })
   } else {
     showNotification("无效的账户类型！", type = "error")
   }
