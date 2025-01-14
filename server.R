@@ -3951,8 +3951,8 @@ server <- function(input, output, session) {
     
     # 绘制饼图
     plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
-            textinfo = "value", # 仅显示实际数值
-            hoverinfo = "label+percent", # 悬停时显示类别和百分比
+            textinfo = "label+value", # 仅显示实际数值
+            hoverinfo = "percent", # 悬停时显示类别和百分比
             insidetextorientation = "radial",
             marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))) %>%
       layout(
@@ -3966,7 +3966,7 @@ server <- function(input, output, session) {
           showarrow = FALSE,
           font = list(size = 12, color = "#666")
         ),
-        showlegend = TRUE, # 显示图例
+        showlegend = FALSE, # 显示图例
         paper_bgcolor = "#F9F9F9" # 设置整个图表容器背景色
       )
   })
