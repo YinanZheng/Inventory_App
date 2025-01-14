@@ -3572,6 +3572,11 @@ server <- function(input, output, session) {
     # 重置图片上传模块
     image_transactions$reset()
     
+    # 重置为“登记”模式
+    is_update_mode(FALSE)
+    selected_transaction(NULL)
+    updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
+    
     showNotification("表单已重置！", type = "message")
   })
   
