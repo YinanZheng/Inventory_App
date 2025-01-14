@@ -3969,13 +3969,11 @@ server <- function(input, output, session) {
         ),
         showlegend = FALSE,  # 隐藏图例
         paper_bgcolor = "#F9F9F9",  # 背景颜色
-        margin = list(l = 50, r = 50, t = 50, b = 100),  # 增加左右和底部边距
+        margin = list(l = 50, r = 50, t = 100, b = 50),  # 增加左右和底部边距
         piecolorway = c("#4CAF50", "#FF5733", "#FFC107"),  # 配置饼图颜色
         grid = list(
           rows = 1, columns = 1  # 确保饼图居中
-        ),
-        height = 400,  # 调整高度
-        width = 400  # 调整宽度，适当缩小饼图
+        )
       )
   })
   
