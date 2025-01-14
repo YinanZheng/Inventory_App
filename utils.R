@@ -1705,6 +1705,18 @@ fetchAndFormatTransactionData <- function(account_type) {
   
   data_hash <- metadata$DataHash[1]
   
+  # 如果 data_hash 为 NA，则返回空数据框
+  if (is.na(data_hash)) {
+    return(data.frame(
+      TransactionTime = character(0),
+      AmountIn = numeric(0),
+      AmountOut = numeric(0),
+      Balance = numeric(0),
+      TransactionImagePath = character(0),
+      Remarks = character(0)
+    ))
+  }
+  
   # 检查缓存是否有效
   cached_metadata <- cache_env$transaction_metadata[[account_type]]
   if (!is.null(cached_metadata)) {
