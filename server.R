@@ -3761,9 +3761,11 @@ server <- function(input, output, session) {
       ) %>%
       group_by(GroupDate) %>%
       summarise(
-        TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
+        Cost_Domestic = sum(ProductCost + DomesticShippingCost, na.rm = TRUE),
         ProductCost = sum(ProductCost, na.rm = TRUE),
-        ShippingCost = sum(DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
+        DomesticShippingCost = sum(DomesticShippingCost, na.rm = TRUE),
+        IntlShippingCost = sum(IntlShippingCost, na.rm = TRUE),
+        TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
         AllPurchaseCheck = all(PurchaseCheck == 1, na.rm = TRUE), # 是否全部为1
         .groups = "drop"
       )
@@ -3771,9 +3773,11 @@ server <- function(input, output, session) {
     complete_data <- time_df %>%
       left_join(summarized_data, by = "GroupDate") %>%
       replace_na(list(
-        TotalExpense = 0,
+        Cost_Domestic = 0,
         ProductCost = 0,
-        ShippingCost = 0,
+        DomesticShippingCost = 0,
+        IntlShippingCost = 0,
+        TotalExpense = 0,
         AllPurchaseCheck = FALSE # 默认设置为 FALSE
       ))
     
@@ -3795,11 +3799,15 @@ server <- function(input, output, session) {
     y_var <- switch(input$expense_type,
                     "total" = "TotalExpense",
                     "cost" = "ProductCost",
-                    "shipping" = "ShippingCost")
+                    "domestic_shipping" = "DomesticShippingCost",
+                    "intl_shipping" = "IntlShippingCost",
+                    "cost_domestic" = "Cost_Domestic")
     color <- switch(input$expense_type,
                     "total" = "#007BFF",
                     "cost" = "#4CAF50",
-                    "shipping" = "#FF5733")
+                    "domestic_shipping" = "#FF5733",
+                    "intl_shipping" = "#FFC107",
+                    "cost_domestic" = "#17A2B8")
     
     # 根据精度生成时间范围标签
     data <- data %>%

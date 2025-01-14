@@ -1114,7 +1114,7 @@ ui <- navbarPage(
                            radioButtons(
                              "expense_type",
                              label = "选择显示内容",
-                             choices = c("总开销" = "total", "物品成本" = "cost", "运费开销" = "shipping"),
+                             choices = c("成本+国内运费" = "cost_domestic", "物品成本" = "cost", "国内运费" = "domestic_shipping", "国际运费" = "intl_shipping", "总开销" = "total"),
                              selected = "total",
                              inline = TRUE # 使选项横向排列
                            ))
