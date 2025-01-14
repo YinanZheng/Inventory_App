@@ -3785,7 +3785,8 @@ server <- function(input, output, session) {
   })
   
   # 定义 reactiveVal 用于存储观察器状态
-  is_observer_suspended <- reactiveVal(TRUE)
+  is_observer_click_suspended <- reactiveVal(TRUE)
+  is_observer_relayout_suspended <- reactiveVal(TRUE)
   
   # 存储选定的时间范围
   selected_range <- reactiveVal(NULL) # 存储时间范围
@@ -3838,6 +3839,7 @@ server <- function(input, output, session) {
     ) %>%
       # 注册事件
       event_register("plotly_click") %>%
+      event_register("plotly_relayout") %>%
       add_trace(
         type = "scatter",
         mode = "markers+text", # 同时使用 markers 和 text 模式
@@ -3874,20 +3876,27 @@ server <- function(input, output, session) {
         margin = list(l = 50, r = 20, t = 20, b = 50),
         showlegend = FALSE,
         plot_bgcolor = "#F9F9F9",
-        paper_bgcolor = "#FFFFFF"
+        paper_bgcolor = "#FFFFFF",
+        dragmode = "select" # 允许框选
       )
     
     # 激活观察器
-    if (is_observer_suspended()) {
-      observer$resume()
-      is_observer_suspended(FALSE)
+    if (is_observer_click_suspended()) {
+      observer_click$resume()
+      is_observer_click_suspended(FALSE)
+    }
+    
+    # 激活观察器
+    if (is_observer_relayout_suspended()) {
+      observer_relayout$resume()
+      is_observer_relayout_suspended(FALSE)
     }
     
     p
   })
   
-  # 定义观察器，初始状态为 suspended = TRUE
-  observer <- observeEvent(event_data("plotly_click", source = "expense_chart"), suspended = TRUE, {
+  # 定义点击观察器，初始状态为 suspended = TRUE
+  observer_click <- observeEvent(event_data("plotly_click", source = "expense_chart"), suspended = TRUE, {
     clicked_point <- event_data("plotly_click", source = "expense_chart")
     if (!is.null(clicked_point)) {
       precision <- input$precision # 当前精度（天、周、月、年）
@@ -3909,6 +3918,26 @@ server <- function(input, output, session) {
       selected_range(range)
     }
   })
+  
+  # 定义框选观察器，初始状态为 suspended = TRUE
+  observer_relayout <- observeEvent(event_data("plotly_relayout", source = "expense_chart", suspended = TRUE), {
+    relayout_data <- event_data("plotly_relayout", source = "expense_chart")
+    
+    # 检查是否有选中范围
+    if (!is.null(relayout_data$`xaxis.range[0]`) && !is.null(relayout_data$`xaxis.range[1]`)) {
+      start_date <- as.Date(relayout_data$`xaxis.range[0]`)
+      end_date <- as.Date(relayout_data$`xaxis.range[1]`)
+      
+      # 更新时间范围输入框
+      updateDateRangeInput(
+        session,
+        inputId = "time_range",
+        start = start_date,
+        end = end_date
+      )
+    }
+  })
+  
   
   # 筛选物品详情数据
   filtered_items <- reactive({
@@ -3976,8 +4005,6 @@ server <- function(input, output, session) {
         )
       )
   })
-  
-  
   
   output$confirm_expense_check_ui <- renderUI({
     req(selected_range()) # 确保有选定的时间范围
