@@ -1643,24 +1643,26 @@ updateAccountOverview <- function() {
 
 # 刷新账目记录-账务管理用
 refreshTransactionTable <- function(account_type) {
-  if (account_type == "工资卡") {
-    output$salary_card_table <- renderDT({
-      renderTransactionTable("工资卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
-  } else if (account_type == "美元卡") {
-    output$dollar_card_table <- renderDT({
-      renderTransactionTable("美元卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
-  } else if (account_type == "买货卡") {
-    output$purchase_card_table <- renderDT({
-      renderTransactionTable("买货卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
-  } else if (account_type == "一般户卡") {
-    output$general_card_table <- renderDT({
-      renderTransactionTable("一般户卡")
-    }, options = modifyList(table_default_options, list(scrollY = "600px")), rownames = FALSE)
+  table_map <- list(
+    "工资卡" = "salary_card_table",
+    "美元卡" = "dollar_card_table",
+    "买货卡" = "purchase_card_table",
+    "一般户卡" = "general_card_table"
+  )
+  
+  # 根据账户类型动态更新对应表格
+  if (account_type %in% names(table_map)) {
+    output[[table_map[[account_type]]]] <- renderDT({
+      renderTransactionTable(account_type)
+    }, 
+    options = modifyList(table_default_options, list(scrollY = "600px")), 
+    escape = FALSE,  # 禁用 HTML 转义
+    rownames = FALSE)  # 移除行名
+  } else {
+    showNotification("无效的账户类型！", type = "error")
   }
 }
+
 
 # 渲染账目记录表
 renderTransactionTable <- function(account_type) {
