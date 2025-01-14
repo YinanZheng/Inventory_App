@@ -3998,6 +3998,7 @@ server <- function(input, output, session) {
     )
   })
   
+  # 开销核对动态UI
   output$confirm_expense_check_ui <- renderUI({
     req(selected_range()) # 确保有选定的时间范围
     
@@ -4019,6 +4020,7 @@ server <- function(input, output, session) {
     )
   })
   
+  # 确认开销核对
   observeEvent(input$confirm_expense_check_btn, {
     req(filtered_items()) # 确保筛选出的物品数据存在
     
@@ -4029,6 +4031,14 @@ server <- function(input, output, session) {
       showNotification("当前筛选无物品可核对，请选择有效的柱子！", type = "error")
       return(NULL)
     }
+    
+    # 按采购时间分组统计
+    grouped_expenses <- items_to_update %>%
+      group_by(PurchaseTime) %>%
+      summarise(
+        TotalCost = sum(ProductCost, na.rm = TRUE),
+        TotalDomesticShipping = sum(DomesticShippingCost, na.rm = TRUE)
+      )
     
     # 更新数据库中的 PurchaseCheck 为 1
     tryCatch({
@@ -4041,6 +4051,49 @@ server <- function(input, output, session) {
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       showNotification(paste("成功更新", nrow(items_to_update), "条物品的开销核对状态！"), type = "message")
+      
+      # 将物品成本和国内运费分别登记到"一般户卡"
+      grouped_expenses %>%
+        rowwise() %>%
+        do({
+          # 仅在成本 > 0 时登记物品成本
+          if (.$TotalCost > 0) {
+            cost_transaction_id <- generate_transaction_id("买货卡", .$TotalCost, "核对物品成本", .$PurchaseTime)
+            cost_remarks <- paste("[采购成本已核对]", "采购日期:", .$PurchaseTime)
+            
+            dbExecute(
+              con,
+              "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+              params = list(
+                cost_transaction_id,
+                "一般户卡",
+                .$TotalCost,
+                cost_remarks,
+                .$PurchaseTime
+              )
+            )
+          }
+          
+          # 仅在国内运费 > 0 时登记运费
+          if (.$TotalDomesticShipping > 0) {
+            shipping_transaction_id <- generate_transaction_id("买货卡", .$TotalDomesticShipping, "核对国内运费", .$PurchaseTime)
+            shipping_remarks <- paste("[国内运费已核对]", "采购日期:", .$PurchaseTime)
+            
+            dbExecute(
+              con,
+              "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+              params = list(
+                shipping_transaction_id,
+                "买货卡",
+                .$TotalDomesticShipping,
+                shipping_remarks,
+                .$PurchaseTime
+              )
+            )
+          }
+        })
+      
+      showNotification("核对后的采购开销与国内运费已登记到'买货卡（139）'！", type = "message")
     }, error = function(e) {
       showNotification("更新失败，请检查数据库连接！", type = "error")
     })
