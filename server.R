@@ -3950,28 +3950,23 @@ server <- function(input, output, session) {
     time_range <- paste(as.Date(input$time_range[1]), "至", as.Date(input$time_range[2]))
     
     # 绘制饼图
-    plot_ly(
-      pie_data,
-      labels = ~Category,
-      values = ~Value,
-      type = "pie",
-      textinfo = "label+percent",  # 显示类别和百分比
-      textposition = "inside",     # 强制标签显示在图内
-      insidetextorientation = "horizontal", # 标签水平显示
-      hoverinfo = "value",         # 悬停时显示实际数值
-      marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))
-    ) %>%
+    plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
+            textinfo = "label+value", # 仅显示实际数值
+            hoverinfo = "percent", # 悬停时显示类别和百分比
+            insidetextorientation = "radial",
+            marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))) %>%
       layout(
         annotations = list(
-          x = 0.5, y = -0.1,  # 调整注释的位置
+          x = 0.5, y = -0.1, # 调整注释的位置
           text = paste("统计时间范围：", time_range),
           showarrow = FALSE,
           font = list(size = 12, color = "#666")
         ),
-        showlegend = FALSE,  # 隐藏图例
-        paper_bgcolor = "#F9F9F9"  # 设置背景颜色
+        showlegend = FALSE, # 显示图例
+        paper_bgcolor = "#F9F9F9" # 设置整个图表容器背景色
       )
   })
+  
   
   output$confirm_expense_check_ui <- renderUI({
     req(selected_range()) # 确保有选定的时间范围
