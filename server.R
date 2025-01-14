@@ -3950,22 +3950,35 @@ server <- function(input, output, session) {
     time_range <- paste(as.Date(input$time_range[1]), "至", as.Date(input$time_range[2]))
     
     # 绘制饼图
-    plot_ly(pie_data, labels = ~Category, values = ~Value, type = "pie",
-            textinfo = "label+value", # 仅显示实际数值
-            hoverinfo = "percent", # 悬停时显示类别和百分比
-            insidetextorientation = "radial",
-            marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))) %>%
+    plot_ly(
+      pie_data,
+      labels = ~Category,
+      values = ~Value,
+      type = "pie",
+      textinfo = "label+value",  # 显示标签和数值
+      hoverinfo = "label+percent",  # 悬停显示类别和百分比
+      insidetextorientation = "radial",
+      marker = list(colors = c("#4CAF50", "#FF5733", "#FFC107"))
+    ) %>%
       layout(
         annotations = list(
-          x = 0.5, y = -0.1, # 调整注释的位置
+          x = 0.5, y = -0.2,  # 调整注释的位置
           text = paste("统计时间范围：", time_range),
           showarrow = FALSE,
           font = list(size = 12, color = "#666")
         ),
-        showlegend = FALSE, # 显示图例
-        paper_bgcolor = "#F9F9F9" # 设置整个图表容器背景色
+        showlegend = FALSE,  # 隐藏图例
+        paper_bgcolor = "#F9F9F9",  # 背景颜色
+        margin = list(l = 50, r = 50, t = 50, b = 100),  # 增加左右和底部边距
+        piecolorway = c("#4CAF50", "#FF5733", "#FFC107"),  # 配置饼图颜色
+        grid = list(
+          rows = 1, columns = 1  # 确保饼图居中
+        ),
+        height = 400,  # 调整高度
+        width = 400  # 调整宽度，适当缩小饼图
       )
   })
+  
   
   
   output$confirm_expense_check_ui <- renderUI({
