@@ -4095,7 +4095,7 @@ server <- function(input, output, session) {
       
       showNotification("核对后的采购开销与国内运费已登记到'买货卡（139）'！", type = "message")
     }, error = function(e) {
-      showNotification("更新失败，请检查数据库连接！", type = "error")
+      showNotification(paste0("更新失败!", e), type = "error")
     })
   })
   
