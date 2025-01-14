@@ -2250,15 +2250,13 @@ server <- function(input, output, session) {
           tags$h4(
             sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
             style = "color: #007BFF; font-weight: bold; margin: 0;"
-          )
+          ),
+          if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "")
+          downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
+                         style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
         ))
       }
       
-      if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "") {
-        downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                       style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
-      }
-
       # 检查是否所有物品状态为“美国发货”
       all_us_shipping <- all(items$Status == "美国发货")
       
@@ -2293,6 +2291,11 @@ server <- function(input, output, session) {
             class = "btn-success",
             style = "margin-left: auto; font-size: 14px; padding: 5px 10px;"
           )
+        }
+ 
+        if(!is.na(label_pdf_file_path()) && label_pdf_file_path() != "") {
+          downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
+                         style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
         }
       )
     })
