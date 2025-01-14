@@ -1681,6 +1681,7 @@ renderTransactionTable <- function(account_type) {
       转入金额, 
       转出金额, 
       当前余额,  # 添加“当前余额”列
+      图片,
       备注 = Remarks  # 更改列名为“备注”
     )
   
