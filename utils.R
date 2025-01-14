@@ -1748,9 +1748,19 @@ fetchAndFormatTransactionData <- function(account_type) {
 # 从账目表中获取信息填入左侧
 fetchInputFromTable <- function(account_type, selected_row) {
   if (!is.null(selected_row)) {
+    # 获取指定账户的数据
     data <- fetchAndFormatTransactionData(account_type)
+    
+    # 检查选中行是否有效
+    if (selected_row > nrow(data) || selected_row <= 0 || nrow(data) == 0) {
+      showNotification("选中的行无效或数据为空！", type = "error")
+      return(NULL)
+    }
+    
+    # 提取选中行的数据
     selected_data <- data[selected_row, ]
     
+    # 更新输入框内容
     updateNumericInput(session, "amount", value = ifelse(!is.na(selected_data$AmountIn), 
                                                          as.numeric(selected_data$AmountIn), 
                                                          as.numeric(selected_data$AmountOut)))
@@ -1759,9 +1769,16 @@ fetchInputFromTable <- function(account_type, selected_row) {
     updateTimeInput(session, "custom_time", value = format(as.POSIXct(selected_data$TransactionTime), "%H:%M:%S"))
     updateTextAreaInput(session, "remarks", value = selected_data$Remarks)
     
-    return(selected_data$TransactionID)
+    # 返回 TransactionID 和 TransactionImagePath
+    return(list(
+      TransactionID = selected_data$TransactionID,
+      TransactionImagePath = selected_data$TransactionImagePath
+    ))
   }
+  
+  return(NULL)  # 未选中行时返回 NULL
 }
+
 
 # 从分页上获取当前账户名
 getAccountType <- function(input) {
@@ -1793,6 +1810,7 @@ update_balance <- function(account_type, con) {
   )
   
   dbExecute(con, query)
+  showNotification("余额记录已重新计算", type = "message")
 }
 
 

@@ -3373,16 +3373,11 @@ server <- function(input, output, session) {
     
     # 区分“登记”和“更新”模式
     if (is_update_mode()) {
-      transaction_id <- selected_transaction()
-      if (is.null(transaction_id) || length(transaction_id) != 1) {
-        showNotification("选中的 TransactionID 无效！", type = "error")
-        return()
-      }
-      
       image_path <- process_image_upload(
-        sku = transaction_id,
+        sku = selected_TransactionID(),
         file_data = image_transactions$uploaded_file(),
-        pasted_data = image_transactions$pasted_file()
+        pasted_data = image_transactions$pasted_file(),
+        inventory_path = selected_TransactionImagePath(),
       )
       
       if (is.null(image_path) || length(image_path) != 1) {
@@ -3405,9 +3400,12 @@ server <- function(input, output, session) {
         )
         showNotification("记录更新成功！", type = "message")
         
+        update_balance(account_type, con)
+        
         # 重置为“登记”模式
         is_update_mode(FALSE)
-        selected_transaction(NULL)
+        selected_TransactionID(NULL)
+        selected_TransactionImagePath(NULL)
         updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
         
         # 重置输入框
@@ -3502,7 +3500,6 @@ server <- function(input, output, session) {
           
           # 重新计算所有balance记录
           update_balance(account_type, con)
-          showNotification("余额记录已重新计算", type = "message")
           
           # 自动刷新账户余额总览统计
           updateAccountOverview()
@@ -3585,7 +3582,8 @@ server <- function(input, output, session) {
     
     # 重置为“登记”模式
     is_update_mode(FALSE)
-    selected_transaction(NULL)
+    selected_TransactionID(NULL)
+    selected_TransactionImagePath(NULL)
     updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
     
     showNotification("表单已重置！", type = "message")
@@ -3593,8 +3591,8 @@ server <- function(input, output, session) {
   
   
   is_update_mode <- reactiveVal(FALSE)  # 初始化为登记模式
-  selected_transaction <- reactiveVal(NULL)  # 存储选中的记录 ID
-  
+  selected_TransactionID  <- reactiveVal(NULL)  # 存储选中的记录 ID
+  selected_TransactionImagePath <- reactiveVal(NULL)  # 存储选中的记录图片路径
   
   # 监听 工资卡 点选
   observeEvent(input$salary_card_table_rows_selected, {
@@ -3602,10 +3600,9 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      TransactionID <- fetchInputFromTable("工资卡", selected_row)
-      
-      # 记录当前选中的记录 ID
-      selected_transaction(TransactionID)
+      fetchData <- fetchInputFromTable("工资卡", selected_row)
+      selected_TransactionID(fetchData$TransactionID)
+      selected_TransactionImagePath(fetchData$TransactionImagePath)
       
       # 切换按钮为“更新”
       is_update_mode(TRUE)
@@ -3621,10 +3618,9 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      TransactionID <- fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected)
-      
-      # 记录当前选中的记录 ID
-      selected_transaction(TransactionID)
+      fetchData <- fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected)
+      selected_TransactionID(fetchData$TransactionID)
+      selected_TransactionImagePath(fetchData$TransactionImagePath)
       
       # 切换按钮为“更新”
       is_update_mode(TRUE)
@@ -3640,10 +3636,9 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      TransactionID <- fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected)
-      
-      # 记录当前选中的记录 ID
-      selected_transaction(TransactionID)
+      fetchData <- fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected)
+      selected_TransactionID(fetchData$TransactionID)
+      selected_TransactionImagePath(fetchData$TransactionImagePath)
       
       # 切换按钮为“更新”
       is_update_mode(TRUE)
@@ -3659,10 +3654,9 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      TransactionID <- fetchInputFromTable("一般户卡", input$general_card_table_rows_selected)
-      
-      # 记录当前选中的记录 ID
-      selected_transaction(TransactionID)
+      fetchData <- fetchInputFromTable("一般户卡", input$general_card_table_rows_selected)
+      selected_TransactionID(fetchData$TransactionID)
+      selected_TransactionImagePath(fetchData$TransactionImagePath)
       
       # 切换按钮为“更新”
       is_update_mode(TRUE)
@@ -4260,8 +4254,7 @@ server <- function(input, output, session) {
       
       # 重新计算所有balance记录
       update_balance("买货卡", con)
-      showNotification("余额记录已重新计算", type = "message")
-      
+
     }, error = function(e) {
       showNotification(paste0("更新失败!", e), type = "error")
     })
