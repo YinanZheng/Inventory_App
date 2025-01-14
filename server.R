@@ -2234,14 +2234,8 @@ server <- function(input, output, session) {
     order_status <- selected_order$OrderStatus
     us_tracking_number <- selected_order$UsTrackingNumber
     
-    showNotification(us_tracking_number)
-    
-    if(is.null(us_tracking_number) || us_tracking_number == "") {
-      label_pdf_file_path(NULL)
-    } else {
-      label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(us_tracking_number, ".pdf")))
-    }
-    
+    label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(us_tracking_number, ".pdf")))
+ 
     # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
     
@@ -2258,9 +2252,10 @@ server <- function(input, output, session) {
             sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
             style = "color: #007BFF; font-weight: bold; margin: 0;"
           ),
-          if(!is.null(label_pdf_file_path()) && label_pdf_file_path() != "")
-          downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                         style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
+          if(selected_order$LabelStatus != "无") {
+            downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
+                           style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
+          }
         ))
       }
       
@@ -2300,7 +2295,7 @@ server <- function(input, output, session) {
           )
         },
         
-        if(!is.null(label_pdf_file_path()) && label_pdf_file_path() != "") {
+        if(selected_order$LabelStatus != "无") {
           downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
                          style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
         }
