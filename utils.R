@@ -1702,7 +1702,7 @@ renderTransactionTable <- function(account_type) {
       转入金额 = ifelse(Amount > 0, sprintf("%.2f", Amount), NA),          # 转入金额
       转出金额 = ifelse(Amount < 0, sprintf("%.2f", abs(Amount)), NA),     # 转出金额
       当前余额 = sprintf("%.2f", Balance),  # 当前余额（保留两位小数）
-      图片 = render_image_column(TransactionImagePath)          
+      图片 = TransactionImagePath,      
     ) %>%
     select(
       转账时间,  # 时间列
