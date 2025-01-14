@@ -3480,7 +3480,7 @@ server <- function(input, output, session) {
   })
   
   # 转账证据图片处理模块
-  image_purchase <- imageModuleServer("image_transactions")
+  image_transactions <- imageModuleServer("image_transactions")
   
 
   
