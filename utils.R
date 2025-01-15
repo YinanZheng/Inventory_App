@@ -1133,7 +1133,7 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
   
   if (length(usps_line_index) > 0) {
     # 向前数第三行和第四行获取潜在姓名行
-    name_line_indices <- usps_line_index - c(3, 4)
+    name_line_indices <- usps_line_index - c(3:5)
     name_line_indices <- name_line_indices[name_line_indices > 0]  # 确保索引有效
     
     potential_names <- lines[name_line_indices]
