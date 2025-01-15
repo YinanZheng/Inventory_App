@@ -1811,7 +1811,7 @@ handleTransactionImageClick <- function(account_type, input_table, image_col_ind
         # 弹出模态框显示图片
         showModal(modalDialog(
           title = paste(account_type, "运单截图预览"),
-          img(src = img_host_path, height = "500px", style = "display: block; margin: 0 auto;"),
+          img(src = img_host_path, height = "600px", style = "display: block; margin: 0 auto;"),
           size = "l",
           easyClose = TRUE,
           footer = modalButton("关闭")
