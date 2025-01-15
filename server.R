@@ -3329,6 +3329,24 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  resetToCreateMode <- function() {
+    is_update_mode(FALSE)  # 切换回登记模式
+    selected_TransactionID(NULL)  # 清空选中的 TransactionID
+    selected_TransactionImagePath(NULL)  # 清空选中的 TransactionImagePath
+    
+    # 更新按钮为“登记”
+    updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
+  }
+  
+  resetTransactionForm <- function(session) {
+    updateNumericInput(session, "amount", value = NULL)  # 重置金额
+    updateRadioButtons(session, "transaction_type", selected = "out")  # 重置为“转出”
+    updateDateInput(session, "custom_date", value = Sys.Date())  # 重置为当前日期
+    updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))  # 重置为当前时间
+    updateTextAreaInput(session, "remarks", value = "")  # 清空备注
+    image_transactions$reset()  # 重置图片上传组件
+  }
+  
   # 分页切换更新
   observe({
     if (input$transaction_tabs == "账户余额总览") {
@@ -3336,15 +3354,23 @@ server <- function(input, output, session) {
     }
     if (input$transaction_tabs == "工资卡") {
       refreshTransactionTable("工资卡")
+      resetToCreateMode()
+      resetTransactionForm(session)
     }
     if (input$transaction_tabs == "美元卡") {
       refreshTransactionTable("美元卡")
+      resetToCreateMode()
+      resetTransactionForm(session)
     }
     if (input$transaction_tabs == "买货卡") {
       refreshTransactionTable("买货卡")
+      resetToCreateMode()
+      resetTransactionForm(session)
     }
     if (input$transaction_tabs == "一般户卡") {
       refreshTransactionTable("一般户卡")
+      resetToCreateMode()
+      resetTransactionForm(session)
     }
   })
   
@@ -3406,19 +3432,8 @@ server <- function(input, output, session) {
         
         update_balance(account_type, con)
         
-        # 重置为“登记”模式
-        is_update_mode(FALSE)
-        selected_TransactionID(NULL)
-        selected_TransactionImagePath(NULL)
-        updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
-        
-        # 重置输入框
-        updateNumericInput(session, "amount", value = NULL)
-        updateRadioButtons(session, "transaction_type", selected = "out")
-        updateDateInput(session, "custom_date", value = Sys.Date())
-        updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
-        updateTextAreaInput(session, "remarks", value = "")
-        image_transactions$reset()
+        resetToCreateMode() # 重置为“登记”模式
+        resetTransactionForm(session) # 重置输入框
         
         # 自动更新账户余额和表格
         updateAccountOverview()
@@ -3461,13 +3476,7 @@ server <- function(input, output, session) {
           update_balance(account_type, con)
         }
         
-        # 重置输入框
-        updateNumericInput(session, "amount", value = NULL)
-        updateRadioButtons(session, "transaction_type", selected = "out")
-        updateDateInput(session, "custom_date", value = Sys.Date())
-        updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
-        updateTextAreaInput(session, "remarks", value = "")
-        image_transactions$reset()
+        resetTransactionForm(session) # 重置输入框
         
         # 自动更新账户余额和表格
         updateAccountOverview()
@@ -3532,19 +3541,8 @@ server <- function(input, output, session) {
       showNotification("请选择要删除的记录", type = "error")
     }
     
-    # 重置为“登记”模式
-    is_update_mode(FALSE)
-    selected_TransactionID(NULL)
-    selected_TransactionImagePath(NULL)
-    updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
-    
-    # 重置输入框
-    updateNumericInput(session, "amount", value = NULL)
-    updateRadioButtons(session, "transaction_type", selected = "out")
-    updateDateInput(session, "custom_date", value = Sys.Date())
-    updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
-    updateTextAreaInput(session, "remarks", value = "")
-    image_transactions$reset()
+    resetToCreateMode() # 重置为“登记”模式
+    resetTransactionForm(session) # 重置输入框
   })
   
   # 资金转移
@@ -3600,22 +3598,8 @@ server <- function(input, output, session) {
   
   # 重置
   observeEvent(input$reset_form, {
-    # 重置所有账务登记表单
-    updateNumericInput(session, "amount", value = 0)
-    updateRadioButtons(session, "transaction_type", selected = "out")
-    updateDateInput(session, "custom_date", value = Sys.Date())
-    updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
-    updateTextAreaInput(session, "remarks", value = "")
-    
-    # 重置图片上传模块
-    image_transactions$reset()
-    
-    # 重置为“登记”模式
-    is_update_mode(FALSE)
-    selected_TransactionID(NULL)
-    selected_TransactionImagePath(NULL)
-    updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
-    
+    resetToCreateMode() # 重置为“登记”模式
+    resetTransactionForm(session) # 重置输入框
     showNotification("表单已重置！", type = "message")
   })
   
