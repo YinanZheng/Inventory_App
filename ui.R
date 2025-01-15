@@ -694,7 +694,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        style = "width: 350px;",
+        style = "width: 360px;",
         itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
@@ -723,7 +723,7 @@ ui <- navbarPage(
               width = 6,
               actionButton(
                 "update_info_btn", 
-                "更新商品信息", 
+                "更新信息", 
                 icon = icon("pen"), 
                 style = "background-color: #006400; color: white; width: 100%;"
               )
