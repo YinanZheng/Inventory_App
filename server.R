@@ -3530,6 +3530,12 @@ server <- function(input, output, session) {
     } else {
       showNotification("请选择要删除的记录", type = "error")
     }
+    
+    # 重置为“登记”模式
+    is_update_mode(FALSE)
+    selected_TransactionID(NULL)
+    selected_TransactionImagePath(NULL)
+    updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
   })
   
   # 资金转移
