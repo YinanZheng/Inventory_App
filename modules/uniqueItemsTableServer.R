@@ -1,9 +1,17 @@
 uniqueItemsTableServer <- function(input, output, session, column_mapping, selection = "single", data, 
                                    options = table_default_options) {
   output$unique_items_table <- renderDT({
+    
+    # 获取并格式化数据
+    formatted_data <- data() %>% 
+      mutate(
+        IntlShippingCost = sprintf("%.2f", IntlShippingCost), # 格式化为两位小数
+        DomesticShippingCost = sprintf("%.2f", DomesticShippingCost) # 格式化为两位小数
+      )
+    
     # 初始化渲染表
     datatable_and_names <- render_table_with_images(
-      data = data(),                 # 使用传递的 reactive 数据源
+      data = formatted_data,                
       column_mapping = column_mapping, # 映射用户友好的列名
       selection = selection, 
       image_column = "ItemImagePath",
