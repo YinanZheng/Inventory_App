@@ -6,4 +6,3 @@ Inventory_App.Rproj
 tests/test-app/server.R
 tests/test-app/ui.R
 .DS_Store
-/maintainance
