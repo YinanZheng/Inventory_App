@@ -1102,7 +1102,7 @@ server <- function(input, output, session) {
         update_status_value = "国内入库",
         count_label = "待入库数", 
         count_field = "PendingQuantity", 
-        refresh_trigger = NULL, # 批量处理完了再触发刷新      
+        refresh_trigger = unique_items_data_refresh_trigger,    
         con,                  
         input, output, session
       )
@@ -1118,9 +1118,6 @@ server <- function(input, output, session) {
         showNotification("自动入库失败，可能物品已全部入库或数据异常！", type = "error")
       }
       
-      # 刷新 UI 和数据
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-      
       # 清空 SKU 输入框
       updateTextInput(session, "inbound_sku", value = "")
       runjs("document.getElementById('inbound_sku').focus();")
@@ -1135,7 +1132,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # 确认入库逻辑
+  # 手动确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
     # 从输入中获取入库数量，确保为正整数
     inbound_quantity <- as.integer(input$inbound_quantity)
@@ -1155,7 +1152,7 @@ server <- function(input, output, session) {
         update_status_value = "国内入库",
         count_label = "待入库数", 
         count_field = "PendingQuantity", 
-        refresh_trigger = NULL, # 批量处理完了再触发刷新      
+        refresh_trigger = unique_items_data_refresh_trigger,      
         con,                  
         input, output, session
       )
