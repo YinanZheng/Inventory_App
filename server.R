@@ -2752,6 +2752,17 @@ server <- function(input, output, session) {
     }
   })
 
+  # 清空
+  observeEvent(input$clear_info_btn, {
+    # 清空单价和运费输入框
+    updateNumericInput(session, "update_product_cost", value = NULL)
+    updateNumericInput(session, "update_shipping_cost", value = NULL)
+    
+    # 重置图片上传组件
+    image_transactions$reset()
+    
+    showNotification("商品信息已清空！", type = "message")
+  })
   
   ###
   
