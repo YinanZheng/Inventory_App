@@ -539,19 +539,20 @@ ui <- navbarPage(
                            )),
                            style = "color: #007BFF; font-weight: bold; margin-bottom: 0px;"
                          ),
-                         
+                      
+                         # 使用 Unicode 显示箭头
                          div(
-                           style = "display: flex; align-items: center; margin-right: 10px;",
-                           
-                           # 使用 Unicode 显示箭头
+                           style = "display: flex; align-items: center;",  # 使用 Flex 布局让内容在同一行显示
+                           tags$label("排序:", style = "margin-right: 10px; font-weight: bold; font-size: 14px;"),  # 添加排序标签
                            radioButtons(
                              inputId = "arrow_direction",
-                             label = "排序",  # 去掉默认标签
+                             label = NULL,  # 去掉默认的 radioButtons 标签
                              choices = list("↑" = "up", "↓" = "down"),  # Unicode 上箭头和下箭头
                              selected = "up",  # 默认选中上箭头
                              inline = TRUE  # 横向排列
                            )
                          ),
+                         
                          # SKU 输入栏
                          textInput(
                            inputId = "sku_to_shelf",
