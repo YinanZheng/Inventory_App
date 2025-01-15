@@ -3458,7 +3458,6 @@ server <- function(input, output, session) {
         if (!is.null(latest_time) && transaction_datetime < as.POSIXct(latest_time)) {
           # 如果插入记录不是最新的，则重新计算余额
           update_balance(account_type, con)
-          showNotification("余额记录已重新计算", type = "message")
         }
         
         # 重置输入框
