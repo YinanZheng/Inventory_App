@@ -537,7 +537,7 @@ ui <- navbarPage(
                              "  货架  ",
                              span(style = "display: inline-flex; color: #007BFF; font-size: 18px;", textOutput("shelf_count")) # 动态显示数量
                            )),
-                           style = "color: #007BFF; font-weight: bold; margin-bottom: 0px;"
+                           style = "color: #007BFF; font-weight: bold;"
                          ),
                       
                          # 使用 Unicode 显示箭头
