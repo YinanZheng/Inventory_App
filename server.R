@@ -532,6 +532,7 @@ server <- function(input, output, session) {
   
   unique_items_table_manage_selected_row <- callModule(uniqueItemsTableServer, "unique_items_table_manage",
                                                        column_mapping <- c(common_columns, list(
+                                                         DomesticShippingCost = "国内运费",
                                                          PurchaseTime = "采购日",
                                                          DomesticEntryTime = "入库日",
                                                          DomesticExitTime = "出库日",
