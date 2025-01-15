@@ -4131,7 +4131,12 @@ server <- function(input, output, session) {
         type = "scatter",
         mode = "markers+text", # 同时使用 markers 和 text 模式
         x = ~GroupLabel,
-        y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
+        # y = ~get(y_var) + (max(data[[y_var]], na.rm = TRUE) * 0.15), # 在柱子顶部留出空间
+        yaxis = list(
+          title = "开销（元）",
+          tickfont = list(size = 12),
+          showgrid = TRUE  # 保留网格线
+        ),
         marker = list(
           size = 20, # 圆点的大小
           color = ~ifelse(AllPurchaseCheck, "#039e2a", "#D3D3D3"), # 根据状态设置深绿色或浅灰色
