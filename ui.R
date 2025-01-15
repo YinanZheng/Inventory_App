@@ -944,7 +944,7 @@ ui <- navbarPage(
           
           # 账务登记分页
           tabPanel(
-            title = "账务登记",
+            title = "账务登记", icon = icon("file-invoice-dollar"),
             tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
             
             # 单一金额输入框
@@ -991,7 +991,7 @@ ui <- navbarPage(
           
           # 资金转移分页
           tabPanel(
-            title = "资金转移",
+            title = "资金转移", icon = icon("exchange-alt"),
             tags$h4("资金转移", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
             
             # 转移金额输入框
