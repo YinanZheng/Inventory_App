@@ -1141,9 +1141,14 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
     # 检查每一行是否可能是名字
     for (potential_name in potential_names) {
       if (!is.na(potential_name)) {
-        # 排除包含数字的行
+        # # 排除包含数字的行
+        # if (stri_detect_regex(potential_name, "\\d")) {
+        #   next  # 跳过包含数字的行
+        # }
+        
+        # 如果行中有数字，尝试仅移除数字部分进行进一步处理
         if (stri_detect_regex(potential_name, "\\d")) {
-          next  # 跳过包含数字的行
+          potential_name <- gsub("\\d", "", potential_name)
         }
         
         # 清理名字，去掉前缀或无用字符
