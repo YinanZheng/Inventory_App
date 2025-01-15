@@ -2655,6 +2655,105 @@ server <- function(input, output, session) {
     id = "manage_filter",
     makers_items_map = makers_items_map
   )
+
+  # 采购商品图片处理模块
+  image_manage <- imageModuleServer("image_manage")
+  
+  # Handle image update button click
+  observeEvent(input$update_image_btn, {
+    # 1. 确保用户选中了单行
+    selected_rows <- unique_items_table_manage_selected_row()
+    if (length(selected_rows) != 1) {
+      showNotification("请确保只选中一行！", type = "error")
+      return()
+    }
+    
+    # 从选中的行获取 SKU
+    selected_item <- filtered_unique_items_data_manage()[selected_rows, ]
+    selected_sku <- selected_item$SKU
+    
+    if (is.null(selected_sku) || selected_sku == "") {
+      showNotification("无法获取所选行的 SKU，请检查！", type = "error")
+      return()
+    }
+    
+    # 检查 SKU 是否存在于库存表
+    existing_inventory_items <- inventory()
+    if (!selected_sku %in% existing_inventory_items$SKU) {
+      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
+      return()
+    }
+    
+    # 获取当前 SKU 的图片路径
+    existing_item <- existing_inventory_items[existing_inventory_items$SKU == selected_sku, ]
+    existing_image_path <- existing_item$ItemImagePath[1]
+    
+    # 处理图片上传或粘贴
+    updated_image_path <- process_image_upload(
+      sku = selected_sku,
+      file_data = image_manage$uploaded_file(),
+      pasted_data = image_manage$pasted_file(),
+      inventory_path = existing_image_path
+    )
+    
+    # 检查处理结果并更新数据库
+    if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
+      tryCatch({
+        # 更新数据库中 SKU 对应的图片路径
+        dbExecute(con, "UPDATE inventory 
+                    SET ItemImagePath = ? 
+                    WHERE SKU = ?",
+                  params = list(updated_image_path, selected_sku))
+        
+        # 更新数据并触发 UI 刷新
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+        
+        # 显示成功通知
+        showNotification(paste0("SKU ", selected_sku, " 的图片已成功更新！"), type = "message")
+      }, error = function(e) {
+        # 数据库操作失败时提示错误
+        showNotification("图片路径更新失败，请重试！", type = "error")
+      })
+    } else {
+      # 未检测到有效图片数据
+      showNotification("未检测到有效的图片数据，请上传或粘贴图片！", type = "error")
+    }
+    
+    # 重置图片上传状态
+    image_manage$reset()
+  })
+  
+  # 点击填写单价与运费
+  observeEvent(unique_items_table_manage_selected_row(), {
+    selected_rows <- unique_items_table_manage_selected_row()
+    
+    # 检查是否有选中行
+    if (!is.null(selected_rows) && length(selected_rows) > 0) {
+      # 获取最新点击的行索引
+      latest_row <- tail(selected_rows, n = 1)
+      
+      # 获取过滤后的数据
+      data <- filtered_unique_items_data_manage()
+      
+      # 确保数据框不为空且行索引有效
+      if (!is.null(data) && nrow(data) >= latest_row) {
+        selected_data <- data[latest_row, ]  # 提取最新点击的行数据
+        
+        # 更新输入框
+        updateNumericInput(session, "update_product_cost", value = selected_data$ProductCost)
+        updateNumericInput(session, "update_shipping_cost", value = selected_data$DomesticShippingCost)
+        
+        showNotification("已加载最新点击记录的信息！", type = "message")
+      } else {
+        showNotification("选中的行无效或数据为空！", type = "error")
+      }
+    } else {
+      showNotification("未选中任何行！", type = "warning")
+    }
+  })
+
+  
+  ###
   
   # 监听删除按钮点击事件，弹出确认框
   observeEvent(input$confirm_delete_btn, {
@@ -2732,74 +2831,6 @@ server <- function(input, output, session) {
     
     # 关闭确认框
     removeModal()
-  })
-  
-  
-  # 采购商品图片处理模块
-  image_manage <- imageModuleServer("image_manage")
-  
-  # Handle image update button click
-  observeEvent(input$update_image_btn, {
-    # 1. 确保用户选中了单行
-    selected_rows <- unique_items_table_manage_selected_row()
-    if (length(selected_rows) != 1) {
-      showNotification("请确保只选中一行！", type = "error")
-      return()
-    }
-    
-    # 从选中的行获取 SKU
-    selected_item <- filtered_unique_items_data_manage()[selected_rows, ]
-    selected_sku <- selected_item$SKU
-    
-    if (is.null(selected_sku) || selected_sku == "") {
-      showNotification("无法获取所选行的 SKU，请检查！", type = "error")
-      return()
-    }
-    
-    # 检查 SKU 是否存在于库存表
-    existing_inventory_items <- inventory()
-    if (!selected_sku %in% existing_inventory_items$SKU) {
-      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
-      return()
-    }
-    
-    # 获取当前 SKU 的图片路径
-    existing_item <- existing_inventory_items[existing_inventory_items$SKU == selected_sku, ]
-    existing_image_path <- existing_item$ItemImagePath[1]
-    
-    # 处理图片上传或粘贴
-    updated_image_path <- process_image_upload(
-      sku = selected_sku,
-      file_data = image_manage$uploaded_file(),
-      pasted_data = image_manage$pasted_file(),
-      inventory_path = existing_image_path
-    )
-    
-    # 检查处理结果并更新数据库
-    if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
-      tryCatch({
-        # 更新数据库中 SKU 对应的图片路径
-        dbExecute(con, "UPDATE inventory 
-                    SET ItemImagePath = ? 
-                    WHERE SKU = ?",
-                  params = list(updated_image_path, selected_sku))
-        
-        # 更新数据并触发 UI 刷新
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-        
-        # 显示成功通知
-        showNotification(paste0("SKU ", selected_sku, " 的图片已成功更新！"), type = "message")
-      }, error = function(e) {
-        # 数据库操作失败时提示错误
-        showNotification("图片路径更新失败，请重试！", type = "error")
-      })
-    } else {
-      # 未检测到有效图片数据
-      showNotification("未检测到有效的图片数据，请上传或粘贴图片！", type = "error")
-    }
-    
-    # 重置图片上传状态
-    image_manage$reset()
   })
   
   
