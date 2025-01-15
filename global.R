@@ -92,11 +92,11 @@ table_default_options <<- list(
   searching = FALSE,
   columnDefs = list(
     list(
-      targets = which(names(data) == "备注"), # 定位备注列
+      targets = which(names(data) == "备注"), # 定位“备注”列
       render = JS(
         "function(data, type, row, meta) {
                if (type === 'display' && data.length > 50) {
-                 return '<button onclick=\"alert(\\'' + data.replace(/'/g, '\\\\'') + '\\')\">查看</button>';
+                 return '<span title=\"' + data + '\">' + data.substr(0, 50) + '...</span>';
                } else {
                  return data;
                }
