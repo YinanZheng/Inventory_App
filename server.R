@@ -2659,9 +2659,8 @@ server <- function(input, output, session) {
   # 采购商品图片处理模块
   image_manage <- imageModuleServer("image_manage")
   
-  # 处理更新按钮点击事件
-  observeEvent(input$update_info_btn, {
-    # 1. 确保用户选中了单行
+  # 处理更新图片
+  observeEvent(input$update_image_btn, {
     selected_rows <- unique_items_table_manage_selected_row()
     if (length(selected_rows) != 1) {
       showNotification("请确保只选中一行！", type = "error")
@@ -2669,7 +2668,7 @@ server <- function(input, output, session) {
     }
     
     # 从选中的行获取 SKU
-    selected_item <- filtered_unique_items_data_manage()[selected_rows, ]
+    selected_item <- unique_items_data()[selected_rows, ]
     selected_sku <- selected_item$SKU
     
     if (is.null(selected_sku) || selected_sku == "") {
@@ -2680,15 +2679,15 @@ server <- function(input, output, session) {
     # 检查 SKU 是否存在于库存表
     existing_inventory_items <- inventory()
     if (!selected_sku %in% existing_inventory_items$SKU) {
-      showNotification("库存中无此 SKU 商品，无法更新信息！", type = "error")
+      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
       return()
     }
     
-    # 获取当前 SKU 的记录
+    # 获取当前 SKU 的图片路径
     existing_item <- existing_inventory_items[existing_inventory_items$SKU == selected_sku, ]
-    
-    # 2. 处理图片更新
     existing_image_path <- existing_item$ItemImagePath[1]
+    
+    # 处理图片上传或粘贴
     updated_image_path <- process_image_upload(
       sku = selected_sku,
       file_data = image_manage$uploaded_file(),
@@ -2696,47 +2695,85 @@ server <- function(input, output, session) {
       inventory_path = existing_image_path
     )
     
-    # 3. 获取用户输入的新单价和运费
+    # 检查处理结果并更新数据库
+    if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
+      tryCatch({
+        # 更新数据库中 SKU 对应的图片路径
+        dbExecute(con, "UPDATE inventory 
+                    SET ItemImagePath = ? 
+                    WHERE SKU = ?",
+                  params = list(updated_image_path, selected_sku))
+        
+        # 更新数据并触发 UI 刷新
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+        
+        # 显示成功通知
+        showNotification(paste0("SKU ", selected_sku, " 的图片已成功更新！"), type = "message")
+      }, error = function(e) {
+        # 数据库操作失败时提示错误
+        showNotification("图片路径更新失败，请重试！", type = "error")
+      })
+    } else {
+      # 未检测到有效图片数据
+      showNotification("未检测到有效的图片数据，请上传或粘贴图片！", type = "error")
+    }
+    
+    # 重置图片上传状态
+    image_manage$reset()
+  })
+  
+  # 处理更新价格
+  observeEvent(input$update_info_btn, {
+    # 获取所有选中行索引
+    selected_rows <- unique_items_table_manage_selected_row()
+    
+    # 验证是否有选中行
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      showNotification("请至少选中一行进行更新！", type = "error")
+      return()
+    }
+    
+    # 获取过滤后的数据
+    selected_items <- filtered_unique_items_data_manage()[selected_rows, ]
+    
+    # 验证用户输入的新数据
     new_product_cost <- input$update_product_cost
     new_shipping_cost <- input$update_shipping_cost
     
-    # 验证用户输入
     if (is.null(new_product_cost) || new_product_cost < 0) {
       showNotification("请输入有效的单价！", type = "error")
       return()
     }
-    
     if (is.null(new_shipping_cost) || new_shipping_cost < 0) {
       showNotification("请输入有效的国内运费！", type = "error")
       return()
     }
     
-    # 构建更新语句和参数
-    update_query <- "UPDATE inventory SET ItemImagePath = ?, ProductCost = ?, DomesticShippingCost = ? WHERE SKU = ?"
-    update_params <- list(
-      ifelse(!is.null(updated_image_path) && !is.na(updated_image_path), updated_image_path, existing_image_path),
-      new_product_cost,
-      new_shipping_cost,
-      selected_sku
-    )
-    
-    # 4. 更新数据库记录
+    # 遍历选中行并更新数据库
     tryCatch({
-      dbExecute(con, update_query, params = update_params)
+      lapply(1:nrow(selected_items), function(i) {
+        unique_id <- selected_items$UniqueID[i]
+        
+        # 更新数据库
+        dbExecute(
+          con,
+          "UPDATE unique_items 
+         SET ProductCost = ?, DomesticShippingCost = ? 
+         WHERE UniqueID = ?",
+          params = list(new_product_cost, new_shipping_cost, unique_id)
+        )
+      })
       
-      # 更新数据并触发 UI 刷新
+      # 刷新数据表
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
       # 显示成功通知
-      showNotification(paste0("SKU ", selected_sku, " 的信息已成功更新！"), type = "message")
+      showNotification(paste0("成功更新了 ", nrow(selected_items), " 项物品的信息！"), type = "message")
     }, error = function(e) {
-      # 数据库操作失败时提示错误
-      showNotification("信息更新失败，请重试！", type = "error")
+      showNotification(paste("更新失败：", e$message), type = "error")
     })
-    
-    # 重置图片上传状态
-    image_manage$reset()
   })
+  
   
   # 点击填写单价与运费
   observeEvent(unique_items_table_manage_selected_row(), {

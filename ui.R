@@ -710,32 +710,17 @@ ui <- navbarPage(
           # 图片模块
           imageModuleUI("image_manage", label = "更新商品图片"),
           
-          # 修改单价输入框
-          numericInput("update_product_cost", "修改物品单价", value = NULL, min = 0, width = "100%"),
+          actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;"),
           
-          # 修改国内运费输入框
-          numericInput("update_shipping_cost", "修改国内运费（平摊）", value = NULL, min = 0, width = "100%"),
+          fluidRow(
+            column(6, numericInput("update_product_cost", "修改物品单价", value = NULL, min = 0, width = "100%")),
+            column(6, numericInput("update_shipping_cost", "修改国内运费（平摊）", value = NULL, min = 0, width = "100%"))
+          ),
           
           # 按钮
           fluidRow(
-            column(
-              width = 6,
-              actionButton(
-                "update_info_btn", 
-                "更新信息", 
-                icon = icon("pen"), 
-                style = "background-color: #006400; color: white; width: 100%;"
-              )
-            ),
-            column(
-              width = 6,
-              actionButton(
-                "clear_info_btn", 
-                "清空信息", 
-                icon = icon("eraser"), 
-                style = "background-color: #8B0000; color: white; width: 100%;"
-              )
-            )
+            column(6, actionButton("update_info_btn", "更新费用", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
+            column(6, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
           )
         ),
         
