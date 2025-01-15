@@ -929,7 +929,7 @@ register_order <- function(order_id, customer_name, customer_netname, platform, 
     # 确认运单 PDF 文件的状态
     label_status <- if (!is.null(tracking_number)) {
       if (file.exists(file.path("/var/uploads/shiplabels", paste0(tracking_number, ".pdf")))) {
-        "已传"
+        "已上传"
       } else {
         "无"
       }
@@ -1091,8 +1091,8 @@ update_label_status_column <- function(con, pdf_directory = "/var/uploads/shipla
       }, 
       ") THEN
           CASE
-            WHEN LabelStatus = '印出' THEN '印出'  -- 如果状态是 '印出'，保持不变
-            ELSE '已传'                          -- 否则更新为 '已传'
+            WHEN LabelStatus = '已打印' THEN '已打印'  -- 如果状态是 '已打印'，保持不变
+            ELSE '已上传'                          -- 否则更新为 '已上传'
           END
         ELSE '无'  -- 如果运单号存在但没有对应的 PDF 文件，更新为 '无'
       END"
