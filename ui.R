@@ -712,7 +712,7 @@ ui <- navbarPage(
           
           actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;"),
           
-          tags$hr(style = "margin: 5px 0; border: none;"),
+          tags$hr(style = "margin: 10px 0; border: none;"),
           
           fluidRow(
             column(6, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
@@ -721,8 +721,8 @@ ui <- navbarPage(
           
           # 按钮
           fluidRow(
-            column(8, actionButton("update_info_btn", "更新单价/运费", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
-            column(4, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
+            column(7, actionButton("update_info_btn", "更新单价/运费", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
+            column(5, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
           )
         ),
         
