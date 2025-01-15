@@ -1813,7 +1813,8 @@ handleTransactionImageClick <- function(account_type, input_table, image_col_ind
           title = paste(account_type, "运单截图预览"),
           img(src = img_host_path, height = "700px", style = "display: block; margin: 0 auto;"),
           size = "l",
-          easyClose = TRUE        
+          easyClose = TRUE,
+          footer = NULL
         ))
       }
     }
