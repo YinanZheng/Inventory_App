@@ -17,15 +17,15 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
   observeEvent(input$unique_items_table_cell_clicked, {
     info <- input$unique_items_table_cell_clicked
 
-    if (info$row > nrow(data()) || info$row <= 0) {
-      showNotification("无效的行索引！", type = "error")
-      return()
-    }
-
-    if (!"ItemImagePath" %in% colnames(data())) {
-      showNotification("图片路径列不存在！", type = "error")
-      return()
-    }
+    # if (info$row > nrow(data()) || info$row <= 0) {
+    #   showNotification("无效的行索引！", type = "error")
+    #   return()
+    # }
+    # 
+    # if (!"ItemImagePath" %in% colnames(data())) {
+    #   showNotification("图片路径列不存在！", type = "error")
+    #   return()
+    # }
 
     # 检查是否点击了图片列（第三列）
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
