@@ -1039,30 +1039,47 @@ ui <- navbarPage(
           ),
           fluidRow(
             column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #FFC107; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("买货卡(139)", style = "font-weight: bold;"),
-              tags$h3(textOutput("purchase_balance"))
+              class = "card shadow-lg",
+              style = "background: linear-gradient(135deg, #FFC107, #FF9800); color: white; padding: 20px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;",
+              tags$div(
+                style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
+                tags$img(src = "https://dummyimage.com/100x100/fff/000.png&text=$", width = "60px", height = "60px")
+              ),
+              tags$h4("买货卡 (139)", style = "font-weight: bold; margin-bottom: 10px;"),
+              tags$h3(textOutput("purchase_balance"), style = "font-size: 24px; margin-top: 0;")
             )),
             column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #6C757D; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("一般户卡(541)", style = "font-weight: bold;"),
-              tags$h3(textOutput("general_balance"))
+              class = "card shadow-lg",
+              style = "background: linear-gradient(135deg, #6C757D, #495057); color: white; padding: 20px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;",
+              tags$div(
+                style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
+                tags$img(src = "https://dummyimage.com/100x100/fff/000.png&text=$", width = "60px", height = "60px")
+              ),
+              tags$h4("一般户卡 (541)", style = "font-weight: bold; margin-bottom: 10px;"),
+              tags$h3(textOutput("general_balance"), style = "font-size: 24px; margin-top: 0;")
             )),
             column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #007BFF; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("工资卡(567)", style = "font-weight: bold;"),
-              tags$h3(textOutput("salary_balance"))
+              class = "card shadow-lg",
+              style = "background: linear-gradient(135deg, #007BFF, #0056b3); color: white; padding: 20px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;",
+              tags$div(
+                style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
+                tags$img(src = "https://dummyimage.com/100x100/fff/000.png&text=$", width = "60px", height = "60px")
+              ),
+              tags$h4("工资卡 (567)", style = "font-weight: bold; margin-bottom: 10px;"),
+              tags$h3(textOutput("salary_balance"), style = "font-size: 24px; margin-top: 0;")
             )),
             column(3, div(
-              class = "card shadow-sm",
-              style = "background-color: #28A745; color: white; padding: 20px; text-align: center; border-radius: 8px;",
-              tags$h4("美元卡(553)", style = "font-weight: bold;"),
-              tags$h3(textOutput("dollar_balance"))
+              class = "card shadow-lg",
+              style = "background: linear-gradient(135deg, #28A745, #1E7E34); color: white; padding: 20px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;",
+              tags$div(
+                style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
+                tags$img(src = "https://dummyimage.com/100x100/fff/000.png&text=$", width = "60px", height = "60px")
+              ),
+              tags$h4("美元卡 (553)", style = "font-weight: bold; margin-bottom: 10px;"),
+              tags$h3(textOutput("dollar_balance"), style = "font-size: 24px; margin-top: 0;")
             ))
-          )),
+          )
+          ),
           tabPanel(title = "买货卡(139)", value = "买货卡", DTOutput("purchase_card_table")),
           tabPanel(title = "一般户卡(541)", value = "一般户卡", DTOutput("general_card_table")),
           tabPanel(title = "工资卡(567)", value = "工资卡", DTOutput("salary_card_table")),
