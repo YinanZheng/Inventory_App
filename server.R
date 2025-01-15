@@ -3371,6 +3371,9 @@ server <- function(input, output, session) {
     transaction_date <- paste(input$custom_date, transaction_time)
     transaction_datetime <- as.POSIXct(transaction_date, format = "%Y-%m-%d %H:%M:%S")
     
+    # 生成 12 位 TransactionID
+    transaction_id <- generate_transaction_id(account_type, input$amount, input$remarks, transaction_datetime)
+    
     # 区分“登记”和“更新”模式
     if (is_update_mode()) {
       image_path <- process_image_upload(
