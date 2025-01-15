@@ -2668,7 +2668,7 @@ server <- function(input, output, session) {
     }
     
     # 从选中的行获取 SKU
-    selected_item <- unique_items_data()[selected_rows, ]
+    selected_item <- filtered_unique_items_data_manage()[selected_rows, ]
     selected_sku <- selected_item$SKU
     
     if (is.null(selected_sku) || selected_sku == "") {
