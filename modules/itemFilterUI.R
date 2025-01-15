@@ -71,7 +71,7 @@ itemFilterUI <- function(
                choices = NULL,            
                options = list(
                  placeholder = "商品名...",
-                 create = FALSE
+                 create = TRUE
                ),
                width = "100%"
              )
