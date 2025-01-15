@@ -21,16 +21,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
       if (info$col == 2) {  # 第三列在 R 中的索引是 2
         
-        
         img_path <- as.character(data()[info$row, "ItemImagePath"])
-
-        showNotification(img_path)
-        
-        # 确保图片路径为非空字符向量
-        if (is.null(img_path) || is.na(img_path) || !is.character(img_path) || img_path == "") {
-          showNotification("无效的图片路径！", type = "error")
-          return()
-        }
 
         img_host_path <- paste0(host_url, "/images/", basename(img_path))
 
