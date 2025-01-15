@@ -3287,7 +3287,7 @@ server <- function(input, output, session) {
       } else {
         # 如果有多个物流单号或为空，清空输入框并提示用户
         updateTextInput(session, "intl_tracking_number", value = "")
-        showNotification("选中行包含多个不同的物流单号或为空，请检查！", type = "warning")
+        showNotification("选中行包含多个不同的物流单号或为空！", type = "warning")
       }
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
@@ -4871,7 +4871,7 @@ server <- function(input, output, session) {
                                                         OrderID = "订单号"
                                                       )), 
                                                       selection = "multiple",
-                                                      option = modifyList(table_decault_options, list(searching = TRUE)),
+                                                      option = modifyList(table_default_options, list(searching = TRUE)),
                                                       data = unique_items_data)
   
   # 更新库存状态按钮
