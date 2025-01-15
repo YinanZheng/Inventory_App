@@ -27,7 +27,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
 
         # 弹出窗口显示大图
         showModal(modalDialog(
-          title = "订单图片预览",
+          title = "物品图片预览",
           tags$div(
             style = "overflow: auto; max-height: 700px; text-align: center;",
             tags$img(
