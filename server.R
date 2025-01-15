@@ -3393,27 +3393,44 @@ server <- function(input, output, session) {
     }
     
     tryCatch({
+      # 获取选中行的物品数据
       selected_items <- filtered_unique_items_data_logistics()[selected_rows, ]
+      selected_tracking_numbers <- unique(na.omit(selected_items$IntlTracking))
       
-      # 解除运单号关联，清零运费数据
-      lapply(selected_items$UniqueID, function(unique_id) {
-        dbExecute(
-          con,
-          "UPDATE unique_items 
-         SET IntlTracking = NULL, IntlShippingCost = 0.00
-         WHERE UniqueID = ?",
-          params = list(unique_id)
-        )
-      })
+      # 批量解除挂靠并清零运费
+      dbExecute(
+        con,
+        "UPDATE unique_items 
+       SET IntlTracking = NULL, IntlShippingCost = 0.00 
+       WHERE UniqueID IN (?)",
+        params = list(selected_items$UniqueID)
+      )
       
-      # 更新数据并触发 UI 刷新
+      # 直接使用 SQL 语句重新计算平摊运费
+      dbExecute(
+        con,
+        "
+      UPDATE unique_items ui
+      JOIN (
+        SELECT IntlTracking, TotalCost / COUNT(*) AS PerItemCost
+        FROM unique_items
+        JOIN intl_shipments ON unique_items.IntlTracking = intl_shipments.TrackingNumber
+        WHERE IntlTracking IN (?)
+        GROUP BY IntlTracking
+      ) calc ON ui.IntlTracking = calc.IntlTracking
+      SET ui.IntlShippingCost = calc.PerItemCost",
+        params = list(selected_tracking_numbers)
+      )
+      
+      # 刷新数据触发 UI 更新
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-      showNotification("运单号已成功删除！", type = "message")
+      showNotification("运单号已成功解除挂靠，相关物品的平摊运费已重新计算！", type = "message")
       
     }, error = function(e) {
-      showNotification(paste("删除运单号失败：", e$message), type = "error")
+      showNotification(paste("解除挂靠失败：", e$message), type = "error")
     })
   })
+  
   
   
   
@@ -4844,14 +4861,17 @@ server <- function(input, output, session) {
   unique_items_table_admin_selected_row <- callModule(uniqueItemsTableServer, "admin_items_table", 
                                                       column_mapping = c(common_columns, list(
                                                         Defect = "瑕疵态",
-                                                        PurchaseTime = "采购日",
+                                                        urchaseTime = "采购日",
                                                         DomesticEntryTime = "入库日",
                                                         DomesticExitTime = "出库日",
-                                                        DomesticSoldTime = "出售日",
-                                                        IntlShippingMethod = "国际运输",
+                                                        DomesticSoldTime = "售出日",
+                                                        UsEntryTime = "美入库日",
+                                                        UsRelocationTime = "美调货日",
+                                                        UsShippingTime = "美发货日",
                                                         OrderID = "订单号"
                                                       )), 
-                                                      selection = "multiple", 
+                                                      selection = "multiple",
+                                                      option = modifyList(table_decault_options, list(searching = TRUE)),
                                                       data = unique_items_data)
   
   # 更新库存状态按钮
