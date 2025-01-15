@@ -542,7 +542,7 @@ ui <- navbarPage(
                       
                          # 使用 Unicode 显示箭头
                          div(
-                           style = "display: flex; align-items: center;",  # 使用 Flex 布局让内容在同一行显示
+                           style = "display: flex;",  # 使用 Flex 布局让内容在同一行显示
                            tags$label("排序:", style = "margin-right: 10px; font-weight: bold; font-size: 14px;"),  # 添加排序标签
                            radioButtons(
                              inputId = "arrow_direction",
