@@ -22,10 +22,10 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
     #   return()
     # }
     # 
-    # if (!"ItemImagePath" %in% colnames(data())) {
-    #   showNotification("图片路径列不存在！", type = "error")
-    #   return()
-    # }
+    if (!"ItemImagePath" %in% colnames(data())) {
+      showNotification("图片路径列不存在！", type = "error")
+      return()
+    }
 
     # 检查是否点击了图片列（第三列）
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
