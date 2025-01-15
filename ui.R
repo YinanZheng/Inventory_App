@@ -1032,19 +1032,11 @@ ui <- navbarPage(
           fluidRow(
            column(12, div(
              class = "card shadow-lg",
-             style = "background: linear-gradient(135deg, #343A40, #1C1C1E); color: white; padding: 30px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;",
-             tags$div(
-               style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
-               tags$img(src = "https://dummyimage.com/120x120/fff/000.png&text=$", width = "80px", height = "80px")
-             ),
-             tags$div(
-               style = "position: absolute; top: 10px; right: 10px; opacity: 0.5;",
-               tags$img(src = "https://dummyimage.com/80x80/fff/000.png&text=✓", width = "50px", height = "50px")
-             ),
-             tags$h4("总余额", style = "font-weight: bold; font-size: 28px; margin-bottom: 20px; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);"),
+             style = "background: #1F1F1F; color: white; padding: 40px; text-align: center; border-radius: 16px; margin-bottom: 40px; border: 2px solid #FFC107;",
+             tags$h4("总余额", style = "font-weight: bold; font-size: 30px; margin-bottom: 20px; letter-spacing: 1.5px;"),
              tags$h3(
                textOutput("total_balance"),
-               style = "font-size: 36px; margin-top: 0; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);"
+               style = "font-size: 40px; margin-top: 0; font-weight: bold; text-shadow: 2px 2px 4px rgba(255, 193, 7, 0.8); color: #FFC107;"
              )
            ))
           ),
