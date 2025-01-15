@@ -540,6 +540,30 @@ ui <- navbarPage(
                            style = "color: #007BFF; font-weight: bold; margin-bottom: 0px;"
                          ),
                          
+                         div(
+                           style = "display: flex; align-items: center; margin-right: 10px;",
+                           radioButtons(
+                             inputId = "arrow_direction",
+                             label = NULL,  # 去掉默认标签
+                             choices = list(
+                               as.character(icon("arrow-up")) = "up",
+                               as.character(icon("arrow-down")) = "down"
+                             ),
+                             selected = "up",  # 默认选中上箭头
+                             inline = TRUE  # 横向排列
+                           ),
+                           tags$style(HTML("
+                            #arrow_direction .radio {
+                              margin-right: 15px !important;  /* 调整间距 */
+                              display: flex !important;      /* 使用 Flex 布局 */
+                              align-items: center;          /* 垂直居中 */
+                            }
+                            #arrow_direction input[type='radio'] {
+                              margin-top: 0 !important; /* 移除多余间距 */
+                              margin-right: 5px;       /* 调整按钮间距 */
+                            }
+                          "))
+                         ),
                          # SKU 输入栏
                          textInput(
                            inputId = "sku_to_shelf",
