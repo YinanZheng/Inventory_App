@@ -549,8 +549,14 @@ ui <- navbarPage(
                              label = NULL,  # 去掉默认的 radioButtons 标签
                              choices = list("↑" = "up", "↓" = "down"),  # Unicode 上箭头和下箭头
                              selected = "up",  # 默认选中上箭头
-                             inline = TRUE  # 横向排列
+                             inline = TRUE,
+                             style = "margin-bottom: 0;" # 横向排列
                            )
+                          #  tags$style(HTML("
+                          #   #arrow_direction.form-group {
+                          #     margin-bottom: 0 !important; /* 移除默认的 margin-bottom */
+                          #   }
+                          # "))
                          ),
                          
                          # SKU 输入栏
