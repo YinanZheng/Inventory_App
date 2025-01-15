@@ -1031,10 +1031,21 @@ ui <- navbarPage(
           tabPanel("账户余额总览", 
           fluidRow(
            column(12, div(
-             class = "card shadow-sm",
-             style = "background-color: #343A40; color: white; padding: 20px; text-align: center; border-radius: 8px; margin-bottom: 20px;",
-             tags$h4("总余额", style = "font-weight: bold;"),
-             tags$h3(textOutput("total_balance"))
+             class = "card shadow-lg",
+             style = "background: linear-gradient(135deg, #343A40, #1C1C1E); color: white; padding: 30px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;",
+             tags$div(
+               style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
+               tags$img(src = "https://dummyimage.com/120x120/fff/000.png&text=$", width = "80px", height = "80px")
+             ),
+             tags$div(
+               style = "position: absolute; top: 10px; right: 10px; opacity: 0.5;",
+               tags$img(src = "https://dummyimage.com/80x80/fff/000.png&text=✓", width = "50px", height = "50px")
+             ),
+             tags$h4("总余额", style = "font-weight: bold; font-size: 28px; margin-bottom: 20px; text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.5);"),
+             tags$h3(
+               textOutput("total_balance"),
+               style = "font-size: 36px; margin-top: 0; text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.5);"
+             )
            ))
           ),
           fluidRow(
@@ -1078,8 +1089,7 @@ ui <- navbarPage(
               tags$h4("美元卡 (553)", style = "font-weight: bold; margin-bottom: 10px;"),
               tags$h3(textOutput("dollar_balance"), style = "font-size: 24px; margin-top: 0;")
             ))
-          )
-          ),
+          )),
           tabPanel(title = "买货卡(139)", value = "买货卡", DTOutput("purchase_card_table")),
           tabPanel(title = "一般户卡(541)", value = "一般户卡", DTOutput("general_card_table")),
           tabPanel(title = "工资卡(567)", value = "工资卡", DTOutput("salary_card_table")),
