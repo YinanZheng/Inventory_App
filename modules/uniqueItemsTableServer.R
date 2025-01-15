@@ -22,7 +22,7 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
       if (info$col == 2) {  # 第三列在 R 中的索引是 2
         
         
-        img_path <- data()[info$row, "ItemImagePath"]
+        img_path <- as.character(data()[info$row, "ItemImagePath"])
 
         showNotification(img_path)
         
