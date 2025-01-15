@@ -2660,7 +2660,7 @@ server <- function(input, output, session) {
   image_manage <- imageModuleServer("image_manage")
   
   # Handle image update button click
-  observeEvent(input$update_image_btn, {
+  observeEvent(input$update_info_btn, {
     # 1. 确保用户选中了单行
     selected_rows <- unique_items_table_manage_selected_row()
     if (length(selected_rows) != 1) {
