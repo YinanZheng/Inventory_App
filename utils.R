@@ -1542,7 +1542,8 @@ createSearchableDropdown <- function(input_id, label, data, placeholder = "搜�
 
 # 带优先级的货架数据
 get_shelf_items <- function(data, sku, valid_status = c("美国入库", "国内出库", "国内入库"),
-                            defect_filter = "瑕疵", status_priority = c("美国入库" = 1, "国内出库" = 2, "国内入库" = 3)) {
+                            defect_filter = "瑕疵", status_priority = c("美国入库" = 1, "国内出库" = 2, "国内入库" = 3,),
+                            sort_order = "up") {
   # 检查是否提供了优先级
   if (is.null(status_priority) || length(status_priority) == 0) {
     stop("请指定有效的状态优先级！")
@@ -1555,8 +1556,16 @@ get_shelf_items <- function(data, sku, valid_status = c("美国入库", "国内�
     mutate(StatusPriority = case_when(
       Status %in% names(status_priority) ~ status_priority[Status],
       TRUE ~ max(unlist(status_priority)) + 1  # 默认最低优先级
-    )) %>%
-    arrange(StatusPriority, ProductCost)  # 按优先级和单价排序
+    )) 
+  
+  # 根据 sort_order 确定排序方式
+  if (sort_order == "up") {
+    result <- result %>% arrange(StatusPriority, ProductCost)  # 正序
+  } else if (sort_order == "down") {
+    result <- result %>% arrange(desc(StatusPriority), ProductCost)  # 逆序
+  } else {
+    stop("无效的排序方式，请选择 'up' 或 'down'！")
+  }
   
   # 如果未找到符合条件的物品，返回 NULL
   if (nrow(result) == 0) {
