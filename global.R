@@ -78,11 +78,11 @@ status_columns <<- list(
   "国内出库" = "DomesticExitTime",
   "国内售出" = "DomesticSoldTime",
   "美国入库" = "UsEntryTime",
+  "美国发货" = "UsShippingTime",
   "美国售出" = "UsSoldTime",
   "美国调货" = "UsRelocationTime",
   "退货" = "ReturnTime"
 )
-
 # 定义默认表格渲染选项
 table_default_options <<- list(
   scrollY = "730px",
