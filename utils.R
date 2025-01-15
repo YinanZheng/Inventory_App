@@ -1209,9 +1209,9 @@ filter_unique_items_data_by_inputs <- function(
     data <- data %>% filter(Status %in% input[[status_input_id]])
   }
   
-  # 按商品名称筛选
+  # 按商品名称模糊匹配筛选
   if (!is.null(item_name_input_id) && !is.null(input[[item_name_input_id]]) && input[[item_name_input_id]] != "") {
-    data <- data %>% filter(ItemName == input[[item_name_input_id]])
+    data <- data %>% filter(grepl(input[[item_name_input_id]], ItemName, ignore.case = TRUE))
   }
   
   # 按采购日期筛选
