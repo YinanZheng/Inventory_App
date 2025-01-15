@@ -705,12 +705,25 @@ ui <- navbarPage(
           # 卡片标题
           div(
             style = "margin-bottom: 10px; padding-bottom: 8px;",
-            tags$h4("更新商品图片", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-            
-            imageModuleUI("image_manage", label = ""),
-            
-            actionButton("update_image_btn", "更新商品图片", icon = icon("pen"), style = "background-color: #006400; color: white;")
+            tags$h4("更新商品信息", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;")
           ),
+          
+          # 图片模块
+          imageModuleUI("image_manage", label = "更新商品图片"),
+          
+          # 修改单价输入框
+          numericInput("update_product_cost", "修改单价:", value = NULL, min = 0, width = "100%"),
+          
+          # 修改国内运费输入框
+          numericInput("update_shipping_cost", "修改国内运费:", value = NULL, min = 0, width = "100%"),
+          
+          # 更新按钮
+          actionButton(
+            "update_info_btn", 
+            "更新商品信息", 
+            icon = icon("pen"), 
+            style = "background-color: #006400; color: white;"
+          )
         ),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
