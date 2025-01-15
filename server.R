@@ -3681,6 +3681,30 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent(input$general_card_table_cell_clicked, {
+    info <- input$general_card_table_cell_clicked
+    
+    # 检查是否点击了图片列
+    if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
+      if (info$col == 5) {  # 图片列的索引
+        # 获取点击的图片路径
+        img_path <- fetchInputFromTable("一般户卡", input$general_card_table_rows_selected)$TransactionImagePath[info$row]
+        
+        req(img_path)  # 确保图片路径存在且不为空
+        
+        img_host_path <- paste0(host_url, "/images/", basename(img_path))
+        
+        # 弹出模态框显示图片
+        showModal(modalDialog(
+          title = "运单截图预览",
+          img(src = img_host_path, height = "400px", style = "display: block; margin: 0 auto;"),
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("关闭")
+        ))
+      }
+    }
+  })
 
   ################################################################
   ##                                                            ##
