@@ -3049,7 +3049,30 @@ server <- function(input, output, session) {
         params = list(tracking_number, shipping_method, total_cost)
       )
       
-      showNotification("国际运单登记成功，信息已更新，可执行挂靠操作！", type = "message", duration = 5)
+      # 生成交易记录的备注
+      remarks <- paste("[国际运费登记]", "运单号:", tracking_number, "运输方式:", shipping_method)
+      
+      # 生成交易记录的 ID
+      transaction_id <- generate_transaction_id("一般户卡", total_cost, remarks, Sys.time())
+      
+      # 插入交易记录到“一般户卡”
+      dbExecute(
+        con,
+        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) 
+       VALUES (?, ?, ?, ?, ?)",
+        params = list(
+          transaction_id,
+          "一般户卡", 
+          -total_cost,  # 转出金额为负值
+          remarks,
+          Sys.time()
+        )
+      )
+      
+      showNotification("国际运单登记成功，相关费用已记录到'一般户卡（541）'！", type = "message", duration = 5)
+      
+      # 重新计算所有balance记录
+      update_balance("一般户卡", con)
       
       shinyjs::enable("link_tracking_btn")  # 启用挂靠运单按钮
     }, error = function(e) {
