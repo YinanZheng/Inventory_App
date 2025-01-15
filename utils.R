@@ -1792,6 +1792,35 @@ getAccountType <- function(input) {
   )
 }
 
+# 转账截图点击看大图
+handleTransactionImageClick <- function(account_type, input_table, image_col_index) {
+  observeEvent(input[[paste0(input_table, "_cell_clicked")]], {
+    info <- input[[paste0(input_table, "_cell_clicked")]]
+    
+    # 检查是否点击了图片列
+    if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
+      if (info$col == image_col_index) {  # 图片列的索引
+        # 获取点击的图片路径
+        selected_data <- fetchInputFromTable(account_type, input[[paste0(input_table, "_rows_selected")]])
+        img_path <- selected_data$TransactionImagePath
+        
+        req(img_path)  # 确保图片路径存在且不为空
+        
+        img_host_path <- paste0(host_url, "/images/", basename(img_path))
+        
+        # 弹出模态框显示图片
+        showModal(modalDialog(
+          title = paste(account_type, "运单截图预览"),
+          img(src = img_host_path, height = "500px", style = "display: block; margin: 0 auto;"),
+          size = "l",
+          easyClose = TRUE,
+          footer = modalButton("关闭")
+        ))
+      }
+    }
+  })
+}
+
 
 #####
 
