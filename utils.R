@@ -1112,14 +1112,14 @@ update_label_status_column <- function(con, pdf_directory = "/var/uploads/shipla
 
 # 从运单PDF提取收件人和运单号信息
 extract_shipping_label_info <- function(pdf_path, dpi = 300) {
-  # 将 PDF 转换为图片
-  images <- pdf_convert(pdf_path, dpi = dpi)
+  
+  pdf_image <- magick::image_read_pdf(pdf_path, density = dpi)
   
   # 加载 OCR 引擎
-  eng <- tesseract("eng")
+  eng <- tesseract::tesseract("eng")
   
-  # 提取第一页文本
-  ocr_text <- tesseract::ocr(images[1], engine = eng)
+  # 提取第一页文本（直接使用临时文件路径）
+  ocr_text <- tesseract::ocr(pdf_image, engine = eng)
   
   # 分行拆分文本
   lines <- unlist(strsplit(ocr_text, "\n"))

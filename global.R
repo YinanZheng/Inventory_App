@@ -19,8 +19,6 @@ library(networkD3)
 library(openxlsx)
 library(lubridate)
 library(tidyr)
-library(tesseract)
-library(pdftools)
 library(later)
 
 # Source all modular functions
