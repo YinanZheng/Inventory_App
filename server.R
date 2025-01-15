@@ -2659,7 +2659,7 @@ server <- function(input, output, session) {
   # 采购商品图片处理模块
   image_manage <- imageModuleServer("image_manage")
   
-  # Handle image update button click
+  # 处理更新按钮点击事件
   observeEvent(input$update_info_btn, {
     # 1. 确保用户选中了单行
     selected_rows <- unique_items_table_manage_selected_row()
@@ -2680,15 +2680,15 @@ server <- function(input, output, session) {
     # 检查 SKU 是否存在于库存表
     existing_inventory_items <- inventory()
     if (!selected_sku %in% existing_inventory_items$SKU) {
-      showNotification("库存中无此 SKU 商品，无法更新图片！", type = "error")
+      showNotification("库存中无此 SKU 商品，无法更新信息！", type = "error")
       return()
     }
     
-    # 获取当前 SKU 的图片路径
+    # 获取当前 SKU 的记录
     existing_item <- existing_inventory_items[existing_inventory_items$SKU == selected_sku, ]
-    existing_image_path <- existing_item$ItemImagePath[1]
     
-    # 处理图片上传或粘贴
+    # 2. 处理图片更新
+    existing_image_path <- existing_item$ItemImagePath[1]
     updated_image_path <- process_image_upload(
       sku = selected_sku,
       file_data = image_manage$uploaded_file(),
@@ -2696,28 +2696,43 @@ server <- function(input, output, session) {
       inventory_path = existing_image_path
     )
     
-    # 检查处理结果并更新数据库
-    if (!is.null(updated_image_path) && !is.na(updated_image_path)) {
-      tryCatch({
-        # 更新数据库中 SKU 对应的图片路径
-        dbExecute(con, "UPDATE inventory 
-                    SET ItemImagePath = ? 
-                    WHERE SKU = ?",
-                  params = list(updated_image_path, selected_sku))
-        
-        # 更新数据并触发 UI 刷新
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-        
-        # 显示成功通知
-        showNotification(paste0("SKU ", selected_sku, " 的图片已成功更新！"), type = "message")
-      }, error = function(e) {
-        # 数据库操作失败时提示错误
-        showNotification("图片路径更新失败，请重试！", type = "error")
-      })
-    } else {
-      # 未检测到有效图片数据
-      showNotification("未检测到有效的图片数据，请上传或粘贴图片！", type = "error")
+    # 3. 获取用户输入的新单价和运费
+    new_product_cost <- input$update_product_cost
+    new_shipping_cost <- input$update_shipping_cost
+    
+    # 验证用户输入
+    if (is.null(new_product_cost) || new_product_cost < 0) {
+      showNotification("请输入有效的单价！", type = "error")
+      return()
     }
+    
+    if (is.null(new_shipping_cost) || new_shipping_cost < 0) {
+      showNotification("请输入有效的国内运费！", type = "error")
+      return()
+    }
+    
+    # 构建更新语句和参数
+    update_query <- "UPDATE inventory SET ItemImagePath = ?, ProductCost = ?, DomesticShippingCost = ? WHERE SKU = ?"
+    update_params <- list(
+      ifelse(!is.null(updated_image_path) && !is.na(updated_image_path), updated_image_path, existing_image_path),
+      new_product_cost,
+      new_shipping_cost,
+      selected_sku
+    )
+    
+    # 4. 更新数据库记录
+    tryCatch({
+      dbExecute(con, update_query, params = update_params)
+      
+      # 更新数据并触发 UI 刷新
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+      # 显示成功通知
+      showNotification(paste0("SKU ", selected_sku, " 的信息已成功更新！"), type = "message")
+    }, error = function(e) {
+      # 数据库操作失败时提示错误
+      showNotification("信息更新失败，请重试！", type = "error")
+    })
     
     # 重置图片上传状态
     image_manage$reset()
@@ -2759,7 +2774,7 @@ server <- function(input, output, session) {
     updateNumericInput(session, "update_shipping_cost", value = "")
     
     # 重置图片上传组件
-    image_transactions$reset()
+    image_manage$reset()
     
     showNotification("商品信息已清空！", type = "message")
   })
