@@ -546,7 +546,7 @@ ui <- navbarPage(
                            # 使用 Unicode 显示箭头
                            radioButtons(
                              inputId = "arrow_direction",
-                             label = NULL,  # 去掉默认标签
+                             label = "排序",  # 去掉默认标签
                              choices = list("↑" = "up", "↓" = "down"),  # Unicode 上箭头和下箭头
                              selected = "up",  # 默认选中上箭头
                              inline = TRUE  # 横向排列
