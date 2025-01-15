@@ -1810,8 +1810,14 @@ handleTransactionImageClick <- function(account_type, input_table, image_col_ind
         
         # 弹出模态框显示图片
         showModal(modalDialog(
-          title = paste(account_type, "运单截图预览"),
-          img(src = img_host_path, height = "700px", style = "display: block; margin: 0 auto;"),
+          title = "转账截图预览",
+          tags$div(
+            style = "overflow: auto; max-height: 700px; text-align: center;",
+            tags$img(
+              src = img_host_path,
+              style = "max-width: 100%; height: auto; display: inline-block;"
+            )
+          ),
           size = "l",
           easyClose = TRUE,
           footer = NULL
