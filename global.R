@@ -89,7 +89,21 @@ table_default_options <<- list(
   paging = TRUE,
   pageLength = 30,
   dom = 'frtip',
-  searching = FALSE
+  searching = FALSE,
+  columnDefs = list(
+    list(
+      targets = which(names(data) == "备注"), # 定位备注列
+      render = JS(
+        "function(data, type, row, meta) {
+               if (type === 'display' && data.length > 50) {
+                 return '<button onclick=\"alert(\\'' + data.replace(/'/g, '\\\\'') + '\\')\">查看</button>';
+               } else {
+                 return data;
+               }
+             }"
+      )
+    )
+  )
 )
 
 # 定义瑕疵和修复的状态
