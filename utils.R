@@ -1932,4 +1932,3 @@ clean_untracked_images <- function() {
   # 断开数据库连接
   dbDisconnect(con)
 }
-

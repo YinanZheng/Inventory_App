@@ -42,7 +42,21 @@ split_file <- function(input_file, output_dir, filetype, lines_per_file = 50) {
 # 使用脚本
 split_file(
   input_file = "server.R",    # 输入文件路径
-  output_dir = "./maintainance",     # 输出目录
-  file_type = "server",
+  output_dir = "./maintainance/split",     # 输出目录
+  filetype = "server",
+  lines_per_file = 1000         # 每个文件的行数
+)
+
+split_file(
+  input_file = "ui.R",    # 输入文件路径
+  output_dir = "./maintainance/split",     # 输出目录
+  filetype = "ui",
+  lines_per_file = 1000         # 每个文件的行数
+)
+
+split_file(
+  input_file = "utils.R",    # 输入文件路径
+  output_dir = "./maintainance/split",     # 输出目录
+  filetype = "utils",
   lines_per_file = 1000         # 每个文件的行数
 )
