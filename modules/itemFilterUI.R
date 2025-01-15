@@ -56,7 +56,7 @@ itemFilterUI <- function(
                  selectizeInput(ns("maker"), "供应商:", choices = NULL, width = "100%",
                                 options = list(placeholder = '名称(或拼音)...', 
                                                maxOptions = 500,
-                                               create = TRUE))
+                                               create = FALSE))
           )
         )
       }
