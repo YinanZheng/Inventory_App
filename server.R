@@ -3536,6 +3536,14 @@ server <- function(input, output, session) {
     selected_TransactionID(NULL)
     selected_TransactionImagePath(NULL)
     updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
+    
+    # 重置输入框
+    updateNumericInput(session, "amount", value = NULL)
+    updateRadioButtons(session, "transaction_type", selected = "out")
+    updateDateInput(session, "custom_date", value = Sys.Date())
+    updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))
+    updateTextAreaInput(session, "remarks", value = "")
+    image_transactions$reset()
   })
   
   # 资金转移
