@@ -1497,9 +1497,12 @@ server <- function(input, output, session) {
   })
   
   # 响应点击物品表的行，更新货架上的物品
-  observeEvent(unique_items_table_sold_selected_row(), {
+  observe({
     selected_row <- unique_items_table_sold_selected_row()  # 获取选中的行
-    if (is.null(selected_row) || length(selected_row) == 0) {
+    sort_order <- input$arrow_direction  # 获取排序方向
+    
+    # 如果未选中行或未设置排序方向，则退出
+    if (is.null(selected_row) || length(selected_row) == 0 || is.null(sort_order)) {
       return()
     }
     
@@ -1513,7 +1516,7 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = input$arrow_direction)
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order)
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
