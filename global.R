@@ -89,21 +89,7 @@ table_default_options <<- list(
   paging = TRUE,
   pageLength = 30,
   dom = 'frtip',
-  searching = FALSE,
-  columnDefs = list(
-    list(
-      targets = which(names(data) == "Remarks"), # 定位“备注”列
-      render = JS(
-        "function(data, type, row, meta) {
-               if (type === 'display' && data.length > 50) {
-                 return '<span title=\"' + data + '\">' + data.substr(0, 50) + '...</span>';
-               } else {
-                 return data;
-               }
-             }"
-      )
-    )
-  )
+  searching = FALSE
 )
 
 # 定义瑕疵和修复的状态
