@@ -903,78 +903,92 @@ ui <- navbarPage(
       class = "layout-container",
       div(
         class = "sticky-sidebar",
-        tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-        
-        # 单一金额输入框
-        numericInput("amount", "金额:", value = 0, min = 0, width = "100%"),
-        
-        # 互斥勾选框
-        radioButtons(
-          inputId = "transaction_type",
-          label = "交易类型:",
-          choices = c("转出" = "out", "转入" = "in"),
-          selected = NULL,
-          inline = TRUE
-        ),
-        
-        # 指定转款选择器
-        fluidRow(
-          column(5, dateInput("custom_date", "转款日期:", value = Sys.Date(), width = "100%")),
-          column(7, timeInput("custom_time", "转款时间:", value = format(Sys.time(), "%H:%M:%S"), width = "100%"))
-        ),
-        
-        # 订单图片上传
-        imageModuleUI("image_transactions", label = "转账证据上传", label_color = "#007BFF"),
-        
-        textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
-        
-        # 提交按钮
-        actionButton("record_transaction", "登记", icon = icon("save"), 
-                     class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
-        
-        # 删除和重置按钮同一行
-        fluidRow(
-          column(
-            width = 6,
-            actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
-                         class = "btn-danger", style = "width: 100%;")
+        tabsetPanel(
+          id = "sidebar_tabs",  # 用于服务器监听当前选中的分页
+          type = "tabs",        # 使用标签式分页
+          selected = "账务登记", # 默认选中的分页
+          
+          # 账务登记分页
+          tabPanel(
+            title = "账务登记",
+            tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+            
+            # 单一金额输入框
+            numericInput("amount", "金额:", value = 0, min = 0, width = "100%"),
+            
+            # 互斥勾选框
+            radioButtons(
+              inputId = "transaction_type",
+              label = "交易类型:",
+              choices = c("转出" = "out", "转入" = "in"),
+              selected = NULL,
+              inline = TRUE
+            ),
+            
+            # 指定转款选择器
+            fluidRow(
+              column(5, dateInput("custom_date", "转款日期:", value = Sys.Date(), width = "100%")),
+              column(7, timeInput("custom_time", "转款时间:", value = format(Sys.time(), "%H:%M:%S"), width = "100%"))
+            ),
+            
+            # 订单图片上传
+            imageModuleUI("image_transactions", label = "转账证据上传", label_color = "#007BFF"),
+            
+            textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
+            
+            # 提交按钮
+            actionButton("record_transaction", "登记", icon = icon("save"), 
+                         class = "btn-primary", style = "width: 100%; margin-bottom: 10px;"),
+            
+            # 删除和重置按钮同一行
+            fluidRow(
+              column(
+                width = 6,
+                actionButton("delete_transaction", "删除选中记录", icon = icon("trash"), 
+                             class = "btn-danger", style = "width: 100%;")
+              ),
+              column(
+                width = 6,
+                actionButton("reset_form", "重置", icon = icon("redo"), 
+                             class = "btn-info", style = "width: 100%;")
+              )
+            )
           ),
-          column(
-            width = 6,
-            actionButton("reset_form", "重置", icon = icon("redo"), 
-                         class = "btn-info", style = "width: 100%;")
+          
+          # 资金转移分页
+          tabPanel(
+            title = "资金转移",
+            tags$h4("资金转移", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
+            
+            # 转移金额输入框
+            numericInput("transfer_amount", "转移金额:", value = NULL, min = 0, width = "100%"),
+            
+            # 转出账户选择
+            selectInput(
+              inputId = "from_account",
+              label = "转出账户:",
+              choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
+              selected = "美元卡",
+              width = "100%"
+            ),
+            
+            # 转入账户选择
+            selectInput(
+              inputId = "to_account",
+              label = "转入账户:",
+              choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
+              selected = NULL,
+              width = "100%"
+            ),
+            
+            # 备注输入框
+            textAreaInput("transfer_remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
+            
+            # 转移登记按钮
+            actionButton("record_transfer", "记录转移", icon = icon("exchange-alt"), 
+                         class = "btn-success", style = "width: 100%;")
           )
-        ),
-        
-        tags$h4("资金转移", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
-        
-        # 转移金额输入框
-        numericInput("transfer_amount", "转移金额:", value = NULL, min = 0, width = "100%"),
-        
-        # 转出账户选择
-        selectInput(
-          inputId = "from_account",
-          label = "转出账户:",
-          choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
-          selected = "美元卡",
-          width = "100%"
-        ),
-        
-        # 转入账户选择
-        selectInput(
-          inputId = "to_account",
-          label = "转入账户:",
-          choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
-          selected = NULL,
-          width = "100%"
-        ),
-        
-        # 备注输入框
-        textAreaInput("transfer_remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
-        
-        # 转移登记按钮
-        actionButton("record_transfer", "记录转移", icon = icon("exchange-alt"), 
-                     class = "btn-success", style = "width: 100%;")
+        )
       ),
       div(
         class = "main-panel",
