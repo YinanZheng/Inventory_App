@@ -16,16 +16,13 @@ uniqueItemsTableServer <- function(input, output, session, column_mapping, selec
   # 监听用户点击图片列
   observeEvent(input$unique_items_table_cell_clicked, {
     info <- input$unique_items_table_cell_clicked
-
-    if (info$row > nrow(data()) || info$row <= 0) {
-      showNotification("无效的行索引！", type = "error")
-    }
- 
-
-
+    
     # 检查是否点击了图片列（第三列）
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
       if (info$col == 2) {  # 第三列在 R 中的索引是 2
+        
+        showNotification(data()[info$row, "ItemImagePath"])
+        
         img_path <- data()[info$row, "ItemImagePath"]
 
         # 确保图片路径为非空字符向量
