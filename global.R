@@ -92,7 +92,7 @@ table_default_options <<- list(
   searching = FALSE,
   columnDefs = list(
     list(
-      targets = which(names(data) == "备注"), # 定位“备注”列
+      targets = which(names(data) == "Remarks"), # 定位“备注”列
       render = JS(
         "function(data, type, row, meta) {
                if (type === 'display' && data.length > 50) {
