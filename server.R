@@ -3221,9 +3221,9 @@ server <- function(input, output, session) {
     
     # 弹出确认对话框
     showModal(modalDialog(
-      title = HTML("<strong style='color: #C70039;'>确认删除运单</strong>"),
+      title = HTML("<strong style='color: #C70039;'>确认删除国际运单</strong>"),
       HTML(paste0(
-        "<p>您确定要删除运单号 <strong>", tracking_number, "</strong> 吗？此操作不可逆！</p>"
+        "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？此操作不可逆！</p>"
       )),
       easyClose = FALSE,
       footer = tagList(
