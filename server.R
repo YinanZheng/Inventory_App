@@ -3339,7 +3339,7 @@ server <- function(input, output, session) {
   }
   
   resetTransactionForm <- function(session) {
-    updateNumericInput(session, "amount", value = NULL)  # 重置金额
+    updateNumericInput(session, "amount", value = 0)  # 重置金额
     updateRadioButtons(session, "transaction_type", selected = "out")  # 重置为“转出”
     updateDateInput(session, "custom_date", value = Sys.Date())  # 重置为当前日期
     updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))  # 重置为当前时间
