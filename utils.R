@@ -1542,7 +1542,7 @@ createSearchableDropdown <- function(input_id, label, data, placeholder = "搜�
 
 # 带优先级的货架数据
 get_shelf_items <- function(data, sku, valid_status = c("美国入库", "国内出库", "国内入库"),
-                            defect_filter = "瑕疵", status_priority = c("美国入库" = 1, "国内出库" = 2, "国内入库" = 3,),
+                            defect_filter = "瑕疵", status_priority = c("美国入库" = 1, "国内出库" = 2, "国内入库" = 3),
                             sort_order = "up") {
   # 检查是否提供了优先级
   if (is.null(status_priority) || length(status_priority) == 0) {
