@@ -3654,18 +3654,33 @@ server <- function(input, output, session) {
     transfer_remarks_to <- paste0("[从 ", input$from_account, " 转入] ", input$transfer_remarks)
     
     tryCatch({
+      # 生成 TransactionID
+      transaction_id_from <- generate_transaction_id(
+        account_type = input$from_account,
+        amount = -input$transfer_amount,
+        remarks = transfer_remarks_from,
+        transaction_datetime = Sys.time()
+      )
+      
+      transaction_id_to <- generate_transaction_id(
+        account_type = input$to_account,
+        amount = input$transfer_amount,
+        remarks = transfer_remarks_to,
+        transaction_datetime = Sys.time()
+      )
+      
       # 插入转出记录
       dbExecute(
         con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
-        params = list(input$from_account, -input$transfer_amount, transfer_remarks_from, Sys.time())
+        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+        params = list(transaction_id_from, input$from_account, -input$transfer_amount, transfer_remarks_from, Sys.time())
       )
       
       # 插入转入记录
       dbExecute(
         con,
-        "INSERT INTO transactions (AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?)",
-        params = list(input$to_account, input$transfer_amount, transfer_remarks_to, Sys.time())
+        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+        params = list(transaction_id_to, input$to_account, input$transfer_amount, transfer_remarks_to, Sys.time())
       )
       
       showNotification("资金转移记录成功！", type = "message")
