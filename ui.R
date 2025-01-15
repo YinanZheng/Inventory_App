@@ -111,7 +111,27 @@ ui <- navbarPage(
             break;
           }
         }
-      });"))
+      });")),
+      
+      tags$script(HTML("
+        (function() {
+          let scale = 1;  // 初始缩放比例
+          const zoomImage = document.getElementById('zoom-image');
+      
+          if (zoomImage) {
+            // 添加滚轮事件监听
+            zoomImage.addEventListener('wheel', function(event) {
+              event.preventDefault();
+              if (event.deltaY < 0) {
+                scale += 0.1;  // 放大
+              } else {
+                scale = Math.max(0.1, scale - 0.1);  // 缩小，最小缩放比例为 0.1
+              }
+              zoomImage.style.transform = `scale(${scale})`;  // 应用缩放
+            });
+          }
+        })();
+      "))
     )
   ),
   
