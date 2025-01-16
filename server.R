@@ -3166,7 +3166,6 @@ server <- function(input, output, session) {
       total_value_sum <- summary_info$TotalValue[1] + summary_info$TotalDomesticShipping[1] + summary_info$TotalIntlShipping[1]
       
       # 格式化汇总信息
-      # 格式化汇总信息
       summary_text <- HTML(paste0(
         "<div style='font-family: Arial, sans-serif; line-height: 2;'>",  # 调整行间距
         "<table style='width: 100%; border-collapse: collapse;'>",
@@ -3464,31 +3463,9 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  resetToCreateMode <- function() {
-    is_update_mode(FALSE)  # 切换回登记模式
-    selected_TransactionID(NULL)  # 清空选中的 TransactionID
-    selected_TransactionImagePath(NULL)  # 清空选中的 TransactionImagePath
-    
-    # 更新按钮为“登记”
-    updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
-  }
-  
-  resetTransactionForm <- function(session) {
-    updateNumericInput(session, "amount", value = 0)  # 重置金额
-    updateRadioButtons(session, "transaction_type", selected = "out")  # 重置为“转出”
-    updateDateInput(session, "custom_date", value = Sys.Date())  # 重置为当前日期
-    updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))  # 重置为当前时间
-    updateTextAreaInput(session, "remarks", value = "")  # 清空备注
-    image_transactions$reset()  # 重置图片上传组件
-  }
-  
-  resetTransferForm <- function(session) {
-    updateNumericInput(session, "transfer_amount", value = 0)  # 重置金额
-    updateSelectInput(session, "from_account", selected = "美元卡")
-    updateSelectInput(session, "to_account", selected = "工资卡")
-    updateTextAreaInput(session, "transfer_remarks", value = "")  # 清空备注
-    image_transfer$reset()  # 重置图片上传组件
-  }
+  is_update_mode <- reactiveVal(FALSE)  # 初始化为登记模式
+  selected_TransactionID  <- reactiveVal(NULL)  # 存储选中的记录 ID
+  selected_TransactionImagePath <- reactiveVal(NULL)  # 存储选中的记录图片路径
   
   # 初始化全局缓存，用于存储各账户的哈希值
   transaction_table_hash <- reactiveValues(
@@ -3707,7 +3684,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
   # 删除转账记录 (登记)
   observeEvent(input$delete_transaction, {
     current_tab <- input$transaction_tabs
@@ -3823,13 +3799,11 @@ server <- function(input, output, session) {
     resetTransferForm(session) # 重置输入框
   })
   
-  
   # 转账证据图片处理模块 (登记)
   image_transactions <- imageModuleServer("image_transactions")
   
   # 转账证据图片处理模块 (转移)
   image_transfer <- imageModuleServer("image_transfer")
-  
   
   # 重置 (登记)
   observeEvent(input$reset_form, {
@@ -3845,11 +3819,7 @@ server <- function(input, output, session) {
   })
   
   ####
-  
-  is_update_mode <- reactiveVal(FALSE)  # 初始化为登记模式
-  selected_TransactionID  <- reactiveVal(NULL)  # 存储选中的记录 ID
-  selected_TransactionImagePath <- reactiveVal(NULL)  # 存储选中的记录图片路径
-  
+
   # 监听 工资卡 点选
   observeEvent(input$salary_card_table_rows_selected, {
     selected_row <- input$salary_card_table_rows_selected
@@ -3936,6 +3906,8 @@ server <- function(input, output, session) {
   # 处理一般户卡表格的图片点击
   handleTransactionImageClick("一般户卡", "general_card_table", 4)
 
+  
+  
   ################################################################
   ##                                                            ##
   ## 查询分页                                                   ##

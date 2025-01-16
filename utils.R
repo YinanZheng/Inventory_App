@@ -1619,8 +1619,7 @@ match_tracking_number <- function(data, tracking_number_column, input_tracking_i
 }
 
 
-#####
-
+##### 账务管理相关function
 
 # 计算账户余额-账务管理用
 get_balance <- function(account_type) {
@@ -1816,7 +1815,6 @@ fetchInputFromTable <- function(account_type, selected_row) {
   return(NULL)  # 未选中行时返回 NULL
 }
 
-
 # 从分页上获取当前账户名
 getAccountType <- function(input) {
   switch(
@@ -1864,9 +1862,34 @@ handleTransactionImageClick <- function(account_type, input_table, image_col_ind
   })
 }
 
+# 重置回登记模式
+resetToCreateMode <- function() {
+  is_update_mode(FALSE)  # 切换回登记模式
+  selected_TransactionID(NULL)  # 清空选中的 TransactionID
+  selected_TransactionImagePath(NULL)  # 清空选中的 TransactionImagePath
+  
+  # 更新按钮为“登记”
+  updateActionButton(session, "record_transaction", label = "登记", icon = icon("save"))
+}
 
-#####
+# 重置账务登记表
+resetTransactionForm <- function(session) {
+  updateNumericInput(session, "amount", value = 0)  # 重置金额
+  updateRadioButtons(session, "transaction_type", selected = "out")  # 重置为“转出”
+  updateDateInput(session, "custom_date", value = Sys.Date())  # 重置为当前日期
+  updateTimeInput(session, "custom_time", value = format(Sys.time(), "%H:%M:%S"))  # 重置为当前时间
+  updateTextAreaInput(session, "remarks", value = "")  # 清空备注
+  image_transactions$reset()  # 重置图片上传组件
+}
 
+# 重置资产转移表
+resetTransferForm <- function(session) {
+  updateNumericInput(session, "transfer_amount", value = 0)  # 重置金额
+  updateSelectInput(session, "from_account", selected = "美元卡")
+  updateSelectInput(session, "to_account", selected = "工资卡")
+  updateTextAreaInput(session, "transfer_remarks", value = "")  # 清空备注
+  image_transfer$reset()  # 重置图片上传组件
+}
 
 # 定义一个函数封装更新逻辑
 update_balance <- function(account_type, con) {
@@ -1885,8 +1908,10 @@ update_balance <- function(account_type, con) {
   showNotification("余额记录已重新计算", type = "message")
 }
 
+#####
 
 
+# 自定义函数
 `%||%` <- function(a, b) {
   if (!is.null(a)) a else b
 }
