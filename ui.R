@@ -739,12 +739,13 @@ ui <- navbarPage(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
               fluidRow(
-                column(6, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
-                column(6, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%"))
+                column(12, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
+                column(12, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%")),
+                column(12, dateInput("update_purchase_date", "修改采购日期", value = Sys.Date(), width = "100%"))
               ),
               fluidRow(
-                column(7, actionButton("update_info_btn", "更新单价/运费", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
-                column(5, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
+                column(6, actionButton("update_info_btn", "更新信息", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
+                column(6, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
               )
             )
           ),

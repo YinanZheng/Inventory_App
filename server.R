@@ -2794,7 +2794,8 @@ server <- function(input, output, session) {
         # 更新输入框
         updateNumericInput(session, "update_product_cost", value = selected_data$ProductCost)
         updateNumericInput(session, "update_shipping_cost", value = selected_data$DomesticShippingCost)
-        
+        updateDateInput(session, "update_purchase_date", value = as.Date(selected_data$PurchaseTime))
+                        
         showNotification("已加载最新点击记录的信息！", type = "message")
       } else {
         showNotification("选中的行无效或数据为空！", type = "error")
@@ -2809,9 +2810,7 @@ server <- function(input, output, session) {
     # 清空单价和运费输入框
     updateNumericInput(session, "update_product_cost", value = "")
     updateNumericInput(session, "update_shipping_cost", value = "")
-    
-    # 重置图片上传组件
-    image_manage$reset()
+  
     
     showNotification("商品信息已清空！", type = "message")
   })
