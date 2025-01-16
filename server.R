@@ -4060,7 +4060,11 @@ server <- function(input, output, session) {
   # 开销统计
   expense_summary_data <- reactive({
     req(input$time_range)
-    data <- unique_items_data()
+    data <- unique_items_data() %>% 
+      mutate(
+        IntlShippingCost = sprintf("%.2f", IntlShippingCost), # 格式化为两位小数
+        DomesticShippingCost = sprintf("%.2f", DomesticShippingCost) # 格式化为两位小数
+      )
     
     start_date <- as.Date(input$time_range[1])
     end_date <- as.Date(input$time_range[2])
