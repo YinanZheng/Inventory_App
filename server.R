@@ -2779,7 +2779,6 @@ server <- function(input, output, session) {
     })
   })
   
-  
   # 点击填写物品信息
   observeEvent(unique_items_table_manage_selected_row(), {
     selected_rows <- unique_items_table_manage_selected_row()
