@@ -2876,6 +2876,7 @@ server <- function(input, output, session) {
             dbExecute(con, "
                       DELETE FROM inventory
                       WHERE SKU = ?", params = list(sku))
+            showNotification(paste0("SKU: ", sku, "已从库存表中完全移除！"), type = "error")
           }
         }
       }
