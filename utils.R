@@ -1235,8 +1235,7 @@ filter_unique_items_data_by_inputs <- function(
       !is.null(input[[sold_date_range_id]]) && 
       length(input[[sold_date_range_id]]) == 2) {
     sold_date_range <- as.Date(input[[sold_date_range_id]])
-    only_show_sold_id <- paste0(sold_date_range_id, "_only_show_sold")
-    
+
     if (!is.null(input[[only_show_sold_id]]) && input[[only_show_sold_id]]) {
       data <- data %>%
         filter(Status == "国内售出", 
@@ -1251,8 +1250,7 @@ filter_unique_items_data_by_inputs <- function(
       !is.null(input[[exit_date_range_id]]) && 
       length(input[[exit_date_range_id]]) == 2) {
     exit_date_range <- as.Date(input[[exit_date_range_id]])
-    only_show_exit_id <- paste0(exit_date_range_id, "_only_show_exit")
-    
+
     if (!is.null(input[[only_show_exit_id]]) && input[[only_show_exit_id]]) {
       data <- data %>%
         filter(Status == "国内出库", 
