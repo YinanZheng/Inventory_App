@@ -4088,11 +4088,11 @@ server <- function(input, output, session) {
       ) %>%
       group_by(GroupDate) %>%
       summarise(
-        Cost_Domestic = sum(ProductCost + DomesticShippingCost, na.rm = TRUE),
-        ProductCost = sum(ProductCost, na.rm = TRUE),
-        DomesticShippingCost = sum(DomesticShippingCost, na.rm = TRUE),
-        IntlShippingCost = sum(IntlShippingCost, na.rm = TRUE),
-        TotalExpense = sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE),
+        Cost_Domestic = round(sum(ProductCost + DomesticShippingCost, na.rm = TRUE), 2),
+        ProductCost = round(sum(ProductCost, na.rm = TRUE), 2),
+        DomesticShippingCost = round(sum(DomesticShippingCost, na.rm = TRUE), 2),
+        IntlShippingCost = round(sum(IntlShippingCost, na.rm = TRUE), 2),
+        TotalExpense = round(sum(ProductCost + DomesticShippingCost + IntlShippingCost, na.rm = TRUE), 2),
         AllPurchaseCheck = all(PurchaseCheck == 1, na.rm = TRUE), # 是否全部为1
         .groups = "drop"
       )
