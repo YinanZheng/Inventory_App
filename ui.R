@@ -29,10 +29,13 @@ ui <- navbarPage(
         border-radius: 10px;
       }
       
-      /* 强制显示滚动条，小于1340px时 */
-      @media (max-width: 1340px) {
+      /* 强制显示滚动条，小于1380px时 */
+      @media (max-width: 1380px) {
         .navbar-nav {
           overflow-x: scroll !important;
+        }
+        .navbar-brand {
+          display: none !important; /* 隐藏标题 */
         }
       }
       
