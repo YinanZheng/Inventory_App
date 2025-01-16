@@ -717,57 +717,44 @@ ui <- navbarPage(
         class = "sticky-sidebar",  # sticky 侧边栏
         itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
         
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        div(
-          class = "card shadow-sm", # 添加卡片样式
-          style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-          # 卡片标题
-          div(
-            style = "margin-bottom: 10px; padding-bottom: 8px;",
-            tags$h4("更新选中商品信息", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;")
-          ),
-          
-          # 图片模块
-          imageModuleUI("image_manage", label = "更新商品图片"),
-          
-          actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;"),
-          
-          tags$hr(style = "margin: 10px 0; border: none;"),
-          
-          fluidRow(
-            column(6, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
-            column(6, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%"))
-          ),
-          
-          # 按钮
-          fluidRow(
-            column(7, actionButton("update_info_btn", "更新单价/运费", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
-            column(5, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
-          )
-        ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        fluidRow(
-          column(
-            12,
+        # 添加 TabsetPanel 组织不同功能
+        tabsetPanel(
+          id = "manage_tabs",
+          type = "tabs",
+          tabPanel(
+            "更新商品图片",
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-              
-              # 卡片标题
-              div(
-                style = "margin-bottom: 10px; padding-bottom: 8px;",
-                tags$h4("删除选中物品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+              imageModuleUI("image_manage", label = "更新商品图片"),
+              actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")
+            )
+          ),
+          tabPanel(
+            "更新单价/运费",
+            div(
+              class = "card shadow-sm", # 添加卡片样式
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+              fluidRow(
+                column(6, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
+                column(6, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%"))
               ),
-              
-              # 确认删除按钮
+              fluidRow(
+                column(7, actionButton("update_info_btn", "更新单价/运费", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
+                column(5, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
+              )
+            )
+          ),
+          tabPanel(
+            "删除选中商品",
+            div(
+              class = "card shadow-sm", # 添加卡片样式
+              style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
               actionButton(
-                "confirm_delete_btn", 
-                "确认删除", 
-                icon = icon("check"), 
-                class = "btn-primary", 
+                "confirm_delete_btn",
+                "确认删除",
+                icon = icon("check"),
+                class = "btn-primary",
                 style = "font-size: 16px; width: 100%; height: 42px;"
               )
             )
