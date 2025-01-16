@@ -741,7 +741,7 @@ ui <- navbarPage(
               fluidRow(
                 column(12, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
                 column(12, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%")),
-                column(12, dateInput("update_purchase_date", "修改采购日期", value = Sys.Date(), width = "100%"))
+                column(12, dateInput("update_purchase_date", "修改采购日期", value = "", width = "100%"))
               ),
               fluidRow(
                 column(6, actionButton("update_info_btn", "更新信息", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),

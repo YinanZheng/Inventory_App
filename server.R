@@ -2722,7 +2722,7 @@ server <- function(input, output, session) {
     image_manage$reset()
   })
   
-  # 处理更新价格
+  # 处理更新物品信息
   observeEvent(input$update_info_btn, {
     # 获取所有选中行索引
     selected_rows <- unique_items_table_manage_selected_row()
@@ -2739,6 +2739,7 @@ server <- function(input, output, session) {
     # 验证用户输入的新数据
     new_product_cost <- input$update_product_cost
     new_shipping_cost <- input$update_shipping_cost
+    new_purchase_date <- input$update_purchase_date
     
     if (is.null(new_product_cost) || new_product_cost < 0) {
       showNotification("请输入有效的单价！", type = "error")
@@ -2746,6 +2747,10 @@ server <- function(input, output, session) {
     }
     if (is.null(new_shipping_cost) || new_shipping_cost < 0) {
       showNotification("请输入有效的国内运费！", type = "error")
+      return()
+    }
+    if (is.null(new_purchase_date) || !lubridate::is.Date(as.Date(new_purchase_date))) {
+      showNotification("请输入有效的采购日期！", type = "error")
       return()
     }
     
@@ -2758,9 +2763,9 @@ server <- function(input, output, session) {
         dbExecute(
           con,
           "UPDATE unique_items 
-         SET ProductCost = ?, DomesticShippingCost = ? 
-         WHERE UniqueID = ?",
-          params = list(new_product_cost, new_shipping_cost, unique_id)
+                 SET ProductCost = ?, DomesticShippingCost = ?, PurchaseTime = ? 
+                 WHERE UniqueID = ?",
+          params = list(new_product_cost, new_shipping_cost, as.Date(new_purchase_date), unique_id)
         )
       })
       
@@ -2775,7 +2780,7 @@ server <- function(input, output, session) {
   })
   
   
-  # 点击填写单价与运费
+  # 点击填写物品信息
   observeEvent(unique_items_table_manage_selected_row(), {
     selected_rows <- unique_items_table_manage_selected_row()
     
@@ -2810,8 +2815,8 @@ server <- function(input, output, session) {
     # 清空单价和运费输入框
     updateNumericInput(session, "update_product_cost", value = "")
     updateNumericInput(session, "update_shipping_cost", value = "")
-  
-    
+    updateDateInput(session, "update_purchase_date", value = "")
+ 
     showNotification("商品信息已清空！", type = "message")
   })
   
