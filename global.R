@@ -79,6 +79,20 @@ transaction_common_columns <- list(
   "Remarks" = "备注"
 )
 
+# 通用订单表列名映射
+orders_table_columns <<- list(
+  OrderID = "订单号",
+  OrderImagePath = "订单图",
+  CustomerName = "姓名",
+  CustomerNetName = "网名",
+  Platform = "平台",
+  UsTrackingNumber = "运单号",
+  LabelStatus = "运单PDF",
+  OrderStatus = "状态",
+  OrderNotes = "备注",
+  created_at = "创建时间"
+)
+
 # 定义需要记录时间的状态
 status_columns <<- list(
   "采购" = "PurchaseTime",
