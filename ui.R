@@ -1023,7 +1023,7 @@ ui <- navbarPage(
             
             # 转移登记按钮
             actionButton("record_transfer", "记录转移", icon = icon("exchange-alt"), 
-                         class = "btn-success", style = "width: 100%;"),
+                         class = "btn-success", style = "width: 100%; margin-bottom: 10px;"),
             
             # 删除和重置按钮同一行
             fluidRow(
