@@ -722,7 +722,7 @@ ui <- navbarPage(
           id = "manage_tabs",
           type = "tabs",
           tabPanel(
-            "更新商品图片",
+            "更新图片",
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
@@ -731,7 +731,7 @@ ui <- navbarPage(
             )
           ),
           tabPanel(
-            "更新单价/运费",
+            "更新信息",
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
@@ -746,7 +746,7 @@ ui <- navbarPage(
             )
           ),
           tabPanel(
-            "删除选中商品",
+            "删除",
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
