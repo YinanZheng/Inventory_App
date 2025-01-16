@@ -729,6 +729,10 @@ ui <- navbarPage(
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+              # 添加说明
+              tags$p("请仅点选一种商品进行图片更新。", 
+                     style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+              
               imageModuleUI("image_manage", label = "更新商品图片"),
               actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")
             )
@@ -738,6 +742,11 @@ ui <- navbarPage(
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+              
+              # 添加说明
+              tags$p("请点选一行或多行记录，支持批量更新。", 
+                     style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+              
               fluidRow(
                 column(12, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
                 column(12, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%")),
@@ -754,6 +763,11 @@ ui <- navbarPage(
             div(
               class = "card shadow-sm", # 添加卡片样式
               style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+              
+              # 添加说明
+              tags$p("请点选一行或多行记录，支持批量删除。", 
+                     style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+              
               actionButton(
                 "confirm_delete_btn",
                 "确认删除",

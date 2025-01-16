@@ -2801,7 +2801,6 @@ server <- function(input, output, session) {
         updateNumericInput(session, "update_shipping_cost", value = selected_data$DomesticShippingCost)
         updateDateInput(session, "update_purchase_date", value = as.Date(selected_data$PurchaseTime))
                         
-        showNotification("已加载最新点击记录的信息！", type = "message")
       } else {
         showNotification("选中的行无效或数据为空！", type = "error")
       }
