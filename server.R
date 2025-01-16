@@ -3696,7 +3696,7 @@ server <- function(input, output, session) {
       refreshTransactionTable(input$to_account)
       
       # 清空表单
-      resetTransferForm()
+      resetTransferForm(session)
       
     }, error = function(e) {
       showNotification(paste("资金转移失败：", e$message), type = "error")
