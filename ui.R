@@ -38,13 +38,20 @@ ui <- navbarPage(
         white-space: nowrap !important; /* 确保所有子元素在单行内 */
       }
     
-     /* 当屏幕宽度小于 1380px 时，隐藏标题 */
+      /* 当屏幕宽度小于 1380px 时，隐藏标题 */
       @media (max-width: 1380px) {
         .navbar-brand {
           display: none !important;
         }
       }
     
+      /* 当屏幕宽度小于 1340px 时，显示水平滚动条 */
+      @media (max-width: 1340px) {
+        .navbar-nav {
+          overflow-x: auto !important; /* 启用水平滚动条 */
+        }
+      }
+  
       /* 当屏幕宽度小于 900px 时，调整导航项的字体和间距 */
       @media (max-width: 900px) {
         .navbar-nav > li > a {
@@ -52,8 +59,7 @@ ui <- navbarPage(
           padding: 6px 8px !important; /* 减少间距 */
         }
       }
-    
-    
+
       body {
         padding-top: 70px; /* 为导航栏腾出空间 */
       }
