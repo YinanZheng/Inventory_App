@@ -1626,33 +1626,33 @@ get_balance <- function(account_type) {
   
   # 如果没有记录，则余额为 0
   balance <- result$Balance[1] %||% 0  # 使用 %||% 防止 NULL
-  return(sprintf("¥%.2f", balance))   # 格式化为货币格式
+  return(as.numeric(balance))  # 返回数值型余额
 }
 
 # 更新账户余额显示-账务管理用
 updateAccountOverview <- function() {
   output$salary_balance <- renderText({
-    get_balance("工资卡")
+    sprintf("¥%.2f", get_balance("工资卡"))
   })
   
   output$dollar_balance <- renderText({
-    get_balance("美元卡")
+    sprintf("¥%.2f", get_balance("美元卡"))
   })
   
   output$purchase_balance <- renderText({
-    get_balance("买货卡")
+    sprintf("¥%.2f", get_balance("买货卡"))
   })
   
   output$general_balance <- renderText({
-    get_balance("一般户卡")
+    sprintf("¥%.2f", get_balance("一般户卡"))
   })
   
   output$total_balance <- renderText({
     total <- sum(
-      as.numeric(gsub("[^0-9.-]", "", get_balance("工资卡"))),
-      as.numeric(gsub("[^0-9.-]", "", get_balance("美元卡"))),
-      as.numeric(gsub("[^0-9.-]", "", get_balance("买货卡"))),
-      as.numeric(gsub("[^0-9.-]", "", get_balance("一般户卡"))),
+      get_balance("工资卡"),
+      get_balance("美元卡"),
+      get_balance("买货卡"),
+      get_balance("一般户卡"),
       na.rm = TRUE
     )
     sprintf("¥%.2f", total)
@@ -1673,20 +1673,31 @@ refreshTransactionTable <- function(account_type) {
     # 获取数据
     data <- fetchAndFormatTransactionData(account_type)
     
-    # 定义列名映射，用于显示更友好的列标题
-    column_mapping <- list(
-      "TransactionTime" = "转账时间",
-      "AmountIn" = "转入金额",
-      "AmountOut" = "转出金额",
-      "Balance" = "当前余额",
-      "TransactionImagePath" = "转账截图",
-      "Remarks" = "备注"
+    # 计算数据的哈希值
+    current_hash <- digest::digest(data)
+    
+    # 确定哈希缓存键
+    hash_key <- switch(
+      account_type,
+      "工资卡" = "salary",
+      "美元卡" = "dollar",
+      "买货卡" = "purchase",
+      "一般户卡" = "general"
     )
+    
+    # 如果哈希值未变化，则跳过刷新
+    if (!is.null(transaction_table_hash[[hash_key]]) && 
+        transaction_table_hash[[hash_key]] == current_hash) {
+      return()
+    }
+    
+    # 更新哈希缓存
+    transaction_table_hash[[hash_key]] <- current_hash
     
     # 渲染表格
     table_result <- render_table_with_images(
       data = data,
-      column_mapping = column_mapping,
+      column_mapping = transaction_common_columns,
       image_column = "TransactionImagePath",  # 图片列名
       options = list(
         scrollY = "600px",
@@ -1702,6 +1713,7 @@ refreshTransactionTable <- function(account_type) {
     output[[table_map[[account_type]]]] <- renderDT({
       table_result$datatable
     })
+    message(paste(account_type, "数据已刷新。"))
   } else {
     showNotification("无效的账户类型！", type = "error")
   }

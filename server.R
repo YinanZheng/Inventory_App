@@ -3489,30 +3489,33 @@ server <- function(input, output, session) {
     image_transfer$reset()  # 重置图片上传组件
   }
   
+  # 初始化全局缓存，用于存储各账户的哈希值
+  transaction_table_hash <- reactiveValues(
+    salary = NULL,
+    dollar = NULL,
+    purchase = NULL,
+    general = NULL
+  )
+  
   # 分页切换更新
   observe({
     if (input$transaction_tabs == "账户余额总览") {
       updateAccountOverview()
     }
-    if (input$transaction_tabs == "工资卡") {
-      refreshTransactionTable("工资卡")
+    
+    account_type <- switch(
+      input$transaction_tabs,
+      "工资卡" = "工资卡",
+      "美元卡" = "美元卡",
+      "买货卡" = "买货卡",
+      "一般户卡" = "一般户卡"
+    )
+    
+    if (!is.null(account_type)) {
+      refreshTransactionTable(account_type)  # 优化后的表格刷新
       resetToCreateMode()
       resetTransactionForm(session)
-    }
-    if (input$transaction_tabs == "美元卡") {
-      refreshTransactionTable("美元卡")
-      resetToCreateMode()
-      resetTransactionForm(session)
-    }
-    if (input$transaction_tabs == "买货卡") {
-      refreshTransactionTable("买货卡")
-      resetToCreateMode()
-      resetTransactionForm(session)
-    }
-    if (input$transaction_tabs == "一般户卡") {
-      refreshTransactionTable("一般户卡")
-      resetToCreateMode()
-      resetTransactionForm(session)
+      resetTransferForm(session)
     }
   })
   

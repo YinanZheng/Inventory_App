@@ -69,6 +69,16 @@ common_columns <<- list(
   # Defect = "瑕疵态"
 )
 
+# 通用账务表列名映射
+transaction_common_columns <- list(
+  "TransactionTime" = "转账时间",
+  "AmountIn" = "转入金额",
+  "AmountOut" = "转出金额",
+  "Balance" = "当前余额",
+  "TransactionImagePath" = "转账截图",
+  "Remarks" = "备注"
+)
+
 # 定义需要记录时间的状态
 status_columns <<- list(
   "采购" = "PurchaseTime",
@@ -81,6 +91,7 @@ status_columns <<- list(
   "美国调货" = "UsRelocationTime",
   "退货" = "ReturnTime"
 )
+
 # 定义默认表格渲染选项
 table_default_options <<- list(
   scrollY = "730px",
