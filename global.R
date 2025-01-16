@@ -97,3 +97,7 @@ defect_statuses <<- c("瑕疵", "修复", "无瑕")
 
 # 定义管理员密码
 admin_password <<- "1029"
+
+client_id <<- "NzfGxVtsAiw6Y0IIYpg8ivmjHiTWuZJqH3ZOdTaLSPJpSm5H"
+client_secret <<- "h1LCAMKRiwa0hqaBpRTRZZeFdLXJGvibmGhM3W7YVaO7vBfWoHV7MRGA4nED0GKD"
+
