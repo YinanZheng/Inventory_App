@@ -995,7 +995,7 @@ ui <- navbarPage(
             tags$h4("资金转移", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
             
             # 转移金额输入框
-            numericInput("transfer_amount", "转移金额:", value = NULL, min = 0, width = "100%"),
+            numericInput("transfer_amount", "转移金额:", value = 0, min = 0, width = "100%"),
             
             # 转出账户选择
             selectInput(
