@@ -1304,7 +1304,7 @@ adjust_inventory_quantity <- function(con, sku, adjustment) {
   })
 }
 
-
+=
 # 添加新物品记录（采购）
 add_new_inventory_record <- function(con, sku, maker, major_type, minor_type, item_name, quantity, image_path = NULL) {
   tryCatch({
