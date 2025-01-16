@@ -1201,7 +1201,9 @@ filter_unique_items_data_by_inputs <- function(
     item_name_input_id, 
     purchase_date_range_id = NULL, 
     sold_date_range_id = NULL,
-    exit_date_range_id = NULL
+    only_show_sold_id = NULL,
+    exit_date_range_id = NULL,
+    only_show_exit_id = NULL
 ) {
   req(data)  # 确保数据不为空
   
