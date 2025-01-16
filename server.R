@@ -3835,7 +3835,7 @@ server <- function(input, output, session) {
   })
   
   # 重置 (转移)
-  observeEvent(input$reset_form_transfer {
+  observeEvent(input$reset_form_transfer, {
     resetTransferForm(session) # 重置输入框
     showNotification("表单已重置！", type = "message")
   })
