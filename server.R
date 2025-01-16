@@ -2854,32 +2854,30 @@ server <- function(input, output, session) {
       for (i in seq_len(nrow(selected_items))) {
         unique_id <- selected_items$UniqueID[i]
         sku <- selected_items$SKU[i]
+        status <- selected_items$Status[i]  # 获取物品状态
         
         # 删除 unique_items 中对应的记录
         dbExecute(con, "
-          DELETE FROM unique_items
-          WHERE UniqueID = ?", params = list(selected_items$UniqueID[i]))
+              DELETE FROM unique_items
+              WHERE UniqueID = ?", params = list(unique_id))
         
         # 删除 item_status_history 中对应的历史状态记录
         dbExecute(con, "
-          DELETE FROM item_status_history
-          WHERE UniqueID = ?", params = list(unique_id))
+              DELETE FROM item_status_history
+              WHERE UniqueID = ?", params = list(unique_id))
         
-        remaining_items <- dbGetQuery(con, "
-                            SELECT COUNT(*) AS RemainingCount
-                            FROM unique_items
-                            WHERE SKU = ?", params = list(sku))
-        
-        if (remaining_items$RemainingCount[1] > 0) {
-          # 库存减一
-          adjust_inventory_quantity(con, sku, adjustment = -1)
-        } else {
-          # 如果没有剩余记录，删除 inventory 表中的该 SKU
-          dbExecute(con, "
-            DELETE FROM inventory
-            WHERE SKU = ?", params = list(sku))
+        if (status != "采购") {  # 如果状态不是采购，调整库存
+          remaining_quantity <- adjust_inventory_quantity(con, sku, adjustment = -1)
+          
+          if (is.null(remaining_quantity)) {
+            showNotification(paste("无法调整库存，SKU:", sku), type = "error")
+          } else if (remaining_quantity == 0) {
+            # 如果库存为 0，删除 inventory 表中的该 SKU
+            dbExecute(con, "
+                      DELETE FROM inventory
+                      WHERE SKU = ?", params = list(sku))
+          }
         }
-        inventory_refresh_trigger(!inventory_refresh_trigger())
       }
       
       dbCommit(con) # 提交事务
