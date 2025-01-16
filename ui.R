@@ -45,7 +45,7 @@ ui <- navbarPage(
         }
       }
     
-      /* 当屏幕宽度小于 768px 时，调整导航项的字体和间距 */
+      /* 当屏幕宽度小于 900px 时，调整导航项的字体和间距 */
       @media (max-width: 768px) {
         .navbar-nav > li > a {
           font-size: 12px !important; /* 调整字体大小适配小屏幕 */
