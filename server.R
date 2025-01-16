@@ -2815,8 +2815,8 @@ server <- function(input, output, session) {
     # 清空单价和运费输入框
     updateNumericInput(session, "update_product_cost", value = "")
     updateNumericInput(session, "update_shipping_cost", value = "")
-    updateDateInput(session, "update_purchase_date", value = "")
- 
+    updateDateInput(session, "update_purchase_date", value = Sys.Date())
+    
     showNotification("商品信息已清空！", type = "message")
   })
   
