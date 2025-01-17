@@ -123,6 +123,5 @@ defect_statuses <<- c("瑕疵", "修复", "无瑕")
 # 定义管理员密码
 admin_password <<- "1029"
 
-# USPS API
-client_id <<- Sys.getenv("USPS_CLIENT_ID")
-client_secret <<- Sys.getenv("USPS_CLIENT_SECRET")
+# Token 文件路径
+token_file <- "/srv/shiny-server/inventory/data/token_data.rds"
