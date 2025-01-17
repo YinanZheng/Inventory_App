@@ -1401,40 +1401,24 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 定义一个标志位，初始为 TRUE
-  sync_flag <- reactiveVal(TRUE)
-  
-  # 监听 sold_tabs 的变化，调整 filter_tabs（带防抖）
+  # 监听 sold_tabs 的变化，调整 filter_tabs
   observeEvent(input$sold_tabs, {
-    if (sync_flag()) {
-      sync_flag(FALSE)  # 暂时禁用同步
-      debounce(200, session, {
-        if (input$sold_tabs == "物品售出") {
-          updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
-        } else if (input$sold_tabs == "订单管理") {
-          updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
-        }
-        sync_flag(TRUE)  # 恢复标志位
-      })
+    if (input$sold_tabs == "物品售出") {
+      updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
+    } else if (input$sold_tabs == "订单管理") {
+      updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
     }
   })
   
-  # 监听 filter_tabs 的变化，调整 sold_tabs（带防抖）
-  observeEvent(input$filter_tabs, {
-    if (sync_flag()) {
-      sync_flag(FALSE)  # 暂时禁用同步
-      debounce(200, session, {
-        if (input$filter_tabs == "物品筛选") {
-          updateTabsetPanel(session, inputId = "sold_tabs", selected = "物品售出")
-        } else if (input$filter_tabs == "订单筛选") {
-          updateTabsetPanel(session, inputId = "sold_tabs", selected = "订单管理")
-        }
-        sync_flag(TRUE)  # 恢复标志位
-      })
-    }
-  })
-  
-  
+  # # 监听 filter_tabs 的变化，调整 sold_tabs
+  # observeEvent(input$filter_tabs, {
+  #   if (input$filter_tabs == "物品筛选") {
+  #     updateTabsetPanel(session, inputId = "sold_tabs", selected = "物品售出")
+  #   } else if (input$filter_tabs == "订单筛选") {
+  #     updateTabsetPanel(session, inputId = "sold_tabs", selected = "订单管理")
+  #   }
+  # })
+  # 
   ############################ 
   #####   物品售出子页   ##### 
   ############################ 
