@@ -2073,7 +2073,7 @@ extract_latest_status <- function(tracking_info) {
   # 匹配状态
   status <- dplyr::case_when(
     grepl("USPS picked up item|USPS in possession of item|Departed Post Office", latest_event) ~ "发出",
-    grepl("In Transit to Next Facility|Departed USPS Regional Facility|Arrived at USPS Regional Facility|Arrived at Post Office|Your item arrived at our USPS facility ", latest_event) ~ "在途",
+    grepl("In Transit to Next Facility|Departed USPS Regional Facility|Arrived at USPS Regional Facility|Arrived at Post Office|Your item arrived at our USPS facility|Your item departed our USPS facility", latest_event) ~ "在途",
     grepl("Your item was delivered", latest_event) ~ "送达"
   )
   
