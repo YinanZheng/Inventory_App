@@ -2060,21 +2060,21 @@ update_order_status <- function(order_id, new_status, con) {
 extract_latest_status <- function(tracking_info) {
   # 检查是否有 eventSummaries
   if (is.null(tracking_info$eventSummaries) || length(tracking_info$eventSummaries) == 0) {
-    return("未知")
+    return(NA)
   }
   
   # 提取第一条记录
   latest_event <- tracking_info$eventSummaries[[1]]
   
   if (is.null(latest_event) || latest_event == "") {
-    return("未知")
+    return(NA)
   }
   
   # 匹配状态
   status <- dplyr::case_when(
-    grepl("Shipping Label Created,", latest_event) ~ "装箱",
+    grepl("Pre-Shipment|USPS Awaiting Item|Shipping Label Created,", latest_event) ~ "装箱",
     grepl("USPS picked up item|USPS in possession of item|Departed Post Office", latest_event) ~ "发出",
-    grepl("In Transit|Departed|Arrived at|Your item arrived at|Your item departed", latest_event) ~ "在途",
+    grepl("In Transit|Departed|Arrived at|Your item arrived at|Your item departed|is moving", latest_event) ~ "在途",
     grepl("Your item was delivered", latest_event) ~ "送达"
   )
   
