@@ -1933,31 +1933,40 @@ clear_invalid_item_status_history <- function(con) {
       )
     ")
     
-    # 删除回撤之前的状态
+    # 创建临时表，标记回撤之前的记录
+    dbExecute(con, "
+      CREATE TEMPORARY TABLE rollback_records AS
+      SELECT t1.UniqueID, t1.change_time
+      FROM item_status_history t1
+      JOIN item_status_history t2
+        ON t1.UniqueID = t2.UniqueID
+        AND t1.change_time < t2.change_time
+        AND t1.previous_status = t2.previous_status
+      WHERE t2.change_time = (
+        SELECT MIN(change_time)
+        FROM item_status_history
+        WHERE UniqueID = t1.UniqueID AND previous_status = t1.previous_status AND change_time > t1.change_time
+      )
+    ")
+    
+    # 删除回撤之前的记录
     dbExecute(con, "
       DELETE FROM item_status_history
       WHERE (UniqueID, change_time) IN (
         SELECT UniqueID, change_time
-        FROM (
-          SELECT 
-            UniqueID, 
-            change_time, 
-            previous_status,
-            LEAD(previous_status) OVER (PARTITION BY UniqueID ORDER BY change_time) AS next_status,
-            ROW_NUMBER() OVER (PARTITION BY UniqueID ORDER BY change_time) AS rn,
-            MAX(CASE WHEN previous_status = LEAD(previous_status) OVER (PARTITION BY UniqueID ORDER BY change_time) THEN 1 ELSE 0 END) 
-            OVER (PARTITION BY UniqueID ORDER BY change_time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rollback_flag
-          FROM item_status_history
-        ) subquery
-        WHERE rollback_flag = 1
+        FROM rollback_records
       )
     ")
+    
+    # 删除临时表
+    dbExecute(con, "DROP TEMPORARY TABLE rollback_records")
     
     showNotification("历史记录中无效记录已清除！", type = "message")
   }, error = function(e) {
     showNotification(paste("清除无效记录失败：", e$message), type = "error")
   })
 }
+
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
