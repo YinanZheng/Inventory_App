@@ -428,6 +428,7 @@ ui <- navbarPage(
 
         tabsetPanel(
           id = "filter_tabs",  # 主标签页 ID
+          type = "pills",
           tabPanel(
             title = "物品筛选",
             itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745",
