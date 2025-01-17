@@ -1401,86 +1401,16 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 初始化模块绑定状态
-  sold_filter_initialized <- reactiveVal(FALSE)
+  observeEvent(input$sold_tabs, {
+    if (input$sold_tabs == "物品售出") {
+      # 自动跳转到“可售物品筛选”页
+      updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
+    } else if (input$sold_tabs == "订单管理") {
+      # 自动跳转到“订单筛选”页
+      updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
+    }
+  })
   
-  # 动态更新侧边栏内容
-  # observe({
-  #   req(input$sold_tabs)  # 确保主面板选项存在
-  #   
-  #   if (input$sold_tabs == "物品售出") {
-  #     
-  #     # 渲染动态侧边栏
-  #     output$dynamic_sidebar <- renderUI({
-  #       itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("所有状态" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
-  #     })
-  #     
-  #     # 确保模块仅绑定一次
-  #     if (!sold_filter_initialized()) {
-  #       sold_filter_initialized(TRUE)  # 标记模块已绑定
-  #       # 确保侧边栏渲染后绑定服务器逻辑
-  #       session$onFlushed(function() {
-  #         itemFilterServer(
-  #           id = "sold_filter",
-  #           makers_items_map = makers_items_map
-  #         )
-  #       })
-  #     }
-  #   } else if (input$sold_tabs == "订单管理") {
-  #     # 订单管理分页：显示订单筛选区
-  #     output$dynamic_sidebar <- renderUI({
-  #       div(
-  #         class = "card",
-  #         style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
-  #         tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-  #         
-  #         textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-  #         textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
-  #         
-  #         fluidRow(
-  #           column(6, 
-  #                  textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
-  #           column(6, 
-  #                  textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
-  #         ),
-  #         
-  #         fluidRow(
-  #           column(6, 
-  #                  selectInput(
-  #                    inputId = "filter_platform",
-  #                    label = "电商平台",
-  #                    choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
-  #                    selected = "",
-  #                    width = "100%"
-  #                  )),
-  #           column(6, 
-  #                  selectInput(
-  #                    inputId = "filter_order_status",
-  #                    label = "订单状态",
-  #                    choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
-  #                    selected = "",
-  #                    width = "100%"
-  #                  ))
-  #         ),
-  #         
-  #         fluidRow(
-  #           column(6, 
-  #                  textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
-  #           column(6, 
-  #                  autocompleteInputUI("sold", label = "商品名反查", placeholder = "输入商品名"))
-  #         ),
-  #         
-  #         fluidRow(
-  #           column(6, 
-  #                  actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
-  #           column(6, 
-  #                  actionButton("reset_filter_btn", "清空筛选条件", class = "btn-info", style = "width: 100%;"))
-  #         )
-  #       )
-  #     })
-  #   }
-  # })
-  # 
   ############################ 
   #####   物品售出子页   ##### 
   ############################ 
