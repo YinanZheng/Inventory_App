@@ -1919,7 +1919,7 @@ update_balance <- function(account_type, con) {
 # 加载时清除不是以 "采购" 为起始状态的状态流转记录
 clear_invalid_item_status_history <- function(con) {
   tryCatch({
-    # 删除不符合条件的记录
+    # 删除不以 "采购" 为起始状态的记录
     dbExecute(con, "
       DELETE FROM item_status_history
       WHERE UniqueID IN (
@@ -1932,11 +1932,33 @@ clear_invalid_item_status_history <- function(con) {
         ) subquery
       )
     ")
-    # showNotification("历史记录中不以'采购'为第一个状态的记录已清除！", type = "message")
+    
+    # 删除回撤之前的状态
+    dbExecute(con, "
+      DELETE FROM item_status_history
+      WHERE UniqueID IN (
+        SELECT UniqueID
+        FROM (
+          SELECT UniqueID, change_time, previous_status, next_status,
+                 ROW_NUMBER() OVER (PARTITION BY UniqueID ORDER BY change_time) AS rn,
+                 MAX(CASE WHEN previous_status = next_status THEN 1 ELSE 0 END) 
+                 OVER (PARTITION BY UniqueID ORDER BY change_time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rollback_flag
+          FROM (
+            SELECT UniqueID, previous_status, next_status, change_time,
+                   LEAD(previous_status) OVER (PARTITION BY UniqueID ORDER BY change_time) AS next_status
+            FROM item_status_history
+          ) subquery1
+        ) subquery2
+        WHERE rollback_flag = 1
+      )
+    ")
+    
+    showNotification("历史记录中无效记录已清除！", type = "message")
   }, error = function(e) {
     showNotification(paste("清除无效记录失败：", e$message), type = "error")
   })
 }
+
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
