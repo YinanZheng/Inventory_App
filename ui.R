@@ -427,7 +427,61 @@ ui <- navbarPage(
         class = "sticky-sidebar",
 
         # 动态显示筛选区
-        uiOutput("dynamic_sidebar"),
+        # uiOutput("dynamic_sidebar"),
+        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745", 
+                     status_choices = c("所有状态" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出")),
+        
+        
+        tags$hr(style = "margin: 5px 0; border: none;"),
+        
+        div(
+          class = "card",
+          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
+          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+          
+          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+          textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
+          
+          fluidRow(
+            column(6, 
+                   textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
+            column(6, 
+                   textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
+          ),
+          
+          fluidRow(
+            column(6, 
+                   selectInput(
+                     inputId = "filter_platform",
+                     label = "电商平台",
+                     choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+                     selected = "",
+                     width = "100%"
+                   )),
+            column(6, 
+                   selectInput(
+                     inputId = "filter_order_status",
+                     label = "订单状态",
+                     choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
+                     selected = "",
+                     width = "100%"
+                   ))
+          ),
+          
+          fluidRow(
+            column(6, 
+                   textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
+            column(6, 
+                   autocompleteInputUI("sold", label = "商品名反查", placeholder = "输入商品名"))
+          ),
+          
+          fluidRow(
+            column(6, 
+                   actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
+            column(6, 
+                   actionButton("reset_filter_btn", "清空筛选条件", class = "btn-info", style = "width: 100%;"))
+          )
+        ),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
