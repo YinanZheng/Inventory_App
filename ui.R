@@ -557,6 +557,8 @@ ui <- navbarPage(
         class = "main-panel",
         tabsetPanel(
           id = "sold_tabs",
+          type = "pills",
+          
           tabPanel(
             title = "物品售出",
             fluidRow(
@@ -762,7 +764,7 @@ ui <- navbarPage(
         # 添加 TabsetPanel 组织不同功能
         tabsetPanel(
           id = "manage_tabs",
-          type = "tabs",
+          type = "pills",
           tabPanel(
             "更新图片", icon = icon("image"),  # 图标
             div(
@@ -983,7 +985,7 @@ ui <- navbarPage(
         class = "sticky-sidebar",
         tabsetPanel(
           id = "sidebar_tabs",  # 用于服务器监听当前选中的分页
-          type = "tabs",        # 使用标签式分页
+          type = "pills",
           selected = "账务登记", # 默认选中的分页
           
           # 账务登记分页
@@ -1089,6 +1091,7 @@ ui <- navbarPage(
         class = "main-panel",
         tabsetPanel(
           id = "transaction_tabs",  # 绑定到 input$tabs
+          type = "pills",
           tabPanel("账户余额总览", 
           fluidRow(
            column(12, div(
@@ -1176,6 +1179,7 @@ ui <- navbarPage(
         # 使用 tabsetPanel 来组织分页
         tabsetPanel(
           id = "query_tabs",
+          type = "pills",
           tabPanel(
             "商品状态",
             fluidRow(
