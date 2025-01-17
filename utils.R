@@ -1925,7 +1925,7 @@ clear_invalid_item_status_history <- function(con) {
       WHERE UniqueID IN (
         SELECT UniqueID
         FROM (
-          SELECT UniqueID, MIN(change_time) AS first_change_time
+          SELECT UniqueID, MIN(previous_status_timestamp) AS first_change_time
           FROM item_status_history
           GROUP BY UniqueID
           HAVING MAX(CASE WHEN previous_status = '采购' THEN 1 ELSE 0 END) = 0
@@ -1936,19 +1936,19 @@ clear_invalid_item_status_history <- function(con) {
     # 删除回撤之前的状态
     dbExecute(con, "
       DELETE FROM item_status_history
-      WHERE UniqueID IN (
-        SELECT UniqueID
+      WHERE (UniqueID, change_time) IN (
+        SELECT UniqueID, change_time
         FROM (
-          SELECT UniqueID, change_time, previous_status, next_status,
-                 ROW_NUMBER() OVER (PARTITION BY UniqueID ORDER BY change_time) AS rn,
-                 MAX(CASE WHEN previous_status = next_status THEN 1 ELSE 0 END) 
-                 OVER (PARTITION BY UniqueID ORDER BY change_time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rollback_flag
-          FROM (
-            SELECT UniqueID, previous_status, next_status, change_time,
-                   LEAD(previous_status) OVER (PARTITION BY UniqueID ORDER BY change_time) AS next_status
-            FROM item_status_history
-          ) subquery1
-        ) subquery2
+          SELECT 
+            UniqueID, 
+            change_time, 
+            previous_status,
+            LEAD(previous_status) OVER (PARTITION BY UniqueID ORDER BY change_time) AS next_status,
+            ROW_NUMBER() OVER (PARTITION BY UniqueID ORDER BY change_time) AS rn,
+            MAX(CASE WHEN previous_status = LEAD(previous_status) OVER (PARTITION BY UniqueID ORDER BY change_time) THEN 1 ELSE 0 END) 
+            OVER (PARTITION BY UniqueID ORDER BY change_time ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS rollback_flag
+          FROM item_status_history
+        ) subquery
         WHERE rollback_flag = 1
       )
     ")
@@ -1958,7 +1958,6 @@ clear_invalid_item_status_history <- function(con) {
     showNotification(paste("清除无效记录失败：", e$message), type = "error")
   })
 }
-
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
