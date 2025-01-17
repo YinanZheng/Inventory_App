@@ -2057,14 +2057,14 @@ update_order_status <- function(order_id, new_status, con) {
 }
 
 # 状态映射规则
-extract_latest_status <- function(tracking_info) {
+extract_latest_status <- function(eventSummaries) {
   # 检查是否有 eventSummaries
-  if (is.null(tracking_info$eventSummaries) || length(tracking_info$eventSummaries) == 0) {
+  if (is.null(eventSummaries) || length(eventSummaries) == 0) {
     return(NA)
   }
   
   # 提取第一条记录
-  latest_event <- tracking_info$eventSummaries[[1]]
+  latest_event <- eventSummaries[[1]]
   
   if (is.null(latest_event) || latest_event == "") {
     return(NA)
@@ -2121,15 +2121,21 @@ update_tracking_status <- function() {
     if (!is.null(tracking_result)) {
       request_counter <- tracking_result$request_counter
       request_timestamp <- tracking_result$request_timestamp
-      new_status <- extract_latest_status(tracking_result$content)
-      message(new_status)
+      new_status <- extract_latest_status(tracking_result$content$eventSummaries)
       
-      if (new_status != order$OrderStatus) {
-        update_order_status(order$OrderID, new_status, con)
+      if(is.na(new_status))
+      {
+        message("NA Status: ", tracking_result$content$eventSummaries)
+      } else {
+        message(order$OrderStatus, " --> ", new_status)
+        if (new_status != order$OrderStatus) {
+          update_order_status(order$OrderID, new_status, con)
+        }
       }
     } else {
       message("No tracking result returned!")
     }
+    message("-------------------------------------------")
   }
   dbDisconnect(con)
 }
