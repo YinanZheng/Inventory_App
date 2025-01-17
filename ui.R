@@ -423,147 +423,44 @@ ui <- navbarPage(
       class = "layout-container",
       
       # 左侧：动态变化的筛选区和订单登记
-      div(
-        class = "sticky-sidebar",
-
-        # 动态显示筛选区
-        # uiOutput("dynamic_sidebar"),
-        itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745", 
-                     status_choices = c("所有状态" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出")),
-        
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        div(
-          class = "card",
-          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
-          tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-          
-          textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-          textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
-          
-          fluidRow(
-            column(6, 
-                   textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
-            column(6, 
-                   textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
-          ),
-          
-          fluidRow(
-            column(6, 
-                   selectInput(
-                     inputId = "filter_platform",
-                     label = "电商平台",
-                     choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
-                     selected = "",
-                     width = "100%"
-                   )),
-            column(6, 
-                   selectInput(
-                     inputId = "filter_order_status",
-                     label = "订单状态",
-                     choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
-                     selected = "",
-                     width = "100%"
-                   ))
-          ),
-          
-          fluidRow(
-            column(6, 
-                   textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
-            column(6, 
-                   autocompleteInputUI("sold", label = "商品名反查", placeholder = "输入商品名"))
-          ),
-          
-          fluidRow(
-            column(6, 
-                   actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
-            column(6, 
-                   actionButton("reset_filter_btn", "清空筛选条件", class = "btn-info", style = "width: 100%;"))
+      tabsetPanel(
+        id = "filter_tabs",  # 主标签页 ID
+        tabPanel(
+          title = "物品筛选",
+          div(
+            class = "sticky-sidebar",
+            itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745",
+                         status_choices = c("所有状态" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
           )
         ),
-        
-        tags$hr(style = "margin: 5px 0; border: none;"),
-        
-        # 订单登记区（共用）
-        div(
-          class = "card",
-          style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-          
-          tags$h4("订单登记与更新", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          
-          fluidRow(
-            column(
-              7,
-              textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
-            ),
-            column(
-              5,
-              selectInput(
-                inputId = "platform",
-                label = "电商平台",
-                choices = c(
-                  "请选择" = "",
-                  "Etsy" = "Etsy",
-                  "Shopify" = "Shopify",
-                  "TikTok" = "TikTok",
-                  "其他" = "其他"
-                ),
-                selected = "",
-                width = "100%"
-              )
-            )
-          ),
-     
-          textInput("customer_name", "顾客姓名", placeholder = "请输入或运单提取", width = "100%"),
-          textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"),
-          
-          fluidRow(
-            column(6, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
-            column(6, div(checkboxInput("is_preorder", "预定", value = FALSE))),
-          ),
-          
-          selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...', maxOptions = 500)),
-          
-          # 运单号
-          textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
-          
-          # 运单PDF 文件上传组件
-          fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
-          uiOutput("upload_status_message"),
-          
-          tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
-          
-          # 订单图片上传
-          imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
-          
-          # 订单备注
-          textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
-          
-          # 按钮区
+        tabPanel(
+          title = "订单筛选",
           div(
-            style = "margin-top: 10px; display: flex; flex-direction: column; gap: 5px;",  # 增加垂直间距
-            
+            class = "sticky-sidebar",
             div(
-              style = "display: flex; justify-content: space-between;",
-              uiOutput("register_order_button_ui"),
-              actionButton(
-                "clear_order_btn",
-                "清空订单",
-                icon = icon("eraser"),
-                class = "btn-warning",
-                style = "font-size: 16px; width: 48%; height: 42px;"
-              )
-            ),
-            
-            div(
-              style = "margin-top: 5px; display: flex; justify-content: center;",  # 设置行间距
-              actionButton(
-                "merge_order_btn",
-                "合并订单",
-                icon = icon("object-group"),
-                class = "btn-primary",
-                style = "font-size: 16px; width: 100%; height: 42px;"
+              class = "card",
+              style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
+              tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
+              textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
+              textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
+              fluidRow(
+                column(6, textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
+                column(6, textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
+              ),
+              fluidRow(
+                column(6, selectInput("filter_platform", "电商平台", choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+                                      selected = "", width = "100%")),
+                column(6, selectInput("filter_order_status", "订单状态", 
+                                      choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
+                                      selected = "", width = "100%"))
+              ),
+              fluidRow(
+                column(6, textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
+                column(6, autocompleteInputUI("sold", label = "商品名反查", placeholder = "输入商品名"))
+              ),
+              fluidRow(
+                column(6, actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
+                column(6, actionButton("reset_filter_btn", "清空筛选条件", class = "btn-info", style = "width: 100%;"))
               )
             )
           )
