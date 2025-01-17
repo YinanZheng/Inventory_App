@@ -1916,7 +1916,7 @@ update_balance <- function(account_type, con) {
 }
 
 
-# 加载时清除不是以 "采购" 为起始状态的状态流转记录
+# 加载时清除无效和冗余的状态流转记录
 clear_invalid_item_status_history <- function(con) {
   tryCatch({
     # 删除不以 "采购" 为起始状态的记录
@@ -1933,43 +1933,42 @@ clear_invalid_item_status_history <- function(con) {
       )
     ")
     
-    # 查找需要保留的最新状态记录
+    # 查找需要保留的记录
     dbExecute(con, "
-      CREATE TEMPORARY TABLE valid_status_records AS
-      SELECT DISTINCT
-        t1.UniqueID,
-        t1.previous_status,
-        t1.previous_status_timestamp,
-        t1.change_time
-      FROM item_status_history t1
-      LEFT JOIN item_status_history t2
-        ON t1.UniqueID = t2.UniqueID
-        AND t1.previous_status = t2.previous_status
-        AND t1.change_time < t2.change_time
-      LEFT JOIN item_status_history t3
-        ON t1.UniqueID = t3.UniqueID
-        AND t1.previous_status = t3.previous_status
-        AND t1.change_time > t3.change_time
-      WHERE t2.UniqueID IS NULL OR t3.UniqueID IS NULL -- 没有前后相同状态夹击的记录
+      CREATE TEMPORARY TABLE valid_records AS
+      SELECT 
+        UniqueID,
+        previous_status,
+        MIN(change_time) AS first_occurrence_time,
+        MAX(change_time) AS last_occurrence_time
+      FROM item_status_history
+      GROUP BY UniqueID, previous_status
     ")
     
-    # 删除所有未保留的记录
+    # 删除最早的重复状态记录和中间的状态记录，只保留最新的状态记录
     dbExecute(con, "
       DELETE FROM item_status_history
-      WHERE (UniqueID, change_time) NOT IN (
-        SELECT UniqueID, change_time
-        FROM valid_status_records
+      WHERE (UniqueID, change_time) IN (
+        SELECT 
+          t.UniqueID, t.change_time
+        FROM item_status_history t
+        JOIN valid_records v
+        ON t.UniqueID = v.UniqueID
+        AND t.previous_status = v.previous_status
+        WHERE t.change_time >= v.first_occurrence_time
+          AND t.change_time < v.last_occurrence_time
       )
     ")
     
     # 删除临时表
-    dbExecute(con, "DROP TEMPORARY TABLE valid_status_records")
+    dbExecute(con, "DROP TEMPORARY TABLE valid_records")
     
     showNotification("无效历史记录已清除！", type = "message")
   }, error = function(e) {
     showNotification(paste("清除无效记录失败：", e$message), type = "error")
   })
 }
+
 
 
 ### USPS API functions
