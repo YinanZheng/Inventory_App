@@ -1972,6 +1972,128 @@ clear_invalid_item_status_history <- function(con) {
 }
 
 
+### USPS API functions
+
+# 获取Access Token函数
+get_access_token <- function(client_id, client_secret) {
+  response <- POST(
+    url = "https://apis.usps.com/oauth2/v3/token",
+    body = list(
+      grant_type = "client_credentials",
+      client_id = client_id,
+      client_secret = client_secret
+    ),
+    encode = "form"
+  )
+  
+  if (status_code(response) == 200) {
+    token_data <- content(response, as = "parsed")
+    list(
+      access_token = token_data$access_token,
+      token_expiry = Sys.time() + as.numeric(token_data$expires_in) - 60  # 提前1分钟过期
+    )
+  } else {
+    stop("Failed to get access token:", content(response, as = "text"))
+  }
+}
+
+# 查询Tracking状态函数
+get_tracking_info <- function(tracking_number, access_token, request_counter, request_timestamp) {
+  if (request_counter >= 30 && Sys.time() < request_timestamp + hours(1)) {
+    stop("Hourly request limit reached. Please wait.")
+  }
+  
+  url <- paste0("https://apis.usps.com/tracking/v3/tracking/", tracking_number, "?expand=SUMMARY")
+  response <- GET(url, add_headers(Authorization = paste("Bearer", access_token)))
+  
+  # 更新请求计数器和时间戳
+  if (Sys.time() >= request_timestamp + hours(1)) {
+    request_counter <- 1
+    request_timestamp <- Sys.time()
+  } else {
+    request_counter <- request_counter + 1
+  }
+  
+  if (status_code(response) == 200) {
+    list(
+      content = content(response, as = "parsed"),
+      request_counter = request_counter,
+      request_timestamp = request_timestamp
+    )
+  } else {
+    warning("Tracking request failed:", content(response, as = "text"))
+    return(NULL)
+  }
+}
+
+# 更新订单状态
+update_order_status <- function(order_id, new_status, con) {
+  dbExecute(
+    con,
+    "UPDATE orders SET OrderStatus = ?, updated_at = CURRENT_TIMESTAMP WHERE OrderID = ?",
+    params = list(new_status, order_id)
+  )
+}
+
+# 状态映射规则
+extract_latest_status <- function(tracking_info) {
+  # 提取第一条记录
+  latest_event <- tracking_info$eventSummaries[[1]]
+  
+  # 检查记录是否为空
+  if (is.null(latest_event) || latest_event == "") {
+    return("未知")  # 如果没有记录，返回默认状态
+  }
+  
+  # 匹配状态
+  status <- case_when(
+    grepl("USPS in possession of item|Departed Post Office", latest_event) ~ "发出",
+    grepl("In Transit to Next Facility|Departed USPS Regional Facility|Arrived at USPS Regional Facility|Arrived at Post Office", latest_event) ~ "在途",
+    grepl("Your item was delivered", latest_event) ~ "送达",
+    TRUE ~ "未知"  # 未知状态
+  )
+  
+  return(status)
+}
+
+# 订单状态更新主逻辑
+update_tracking_status <- function(client_id, client_secret, con) {
+  # 获取 Access Token
+  token <- get_access_token(client_id, client_secret)
+  
+  # 查询需要更新的订单
+  eligible_orders <- dbGetQuery(con, "
+    SELECT OrderID, UsTrackingNumber, OrderStatus, updated_at
+    FROM orders
+    WHERE OrderStatus IN ('装箱', '发出', '在途')
+      AND (updated_at IS NULL OR TIMESTAMPDIFF(HOUR, updated_at, NOW()) >= 8)
+  ")
+  
+  if (nrow(eligible_orders) == 0) {
+    message("No eligible orders for update.")
+    return()
+  }
+  
+  # 遍历符合条件的订单
+  lapply(1:nrow(eligible_orders), function(i) {
+    order <- eligible_orders[i, ]
+    tracking_info <- get_tracking_info(order$UsTrackingNumber, token)
+    
+    if (!is.null(tracking_info)) {
+      new_status <- extract_latest_status(tracking_info)
+      if (new_status != order$OrderStatus) {
+        update_order_status(order$OrderID, new_status, con)
+      }
+    }
+  })
+}
+
+### 
+
+
+
+
+
 
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
