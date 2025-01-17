@@ -1933,39 +1933,44 @@ clear_invalid_item_status_history <- function(con) {
       )
     ")
     
-    # 创建临时表，标记回撤之前的记录
+    # 查找需要保留的最新状态记录
     dbExecute(con, "
-      CREATE TEMPORARY TABLE rollback_records AS
-      SELECT t1.UniqueID, t1.change_time
+      CREATE TEMPORARY TABLE valid_status_records AS
+      SELECT DISTINCT
+        t1.UniqueID,
+        t1.previous_status,
+        t1.previous_status_timestamp,
+        t1.change_time
       FROM item_status_history t1
-      JOIN item_status_history t2
+      LEFT JOIN item_status_history t2
         ON t1.UniqueID = t2.UniqueID
-        AND t1.change_time < t2.change_time
         AND t1.previous_status = t2.previous_status
-      WHERE t2.change_time = (
-        SELECT MIN(change_time)
-        FROM item_status_history
-        WHERE UniqueID = t1.UniqueID AND previous_status = t1.previous_status AND change_time > t1.change_time
-      )
+        AND t1.change_time < t2.change_time
+      LEFT JOIN item_status_history t3
+        ON t1.UniqueID = t3.UniqueID
+        AND t1.previous_status = t3.previous_status
+        AND t1.change_time > t3.change_time
+      WHERE t2.UniqueID IS NULL OR t3.UniqueID IS NULL -- 没有前后相同状态夹击的记录
     ")
     
-    # 删除回撤之前的记录
+    # 删除所有未保留的记录
     dbExecute(con, "
       DELETE FROM item_status_history
-      WHERE (UniqueID, change_time) IN (
+      WHERE (UniqueID, change_time) NOT IN (
         SELECT UniqueID, change_time
-        FROM rollback_records
+        FROM valid_status_records
       )
     ")
     
     # 删除临时表
-    dbExecute(con, "DROP TEMPORARY TABLE rollback_records")
+    dbExecute(con, "DROP TEMPORARY TABLE valid_status_records")
     
-    showNotification("历史记录中无效记录已清除！", type = "message")
+    showNotification("无效历史记录已清除！", type = "message")
   }, error = function(e) {
     showNotification(paste("清除无效记录失败：", e$message), type = "error")
   })
 }
+
 
 
 # 清理未被记录的图片 (每天运行一次)
