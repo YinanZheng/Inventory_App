@@ -2083,6 +2083,9 @@ extract_latest_status <- function(eventSummaries) {
 
 # 订单状态更新主逻辑
 update_tracking_status <- function() {
+  
+  message(Sys.time())
+
   # 数据库连接信息
   con <- db_connection()
   
