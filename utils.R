@@ -1933,27 +1933,33 @@ clear_invalid_item_status_history <- function(con) {
       )
     ")
     
-    # 创建临时表，保存重复状态的中间记录
+    # 创建临时表，记录重复状态的最早和最新记录
+    dbExecute(con, "
+      CREATE TEMPORARY TABLE duplicate_statuses AS
+      SELECT 
+        UniqueID,
+        previous_status,
+        MIN(change_time) AS first_occurrence_time,
+        MAX(change_time) AS last_occurrence_time
+      FROM item_status_history
+      GROUP BY UniqueID, previous_status
+      HAVING COUNT(*) > 1
+    ")
+    
+    # 创建临时表，记录需要删除的中间记录
     dbExecute(con, "
       CREATE TEMPORARY TABLE records_to_delete AS
       SELECT 
         t.UniqueID, t.change_time
       FROM item_status_history t
-      JOIN (
-        SELECT 
-          UniqueID, previous_status,
-          MIN(change_time) AS first_occurrence_time,
-          MAX(change_time) AS last_occurrence_time
-        FROM item_status_history
-        GROUP BY UniqueID, previous_status
-        HAVING COUNT(*) > 1
-      ) v
-      ON t.UniqueID = v.UniqueID AND t.previous_status = v.previous_status
+      JOIN duplicate_statuses v
+      ON t.UniqueID = v.UniqueID
+        AND t.previous_status = v.previous_status
       WHERE t.change_time >= v.first_occurrence_time
         AND t.change_time < v.last_occurrence_time
     ")
     
-    # 删除记录
+    # 删除中间记录
     dbExecute(con, "
       DELETE FROM item_status_history
       WHERE (UniqueID, change_time) IN (
@@ -1962,6 +1968,7 @@ clear_invalid_item_status_history <- function(con) {
     ")
     
     # 删除临时表
+    dbExecute(con, "DROP TEMPORARY TABLE duplicate_statuses")
     dbExecute(con, "DROP TEMPORARY TABLE records_to_delete")
     
     showNotification("无效历史记录已清除！", type = "message")
@@ -1969,6 +1976,7 @@ clear_invalid_item_status_history <- function(con) {
     showNotification(paste("清除无效记录失败：", e$message), type = "error")
   })
 }
+
 
 
 
