@@ -1976,6 +1976,9 @@ clear_invalid_item_status_history <- function(con) {
 
 # 获取 Access Token
 get_access_token <- function(client_id, client_secret) {
+  # Token 文件路径
+  token_file <- "/srv/shiny-server/inventory/data/token_data.rds"
+  
   # 检查是否有已存储的 Token
   if (file.exists(token_file)) {
     token_data <- readRDS(token_file)
