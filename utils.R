@@ -2072,10 +2072,9 @@ extract_latest_status <- function(tracking_info) {
   
   # 匹配状态
   status <- dplyr::case_when(
-    grepl("USPS in possession of item|Departed Post Office", latest_event) ~ "发出",
-    grepl("In Transit to Next Facility|Departed USPS Regional Facility|Arrived at USPS Regional Facility|Arrived at Post Office", latest_event) ~ "在途",
-    grepl("Your item was delivered", latest_event) ~ "送达",
-    TRUE ~ "未知"
+    grepl("USPS picked up item|USPS in possession of item|Departed Post Office", latest_event) ~ "发出",
+    grepl("In Transit to Next Facility|Departed USPS Regional Facility|Arrived at USPS Regional Facility|Arrived at Post Office|Your item arrived at our USPS facility ", latest_event) ~ "在途",
+    grepl("Your item was delivered", latest_event) ~ "送达"
   )
   
   return(status)
@@ -2110,19 +2109,25 @@ update_tracking_status <- function() {
     return()
   }
   
+  message(nrow(eligible_orders), " packages to be updated")
+  
   # 遍历符合条件的订单
   for (i in 1:nrow(eligible_orders)) {
     order <- eligible_orders[i, ]
+    message("Updating tracking number: ", order$UsTrackingNumber)
     tracking_result <- get_tracking_info(order$UsTrackingNumber, token, request_counter, request_timestamp)
     
     if (!is.null(tracking_result)) {
       request_counter <- tracking_result$request_counter
       request_timestamp <- tracking_result$request_timestamp
       new_status <- extract_latest_status(tracking_result$content)
+      message(new_status)
       
       if (new_status != order$OrderStatus) {
         update_order_status(order$OrderID, new_status, con)
       }
+    } else {
+      message("No tracking result returned!")
     }
   }
 }
