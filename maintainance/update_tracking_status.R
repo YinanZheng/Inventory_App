@@ -1,6 +1,29 @@
 library(DBI)
 library(httr)
 
+# 日志文件路径
+log_file <- "/var/log//update_tracking_status.log"
+
+# 清理日志函数
+clear_log_daily <- function(log_file) {
+  if (file.exists(log_file)) {
+    file_info <- file.info(log_file)
+    # 如果日志文件上次修改时间不是今天，清空日志
+    if (as.Date(file_info$mtime) < Sys.Date()) {
+      file.create(log_file)  # 清空日志
+    }
+  } else {
+    # 如果日志文件不存在，创建新文件
+    dir.create(dirname(log_file), showWarnings = FALSE, recursive = TRUE)
+    file.create(log_file)
+  }
+}
+
+# 日志记录函数
+log_message <- function(msg) {
+  cat(sprintf("[%s] %s\n", Sys.time(), msg), file = log_file, append = TRUE)
+}
+
 # Connect to backend database
 db_connection <- function() {
   dbConnect(
@@ -124,8 +147,11 @@ extract_latest_status <- function(eventSummaries) {
 
 # 订单状态更新主逻辑
 update_tracking_status <- function() {
+  # 清理日志文件
+  clear_log_daily(log_file)
   
-  message(Sys.time())
+  # 日志记录
+  log_message("Tracking status update started.")
   
   # 数据库连接信息
   con <- db_connection()
@@ -150,17 +176,18 @@ update_tracking_status <- function() {
   ")
   
   if (nrow(eligible_orders) == 0) {
-    message("No eligible orders for update.")
+    log_message("No eligible orders for update.")
     dbDisconnect(con)
     return()
   }
   
-  message(nrow(eligible_orders), " packages to be updated")
+  log_message(paste(nrow(eligible_orders), "packages to be updated."))
   
   # 遍历符合条件的订单
   for (i in 1:nrow(eligible_orders)) {
     order <- eligible_orders[i, ]
-    message("Updating tracking number: ", order$UsTrackingNumber)
+    log_message(paste("Updating tracking number:", order$UsTrackingNumber))
+    
     tracking_result <- get_tracking_info(order$UsTrackingNumber, token, request_counter, request_timestamp)
     
     if (!is.null(tracking_result)) {
@@ -168,19 +195,20 @@ update_tracking_status <- function() {
       request_timestamp <- tracking_result$request_timestamp
       new_status <- extract_latest_status(tracking_result$content$eventSummaries)
       
-      if(is.na(new_status))
-      {
-        message("NA Status: ", tracking_result$content$eventSummaries)
+      if (is.na(new_status)) {
+        log_message(paste("NA Status for tracking number:", order$UsTrackingNumber))
+        log_message(paste("Event Summaries:", tracking_result$content$eventSummaries))
       } else {
-        message(order$OrderStatus, " --> ", new_status)
+        log_message(paste(order$OrderStatus, "-->", new_status))
         update_order_status(order$OrderID, new_status, con)
       }
     } else {
-      message("No tracking result returned!")
+      log_message(paste("No tracking result returned for tracking number:", order$UsTrackingNumber))
     }
-    message("-------------------------------------------")
+    log_message("-------------------------------------------")
   }
   dbDisconnect(con)
+  log_message("Tracking status update completed.")
 }
 
 ### 
