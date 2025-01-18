@@ -1,6 +1,18 @@
 library(DBI)
 library(httr)
 
+# Connect to backend database
+db_connection <- function() {
+  dbConnect(
+    RMariaDB::MariaDB(),
+    dbname = "inventory_system",
+    host = "localhost",
+    user = "root",
+    password = "goldenbeanllc",
+    encoding = "utf8mb4"
+  )
+}
+
 ### USPS API functions
 
 # 获取 Access Token

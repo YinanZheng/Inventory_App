@@ -1,5 +1,17 @@
 library(DBI)
 
+# Connect to backend database
+db_connection <- function() {
+  dbConnect(
+    RMariaDB::MariaDB(),
+    dbname = "inventory_system",
+    host = "localhost",
+    user = "root",
+    password = "goldenbeanllc",
+    encoding = "utf8mb4"
+  )
+}
+
 # 清理未被记录的图片 (每天运行一次)
 clean_untracked_images <- function() {
   # 数据库连接信息
