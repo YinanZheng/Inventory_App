@@ -2284,25 +2284,7 @@ server <- function(input, output, session) {
     # 在 R 中拼接备注内容
     new_notes <- paste(existing_notes, sprintf("【预定完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
     
-    tryCatch({
-      # 使用拼接后的备注信息进行 SQL 更新
-      dbExecute(con, "
-      UPDATE orders
-      SET OrderStatus = '备货',
-          OrderNotes = ?
-      WHERE OrderID = ?
-    ", params = list(new_notes, order_id))
-      
-      # 重新加载最新的 orders 数据
-      orders_refresh_trigger(!orders_refresh_trigger())
-      
-      # 通知用户操作成功
-      showNotification(sprintf("订单 #%s 已更新为备货状态！", order_id), type = "message")
-      
-    }, error = function(e) {
-      # 捕获错误并通知用户
-      showNotification(sprintf("更新订单状态时发生错误：%s", e$message), type = "error")
-    })
+    update_order_status(order_id, "备货", updated_notes = new_notes, refresh_trigger = orders_refresh_trigger, con)
   })
   
   # 渲染物品信息卡片  
