@@ -13,13 +13,10 @@ library(stringi)
 library(baRcodeR)
 library(DBI)
 library(RMariaDB)
-library(uuid)
 library(plotly)
 library(networkD3)
 library(openxlsx)
-library(lubridate)
 library(tidyr)
-library(later)
 
 # Source all modular functions
 source("./modules/typeModuleUI.R", local = TRUE)
