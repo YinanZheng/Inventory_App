@@ -4490,8 +4490,29 @@ server <- function(input, output, session) {
     # 获取物品状态历史数据
     history_data <- item_status_history()
     
+    filtered_data <- history_data %>%
+      # 标记含有重复状态的 UniqueID
+      left_join(
+        history_data %>%
+          group_by(UniqueID, previous_status) %>%
+          filter(n() > 1) %>%  # 找到重复状态的 UniqueID
+          summarise(
+            first_occurrence = min(change_time),
+            last_occurrence = max(change_time),
+            .groups = "drop"
+          ) %>%
+          distinct(UniqueID, first_occurrence, last_occurrence),  # 保留 UniqueID 的时间范围
+        by = "UniqueID"
+      ) %>%
+      # 删除重复状态的中间记录
+      filter(
+        is.na(first_occurrence) | !(change_time >= first_occurrence & change_time < last_occurrence)
+      ) %>%
+      # 按 UniqueID 和 change_time 排序
+      arrange(UniqueID, change_time)
+    
     # 确保状态流转顺序正确
-    links <- history_data %>%
+    links <- filtered_data %>%
       group_by(UniqueID) %>%
       arrange(previous_status_timestamp, .by_group = TRUE) %>%
       mutate(next_status = lead(previous_status)) %>%  # 获取下一个状态
