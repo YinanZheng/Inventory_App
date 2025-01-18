@@ -1409,11 +1409,8 @@ ui <- navbarPage(
                 )
               )
             )
-            
           ) # end of 库存汇总tab
-          
-          
-        ) #end of tabpanel
+        ) #end of tabsetPanel
       )
     )
   ), # end of 查询 tab
