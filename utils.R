@@ -2079,6 +2079,7 @@ update_tracking_status <- function() {
   
   if (nrow(eligible_orders) == 0) {
     message("No eligible orders for update.")
+    dbDisconnect(con)
     return()
   }
   
