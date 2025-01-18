@@ -1161,7 +1161,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        style = "width: 300px;",
+        style = "width: 280px;",
         itemFilterUI(id = "query_filter", border_color = "#28A745", text_color = "#28A745", use_status = FALSE, use_purchase_date = FALSE),
         
         tags$hr(),
@@ -1244,7 +1244,7 @@ ui <- navbarPage(
                              start = Sys.Date() - 30, # 默认最近30天
                              end = Sys.Date()
                            )),
-                    column(3,
+                    column(2,
                            radioButtons(
                              "precision",
                              label = "选择统计精度",
@@ -1252,7 +1252,7 @@ ui <- navbarPage(
                              selected = "天",
                              inline = TRUE # 使选项横向排列
                            )),
-                    column(5,
+                    column(6,
                            radioButtons(
                              "expense_type",
                              label = "选择显示内容",
