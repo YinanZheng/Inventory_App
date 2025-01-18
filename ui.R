@@ -1244,7 +1244,7 @@ ui <- navbarPage(
                              start = Sys.Date() - 30, # 默认最近30天
                              end = Sys.Date()
                            )),
-                    column(2,
+                    column(3,
                            radioButtons(
                              "precision",
                              label = "选择统计精度",
@@ -1252,7 +1252,7 @@ ui <- navbarPage(
                              selected = "天",
                              inline = TRUE # 使选项横向排列
                            )),
-                    column(6,
+                    column(5,
                            radioButtons(
                              "expense_type",
                              label = "选择显示内容",
