@@ -4434,7 +4434,7 @@ server <- function(input, output, session) {
   overview_data <- reactive({
     data <- unique_items_data()
     domestic <- data %>% filter(Status == "国内入库")
-    logistics <- data %>% filter(Status == "国内出库")
+    logistics <- data %>% filter(Status == "国内出库" & !is.na(IntlTracking))
     us <- data %>% filter(Status == "美国入库")
     sold <- data %>% filter(Status %in% c("国内售出", "美国调货", "美国发货"))
     
