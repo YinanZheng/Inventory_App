@@ -107,7 +107,7 @@ status_columns <<- list(
 # 定义默认表格渲染选项
 table_default_options <<- list(
   scrollY = "730px",
-  scrollX = TRUE,
+  scrollX = FALSE,  # 禁用水平滚动
   autoWidth = TRUE,
   fixedHeader = TRUE,
   paging = TRUE,

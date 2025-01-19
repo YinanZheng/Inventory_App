@@ -263,7 +263,7 @@ ui <- navbarPage(
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         div(
-          style = "flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding-top: 10px; width: 100%;",
+          style = "flex-shrink: 0; padding-bottom: 20px; overflow-x: hidden; width: 100%;",  # 禁用水平滚动条并确保宽度适配
           div(
             id = "item_table_container_purchase",
             uniqueItemsTableUI("unique_items_table_purchase")
