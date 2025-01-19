@@ -1807,9 +1807,8 @@ server <- function(input, output, session) {
                                                       ProductCost = "单价"
                                                     ), 
                                                     selection = "single",
-                                                    image_column = "ItemImagePath",
-                                                    options = list(modifyList(table_default_options, list(scrollY = "278px"))
-                                                    ))
+                                                    image_column = "ItemImagePath"
+                                                    )
     
     table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
     table
