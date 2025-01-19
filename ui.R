@@ -255,7 +255,7 @@ ui <- navbarPage(
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         
         div(
-          style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 使表格内容填充剩余空间并支持滚动
+          style = "flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding-top: 10px; width: 100%; max-height: calc(100vh - 150px);",
           div(
             id = "item_table_container_purchase",
             uniqueItemsTableUI("unique_items_table_purchase")
