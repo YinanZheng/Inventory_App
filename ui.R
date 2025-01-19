@@ -156,8 +156,8 @@ ui <- navbarPage(
           sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
           
           // 调用 DataTables 的 columns.adjust() 更新表头宽度
-          const tables = $('.dataTable').DataTable(); // 查找所有 DataTables 实例
-          tables.columns.adjust();
+          const tables = $('.dataTable').DataTable();
+          tables.columns.adjust().draw(); // 强制刷新表头
         });
     
         document.addEventListener('mouseup', function() {
@@ -168,7 +168,7 @@ ui <- navbarPage(
             
             // 确保最终宽度同步
             const tables = $('.dataTable').DataTable();
-            tables.columns.adjust();
+            tables.columns.adjust().draw();
           }
         });
       });
