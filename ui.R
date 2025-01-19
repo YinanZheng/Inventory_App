@@ -886,16 +886,16 @@ ui <- navbarPage(
       ),
       
       div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
+      div(
         class = "main-panel",
+
         div(
-          style = "display: flex; flex-direction: column;",
-          div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_manage",
-              uniqueItemsTableUI("unique_items_table_manage")
-            )
-          )
+          id = "item_table_container_manage",
+          uniqueItemsTableUI("unique_items_table_manage")
         )
       )
     )
@@ -967,18 +967,18 @@ ui <- navbarPage(
         )
       ),
       
+      div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       # 主面板：物品状态表
       div(
         class = "main-panel",
+        
         div(
-          style = "display: flex; flex-direction: column;",
-          div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_defect",
-              uniqueItemsTableUI("unique_items_table_defect")
-            )
-          )
+          id = "item_table_container_defect",
+          uniqueItemsTableUI("unique_items_table_defect")
         )
       )
     )
@@ -1025,17 +1025,18 @@ ui <- navbarPage(
           column(6, actionButton("delete_tracking_btn", "解除挂靠", icon = icon("link-slash"), class = "btn-danger", style = "margin-top: 20px; width: 100%;"))
         )
       ),
+      
+      div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       div(
         class = "main-panel",
+        
         div(
-          style = "display: flex; flex-direction: column;",
-          div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_logistics",
-              uniqueItemsTableUI("unique_items_table_logistics")
-            )
-          )
+          id = "item_table_container_logistics",
+          uniqueItemsTableUI("unique_items_table_logistics")
         )
       )
     )
@@ -1151,6 +1152,12 @@ ui <- navbarPage(
           )
         )
       ),
+      
+      div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       div(
         class = "main-panel",
         tabsetPanel(
