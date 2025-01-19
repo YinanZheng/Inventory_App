@@ -95,6 +95,7 @@ ui <- navbarPage(
         white-space: nowrap; /* 表头内容强制不换行 */
       }
       
+      /* DT 搜索框左对齐 */
       div.dataTables_wrapper div.dataTables_filter {
           text-align: left !important; /* 搜索框文字左对齐 */
           float: left !important;      /* 搜索框容器浮动到左侧 */
