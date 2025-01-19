@@ -96,7 +96,13 @@ ui <- navbarPage(
       }
       
       div.dataTables_wrapper div.dataTables_filter {
-        text-align: left !important; /* 强制搜索框左对齐 */
+          text-align: left !important; /* 搜索框文字左对齐 */
+          float: left !important;      /* 搜索框容器浮动到左侧 */
+        }
+      div.dataTables_wrapper div.dataTables_filter label {
+        display: inline-flex;       /* 让标签和输入框同行 */
+        align-items: center;       /* 垂直居中对齐 */
+        gap: 5px;                  /* 间距调整 */
       }
     ")),
       
