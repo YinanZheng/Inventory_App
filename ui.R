@@ -165,6 +165,10 @@ ui <- navbarPage(
             isResizing = false;
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
+            
+            // 确保最终宽度同步
+            const tables = $('.dataTable').DataTable();
+            tables.columns.adjust();
           }
         });
       });
