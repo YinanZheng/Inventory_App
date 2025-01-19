@@ -94,6 +94,10 @@ ui <- navbarPage(
       table.dataTable thead th {
         white-space: nowrap; /* 表头内容强制不换行 */
       }
+      
+      div.dataTables_filter {
+        text-align: left !important; /* 搜索框左对齐 */
+      }
     ")),
       
       tags$script(HTML("
