@@ -1249,6 +1249,12 @@ ui <- navbarPage(
           actionButton("clear_query_sku_btn", "清空", icon = icon("eraser"), class = "btn btn-warning")
         )
       ),
+      
+      div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       div(
         class = "main-panel",
         # 使用 tabsetPanel 来组织分页
@@ -1290,14 +1296,8 @@ ui <- navbarPage(
             ),
             
             div(
-              style = "display: flex; flex-direction: column;",
-              div(
-                style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-                div(
-                  id = "inventory_table_container_query",
-                  DTOutput("filtered_inventory_table_query")
-                )
-              )
+              id = "inventory_table_container_query",
+              DTOutput("filtered_inventory_table_query")
             )
           ), # end of 商品状态
           
