@@ -1808,14 +1808,7 @@ server <- function(input, output, session) {
                                                     ), 
                                                     selection = "single",
                                                     image_column = "ItemImagePath",
-                                                    options = list(
-                                                      scrollY = "278px",  # 根据内容动态调整滚动高度
-                                                      scrollX = TRUE,  # 支持水平滚动
-                                                      fixedHeader = TRUE,  # 启用表头固定
-                                                      paging = TRUE,  # 启用分页
-                                                      pageLength = 30,      # 每页显示30条
-                                                      dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
-                                                      searching = FALSE  # 禁止搜索
+                                                    options = list(modifyList(table_default_options, scrollY = "278px")
                                                     ))
     
     table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
@@ -1835,14 +1828,7 @@ server <- function(input, output, session) {
                                                     ), 
                                                     selection = "single",
                                                     image_column = "ItemImagePath",
-                                                    options = list(
-                                                      scrollY = "220px",  # 根据内容动态调整滚动高度
-                                                      scrollX = TRUE,  # 支持水平滚动
-                                                      fixedHeader = TRUE,  # 启用表头固定
-                                                      paging = TRUE,  # 启用分页
-                                                      pageLength = 30,      # 每页显示30条
-                                                      dom = 'frtip',         # 控制表格显示控件，去掉多余的功能
-                                                      searching = FALSE  # 禁止搜索
+                                                    options = list(modifyList(table_default_options, scrollY = "220px")
                                                     ))
     table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
     table
