@@ -106,7 +106,8 @@ ui <- navbarPage(
       div.dataTables_wrapper div.dataTables_filter {
           text-align: left !important; /* 搜索框文字左对齐 */
           float: left !important;      /* 搜索框容器浮动到左侧 */
-        }
+      }
+      
       div.dataTables_wrapper div.dataTables_filter label {
         display: inline-flex;       /* 让标签和输入框同行 */
         align-items: center;       /* 垂直居中对齐 */
@@ -254,7 +255,7 @@ ui <- navbarPage(
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
         div(
-          style = "flex-shrink: 0;", # 防止标题区域被压缩
+          style = "flex-grow: 1; overflow-y: auto; overflow-x: hidden; padding-top: 10px; width: 100%;",
           div(
             id = "item_table_container_purchase",
             uniqueItemsTableUI("unique_items_table_purchase")
