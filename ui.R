@@ -95,8 +95,8 @@ ui <- navbarPage(
         white-space: nowrap; /* 表头内容强制不换行 */
       }
       
-      div.dataTables_filter {
-        text-align: left !important; /* 搜索框左对齐 */
+      div.dataTables_wrapper div.dataTables_filter {
+        text-align: left !important; /* 强制搜索框左对齐 */
       }
     ")),
       
