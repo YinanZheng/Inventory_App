@@ -107,19 +107,12 @@ status_columns <<- list(
 # 定义默认表格渲染选项
 table_default_options <<- list(
   scrollY = "730px",
-  scrollX = TRUE,
-  autoWidth = TRUE,
   fixedHeader = TRUE,
   paging = TRUE,
   pageLength = 30,
   dom = 'ftip',
   searching = FALSE,
-  language = list(search = "搜索："),
-  initComplete = JS(
-    "function(settings, json) {",
-    "$('.dataTable').DataTable().columns.adjust().draw();",
-    "}"
-  )
+  language = list(search = "搜索：")
 )
 
 # 定义瑕疵和修复的状态
