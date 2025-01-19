@@ -152,9 +152,9 @@ ui <- navbarPage(
             const newSidebarWidth = Math.max(200, Math.min(600, e.clientX)); // 限制宽度范围
             sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
             
-            // 调整 DataTables 表头和表体的宽度
-            const tables = $('.dataTable').DataTable();
-            tables.columns.adjust().draw(); // 强制刷新表头
+            # // 调整 DataTables 表头和表体的宽度
+            # const tables = $('.dataTable').DataTable();
+            # tables.columns.adjust().draw(); // 强制刷新表头
           });
     
           document.addEventListener('mouseup', function() {
