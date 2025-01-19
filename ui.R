@@ -262,13 +262,13 @@ ui <- navbarPage(
         ),
         
         tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
-        div(
-          style = "flex-shrink: 0; padding-bottom: 20px; overflow-x: hidden; width: 100%;",  # 禁用水平滚动条并确保宽度适配
+        # div(
+          # style = "flex-shrink: 0; padding-bottom: 10px; overflow-x: hidden; width: 100%;",  # 禁用水平滚动条并确保宽度适配
           div(
             id = "item_table_container_purchase",
             uniqueItemsTableUI("unique_items_table_purchase")
           )
-        )
+        # )
       )
     )
   ), # end of 采购登记 tab
