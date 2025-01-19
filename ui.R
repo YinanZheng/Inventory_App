@@ -72,7 +72,7 @@ ui <- navbarPage(
       
       .sticky-sidebar {
         flex: 0 0 380px;
-        min-width: 200px;
+        min-width: 300px;
         max-width: 600px;
         overflow-y: auto;
         border-right: 1px solid #e0e0e0;
