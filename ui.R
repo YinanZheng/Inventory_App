@@ -137,35 +137,44 @@ ui <- navbarPage(
 
       // JavaScript 实现分隔条拖拽
       document.addEventListener('DOMContentLoaded', function() {
-        const divider = document.querySelector('.resizable-divider');
-        const sidebar = document.querySelector('.sticky-sidebar');
-        const container = document.querySelector('.layout-container');
-        let isResizing = false;
+        function enableResizing(divider) {
+          const sidebar = divider.previousElementSibling;  // 分隔条左侧的 sidebar
+          let isResizing = false;
     
-        divider.addEventListener('mousedown', function(e) {
-          isResizing = true;
-          document.body.style.cursor = 'ew-resize';
-          document.body.style.userSelect = 'none';
-        });
+          divider.addEventListener('mousedown', function(e) {
+            isResizing = true;
+            document.body.style.cursor = 'ew-resize';
+            document.body.style.userSelect = 'none';
+          });
     
-        document.addEventListener('mousemove', function(e) {
-          if (!isResizing) return;
+          document.addEventListener('mousemove', function(e) {
+            if (!isResizing) return;
+            const newSidebarWidth = Math.max(200, Math.min(600, e.clientX)); // 限制宽度范围
+            sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
+          });
     
-          // 计算侧边栏的新宽度，限制最小宽度和最大宽度
-          const newSidebarWidth = Math.max(200, Math.min(600, e.clientX));
-          sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
-          
-          // 调用 DataTables 的 columns.adjust() 更新表头宽度
-          const tables = $('.dataTable').DataTable();
-          tables.columns.adjust().draw(); // 强制刷新表头
-        });
+          document.addEventListener('mouseup', function() {
+            if (isResizing) {
+              isResizing = false;
+              document.body.style.cursor = '';
+              document.body.style.userSelect = '';
+            }
+          });
+        }
     
-        document.addEventListener('mouseup', function() {
-          if (isResizing) {
-            isResizing = false;
-            document.body.style.cursor = '';
-            document.body.style.userSelect = '';
-          }
+        function bindResizableDividers() {
+          document.querySelectorAll('.resizable-divider').forEach(function(divider) {
+            if (!divider.dataset.bound) { // 避免重复绑定
+              enableResizing(divider);
+              divider.dataset.bound = true; // 标记为已绑定
+            }
+          });
+        }
+    
+        bindResizableDividers();
+    
+        $(document).on('shiny:inputchanged', function(e) {
+          bindResizableDividers();
         });
       });
     "))
