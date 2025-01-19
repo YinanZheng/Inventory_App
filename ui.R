@@ -98,9 +98,9 @@ ui <- navbarPage(
         flex-shrink: 0;
       }
     
-      table.dataTable thead th {
-        white-space: nowrap; /* 表头内容强制不换行 */
-      }
+      # table.dataTable thead th {
+      #   white-space: nowrap; /* 表头内容强制不换行 */
+      # } 
       
       /* DT 搜索框左对齐 */
       div.dataTables_wrapper div.dataTables_filter {
