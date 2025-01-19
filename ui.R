@@ -154,10 +154,6 @@ ui <- navbarPage(
           // 计算侧边栏的新宽度，限制最小宽度和最大宽度
           const newSidebarWidth = Math.max(200, Math.min(600, e.clientX));
           sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
-          
-          // 调用 DataTables 的 columns.adjust() 更新表头宽度
-          const tables = $('.dataTable').DataTable();
-          tables.columns.adjust().draw(); // 强制刷新表头
         });
     
         document.addEventListener('mouseup', function() {
@@ -165,10 +161,6 @@ ui <- navbarPage(
             isResizing = false;
             document.body.style.cursor = '';
             document.body.style.userSelect = '';
-            
-            // 确保最终宽度同步
-            const tables = $('.dataTable').DataTable();
-            tables.columns.adjust().draw();
           }
         });
       });
