@@ -183,6 +183,11 @@ ui <- navbarPage(
       ),
       
       div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
+      div(
         class = "main-panel",
         style = "display: flex; flex-direction: column; height: 100%;", # 主面板填充剩余空间
         div(
