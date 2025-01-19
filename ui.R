@@ -63,37 +63,34 @@ ui <- navbarPage(
 
       /* Flexbox 容器 */
       .layout-container {
-        display: flex; /* Flex 布局 */
-        flex-wrap: nowrap; /* 禁止换行 */
-        height: 100%; /* 满高布局 */
+        display: flex;
+        flex-direction: row;
+        height: 100%;
+        width: 100%;
+        overflow: hidden; /* 禁止滚动条 */
       }
-
-      /* Sticky Sidebar */
+      
       .sticky-sidebar {
-        position: sticky; /* 保持固定 */
-        top: 70px; /* 与导航栏对齐 */
-        z-index: 900;
-        width: 380px; /* 默认宽度 */
-        min-width: 200px; /* 最小宽度 */
-        max-width: 600px; /* 最大宽度 */
-        height: calc(100vh - 70px); /* 自动计算高度 */
-        overflow-y: auto; /* 滚动支持 */
-        border: 1px solid #e0e0e0;
+        flex: 0 0 380px;
+        min-width: 200px;
+        max-width: 600px;
+        overflow-y: auto;
+        border-right: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
-        flex-shrink: 0; /* 防止压缩 */
+        transition: width 0.2s ease; /* 增加平滑过渡效果 */
       }
-    
-      /* 主面板 */
+      
       .main-panel {
-        flex-grow: 1; /* 占据剩余空间 */
+        flex-grow: 1;
+        overflow: hidden; /* 禁止滚动条 */
         padding: 20px;
         padding-top: 0px;
         background-color: #ffffff;
+        transition: width 0.2s ease; /* 增加平滑过渡效果 */
       }
-
-      /* 可调整宽度的分隔条 */
+      
       .resizable-divider {
         background-color: #ccc;
         width: 5px;
@@ -141,22 +138,23 @@ ui <- navbarPage(
       document.addEventListener('DOMContentLoaded', function() {
         const divider = document.querySelector('.resizable-divider');
         const sidebar = document.querySelector('.sticky-sidebar');
-        const mainPanel = document.querySelector('.main-panel');
+        const container = document.querySelector('.layout-container');
         let isResizing = false;
-
+    
         divider.addEventListener('mousedown', function(e) {
           isResizing = true;
           document.body.style.cursor = 'ew-resize';
           document.body.style.userSelect = 'none';
         });
-
+    
         document.addEventListener('mousemove', function(e) {
           if (!isResizing) return;
-          const offsetRight = document.body.clientWidth - e.clientX;
-          const sidebarWidth = document.body.clientWidth - offsetRight - divider.offsetWidth;
-          sidebar.style.flex = `0 0 ${Math.max(200, Math.min(600, sidebarWidth))}px`; // 限制最小/最大宽度
+    
+          // 计算侧边栏的新宽度，限制最小宽度和最大宽度
+          const newSidebarWidth = Math.max(200, Math.min(600, e.clientX));
+          sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
         });
-
+    
         document.addEventListener('mouseup', function() {
           if (isResizing) {
             isResizing = false;
