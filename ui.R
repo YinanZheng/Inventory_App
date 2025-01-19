@@ -494,7 +494,6 @@ ui <- navbarPage(
       # 左侧：动态变化的筛选区和订单登记
       div(
         class = "sticky-sidebar",
-
         tabsetPanel(
           id = "filter_tabs",  # 主标签页 ID
           type = "pills",
@@ -824,7 +823,6 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        
         itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
         
         tags$hr(), # 分隔线
@@ -911,7 +909,6 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-
         itemFilterUI(id = "defect_filter", border_color = "#28A745", text_color = "#28A745", use_status = FALSE, use_purchase_date = TRUE),
         
         tags$hr(), # 分隔线
@@ -995,7 +992,6 @@ ui <- navbarPage(
       class = "layout-container",
       div(
         class = "sticky-sidebar",
-        
         itemFilterUI(id = "logistic_filter", 
                      use_purchase_date = FALSE,
                      use_sold_date = TRUE, use_exit_date = TRUE,
@@ -1236,7 +1232,6 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        style = "width: 280px;",
         itemFilterUI(id = "query_filter", border_color = "#28A745", text_color = "#28A745", use_status = FALSE, use_purchase_date = FALSE),
         
         tags$hr(),
@@ -1496,7 +1491,6 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        
         div(
           class = "card shadow-sm", # 添加卡片样式
           style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
@@ -1552,6 +1546,12 @@ ui <- navbarPage(
         
         
       ),
+      
+      div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       div(
         class = "main-panel",
         uniqueItemsTableUI("unique_items_table_download")
@@ -1570,6 +1570,12 @@ ui <- navbarPage(
         tags$hr(),
         uiOutput("admin_controls")
       ),
+      
+      div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       div(
         class = "main-panel",
         uniqueItemsTableUI("admin_items_table")  # 使用你的模组渲染物品明细表
