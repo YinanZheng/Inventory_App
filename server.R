@@ -1808,7 +1808,7 @@ server <- function(input, output, session) {
                                                     ), 
                                                     selection = "single",
                                                     image_column = "ItemImagePath",
-                                                    options = list(modifyList(table_default_options, scrollY = "278px")
+                                                    options = list(modifyList(table_default_options, list(scrollY = "278px"))
                                                     ))
     
     table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
@@ -1828,7 +1828,7 @@ server <- function(input, output, session) {
                                                     ), 
                                                     selection = "single",
                                                     image_column = "ItemImagePath",
-                                                    options = list(modifyList(table_default_options, scrollY = "220px")
+                                                    options = list(modifyList(table_default_options, list(scrollY = "220px"))
                                                     ))
     table <- apply_dynamic_styles(datatable_and_names$datatable, datatable_and_names$column_names)
     table
