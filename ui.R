@@ -463,6 +463,11 @@ ui <- navbarPage(
       ),
       
       div(
+        class = "resizable-divider",  # 用于调整宽度的分隔条
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
+      div(
         class = "main-panel",
         div(
           style = "height: 300px; margin-bottom: 10px;",
@@ -470,14 +475,8 @@ ui <- navbarPage(
         ), 
         
         div(
-          style = "display: flex; flex-direction: column;",
-          div(
-            style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-            div(
-              id = "item_table_container_outbound",
-              uniqueItemsTableUI("unique_items_table_outbound")
-            )
-          )
+          id = "item_table_container_outbound",
+          uniqueItemsTableUI("unique_items_table_outbound")
         )
       )
     )
