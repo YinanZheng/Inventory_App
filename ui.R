@@ -152,9 +152,8 @@ ui <- navbarPage(
             const newSidebarWidth = Math.max(200, Math.min(600, e.clientX)); // 限制宽度范围
             sidebar.style.flex = `0 0 ${newSidebarWidth}px`;
             
-            // 调整 DataTables 表头和表体的宽度
-            const tables = $('.dataTable').DataTable();
-            tables.columns.adjust().draw(); // 强制刷新表头
+             // 调整所有表格列宽
+            $('.dataTable').DataTable().columns.adjust();
           });
     
           document.addEventListener('mouseup', function() {
@@ -162,6 +161,9 @@ ui <- navbarPage(
               isResizing = false;
               document.body.style.cursor = '';
               document.body.style.userSelect = '';
+              
+              // 再次确保表格布局正确
+              $('.dataTable').DataTable().columns.adjust();
             }
           });
         }
@@ -177,8 +179,10 @@ ui <- navbarPage(
     
         bindResizableDividers();
     
-        $(document).on('shiny:inputchanged', function(e) {
+        // 分页切换后重新绑定
+        $(document).on('shown.bs.tab', function() {
           bindResizableDividers();
+          $('.dataTable').DataTable().columns.adjust();
         });
       });
     "))
