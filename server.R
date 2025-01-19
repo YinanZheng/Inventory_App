@@ -476,9 +476,9 @@ server <- function(input, output, session) {
       result <- result %>% filter(Maker %in% input[["query_filter-maker"]])
     }
     
-    # 按商品名称筛选
+    # 按商品名称模糊筛选
     if (!is.null(input[["query_filter-name"]]) && input[["query_filter-name"]] != "") {
-      result <- result %>% filter(ItemName == input[["query_filter-name"]])
+      result <- result %>% filter(grepl(input[["query_filter-name"]], ItemName, ignore.case = TRUE))
     }
     
     result <- result[order(result$updated_at, decreasing = TRUE), ]
