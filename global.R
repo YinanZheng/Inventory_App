@@ -111,7 +111,7 @@ table_default_options <<- list(
   fixedHeader = TRUE,
   paging = TRUE,
   pageLength = 30,
-  dom = 'frtip',
+  dom = 'ftip',
   searching = FALSE
 )
 
