@@ -3188,12 +3188,9 @@ server <- function(input, output, session) {
       
       if (rows_affected > 0) {
         # 删除 transactions 表中与运单号相关的记录
-        transaction_rows <- dbExecute(
-          con,
-          "DELETE FROM transactions 
-         WHERE Remarks LIKE ?",
+        dbExecute(con, "DELETE FROM transactions WHERE Remarks LIKE ?",
           params = list(paste0("%运单号：", tracking_number, "%"))
-        )
+          )
         
         # 提示删除成功
         showNotification("运单、关联的物品信息、账务记录已成功删除！", type = "message")
