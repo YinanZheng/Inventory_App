@@ -2968,7 +2968,7 @@ server <- function(input, output, session) {
       )
       
       # 生成交易记录的备注
-      remarks <- paste("[国际运费登记]", "运单号:", tracking_number, "运输方式:", shipping_method)
+      remarks <- paste("[国际运费登记]", "运单号：", tracking_number, "运输方式：", shipping_method)
       
       # 生成交易记录的 ID
       transaction_id <- generate_transaction_id("一般户卡", total_cost, remarks, Sys.time())
@@ -3038,10 +3038,8 @@ server <- function(input, output, session) {
         
         # 提示未找到状态
         output$intl_status_display <- renderText({
-          "未找到对应的运单信息，请检查输入！"
+          "未找到对应的运单信息，可以登记新运单！"
         })
-        
-        showNotification("未找到对应的运单信息，请登记新运单！", type = "warning", duration = 5)
       }
     }, error = function(e) {
       # 遇到错误时禁用按钮并清空状态显示
@@ -3154,7 +3152,7 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = HTML("<strong style='color: #C70039;'>确认删除国际运单</strong>"),
       HTML(paste0(
-        "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？关联物品的国际运单号也会被清空。此操作不可逆！</p>"
+        "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？关联物品的国际运单信息也会被同时清空。此操作不可逆！</p>"
       )),
       easyClose = FALSE,
       footer = tagList(
@@ -3164,6 +3162,7 @@ server <- function(input, output, session) {
     ))
   })
   
+  # 监听确认删除按钮的点击事件
   # 监听确认删除按钮的点击事件
   observeEvent(input$confirm_delete_shipment_btn, {
     tracking_number <- input$intl_tracking_number
@@ -3189,8 +3188,16 @@ server <- function(input, output, session) {
       )
       
       if (rows_affected > 0) {
-        # 删除成功
-        showNotification("运单及其关联的物品信息已成功删除！", type = "message", duration = 5)
+        # 删除 transactions 表中与运单号相关的记录
+        transaction_rows <- dbExecute(
+          con,
+          "DELETE FROM transactions 
+         WHERE Remarks LIKE ?",
+          params = list(paste0("%运单号：", tracking_number, "%"))
+        )
+        
+        # 提示删除成功
+        showNotification("运单、关联的物品信息、账务记录已成功删除！", type = "message")
         
         # 清空输入框和相关字段
         updateTextInput(session, "intl_tracking_number", value = "")
@@ -3198,7 +3205,7 @@ server <- function(input, output, session) {
         updateNumericInput(session, "intl_total_shipping_cost", value = 0)
       } else {
         # 如果未找到对应的运单号
-        showNotification("未找到该运单，删除失败！", type = "warning", duration = 5)
+        showNotification("未找到该运单，删除失败！", type = "warning")
       }
       
       # 提交事务
