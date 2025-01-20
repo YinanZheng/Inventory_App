@@ -252,7 +252,7 @@ ui <- navbarPage(
             top: 50%; 
             left: 50%; 
             transform: translate(-50%, -50%); 
-            background-color: #e0e0e0; 
+            background-color: #ccc; 
             color: white; 
             border: none; 
             border-radius: 50%; 
