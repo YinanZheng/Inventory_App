@@ -3310,7 +3310,7 @@ server <- function(input, output, session) {
       # 查询运单信息
       shipment_info <- dbGetQuery(
         con,
-        "SELECT Status, TotalCost FROM intl_shipments WHERE TrackingNumber = ?",
+        "SELECT Status, TotalCost, CreatedAt FROM intl_shipments WHERE TrackingNumber = ?",
         params = list(tracking_number)
       )
       
