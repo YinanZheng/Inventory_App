@@ -3030,7 +3030,6 @@ server <- function(input, output, session) {
           paste("物流状态:", shipment_info$Status[1])
         })
         
-        showNotification("已加载运单信息，可执行挂靠操作！", type = "message", duration = 5)
       } else {
         # 如果运单号不存在，清空相关字段并禁用按钮
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
