@@ -3265,40 +3265,36 @@ server <- function(input, output, session) {
   ### 挂靠管理分页
   ######################
   
+  # 监听页面切换事件
   observeEvent(input$intl_shipment_tabs, {
-    showNotification(input$intl_shipment_tabs)  # 打印当前选项卡值
+    if (input$intl_shipment_tabs == "link_management") {
+      tryCatch({
+        # 查询数据库中状态为“运单新建”的最新运单
+        latest_shipment <- dbGetQuery(
+          con,
+          "SELECT TrackingNumber
+         FROM intl_shipments
+         WHERE Status = '运单新建'
+         ORDER BY CreatedAt DESC
+         LIMIT 1"
+        )
+
+        if (nrow(latest_shipment) > 0) {
+          # 填写到 intl_link_tracking_number
+          updateTextInput(session, "intl_link_tracking_number", value = latest_shipment$TrackingNumber[1])
+          showNotification("已自动填充最新的‘运单新建’状态的运单号！", type = "message")
+        } else {
+          # 未找到符合条件的运单
+          updateTextInput(session, "intl_link_tracking_number", value = "")
+          showNotification("未找到状态为‘运单新建’的运单！", type = "warning")
+        }
+      }, error = function(e) {
+        # 捕获错误并提示
+        showNotification(paste("检查运单状态时发生错误：", e$message), type = "error")
+      })
+    }
   })
-  
-  # # 监听页面切换事件
-  # observeEvent(input$intl_shipment_tabs, {
-  #   if (input$intl_shipment_tabs == "挂靠管理") {
-  #     tryCatch({
-  #       # 查询数据库中状态为“运单新建”的最新运单
-  #       latest_shipment <- dbGetQuery(
-  #         con,
-  #         "SELECT TrackingNumber 
-  #        FROM intl_shipments 
-  #        WHERE Status = '运单新建' 
-  #        ORDER BY CreatedAt DESC 
-  #        LIMIT 1"
-  #       )
-  #       
-  #       if (nrow(latest_shipment) > 0) {
-  #         # 填写到 intl_link_tracking_number
-  #         updateTextInput(session, "intl_link_tracking_number", value = latest_shipment$TrackingNumber[1])
-  #         showNotification("已自动填充最新的‘运单新建’状态的运单号！", type = "message")
-  #       } else {
-  #         # 未找到符合条件的运单
-  #         updateTextInput(session, "intl_link_tracking_number", value = "")
-  #         showNotification("未找到状态为‘运单新建’的运单！", type = "warning")
-  #       }
-  #     }, error = function(e) {
-  #       # 捕获错误并提示
-  #       showNotification(paste("检查运单状态时发生错误：", e$message), type = "error")
-  #     })
-  #   }
-  # })
-  # 
+
   
   # 监听待挂靠运单号输入
   observeEvent(input$intl_link_tracking_number, {

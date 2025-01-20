@@ -1025,6 +1025,7 @@ ui <- navbarPage(
           # 第一个 Tab：登记国际运单
           tabPanel(
             title = tagList(icon("file-alt"), "登记国际运单"),
+            value = "register_shipment",
             div(
               class = "card shadow-sm",
               style = "padding: 10px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -1055,6 +1056,7 @@ ui <- navbarPage(
           # 挂靠管理
           tabPanel(
             title = tagList(icon("link"), "挂靠管理"),
+            value = "link_management",  # 添加唯一标识值
             div(
               class = "card shadow-sm",
               style = "padding: 10px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
