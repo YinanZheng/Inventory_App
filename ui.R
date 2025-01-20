@@ -215,11 +215,8 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(
-            7,
-            autocompleteInputUI("purchase", label = "商品名：", placeholder = "请输入商品名...")
-          ),  
-          column(5, dateInput(
+          column(12, autocompleteInputUI("purchase", label = "商品名：", placeholder = "请输入商品名...")),  
+          column(12, dateInput(
             inputId = "purchase_date",
             label = "采购日期:",
             value = Sys.Date(),  # 默认日期为今天
@@ -232,6 +229,7 @@ ui <- navbarPage(
           column(4, numericInput("new_product_cost", "单价:", value = 0, min = 0)),
           column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
         ),
+        
         fluidRow(
           column(12,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%"))
         ),
