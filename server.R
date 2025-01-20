@@ -2950,7 +2950,7 @@ server <- function(input, output, session) {
     req(input$intl_tracking_number, input$intl_shipping_method, input$intl_total_shipping_cost)
     
     # 获取用户输入的值
-    tracking_number <- input$intl_tracking_number
+    tracking_number <- trimws(input$intl_tracking_number)
     shipping_method <- input$intl_shipping_method
     total_cost <- as.numeric(input$intl_total_shipping_cost)
     
@@ -3162,9 +3162,9 @@ server <- function(input, output, session) {
     ))
   })
   
-  # 监听确认删除按钮的点击事件
+  # 监听确认删除运单按钮的点击事件
   observeEvent(input$confirm_delete_shipment_btn, {
-    tracking_number <- input$intl_tracking_number
+    tracking_number <- trimws(input$intl_tracking_number)
     
     tryCatch({
       # 开始事务
@@ -3361,7 +3361,7 @@ server <- function(input, output, session) {
         shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
         
         output$intl_link_display <- renderText({
-          "未找到对应的运单信息，请检查输入的运单号"
+          "未找到对应的运单信息，请检查"
         })
         return()
       }
