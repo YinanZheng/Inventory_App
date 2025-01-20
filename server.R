@@ -3183,9 +3183,7 @@ server <- function(input, output, session) {
           con,
           "UPDATE unique_items 
            SET IntlShippingCost = 0.00, IntlTracking = NULL 
-           WHERE UniqueID IN (
-             SELECT UniqueID FROM unique_items WHERE IntlTracking = ?
-           )",
+           WHERE IntlTracking = ?",
           params = list(tracking_number)
         )
         
