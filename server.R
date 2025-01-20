@@ -3262,19 +3262,11 @@ server <- function(input, output, session) {
         }
         # 如果选中物品中存在已挂靠国际运单的物品
         shinyjs::disable("link_tracking_btn")  # 禁用按钮
-        shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+        shinyjs::enable("unlink_tracking_btn")  # 启用按钮
       } else {
         # 如果所有物品都未挂靠国际运单
-        if (length(unique_tracking_numbers) == 1 && !is.na(unique_tracking_numbers)) {
-          # 如果只有一个唯一的物流单号，填写到输入框
-          updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers)
-          showNotification("已根据选中行填写运单号！", type = "message")
-        } else {
-          # 如果没有唯一物流单号，清空输入框
-          updateTextInput(session, "intl_tracking_number", value = "")
-        }
-        shinyjs::enable("link_tracking_btn")  # 启用挂靠按钮
-        shinyjs::enable("unlink_tracking_btn")  # 启用挂靠按钮
+        shinyjs::enable("link_tracking_btn")  # 启用按钮
+        shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
       }
     }, error = function(e) {
       # 捕获错误并提示
