@@ -3179,26 +3179,13 @@ server <- function(input, output, session) {
       
       if (rows_affected > 0) {
         # 清空 unique_items 表中与运单号相关的记录
-        # 创建临时表
         dbExecute(
           con,
-          "CREATE TEMPORARY TABLE temp_unique_ids AS 
-     SELECT UniqueID 
-     FROM unique_items 
-     WHERE IntlTracking = ?",
+          "UPDATE unique_items 
+           SET IntlShippingCost = CAST(0.00 AS DECIMAL(10,2)), IntlTracking = NULL 
+           WHERE IntlTracking = ?",
           params = list(tracking_number)
         )
-        
-        # 使用临时表更新记录
-        rows_affected <- dbExecute(
-          con,
-          "UPDATE unique_items 
-     SET IntlShippingCost = 0.00, IntlTracking = NULL 
-     WHERE UniqueID IN (SELECT UniqueID FROM temp_unique_ids)"
-        )
-        
-        # 删除临时表
-        dbExecute(con, "DROP TEMPORARY TABLE temp_unique_ids")
         
         # 删除 transactions 表中与运单号相关的记录
         dbExecute(
