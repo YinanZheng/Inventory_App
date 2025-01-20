@@ -1066,7 +1066,7 @@ ui <- navbarPage(
               
               fluidRow(
                 column(12, textInput("intl_link_tracking_number", "", placeholder = "请输入要挂靠的运单号", width = "100%")),
-                column(12, textOutput("intl_link_display"), style = "color: blue; font-weight: bold; margin-bottom: 20px;")
+                column(12, htmlOutput("intl_link_display"), style = "color: blue; font-weight: bold; margin-bottom: 20px;")
               ),
               
               # 挂靠和解除挂靠按钮

@@ -3325,7 +3325,8 @@ server <- function(input, output, session) {
       output$intl_link_display <- renderUI({
         HTML(paste0(
           "运单状态: ", shipment_info$Status[1], "<br>",
-          "运单运费: ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2)
+          "运单运费: ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2), "<br>",
+          "创建日期: ", format(as.Date(shipment_info$CreatedAt[1]), "%Y-%m-%d")
         ))
       })
     }, error = function(e) {
