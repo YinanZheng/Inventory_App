@@ -3279,8 +3279,8 @@ server <- function(input, output, session) {
           updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers)
           showNotification("已根据选中行填写运单号！", type = "message")
         } else {
-          # 如果没有唯一物流单号，清空输入框
-          updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers[length(unique_tracking_numbers)])
+          # 如果没有唯一物流单号，取最新点击的那个
+          updateTextInput(session, "intl_tracking_number", value = selected_data$IntlTracking[nrow(selected_data)])
         }
         # 如果选中物品中存在已挂靠国际运单的物品
         shinyjs::disable("link_tracking_btn")  # 禁用按钮
