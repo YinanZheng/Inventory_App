@@ -3179,13 +3179,26 @@ server <- function(input, output, session) {
       
       if (rows_affected > 0) {
         # 清空 unique_items 表中与运单号相关的记录
+        # 创建临时表
         dbExecute(
           con,
-          "UPDATE unique_items 
-           SET IntlShippingCost = 0.00, IntlTracking = NULL 
-           WHERE IntlTracking = ?",
+          "CREATE TEMPORARY TABLE temp_unique_ids AS 
+     SELECT UniqueID 
+     FROM unique_items 
+     WHERE IntlTracking = ?",
           params = list(tracking_number)
         )
+        
+        # 使用临时表更新记录
+        rows_affected <- dbExecute(
+          con,
+          "UPDATE unique_items 
+     SET IntlShippingCost = 0.00, IntlTracking = NULL 
+     WHERE UniqueID IN (SELECT UniqueID FROM temp_unique_ids)"
+        )
+        
+        # 删除临时表
+        dbExecute(con, "DROP TEMPORARY TABLE temp_unique_ids")
         
         # 删除 transactions 表中与运单号相关的记录
         dbExecute(
@@ -3481,25 +3494,25 @@ server <- function(input, output, session) {
       # 批量解除挂靠并清零运费
       dbExecute(
         con,
-        "UPDATE unique_items 
-       SET IntlTracking = NULL, IntlShippingCost = 0.00 
-       WHERE UniqueID IN (?)",
+          "UPDATE unique_items 
+         SET IntlTracking = NULL, IntlShippingCost = 0.00 
+         WHERE UniqueID IN (?)",
         params = list(selected_items$UniqueID)
       )
       
       # 重新计算剩余挂靠物品的平摊运费
       dbExecute(
-        con,
-        "
-      UPDATE unique_items ui
-      JOIN (
-        SELECT IntlTracking, TotalCost / COUNT(*) AS PerItemCost
-        FROM unique_items
-        JOIN intl_shipments ON unique_items.IntlTracking = intl_shipments.TrackingNumber
-        WHERE IntlTracking IN (?)
-        GROUP BY IntlTracking
-      ) calc ON ui.IntlTracking = calc.IntlTracking
-      SET ui.IntlShippingCost = calc.PerItemCost",
+        con, "
+        UPDATE unique_items ui
+        JOIN (
+          SELECT IntlTracking, TotalCost / COUNT(*) AS PerItemCost
+          FROM unique_items
+          JOIN intl_shipments ON unique_items.IntlTracking = intl_shipments.TrackingNumber
+          WHERE IntlTracking IN (?)
+          GROUP BY IntlTracking
+        ) calc ON ui.IntlTracking = calc.IntlTracking
+        SET ui.IntlShippingCost = calc.PerItemCost",
+
         params = list(selected_tracking_numbers)
       )
       
