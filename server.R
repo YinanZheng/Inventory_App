@@ -3154,7 +3154,7 @@ server <- function(input, output, session) {
     showModal(modalDialog(
       title = HTML("<strong style='color: #C70039;'>确认删除国际运单</strong>"),
       HTML(paste0(
-        "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？此操作不可逆！</p>"
+        "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？关联物品的国际运单号也会被清空。此操作不可逆！</p>"
       )),
       easyClose = FALSE,
       footer = tagList(
@@ -3172,6 +3172,15 @@ server <- function(input, output, session) {
       # 开始事务
       dbBegin(con)
       
+      # 清空关联物品的国际物流单号和国际运费
+      dbExecute(
+        con,
+        "UPDATE unique_items 
+       SET IntlTracking = NULL, IntlShippingCost = 0.00 
+       WHERE IntlTracking = ?",
+        params = list(tracking_number)
+      )
+      
       # 从 intl_shipments 表中删除对应的运单号
       rows_affected <- dbExecute(
         con,
@@ -3180,23 +3189,15 @@ server <- function(input, output, session) {
       )
       
       if (rows_affected > 0) {
-        # 如果删除成功
-        showNotification("运单已成功删除！", type = "message", duration = 5)
+        # 删除成功
+        showNotification("运单及其关联的物品信息已成功删除！", type = "message", duration = 5)
         
-        # 更新 unique_items 表中相关记录的平摊国际运费为 0.00
-        dbExecute(
-          con,
-          "UPDATE unique_items 
-         SET IntlShippingCost = 0.00 
-         WHERE IntlTracking IS NULL AND IntlShippingCost > 0.00"
-        )
-        
-        # 清空输入框
+        # 清空输入框和相关字段
         updateTextInput(session, "intl_tracking_number", value = "")
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
         updateNumericInput(session, "intl_total_shipping_cost", value = 0)
       } else {
-        # 如果没有找到对应的运单号
+        # 如果未找到对应的运单号
         showNotification("未找到该运单，删除失败！", type = "warning", duration = 5)
       }
       
@@ -3208,7 +3209,8 @@ server <- function(input, output, session) {
       showNotification(paste("删除失败：", e$message), type = "error")
     })
     
-    shinyjs::disable("link_tracking_btn")  # 禁用按钮
+    # 禁用挂靠按钮
+    shinyjs::disable("link_tracking_btn")
     
     # 更新数据并触发 UI 刷新
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
