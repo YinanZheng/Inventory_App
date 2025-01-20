@@ -1030,7 +1030,7 @@ ui <- navbarPage(
           # 输入内容
           fluidRow(
             column(12, textInput("intl_tracking_number", "国际运单号:", placeholder = "请输入空运或海运运单号", width = "100%")),
-            column(12, textOutput("intl_status_display"), style = "color: blue; font-weight: bold; margin-top: 5px;"),
+            column(12, textOutput("intl_status_display"), style = "color: blue; font-weight: bold; margin-bottom: 5px;"),
             column(12, selectInput("intl_shipping_method", "国际运输方式:", choices = c("空运" = "空运", "海运" = "海运"), selected = "空运", width = "100%")),
             column(12, numericInput("intl_total_shipping_cost", "国际物流总运费 (元):", value = 0, min = 0, width = "100%"))
           ),
