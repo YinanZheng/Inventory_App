@@ -243,8 +243,25 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0; position: relative;",
+        tags$button(
+          id = "toggle-sidebar",
+          style = "
+            position: absolute; 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%); 
+            background-color: #007BFF; 
+            color: white; 
+            border: none; 
+            border-radius: 50%; 
+            width: 20px; 
+            height: 20px; 
+            cursor: pointer;
+          ",
+          ">"
+        )
       ),
       
       div(
