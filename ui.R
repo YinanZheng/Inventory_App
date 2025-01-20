@@ -1018,7 +1018,6 @@ ui <- navbarPage(
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
-        # 定义 UI
         tabsetPanel(
           id = "intl_shipment_tabs",
           type = "pills",
