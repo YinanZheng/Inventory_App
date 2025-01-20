@@ -3170,15 +3170,6 @@ server <- function(input, output, session) {
       # 开始事务
       dbBegin(con)
       
-      # 清空关联物品的国际物流单号和国际运费
-      dbExecute(
-        con,
-        "UPDATE unique_items 
-       SET IntlTracking = NULL, IntlShippingCost = 0.00 
-       WHERE IntlTracking = ?",
-        params = list(tracking_number)
-      )
-      
       # 从 intl_shipments 表中删除对应的运单号
       rows_affected <- dbExecute(
         con,
@@ -3187,10 +3178,22 @@ server <- function(input, output, session) {
       )
       
       if (rows_affected > 0) {
+        # 清空关联物品的国际物流单号和国际运费
+        dbExecute(
+          con,
+          "UPDATE unique_items 
+       SET IntlTracking = NULL, IntlShippingCost = 0.00 
+       WHERE IntlTracking = ?",
+          params = list(tracking_number)
+        )
+        
         # 删除 transactions 表中与运单号相关的记录
-        dbExecute(con, "DELETE FROM transactions WHERE Remarks LIKE ?",
-          params = list(paste0("%运单号：", tracking_number, "%"))
-          )
+        dbExecute(
+          con,
+          "DELETE FROM transactions 
+         WHERE Remarks LIKE ?",
+          params = list(paste0("%[国际运费登记] 运单号：", tracking_number, "%"))
+        )
         
         # 提示删除成功
         showNotification("运单、关联的物品信息、账务记录已成功删除！", type = "message")
