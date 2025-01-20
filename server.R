@@ -2957,7 +2957,7 @@ server <- function(input, output, session) {
       dbExecute(
         con,
         "INSERT INTO intl_shipments (TrackingNumber, ShippingMethod, TotalCost, Status)
-       VALUES (?, ?, ?, '待分配')
+       VALUES (?, ?, ?, '运单创建')
        ON DUPLICATE KEY UPDATE 
          ShippingMethod = VALUES(ShippingMethod), 
          TotalCost = VALUES(TotalCost),
@@ -3290,8 +3290,8 @@ server <- function(input, output, session) {
       # 显示运单状态和运费
       output$intl_link_display <- renderText({
         paste0(
-          "运单状态: ", shipment_info$Status[1], "\n",
-          "运单运费: ￥", format(shipment_info$TotalCost[1], big.mark = ",", scientific = FALSE, digits = 2)
+          "运单状态: ", shipment_info$Status[1], "<br>",
+          "运单运费: ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2)
         )
       })
     }, error = function(e) {
