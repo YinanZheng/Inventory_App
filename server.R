@@ -3325,8 +3325,11 @@ server <- function(input, output, session) {
     tracking_number <- input$intl_link_tracking_number  # 获取用户输入的运单号
     
     if (is.null(tracking_number) || tracking_number == "") {
+      shinyjs::disable("link_tracking_btn")  # 禁用按钮
+      shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+      
       output$intl_link_display <- renderText({
-        "请输入运单号以查看状态和运费"
+        "请输入运单号以查看运单信息"
       })
       return()
     }
@@ -3335,11 +3338,14 @@ server <- function(input, output, session) {
       # 查询运单信息
       shipment_info <- dbGetQuery(
         con,
-        "SELECT Status, TotalCost, CreatedAt FROM intl_shipments WHERE TrackingNumber = ?",
+        "SELECT Status, TotalCost, ShippingMethod, CreatedAt FROM intl_shipments WHERE TrackingNumber = ?",
         params = list(tracking_number)
       )
       
       if (nrow(shipment_info) == 0) {
+        shinyjs::disable("link_tracking_btn")  # 禁用按钮
+        shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+        
         output$intl_link_display <- renderText({
           "未找到对应的运单信息，请检查输入的运单号"
         })
@@ -3350,6 +3356,7 @@ server <- function(input, output, session) {
       output$intl_link_display <- renderUI({
         HTML(paste0(
           "物流状态:   ", shipment_info$Status[1], "<br>",
+          "运输方式：  ", shipment_info$ShippingMethod[1], "<br>",
           "国际运费:   ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2), "<br>",
           "创建日期:   ", format(as.Date(shipment_info$CreatedAt[1]), "%Y-%m-%d")
         ))
