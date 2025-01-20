@@ -3274,7 +3274,7 @@ server <- function(input, output, session) {
           con,
           "SELECT TrackingNumber
          FROM intl_shipments
-         WHERE Status = '运单新建'
+         WHERE Status = '运单创建'
          ORDER BY CreatedAt DESC
          LIMIT 1"
         )
@@ -3282,11 +3282,11 @@ server <- function(input, output, session) {
         if (nrow(latest_shipment) > 0) {
           # 填写到 intl_link_tracking_number
           updateTextInput(session, "intl_link_tracking_number", value = latest_shipment$TrackingNumber[1])
-          showNotification("已自动填充最新的‘运单新建’状态的运单号！", type = "message")
+          showNotification("已自动填充最新的‘运单创建’状态的运单号！", type = "message")
         } else {
           # 未找到符合条件的运单
           updateTextInput(session, "intl_link_tracking_number", value = "")
-          showNotification("未找到状态为‘运单新建’的运单！", type = "warning")
+          showNotification("未找到状态为‘运单创建’的运单！", type = "warning")
         }
       }, error = function(e) {
         # 捕获错误并提示
