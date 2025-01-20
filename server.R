@@ -3295,7 +3295,6 @@ server <- function(input, output, session) {
     }
   })
 
-  
   # 监听待挂靠运单号输入
   observeEvent(input$intl_link_tracking_number, {
     tracking_number <- input$intl_link_tracking_number  # 获取用户输入的运单号
@@ -3323,11 +3322,11 @@ server <- function(input, output, session) {
       }
       
       # 显示运单状态和运费
-      output$intl_link_display <- renderText({
-        paste0(
+      output$intl_link_display <- renderUI({
+        HTML(paste0(
           "运单状态: ", shipment_info$Status[1], "<br>",
           "运单运费: ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2)
-        )
+        ))
       })
     }, error = function(e) {
       output$intl_link_display <- renderText({
