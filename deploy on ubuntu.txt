@@ -94,7 +94,8 @@ sudo systemctl restart shiny-server
 ###
 Rscript -e "shiny::runApp('/srv/shiny-server/inventory')"
 
-
+ALTER TABLE `intl_shipments`
+MODIFY COLUMN `Status` ENUM('运单创建', '包裹发出', '在途运输', '美国清关', '包裹送达') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '运单创建';
 
 ### Log
 /var/log/shiny-server

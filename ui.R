@@ -1064,14 +1064,14 @@ ui <- navbarPage(
               tags$h4("挂靠管理", style = "color: #28A745; font-weight: bold; margin-bottom: 15px;"),
               
               fluidRow(
-                column(12, textInput("intl_link_tracking_number", "国际运单号:", placeholder = "请输入空运或海运运单号", width = "100%")),
+                column(12, textInput("intl_link_tracking_number", "", placeholder = "请输入要挂靠的运单号", width = "100%")),
                 column(12, textOutput("intl_link_display"), style = "color: blue; font-weight: bold; margin-bottom: 20px;")
               ),
               
               # 挂靠和解除挂靠按钮
               fluidRow(
                 column(6, actionButton("link_tracking_btn", "挂靠运单", icon = icon("link"), class = "btn-primary", style = "margin-top: 20px; width: 100%;", disabled = TRUE)),
-                column(6, actionButton("delete_tracking_btn", "解除挂靠", icon = icon("link-slash"), class = "btn-danger", style = "margin-top: 20px; width: 100%;"))
+                column(6, actionButton("unlink_tracking_btn", "解除挂靠", icon = icon("link-slash"), class = "btn-danger", style = "margin-top: 20px; width: 100%;"))
               )
             )
           )
