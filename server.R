@@ -2968,7 +2968,7 @@ server <- function(input, output, session) {
       )
       
       # 生成交易记录的备注
-      remarks <- paste("[国际运费登记]", "运单号：", tracking_number, "运输方式：", shipping_method)
+      remarks <- paste0("[国际运费登记]", " 运单号：", tracking_number, " 运输方式：", shipping_method)
       
       # 生成交易记录的 ID
       transaction_id <- generate_transaction_id("一般户卡", total_cost, remarks, Sys.time())
