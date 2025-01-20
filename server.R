@@ -3201,6 +3201,9 @@ server <- function(input, output, session) {
         # 重新计算所有balance记录
         update_balance("一般户卡", con)
         
+        # 刷新物品表
+        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+        
         # 清空输入框和相关字段
         updateTextInput(session, "intl_tracking_number", value = "")
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
