@@ -3178,12 +3178,21 @@ server <- function(input, output, session) {
       )
       
       if (rows_affected > 0) {
-        # 清空关联物品的国际物流单号和国际运费
+        # 先清空国际运费
         dbExecute(
           con,
           "UPDATE unique_items 
-       SET IntlShippingCost = 0.00, IntlTracking = NULL 
-       WHERE IntlTracking = ?",
+           SET IntlShippingCost = 0.00 
+           WHERE IntlTracking = ?",
+          params = list(tracking_number)
+        )
+        
+        # 再清空国际运单号
+        dbExecute(
+          con,
+          "UPDATE unique_items 
+           SET IntlTracking = NULL 
+           WHERE IntlTracking = ?",
           params = list(tracking_number)
         )
         
