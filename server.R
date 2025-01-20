@@ -3266,7 +3266,7 @@ server <- function(input, output, session) {
   ######################
   
   observeEvent(input$intl_shipment_tabs, {
-    print(input$intl_shipment_tabs)  # 打印当前选项卡值
+    showNotification(input$intl_shipment_tabs)  # 打印当前选项卡值
   })
   
   # # 监听页面切换事件
