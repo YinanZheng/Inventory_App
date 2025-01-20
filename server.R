@@ -2995,6 +2995,7 @@ server <- function(input, output, session) {
   })
   
   # 查询运单逻辑
+  # 查询运单逻辑
   observeEvent(input$intl_tracking_number, {
     tracking_number <- input$intl_tracking_number
     
@@ -3003,16 +3004,15 @@ server <- function(input, output, session) {
       updateSelectInput(session, "intl_shipping_method", selected = "空运")
       updateNumericInput(session, "intl_total_shipping_cost", value = 0)
       shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
+      output$intl_status_display <- renderText({ "" })  # 清空状态显示
       return()
     }
-    
-    tracking_number <- input$intl_tracking_number
     
     tryCatch({
       # 查询运单号对应的信息
       shipment_info <- dbGetQuery(
         con,
-        "SELECT ShippingMethod, TotalCost FROM intl_shipments WHERE TrackingNumber = ?",
+        "SELECT ShippingMethod, TotalCost, Status FROM intl_shipments WHERE TrackingNumber = ?",
         params = list(tracking_number)
       )
       
@@ -3021,16 +3021,32 @@ server <- function(input, output, session) {
         updateSelectInput(session, "intl_shipping_method", selected = shipment_info$ShippingMethod[1])
         updateNumericInput(session, "intl_total_shipping_cost", value = shipment_info$TotalCost[1])
         shinyjs::enable("link_tracking_btn")  # 启用挂靠运单按钮
+        
+        # 显示物流状态
+        output$intl_status_display <- renderText({
+          paste("物流状态:", shipment_info$Status[1])
+        })
+        
         showNotification("已加载运单信息，可执行挂靠操作！", type = "message", duration = 5)
       } else {
         # 如果运单号不存在，清空相关字段并禁用按钮
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
         updateNumericInput(session, "intl_total_shipping_cost", value = 0)
         shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
+        
+        # 提示未找到状态
+        output$intl_status_display <- renderText({
+          "未找到对应的运单信息，请检查输入！"
+        })
+        
         showNotification("未找到对应的运单信息，请登记新运单！", type = "warning", duration = 5)
       }
     }, error = function(e) {
-      shinyjs::disable("link_tracking_btn")  # 遇到错误时禁用按钮
+      # 遇到错误时禁用按钮并清空状态显示
+      shinyjs::disable("link_tracking_btn")
+      output$intl_status_display <- renderText({
+        paste("查询失败：", e$message)
+      })
       showNotification(paste("加载运单信息失败：", e$message), type = "error")
     })
   })

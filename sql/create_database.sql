@@ -82,14 +82,14 @@ CREATE TABLE `orders` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
 CREATE TABLE `intl_shipments` (
-  `TrackingNumber` VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ShippingMethod` ENUM('海运', '空运') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
-  `TotalCost` DECIMAL(10,2) NOT NULL DEFAULT 0.00,
-  `Status` ENUM('待分配', '运输中', '已完成', '取消') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待分配',
-  `CreatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  `UpdatedAt` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `TrackingNumber` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ShippingMethod` enum('海运','空运') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `TotalCost` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `Status` enum('包裹发出','在途运输','美国清关','包裹送达') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '包裹发出',
+  `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`TrackingNumber`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
 CREATE TABLE `item_status_history` (
   `UniqueID` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
