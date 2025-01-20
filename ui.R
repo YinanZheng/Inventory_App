@@ -256,12 +256,16 @@ ui <- navbarPage(
             color: white; 
             border: none; 
             border-radius: 50%; 
-            width: 20px; 
-            height: 20px; 
+            width: 30px; 
+            height: 30px; 
             cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
           ",
-          ">"
-        )
+            HTML("<i class='fa fa-chevron-left'></i>")  # 使用 Font Awesome 的箭头图标
+          )
       ),
       
       div(
