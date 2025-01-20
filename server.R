@@ -3163,7 +3163,6 @@ server <- function(input, output, session) {
   })
   
   # 监听确认删除按钮的点击事件
-  # 监听确认删除按钮的点击事件
   observeEvent(input$confirm_delete_shipment_btn, {
     tracking_number <- input$intl_tracking_number
     
@@ -3198,6 +3197,9 @@ server <- function(input, output, session) {
         
         # 提示删除成功
         showNotification("运单、关联的物品信息、账务记录已成功删除！", type = "message")
+        
+        # 重新计算所有balance记录
+        update_balance("一般户卡", con)
         
         # 清空输入框和相关字段
         updateTextInput(session, "intl_tracking_number", value = "")
