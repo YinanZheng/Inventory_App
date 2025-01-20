@@ -3235,8 +3235,10 @@ server <- function(input, output, session) {
     selected_rows <- unique_items_table_logistics_selected_row()
     
     if (is.null(selected_rows) || length(selected_rows) == 0) {
-      # 如果没有选中行，清空运单号输入框
+      # 如果没有选中行，清空运单号输入框，并禁用挂靠按钮
       updateTextInput(session, "intl_tracking_number", value = "")
+      shinyjs::disable("link_tracking_btn")  # 禁用按钮
+      shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
       return()
     }
     
@@ -3247,18 +3249,41 @@ server <- function(input, output, session) {
       # 提取所有选中行的国际物流单号（IntlTracking）
       unique_tracking_numbers <- unique(selected_data$IntlTracking)
       
-      if (length(unique_tracking_numbers) == 1 && !is.na(unique_tracking_numbers)) {
-        # 如果只有一个唯一的物流单号，填写到输入框
-        updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers)
-        showNotification("已根据选中行填写运单号！", type = "message")
+      # 检查选中的物品是否已经挂靠国际运单
+      if (any(!is.na(selected_data$IntlTracking))) {
+        # 如果所有物品都未挂靠国际运单
+        if (length(unique_tracking_numbers) == 1 && !is.na(unique_tracking_numbers)) {
+          # 如果只有一个唯一的物流单号，填写到输入框
+          updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers)
+          showNotification("已根据选中行填写运单号！", type = "message")
+        } else {
+          # 如果没有唯一物流单号，清空输入框
+          updateTextInput(session, "intl_tracking_number", value = "")
+        }
+        # 如果选中物品中存在已挂靠国际运单的物品
+        shinyjs::disable("link_tracking_btn")  # 禁用按钮
+        shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
       } else {
-        # 如果有多个物流单号或为空，清空输入框并提示用户
-        updateTextInput(session, "intl_tracking_number", value = "")
+        # 如果所有物品都未挂靠国际运单
+        if (length(unique_tracking_numbers) == 1 && !is.na(unique_tracking_numbers)) {
+          # 如果只有一个唯一的物流单号，填写到输入框
+          updateTextInput(session, "intl_tracking_number", value = unique_tracking_numbers)
+          showNotification("已根据选中行填写运单号！", type = "message")
+        } else {
+          # 如果没有唯一物流单号，清空输入框
+          updateTextInput(session, "intl_tracking_number", value = "")
+        }
+        shinyjs::enable("link_tracking_btn")  # 启用挂靠按钮
+        shinyjs::enable("unlink_tracking_btn")  # 启用挂靠按钮
       }
     }, error = function(e) {
+      # 捕获错误并提示
+      shinyjs::disable("link_tracking_btn")  # 禁用按钮
+      shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
+  
   
   
   ######################
@@ -3324,9 +3349,9 @@ server <- function(input, output, session) {
       # 显示运单状态和运费
       output$intl_link_display <- renderUI({
         HTML(paste0(
-          "运单状态: ", shipment_info$Status[1], "<br>",
-          "运单运费: ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2), "<br>",
-          "创建日期: ", format(as.Date(shipment_info$CreatedAt[1]), "%Y-%m-%d")
+          "物流状态:   ", shipment_info$Status[1], "<br>",
+          "国际运费:   ￥", format(shipment_info$TotalCost[1], big.mark = ",", nsmall = 2), "<br>",
+          "创建日期:   ", format(as.Date(shipment_info$CreatedAt[1]), "%Y-%m-%d")
         ))
       })
     }, error = function(e) {
