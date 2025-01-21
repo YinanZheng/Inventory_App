@@ -53,29 +53,41 @@ get_dhl_tracking_info <- function(tracking_number) {
   }
 }
 
-extract_dhl_status <- function(events) {
-  if (is.null(events) || length(events) == 0) {
-    return(NA)
+# 获取最新状态描述
+get_latest_event_description <- function(tracking_result) {
+  # 检查是否有有效的事件
+  if (is.null(tracking_result$shipments[[1]]$events) || length(tracking_result$shipments[[1]]$events) == 0) {
+    return(NA)  # 无事件，返回 NA
   }
   
-  latest_event <- events[[1]]
+  # 提取最新事件
+  latest_event <- tracking_result$shipments[[1]]$events[[1]]
   
-  if (is.null(latest_event) || is.null(latest_event$description)) {
-    return(NA)
+  # 检查并返回 description
+  if (!is.null(latest_event$description)) {
+    return(latest_event$description)
+  } else {
+    return(NA)  # 无描述，返回 NA
+  }
+}
+
+# 描述转化为状态
+extract_dhl_status <- function(latest_description) {
+  if (is.null(latest_description) || latest_description == "") {
+    return(NA)  # 如果 description 为空，返回 NA
   }
   
   # 根据 DHL 返回的事件描述更新状态
   status <- dplyr::case_when(
-    grepl("Shipment picked up", latest_event$description) ~ "包裹发出",
-    grepl("In Transit", latest_event$description) ~ "在途运输",
-    grepl("Clearance processing complete", latest_event$description) ~ "美国清关",
-    grepl("Delivered", latest_event$description) ~ "包裹送达",
-    TRUE ~ "未知"
+    grepl("Shipment picked up", latest_description, ignore.case = TRUE) ~ "包裹发出",
+    grepl("Delivered", latest_description, ignore.case = TRUE) ~ "包裹送达",
+    TRUE ~ "在途运输"  # 默认状态
   )
   
   return(status)
 }
 
+# 更新国际物流运单状态
 update_dhl_tracking_status <- function() {
   log_message("DHL Tracking status update started.")
   
@@ -88,7 +100,7 @@ update_dhl_tracking_status <- function() {
   eligible_shipments <- dbGetQuery(con, "
     SELECT TrackingNumber, Status, UpdatedAt 
     FROM intl_shipments
-    WHERE Status IN ('包裹发出', '在途运输', '美国清关')
+    WHERE Status IN ('运单创建', '包裹发出', '在途运输', '美国清关')
       AND (UpdatedAt IS NULL OR TIMESTAMPDIFF(HOUR, UpdatedAt, NOW()) >= 8)
   ")
   
@@ -104,11 +116,13 @@ update_dhl_tracking_status <- function() {
     log_message(paste("Updating tracking number:", tracking_number))
     
     # 获取 DHL 跟踪信息
-    tracking_result <- get_dhl_tracking_info(tracking_number, api_key)
+    tracking_result <- get_dhl_tracking_info(tracking_number)
     
-    if (!is.null(tracking_result)) {
+    latest_description <- get_latest_event_description(tracking_result)
+    
+    if (!is.null(latest_description)) {
       # 提取最新状态
-      new_status <- extract_dhl_status(tracking_result$events)
+      new_status <- extract_dhl_status(latest_description)
       
       if (!is.na(new_status) && new_status != shipment$Status) {
         # 更新数据库中的状态
@@ -132,4 +146,6 @@ update_dhl_tracking_status <- function() {
   log_message("DHL Tracking status update completed.")
 }
 
+### 
 
+update_dhl_tracking_status()

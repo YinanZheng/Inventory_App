@@ -85,7 +85,7 @@ CREATE TABLE `intl_shipments` (
   `TrackingNumber` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ShippingMethod` enum('海运','空运') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `TotalCost` decimal(10,2) NOT NULL DEFAULT '0.00',
-  `Status` enum('运单创建','包裹发出','在途运输','美国清关','包裹送达') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '运单创建',
+  `Status` enum('运单创建','包裹发出','在途运输','包裹送达') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '运单创建',
   `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`TrackingNumber`)

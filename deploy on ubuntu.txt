@@ -107,7 +107,7 @@ sudo rm /var/log/shiny-server/*.log
 ## Log in to MySQL:
 sudo mysql -u root -p
 goldenbeanllc
-
+USE inventory_system;
 
 
 ## Set up image folder
