@@ -2987,7 +2987,7 @@ server <- function(input, output, session) {
         )
       )
       
-      showNotification("国际运单登记成功，相关费用已记录到'一般户卡（541）'！", type = "message", duration = 5)
+      showNotification("国际运单登记成功，相关费用已记录到'一般户卡（541）'！", type = "message")
       
       # 重新计算所有balance记录
       update_balance("一般户卡", con)
@@ -3056,7 +3056,7 @@ server <- function(input, output, session) {
     tracking_number <- input$intl_tracking_number
     
     if (is.null(tracking_number) || tracking_number == "") {
-      showNotification("请输入运单号后再执行此操作！", type = "error", duration = 5)
+      showNotification("请输入运单号后再执行此操作！", type = "error")
       return()
     }
     
@@ -3144,23 +3144,40 @@ server <- function(input, output, session) {
     tracking_number <- input$intl_tracking_number
     
     if (is.null(tracking_number) || tracking_number == "") {
-      showNotification("请输入运单号后再执行此操作！", type = "error", duration = 5)
+      showNotification("请输入运单号后再执行此操作！", type = "error",  )
       return()
     }
     
-    # 弹出确认对话框
-    showModal(modalDialog(
-      title = HTML("<strong style='color: #C70039;'>确认删除国际运单</strong>"),
-      HTML(paste0(
-        "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？关联物品的国际运单信息也会被同时清空。此操作不可逆！</p>"
-      )),
-      easyClose = FALSE,
-      footer = tagList(
-        modalButton("取消"),
-        actionButton("confirm_delete_shipment_btn", "确认删除", class = "btn-danger")
+    tryCatch({
+      # 检查运单是否存在于 intl_shipments 表中
+      shipment_exists <- dbGetQuery(
+        con,
+        "SELECT COUNT(*) AS count FROM intl_shipments WHERE TrackingNumber = ?",
+        params = list(tracking_number)
       )
-    ))
+      
+      if (shipment_exists$count == 0) {
+        showNotification("运单号不存在，无法删除！", type = "warning")
+        return()
+      }
+      
+      # 如果运单存在，弹出确认对话框
+      showModal(modalDialog(
+        title = HTML("<strong style='color: #C70039;'>确认删除国际运单</strong>"),
+        HTML(paste0(
+          "<p>您确定要删除国际运单号 <strong>", tracking_number, "</strong> 吗？关联物品的国际运单信息也会被同时清空。此操作不可逆！</p>"
+        )),
+        easyClose = FALSE,
+        footer = tagList(
+          modalButton("取消"),
+          actionButton("confirm_delete_shipment_btn", "确认删除", class = "btn-danger")
+        )
+      ))
+    }, error = function(e) {
+      showNotification(paste("检查运单时发生错误：", e$message), type = "error")
+    })
   })
+  
   
   # 监听确认删除运单按钮的点击事件
   observeEvent(input$confirm_delete_shipment_btn, {
@@ -3170,48 +3187,28 @@ server <- function(input, output, session) {
       # 开始事务
       dbBegin(con)
       
-      # 从 intl_shipments 表中删除对应的运单号
-      rows_affected <- dbExecute(
-        con,
-        "DELETE FROM intl_shipments WHERE TrackingNumber = ?",
-        params = list(tracking_number)
-      )
+      # 清空 unique_items 表中与运单号相关的运费
+      dbExecute(con, "UPDATE unique_items SET IntlShippingCost = 0.00 WHERE IntlTracking = ?", params = list(tracking_number))
       
-      if (rows_affected > 0) {
-        # 清空 unique_items 表中与运单号相关的记录
-        # dbExecute(
-        #   con,
-        #   "UPDATE unique_items 
-        #    SET IntlTracking = NULL, IntlShippingCost = 0.00
-        #    WHERE IntlTracking = ?",
-        #   params = list(tracking_number)
-        # )
-        
-        # 删除 transactions 表中与运单号相关的记录
-        dbExecute(
-          con,
-          "DELETE FROM transactions 
-         WHERE Remarks LIKE ?",
-          params = list(paste0("%[国际运费登记] 运单号：", tracking_number, "%"))
-        )
-        
-        # 提示删除成功
-        showNotification("运单、关联的物品信息、账务记录已成功删除！", type = "message")
-        
-        # 重新计算所有balance记录
-        update_balance("一般户卡", con)
-        
-        # 刷新物品表
-        unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-        
-        # 清空输入框和相关字段
-        updateTextInput(session, "intl_tracking_number", value = "")
-        updateSelectInput(session, "intl_shipping_method", selected = "空运")
-        updateNumericInput(session, "intl_total_shipping_cost", value = 0)
-      } else {
-        # 如果未找到对应的运单号
-        showNotification("未找到该运单，删除失败！", type = "warning")
-      }
+      # 从 intl_shipments 表中删除对应的运单号 (unique_items表会同时触发运单删除操作)
+      dbExecute(con, "DELETE FROM intl_shipments WHERE TrackingNumber = ?", params = list(tracking_number))
+      
+      # 删除 transactions 表中与运单号相关的记录
+      dbExecute(con, "DELETE FROM transactions WHERE Remarks LIKE ?", params = list(paste0("%[国际运费登记] 运单号：", tracking_number, "%")))
+      
+      # 提示删除成功
+      showNotification("运单、关联的物品信息、账务记录已成功删除！", type = "message")
+      
+      # 重新计算所有balance记录
+      update_balance("一般户卡", con)
+      
+      # 刷新物品表
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+      
+      # 清空输入框和相关字段
+      updateTextInput(session, "intl_tracking_number", value = "")
+      updateSelectInput(session, "intl_shipping_method", selected = "空运")
+      updateNumericInput(session, "intl_total_shipping_cost", value = 0)
       
       # 提交事务
       dbCommit(con)
@@ -3240,7 +3237,7 @@ server <- function(input, output, session) {
     output$intl_status_display <- renderText({ "" })  # 清空状态显示
     
     # 提示用户清空完成
-    showNotification("填写内容已清空！", type = "message", duration = 3)
+    showNotification("填写内容已清空！", type = "message")
   })
   
   # 点击行自动填写运单号
@@ -4870,7 +4867,7 @@ server <- function(input, output, session) {
           setRowHeights(wb, "物品汇总表", rows = row_to_insert, heights = image_height * 78)
           
         } else {
-          showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
+          showNotification(paste("跳过不存在的图片:", image_path), type = "warning")
         }
       }
       
@@ -4882,7 +4879,7 @@ server <- function(input, output, session) {
       
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
-      showNotification("Excel 文件已成功下载", type = "message", duration = 5)
+      showNotification("Excel 文件已成功下载", type = "message")
     }
   )
   
@@ -4947,7 +4944,7 @@ server <- function(input, output, session) {
           setRowHeights(wb, "物品明细表", rows = row_to_insert, heights = image_height * 78)
           
         } else {
-          showNotification(paste("跳过不存在的图片:", image_path), type = "warning", duration = 5)
+          showNotification(paste("跳过不存在的图片:", image_path), type = "warning")
         }
       }
       
@@ -4959,7 +4956,7 @@ server <- function(input, output, session) {
       
       # 保存 Excel 文件
       saveWorkbook(wb, file, overwrite = TRUE)
-      showNotification("Excel 文件已成功下载", type = "message", duration = 5)
+      showNotification("Excel 文件已成功下载", type = "message")
     }
   )
 
