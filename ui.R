@@ -1091,14 +1091,14 @@ ui <- navbarPage(
             tags$h4("账务登记", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
             
             fluidRow(
-              column(6, numericInput("amount", "金额:", value = 0, min = 0, width = "100%")),
-              column(6,  
+              column(7, numericInput("amount", "金额:", value = 0, min = 0, width = "100%")),
+              column(5,  
                 radioButtons(
                   inputId = "transaction_type",
                   label = "交易类型:",
                   choices = c("转出" = "out", "转入" = "in"),
                   selected = NULL,
-                  inline = TRUE
+                  inline = FALSE
                 )
               )
             ),
