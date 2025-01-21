@@ -242,28 +242,7 @@ ui <- navbarPage(
       
       div(
         class = "resizable-divider",
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0; position: relative;",
-        tags$button(
-          id = "toggle-sidebar",
-          style = "
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%); 
-            background-color: #ccc; 
-            color: white; 
-            border: none; 
-            border-radius: 50%; 
-            width: 30px; 
-            height: 30px; 
-            cursor: pointer;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
-          ",
-            HTML("<i class='fa fa-chevron-left'></i>")  # 使用 Font Awesome 的箭头图标
-          )
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
       ),
       
       div(
