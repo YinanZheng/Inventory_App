@@ -3179,13 +3179,13 @@ server <- function(input, output, session) {
       
       if (rows_affected > 0) {
         # 清空 unique_items 表中与运单号相关的记录
-        dbExecute(
-          con,
-          "UPDATE unique_items 
-           SET IntlShippingCost = 0.00, IntlTracking = NULL 
-           WHERE IntlTracking = ?",
-          params = list(tracking_number)
-        )
+        # dbExecute(
+        #   con,
+        #   "UPDATE unique_items 
+        #    SET IntlTracking = NULL, IntlShippingCost = 0.00
+        #    WHERE IntlTracking = ?",
+        #   params = list(tracking_number)
+        # )
         
         # 删除 transactions 表中与运单号相关的记录
         dbExecute(
