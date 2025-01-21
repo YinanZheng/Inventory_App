@@ -3182,7 +3182,7 @@ server <- function(input, output, session) {
         dbExecute(
           con,
           "UPDATE unique_items 
-           SET IntlShippingCost = CAST(0.00 AS DECIMAL(10,2)), IntlTracking = NULL 
+           SET IntlShippingCost = 0.00, IntlTracking = NULL 
            WHERE IntlTracking = ?",
           params = list(tracking_number)
         )
