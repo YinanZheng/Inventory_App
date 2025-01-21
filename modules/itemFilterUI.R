@@ -54,7 +54,7 @@ itemFilterUI <- function(
         fluidRow(
           column(12, 
                  selectizeInput(ns("maker"), "供应商", choices = NULL, width = "100%",
-                                options = list(placeholder = '名称(或拼音)...', 
+                                options = list(placeholder = '名称(拼音)...', 
                                                maxOptions = 500,
                                                create = FALSE))
           )
