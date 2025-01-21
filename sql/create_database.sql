@@ -37,7 +37,7 @@ CREATE TABLE `unique_items` (
   `SKU` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `ProductCost` decimal(10,2) NOT NULL,
   `DomesticShippingCost` float NOT NULL DEFAULT '0',
-  `Status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国发货','美国调货','退货') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
+  `Status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国发货','美国调货','退货','完成') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `Defect` enum('未知','无瑕','瑕疵','修复') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL,
   `DefectNotes` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `PurchaseTime` date DEFAULT NULL,
@@ -92,11 +92,11 @@ CREATE TABLE `intl_shipments` (
 
 CREATE TABLE `item_status_history` (
   `UniqueID` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `previous_status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国调货','退货','美国发货') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `previous_status` enum('采购','国内入库','国内出库','国内售出','美国入库','美国发货','美国调货','退货','完成') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `previous_status_timestamp` timestamp NULL DEFAULT NULL,
   `change_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (`UniqueID`,`change_time`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci  
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
 CREATE TABLE `transactions` (
   `TransactionID` varchar(12) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -106,8 +106,9 @@ CREATE TABLE `transactions` (
   `Remarks` text CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
   `TransactionImagePath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `TransactionTime` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`TransactionID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
 
 DELIMITER //
