@@ -1382,6 +1382,19 @@ renderOrderItems <- function(output, output_name, order_items, deletable = FALSE
         paste0(host_url, "/images/", basename(item$ItemImagePath))
       )
       
+      # 获取国际运单状态
+      intl_status <- if (!is.na(item$IntlTracking) && item$IntlTracking != "") {
+        # 查询数据库中的 Status
+        shipment_status <- dbGetQuery(
+          con,
+          "SELECT Status FROM intl_shipments WHERE TrackingNumber = ?",
+          params = list(item$IntlTracking)
+        )
+        if (nrow(shipment_status) > 0) shipment_status$Status[1] else "未知状态"
+      } else {
+        "未邮寄"
+      }
+      
       # 动态添加蒙版和打勾图标
       mask_overlay <- if (item$Status == "美国发货") {
         div(
@@ -1439,10 +1452,7 @@ renderOrderItems <- function(output, output_name, order_items, deletable = FALSE
           tags$tr(
             tags$td(tags$strong("状态:"), style = "padding: 0px;"),
             tags$td(
-              paste0(
-                item$Status,
-                " (", ifelse(is.na(item$IntlTracking) || item$IntlTracking == "", "未邮寄", "已邮寄"), ")"
-              )
+              paste0(item$Status, " (", intl_status, ")")  # 替换括号中的内容
             )
           ),
           tags$tr(
