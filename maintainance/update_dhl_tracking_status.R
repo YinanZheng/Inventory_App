@@ -100,8 +100,7 @@ update_dhl_tracking_status <- function() {
   eligible_shipments <- dbGetQuery(con, "
     SELECT TrackingNumber, Status, UpdatedAt 
     FROM intl_shipments
-    WHERE Status IN ('运单创建', '包裹发出', '在途运输', '美国清关')
-      AND (UpdatedAt IS NULL OR TIMESTAMPDIFF(HOUR, UpdatedAt, NOW()) >= 8)
+    WHERE Status IN ('运单创建', '包裹发出', '在途运输')
   ")
   
   if (nrow(eligible_shipments) == 0) {
