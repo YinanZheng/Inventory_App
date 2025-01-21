@@ -202,7 +202,7 @@ ui <- navbarPage(
         fluidRow(
           column(10, 
                  selectizeInput("new_maker", "供应商:", choices = NULL, width = "100%",
-                                options = list(placeholder = '输入名称（或拼音）进行搜索', maxOptions = 500))
+                                options = list(placeholder = '输入名称(拼音)', maxOptions = 500))
           ),
           column(2, 
                  div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
@@ -288,7 +288,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("所有状态" = "", "采购", "国内入库")),
+        itemFilterUI(id = "inbound_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("全部" = "", "采购", "国内入库")),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
@@ -419,7 +419,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("所有状态" = "", "国内入库", "国内出库")),
+        itemFilterUI(id = "outbound_filter", border_color = "#28A745", text_color = "#28A745", status_choices = c("全部" = "", "国内入库", "国内出库")),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
         
@@ -498,7 +498,7 @@ ui <- navbarPage(
           tabPanel(
             title = "物品筛选",
             itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745",
-                         status_choices = c("所有状态" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
+                         status_choices = c("全部" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
           ),
           tabPanel(
             title = "订单筛选",
@@ -516,7 +516,7 @@ ui <- navbarPage(
                 column(6, selectInput("filter_platform", "电商平台", choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
                                       selected = "", width = "100%")),
                 column(6, selectInput("filter_order_status", "订单状态", 
-                                      choices = c("所有状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
+                                      choices = c("全部" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
                                       selected = "", width = "100%"))
               ),
               fluidRow(
