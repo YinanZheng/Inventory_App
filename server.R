@@ -135,7 +135,6 @@ server <- function(input, output, session) {
       unique_items.UsEntryTime,
       unique_items.UsShippingTime,
       unique_items.UsRelocationTime,
-      unique_items.UsSoldTime,
       unique_items.ReturnTime,
       unique_items.PurchaseCheck,
       unique_items.updated_at,
@@ -4029,7 +4028,7 @@ server <- function(input, output, session) {
             美国库存数 = sum(Status == "美国入库", na.rm = TRUE),
             在途库存数 = sum(Status == "国内出库", na.rm = TRUE),
             国内库存数 = sum(Status == "国内入库", na.rm = TRUE),
-            已售库存数 = sum(Status %in% c("国内售出", "美国售出", "美国调货", "美国发货"), na.rm = TRUE)
+            已售库存数 = sum(Status %in% c("国内售出", "美国调货", "美国发货"), na.rm = TRUE)
           )
       
         # 渲染图片和表格信息
@@ -4991,7 +4990,7 @@ server <- function(input, output, session) {
         
         # 目标状态选择
         selectInput("admin_target_status", "目标库存状态改为：", 
-                    choices = c('采购','国内入库','国内出库','国内售出','美国入库','美国售出','美国发货','美国调货','退货'), 
+                    choices = c('采购','国内入库','国内出库','国内售出','美国入库','美国发货','美国调货','退货'), 
                     selected = NULL, width = "100%"),
         
         # 是否记录修改时间
