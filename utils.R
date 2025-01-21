@@ -1450,10 +1450,12 @@ renderOrderItems <- function(output, output_name, order_items, deletable = FALSE
             tags$td(item$ItemName)
           ),
           tags$tr(
-            tags$td(tags$strong("状态:"), style = "padding: 0px;"),
-            tags$td(
-              paste0(item$Status, " (", intl_status, ")")  # 替换括号中的内容
-            )
+            tags$td(tags$strong("库存状态:"), style = "padding: 0px;"),
+            tags$td(item$Status)  # 替换括号中的内容
+          ),
+          tags$tr(
+            tags$td(tags$strong("国际物流:"), style = "padding: 0px;"),
+            tags$td(intl_status)  # 替换括号中的内容
           ),
           tags$tr(
             tags$td(tags$strong("瑕疵态:"), style = "padding: 0px;"),
