@@ -1451,11 +1451,17 @@ renderOrderItems <- function(output, output_name, order_items, deletable = FALSE
           ),
           tags$tr(
             tags$td(tags$strong("库存状态:"), style = "padding: 0px;"),
-            tags$td(item$Status)  # 替换括号中的内容
+            tags$td(
+              item$Status,
+              style = "color: #383efc; font-weight: bold;"  # 设置蓝色高亮
+            )
           ),
           tags$tr(
             tags$td(tags$strong("国际物流:"), style = "padding: 0px;"),
-            tags$td(intl_status)  # 替换括号中的内容
+            tags$td(
+              intl_status,
+              style = "color: #209126; font-weight: bold;"  # 设置绿色高亮
+            )
           ),
           tags$tr(
             tags$td(tags$strong("瑕疵态:"), style = "padding: 0px;"),
