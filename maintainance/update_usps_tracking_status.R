@@ -2,7 +2,7 @@ library(DBI)
 library(httr)
 
 # 日志文件路径
-log_file <- "/var/log//update_tracking_status.log"
+log_file <- "/var/log//update_usps_tracking_status.log"
 
 # 清理日志函数
 clear_log_daily <- function(log_file) {
@@ -146,7 +146,7 @@ extract_latest_status <- function(eventSummaries) {
 }
 
 # 订单状态更新主逻辑
-update_tracking_status <- function() {
+update_usps_tracking_status <- function() {
   # 清理日志文件
   clear_log_daily(log_file)
   
@@ -213,4 +213,4 @@ update_tracking_status <- function() {
 
 ### 
 
-update_tracking_status()
+update_usps_tracking_status()
