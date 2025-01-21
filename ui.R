@@ -1013,7 +1013,7 @@ ui <- navbarPage(
         class = "sticky-sidebar",
         itemFilterUI(id = "logistic_filter", 
                      use_purchase_date = FALSE,
-                     use_sold_date = TRUE, use_exit_date = TRUE,
+                     use_sold_date = TRUE, use_exit_date = TRUE, use_status = FALSE,
                      border_color = "#28A745", text_color = "#28A745"),
         
         tags$hr(style = "margin: 5px 0; border: none;"),
