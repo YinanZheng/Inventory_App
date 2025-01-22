@@ -24,20 +24,19 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
   usps_line_index <- which(stri_detect_fixed(lines, "USPS TRACKING", case_insensitive = TRUE))
   
   if (length(usps_line_index) > 0) {
-    # 向前数第三行和第四行获取潜在姓名行
     name_line_indices <- usps_line_index - c(3:5)
     name_line_indices <- name_line_indices[name_line_indices > 0]  # 确保索引有效
     
     potential_names <- lines[name_line_indices]
     
+    # 删除包含地址后缀关键词的行
+    address_keywords <- c("AVE", "PKWY", "ST", "BLVD", "DR", "RD", "LN", "CT", "WAY", "PL", "HWY")
+    regex_pattern <- paste0("\\b(", paste(address_keywords, collapse = "|"), ")\\b")
+    potential_names <- potential_names[!stringi::stri_detect_regex(potential_names, regex_pattern, case_insensitive = TRUE)]
+    
     # 检查每一行是否可能是名字
     for (potential_name in potential_names) {
       if (!is.na(potential_name)) {
-        # # 排除包含数字的行
-        # if (stri_detect_regex(potential_name, "\\d")) {
-        #   next  # 跳过包含数字的行
-        # }
-        
         # 如果行中有数字，尝试仅移除数字部分进行进一步处理
         if (stri_detect_regex(potential_name, "\\d")) {
           potential_name <- gsub("\\d", "", potential_name)
