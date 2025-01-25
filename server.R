@@ -685,7 +685,12 @@ server <- function(input, output, session) {
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
                 tags$div(
-                  style = "width: 72%; margin-bottom: 0 !important; padding: 0;",  # 覆盖默认样式
+                  style = "width: 72%; margin-bottom: 0 !important; padding: 0;",  # 移除父容器 margin
+                  tags$style(HTML(paste0("
+                  #remark_input_", i, " .form-group {
+                    margin-bottom: 0 !important;  /* 强制去掉 form-group 的 margin-bottom */
+                  }
+                "))),
                   textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%")
                 ),
                 actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px; margin: 0;")
@@ -702,7 +707,6 @@ server <- function(input, output, session) {
       })
     }
   }
-  
   
   # 页面加载时，初始化便签板
   refresh_todo_board()
