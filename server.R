@@ -648,29 +648,35 @@ server <- function(input, output, session) {
       list()  # 如果为空，则返回空列表
     }
     
-    # 渲染 UI
-    renderUI({
-      if (length(remarks) > 0) {
-        # 解析每条记录并生成 HTML
+    # 生成 HTML 字符串
+    remarks_html <- if (length(remarks) > 0) {
+      paste0(
         lapply(remarks, function(h) {
           # 将记录拆分为时间和内容
           split_remarks <- strsplit(h, ": ", fixed = TRUE)[[1]]
           remark_time <- ifelse(length(split_remarks) > 1, split_remarks[1], "")  # 时间部分
           remark_text <- ifelse(length(split_remarks) > 1, split_remarks[2], split_remarks[1])  # 信息部分
           
-          # 渲染每条记录
-          div(
-            style = "margin-bottom: 8px;",
-            tags$p(remark_time, style = "font-size: 10px; color: grey; text-align: right; margin: 0;"),  # 时间灰色右对齐
-            tags$p(remark_text, style = "font-size: 12px; color: black; text-align: left; margin: 0;")  # 信息黑色左对齐
+          # 生成每条记录的 HTML
+          paste0(
+            "<div style='margin-bottom: 8px;'>",
+            "<p style='font-size: 10px; color: grey; text-align: right; margin: 0;'>", remark_time, "</p>",  # 时间灰色右对齐
+            "<p style='font-size: 12px; color: black; text-align: left; margin: 0;'>", remark_text, "</p>",  # 信息黑色左对齐
+            "</div>"
           )
-        })
-      } else {
-        # 无留言时显示默认内容
-        tags$p("暂无留言", style = "font-size: 12px; color: grey;")
-      }
+        }),
+        collapse = ""
+      )
+    } else {
+      "<p style='font-size: 12px; color: grey;'>暂无留言</p>"  # 无记录时的默认内容
+    }
+    
+    # 渲染 HTML
+    renderUI({
+      HTML(remarks_html)
     })
   }
+  
   
   
   refresh_todo_board <- function() {
