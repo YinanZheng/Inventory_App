@@ -771,14 +771,33 @@ server <- function(input, output, session) {
         submit_button_id <- paste0("submit_remark_", i)
         if (!(submit_button_id %in% registered_buttons())) {
           observeEvent(input[[submit_button_id]], {
+            # 获取留言内容
             remark <- input[[paste0("remark_input_", i)]]
-            req(remark != "")
+            req(remark != "")  # 确保留言不为空
+            
+            # 查询当前 Remarks 内容
             current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
-            updated_remarks <- paste(current_remarks$Remarks[1], paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
-            dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
+            current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
+            
+            # 拼接新的留言内容
+            updated_remarks <- if (current_remarks_text == "") {
+              paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
+            } else {
+              paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
+            }
+            
+            # 更新数据库
+            dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+                      params = list(updated_remarks, request_id))
+            
+            # 刷新对应的留言记录
             output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
+            
+            # 清空输入框
             updateTextInput(session, paste0("remark_input_", i), value = "")
-            showNotification("留言已提交", type = "message")
+            
+            # 显示通知
+            showNotification("留言已成功提交", type = "message")
           })
           registered_buttons(c(registered_buttons(), submit_button_id))
         }
