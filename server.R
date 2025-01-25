@@ -636,6 +636,7 @@ server <- function(input, output, session) {
   ################################################################
   registered_buttons <- reactiveVal(c())  # 记录所有已注册的按钮 ID
   
+  # 渲染留言板
   renderRemarks <- function(request_id) {
     # 从数据库获取当前请求的 Remarks 字段
     current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
@@ -677,16 +678,14 @@ server <- function(input, output, session) {
     })
   }
   
-  
-  
+  # 渲染任务板与便签
   refresh_todo_board <- function() {
-    # 获取所有请求并按状态和创建时间排序
     requests <- dbGetQuery(
       con, 
       "SELECT * FROM purchase_requests 
      WHERE RequestStatus IN ('待处理', '紧急', '已完成')
      ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
-    )  
+    )
     
     if (nrow(requests) == 0) {
       output$todo_board <- renderUI({
@@ -700,14 +699,12 @@ server <- function(input, output, session) {
             item <- requests[i, ]
             request_id <- item$RequestID
             
-            # 动态输出留言记录
-            output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
-            
-            # 根据状态设置便签颜色
-            card_color <- switch(item$RequestStatus,
-                                 "紧急" = "#ffcdd2",  # 红色
-                                 "待处理" = "#fff9c4",  # 橙色
-                                 "已完成" = "#c8e6c9"   # 绿色
+            # 根据状态设置便签背景颜色和边框颜色
+            card_colors <- switch(
+              item$RequestStatus,
+              "紧急" = list(bg = "#ffcdd2", border = "#e57373"),    # 红色背景，深红色边框
+              "待处理" = list(bg = "#fff9c4", border = "#ffd54f"),  # 橙色背景，深橙色边框
+              "已完成" = list(bg = "#c8e6c9", border = "#81c784")   # 绿色背景，深绿色边框
             )
             
             # 渲染便签卡片
@@ -717,14 +714,14 @@ server <- function(input, output, session) {
               position: relative;
               width: 400px;
               background-color: %s;
-              border: 1px solid #ffd54f;
+              border: 2px solid %s;
               border-radius: 10px;
               box-shadow: 0 4px 8px rgba(0,0,0,0.1);
               padding: 10px;
               display: flex;
               flex-direction: column;
               justify-content: space-between;
-            ", card_color),
+            ", card_colors$bg, card_colors$border),
               
               # 图片和留言记录
               div(
@@ -747,22 +744,12 @@ server <- function(input, output, session) {
                 )
               ),
               
-              # 留言输入和提交按钮
-              tags$div(
-                style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
-                tags$div(
-                  style = "width: 100%; display: flex; justify-content: space-between;",
-                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "72%"),
-                  actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
-                )
-              ),
-              
               # 状态按钮
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
-                actionButton(paste0("mark_urgent_", i), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
-                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
-                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-warning", style = "width: 30%; height: 45px;")
+                actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("complete_task_", request_id), "任务完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("delete_request_", request_id), "删除便签", class = "btn-warning", style = "width: 30%; height: 45px;")
               )
             )
           })
@@ -774,21 +761,20 @@ server <- function(input, output, session) {
   # 页面加载时调用 refresh_todo_board
   refresh_todo_board()
  
+  # 动态绑定按钮逻辑
   observe({
     requests <- dbGetQuery(
       con, 
       "SELECT * FROM purchase_requests 
      WHERE RequestStatus IN ('待处理', '紧急', '已完成')
      ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
-    )    
+    )
     
     if (nrow(requests) > 0) {
-      lapply(1:nrow(requests), function(i) {
-        item <- requests[i, ]
-        request_id <- item$RequestID
+      lapply(requests$RequestID, function(request_id) {
         
-        # 动态绑定加急逻辑
-        urgent_button_id <- paste0("mark_urgent_", i)
+        # 动态绑定“加急”按钮逻辑
+        urgent_button_id <- paste0("mark_urgent_", request_id)
         if (!(urgent_button_id %in% registered_buttons())) {
           observeEvent(input[[urgent_button_id]], {
             dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
@@ -798,19 +784,8 @@ server <- function(input, output, session) {
           registered_buttons(c(registered_buttons(), urgent_button_id))
         }
         
-        # 动态绑定删除逻辑
-        delete_button_id <- paste0("delete_request_", i)
-        if (!(delete_button_id %in% registered_buttons())) {
-          observeEvent(input[[delete_button_id]], {
-            dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
-            refresh_todo_board()
-            showNotification("便签已删除", type = "message")
-          })
-          registered_buttons(c(registered_buttons(), delete_button_id))
-        }
-        
-        # 动态绑定任务完成逻辑
-        complete_button_id <- paste0("complete_task_", i)
+        # 动态绑定“任务完成”按钮逻辑
+        complete_button_id <- paste0("complete_task_", request_id)
         if (!(complete_button_id %in% registered_buttons())) {
           observeEvent(input[[complete_button_id]], {
             dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
@@ -820,41 +795,19 @@ server <- function(input, output, session) {
           registered_buttons(c(registered_buttons(), complete_button_id))
         }
         
-        # 动态绑定提交留言逻辑
-        submit_button_id <- paste0("submit_remark_", i)
-        if (!(submit_button_id %in% registered_buttons())) {
-          observeEvent(input[[submit_button_id]], {
-            # 获取留言内容
-            remark <- input[[paste0("remark_input_", i)]]
-            req(remark != "")
-            
-            # 更新数据库中的 Remarks 字段
-            current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
-            current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
-            new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
-            updated_remarks <- if (current_remarks_text == "") {
-              new_remark
-            } else {
-              paste(current_remarks_text, new_remark, sep = ";")
-            }
-            
-            dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
-            
-            # 刷新对应的留言记录
-            output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
-            
-            # 清空输入框
-            updateTextInput(session, paste0("remark_input_", i), value = "")
-            
-            # 显示通知
-            showNotification("留言已成功提交", type = "message")
+        # 动态绑定“删除”按钮逻辑
+        delete_button_id <- paste0("delete_request_", request_id)
+        if (!(delete_button_id %in% registered_buttons())) {
+          observeEvent(input[[delete_button_id]], {
+            dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
+            refresh_todo_board()
+            showNotification("便签已删除", type = "message")
           })
-          registered_buttons(c(registered_buttons(), submit_button_id))
+          registered_buttons(c(registered_buttons(), delete_button_id))
         }
       })
     }
   })
-  
   
   
   # SKU 和物品名称搜索预览
