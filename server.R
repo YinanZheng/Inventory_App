@@ -738,8 +738,13 @@ server <- function(input, output, session) {
                   ),
                   tags$div(
                     style = "width: 100%; text-align: left; font-size: 12px; color: #333;",
-                    tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
-                    tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
+                    tags$p(item$ItemDescription, style = "margin: 0;"),
+                    tags$p(item$SKU, style = "margin: 0;"),
+                    tags$p(
+                      tags$b("请求数量:"), 
+                      tags$span(item$Quantity, style = "color: red; font-weight: bold;"), 
+                      style = "margin: 0;"
+                    )
                   )
                 ),
                 tags$div(
@@ -888,6 +893,7 @@ server <- function(input, output, session) {
               style = "margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #ccc;",
               tags$img(src = img_path, height = "150px", style = "display: block; margin: auto;"),
               tags$h5(item$ItemName, style = "text-align: center; margin-top: 10px;"),
+              tags$h5(item$SKU, style = "text-align: center; margin-top: 10px;"),
               div(
                 style = "text-align: center; font-size: 10px;",
                 tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
@@ -922,6 +928,7 @@ server <- function(input, output, session) {
       distinct(SKU, ItemName, ItemImagePath)  # 去重
     
     if (nrow(filtered_data) == 1) {  # 确保唯一结果
+      item_sku <- filtered_data$SKU[1]
       item_description <- filtered_data$ItemName[1]
       item_image_path <- filtered_data$ItemImagePath[1]
       
@@ -929,8 +936,8 @@ server <- function(input, output, session) {
    
       # 插入新的采购请求
       dbExecute(con, 
-                "INSERT INTO purchase_requests (RequestID, ItemImage, ItemDescription, Quantity, RequestStatus) VALUES (?, ?, ?, ?, '待处理')", 
-                params = list(request_id, item_image_path, item_description, input$request_quantity))
+                "INSERT INTO purchase_requests (RequestID, SKU, ItemImage, ItemDescription, Quantity, RequestStatus) VALUES (?, ?, ?, ?, ?, '待处理')", 
+                params = list(request_id, item_sku, item_image_path, item_description, input$request_quantity))
       
       # 刷新 todo_board 的输出
       refresh_todo_board()
