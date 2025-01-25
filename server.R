@@ -755,7 +755,7 @@ server <- function(input, output, session) {
   refresh_todo_board()
  
   observe({
-    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus IN ('待处理', '紧急', '已完成')")
     if (nrow(requests) > 0) {
       lapply(1:nrow(requests), function(i) {
         item <- requests[i, ]
