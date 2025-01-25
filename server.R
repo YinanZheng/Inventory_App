@@ -641,8 +641,8 @@ server <- function(input, output, session) {
   
   # 渲染留言板
   renderRemarks <- function(request_id) {
-    current_remarks <- remarks_data()[remarks_data()$RequestID == request_id, "Remarks"]
-    
+  current_remarks <- remarks_data()[remarks_data()$RequestID == request_id, "Remarks"]
+
     # 如果当前 Remarks 为空或 NULL，则初始化为空列表
     remarks <- if (nrow(current_remarks) > 0 && !is.na(current_remarks$Remarks[1]) && trimws(current_remarks$Remarks[1]) != "") {
       # 使用 ; 分隔记录，并按时间倒序排列
@@ -773,15 +773,6 @@ server <- function(input, output, session) {
           })
         )
       })
-    }
-  }
-  
-  bindButton <- function(button_id, event_logic) {
-    if (!(button_id %in% registered_buttons())) {
-      observeEvent(input[[button_id]], {
-        event_logic()
-      })
-      registered_buttons(c(registered_buttons(), button_id))
     }
   }
   
