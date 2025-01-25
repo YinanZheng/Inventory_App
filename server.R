@@ -637,16 +637,15 @@ server <- function(input, output, session) {
   registered_buttons <- reactiveVal(c())  # 记录所有已注册的按钮 ID
   
   renderRemarks <- function(request_id) {
-    # 从数据库中获取当前的 Remarks 字段
+    # 查询数据库，获取当前 Remarks 字段
     current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
     remarks <- ifelse(
       is.na(current_remarks$Remarks[1]) || current_remarks$Remarks[1] == "",
       list(),
-      strsplit(trimws(current_remarks$Remarks[1]), "\n")[[1]]
+      rev(strsplit(trimws(current_remarks$Remarks[1]), "\n")[[1]])
     )
-    remarks <- rev(remarks)  # 倒序排列
     
-    # 渲染留言记录
+    # 返回渲染的 HTML
     renderUI({
       if (length(remarks) > 0) {
         lapply(remarks, function(h) {
