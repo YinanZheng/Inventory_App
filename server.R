@@ -665,8 +665,9 @@ server <- function(input, output, session) {
     requests <- dbGetQuery(
       con, 
       "SELECT * FROM purchase_requests 
+     WHERE RequestStatus IN ('待处理', '紧急', '已完成')
      ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
-    )
+    )  
     
     if (nrow(requests) == 0) {
       output$todo_board <- renderUI({
