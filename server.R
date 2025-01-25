@@ -696,7 +696,6 @@ server <- function(input, output, session) {
                 # 留言记录区域
                 tags$div(
                   style = "width: 48%; height: auto; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
-                  tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
                   tags$p(ifelse(is.na(item$Remarks), "暂无留言", item$Remarks), style = "font-size: 12px; color: grey;")
                 )
               ),
@@ -704,13 +703,13 @@ server <- function(input, output, session) {
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
                 textInput(paste0("remark_input_", i), NULL, placeholder = "留言打字区", width = "72%"),
-                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 30px;")
+                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
               ),
               # 任务完成和删除按钮
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; margin-top: 10px;",
-                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 48%; height: 35px;"),
-                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 48%; height: 35px;")
+                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 48%; height: 45px;"),
+                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 48%; height: 45px;")
               )
             )
           })
