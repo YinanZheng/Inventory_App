@@ -686,16 +686,13 @@ server <- function(input, output, session) {
                 style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
                 tags$div(
                   style = "width: 100%; display: flex; justify-content: space-between;",
-                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "80%"),
-                  actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 20%; height: 45px;")
-                ),
-                tags$div(
-                  style = "width: 100%; height: 15px;"  # 在提交按钮下方增加一个 15px 的 margin
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "72%"),
+                  actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
                 )
               ),
               # 任务完成和删除按钮
               tags$div(
-                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 10px;",
+                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
                 actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 48%; height: 45px;"),
                 actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 48%; height: 45px;")
               )
