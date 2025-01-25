@@ -772,6 +772,7 @@ server <- function(input, output, session) {
     }
   }
   
+  # 绑定按钮
   bind_buttons <- function(request_id) {
     # 动态绑定“加急”按钮逻辑
     urgent_button_id <- paste0("mark_urgent_", request_id)
@@ -824,7 +825,6 @@ server <- function(input, output, session) {
       registered_buttons(c(registered_buttons(), submit_button_id))
     }
   }
-  
   
   # 页面加载时调用 refresh_todo_board
   refresh_todo_board()
@@ -887,9 +887,9 @@ server <- function(input, output, session) {
             div(
               style = "margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #ccc;",
               tags$img(src = img_path, height = "150px", style = "display: block; margin: auto;"),
-              tags$h5(paste("物品名称:", item$ItemName), style = "text-align: center; margin-top: 10px;"),
+              tags$h5(item$ItemName, style = "text-align: center; margin-top: 10px;"),
               div(
-                style = "text-align: center;",
+                style = "text-align: center; font-size: 10px;",
                 tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
                 tags$span(paste("在途库存:", item$InTransitStock), style = "margin-right: 10px;"),
                 tags$span(paste("美国库存:", item$UsStock))
