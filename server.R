@@ -647,50 +647,53 @@ server <- function(input, output, session) {
           style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px;",
           lapply(1:nrow(requests), function(i) {
             item <- requests[i, ]
-            local({
-              local_i <- i  # 捕获当前迭代的 i
-              output[[paste0("remarks_", local_i)]] <- renderUI({
-                remarks <- ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]])
-                lapply(remarks, function(h) {
+            # 确保 i 的值正确绑定
+            current_index <- i
+            
+            # 动态渲染留言记录区域
+            output[[paste0("remarks_", current_index)]] <- renderUI({
+              remarks <- ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]])
+              lapply(remarks, function(h) {
+                tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
+              })
+            })
+            
+            # 动态注册提交按钮的 observeEvent
+            observeEvent(input[[paste0("submit_remark_", current_index)]], {
+              # 获取当前留言内容
+              remark <- input[[paste0("remark_input_", current_index)]]
+              req(remark != "")  # 确保留言不为空
+              
+              # 获取当前请求的 ID 或主键
+              request_id <- item$RequestID
+              
+              # 查询当前的 Remarks 内容
+              current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+              current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
+              
+              # 将新留言追加到现有内容
+              updated_remarks <- paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
+              
+              # 更新数据库中的 Remarks 字段
+              dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+                        params = list(updated_remarks, request_id))
+              
+              # 清空输入框
+              updateTextInput(session, paste0("remark_input_", current_index), value = "")
+              
+              # 更新留言区域
+              output[[paste0("remarks_", current_index)]] <- renderUI({
+                updated_history <- strsplit(updated_remarks, "\n")[[1]]
+                lapply(updated_history, function(h) {
                   tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
                 })
               })
               
-              observeEvent(input[[paste0("submit_remark_", local_i)]], {
-                # 获取当前留言内容
-                remark <- input[[paste0("remark_input_", local_i)]]
-                req(remark != "")  # 确保留言不为空
-                
-                # 获取当前请求的 ID 或主键
-                request_id <- item$RequestID
-                
-                # 查询当前的 Remarks 内容
-                current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
-                current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
-                
-                # 将新留言追加到现有内容
-                updated_remarks <- paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
-                
-                # 更新数据库中的 Remarks 字段
-                dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
-                          params = list(updated_remarks, request_id))
-                
-                # 清空输入框
-                updateTextInput(session, paste0("remark_input_", local_i), value = "")
-                
-                # 更新留言区域
-                output[[paste0("remarks_", local_i)]] <- renderUI({
-                  updated_history <- strsplit(updated_remarks, "\n")[[1]]
-                  lapply(updated_history, function(h) {
-                    tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
-                  })
-                })
-                
-                # 显示提交成功通知
-                showNotification("留言已提交", type = "message")
-              })
+              # 显示提交成功通知
+              showNotification("留言已提交", type = "message")
             })
             
+            # 渲染便签卡片
             div(
               class = "note-card",
               style = "
@@ -724,7 +727,7 @@ server <- function(input, output, session) {
                 tags$div(
                   style = "width: 48%; height: auto; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
-                  uiOutput(paste0("remarks_", local_i))  # 使用单独的 output 渲染留言记录
+                  uiOutput(paste0("remarks_", current_index))  # 使用单独的 output 渲染留言记录
                 )
               ),
               # 留言输入和提交按钮
@@ -732,15 +735,15 @@ server <- function(input, output, session) {
                 style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
                 tags$div(
                   style = "width: 100%; display: flex; justify-content: space-between;",
-                  textInput(paste0("remark_input_", local_i), NULL, placeholder = "输入留言", width = "72%"),
-                  actionButton(paste0("submit_remark_", local_i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
+                  textInput(paste0("remark_input_", current_index), NULL, placeholder = "输入留言", width = "72%"),
+                  actionButton(paste0("submit_remark_", current_index), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
                 )
               ),
               # 任务完成和删除按钮
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
-                actionButton(paste0("complete_task_", local_i), "任务完成", class = "btn-primary", style = "width: 48%; height: 45px;"),
-                actionButton(paste0("delete_request_", local_i), "删除便签", class = "btn-danger", style = "width: 48%; height: 45px;")
+                actionButton(paste0("complete_task_", current_index), "任务完成", class = "btn-primary", style = "width: 48%; height: 45px;"),
+                actionButton(paste0("delete_request_", current_index), "删除便签", class = "btn-danger", style = "width: 48%; height: 45px;")
               )
             )
           })
@@ -748,7 +751,6 @@ server <- function(input, output, session) {
       })
     }
   }
-
   
   # 页面加载时，初始化便签板
   refresh_todo_board()
