@@ -635,7 +635,80 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
- 
+  # SKU 和物品名称搜索预览
+  observeEvent(c(input$search_sku, input$search_name), {
+    req(input$search_sku != "" | input$search_name != "")
+    
+    query <- paste0(
+      "SELECT SKU, ItemName, ItemImagePath, 
+     SUM(CASE WHEN Status = '国内入库' THEN 1 ELSE 0 END) AS DomesticStock,
+     SUM(CASE WHEN Status = '国内出库' THEN 1 ELSE 0 END) AS InTransitStock,
+     SUM(CASE WHEN Status = '美国入库' THEN 1 ELSE 0 END) AS UsStock
+     FROM inventory 
+     WHERE SKU LIKE '%", input$search_sku, "%' 
+     OR ItemName LIKE '%", input$search_name, "%' 
+     GROUP BY SKU, ItemName, ItemImagePath"
+    )
+    
+    result <- dbGetQuery(con, query)
+    
+    if (nrow(result) > 0) {
+      output$item_preview <- renderUI({
+        item <- result[1, ]
+        div(
+          tags$img(src = item$ItemImagePath, height = "150px", style = "display: block; margin: auto;"),
+          tags$h5(paste("物品名称:", item$ItemName), style = "text-align: center; margin-top: 10px;"),
+          div(
+            tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
+            tags$span(paste("在途库存:", item$InTransitStock), style = "margin-right: 10px;"),
+            tags$span(paste("美国库存:", item$UsStock))
+          )
+        )
+      })
+    } else {
+      output$item_preview <- renderUI({
+        div(tags$p("未找到匹配的物品", style = "color: red; text-align: center;"))
+      })
+    }
+  })
+  
+  # 创建采购请求
+  observeEvent(input$add_request, {
+    req(input$request_quantity > 0)
+    dbExecute(con, "INSERT INTO purchase_requests (ItemDescription, Quantity, RequestStatus) VALUES (?, ?, '待处理')", 
+              params = list(input$search_name, input$request_quantity))
+    showNotification("请求已创建", type = "message")
+  })
+  
+  # 提交自定义物品请求
+  observeEvent(input$submit_custom_request, {
+    req(input$upload_image, input$custom_description, input$custom_quantity > 0)
+    image_path <- save_uploaded_file(input$upload_image)  # 自定义函数保存图片
+    dbExecute(con, "INSERT INTO purchase_requests (ItemImage, ItemDescription, Quantity, RequestStatus) VALUES (?, ?, ?, '待处理')", 
+              params = list(image_path, input$custom_description, input$custom_quantity))
+    showNotification("新物品请求已创建", type = "message")
+  })
+  
+  # 动态生成待办事项
+  output$todo_board <- renderUI({
+    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    lapply(1:nrow(requests), function(i) {
+      div(
+        class = "card",
+        style = "margin: 10px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;",
+        tags$img(src = requests$ItemImage[i], height = "100px", style = "display: block; margin: auto;"),
+        tags$p(requests$ItemDescription[i], style = "text-align: center; margin: 10px 0;"),
+        tags$p(paste("数量:", requests$Quantity[i]), style = "text-align: center;"),
+        textAreaInput(paste0("remark_", i), "留言", value = requests$Remarks[i], width = "100%"),
+        fluidRow(
+          column(4, actionButton(paste0("submit_remark_", i), "提交留言")),
+          column(4, actionButton(paste0("complete_task_", i), "任务完成", class = "btn-success")),
+          column(4, actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger"))
+        )
+      )
+    })
+  })
+  
   
   
   ################################################################
