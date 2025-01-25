@@ -1,6 +1,9 @@
 library(DBI)
 library(httr)
 
+# 日志文件路径
+log_file <<- "/var/log/update_dhl_tracking_status.log"
+
 # Connect to backend database
 db_connection <- function() {
   dbConnect(
@@ -15,7 +18,6 @@ db_connection <- function() {
 
 # 日志记录函数
 log_message <- function(msg, reset = FALSE) {
-  log_file <- "/var/log/update_dhl_tracking_status.log"
   
   # 如果需要清空日志
   if (reset) {

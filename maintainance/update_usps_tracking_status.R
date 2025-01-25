@@ -2,7 +2,7 @@ library(DBI)
 library(httr)
 
 # 日志文件路径
-log_file <- "/var/log//update_usps_tracking_status.log"
+log_file <<- "/var/log//update_usps_tracking_status.log"
 
 # 清理日志函数
 clear_log_daily <- function(log_file) {
