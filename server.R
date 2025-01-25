@@ -637,26 +637,32 @@ server <- function(input, output, session) {
   registered_buttons <- reactiveVal(c())  # 记录所有已注册的按钮 ID
   
   renderRemarks <- function(request_id) {
-    # 查询数据库，获取当前 Remarks 字段
+    # 从数据库获取当前请求的 Remarks 字段
     current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+    
+    # 检查并解析 Remarks 字段
     remarks <- ifelse(
-      is.na(current_remarks$Remarks[1]) || current_remarks$Remarks[1] == "",
+      is.na(current_remarks$Remarks[1]) || trimws(current_remarks$Remarks[1]) == "",
       list(),
       strsplit(trimws(current_remarks$Remarks[1]), ";")[[1]]  # 使用 ; 分隔记录
     )
-    remarks <- rev(remarks)  # 倒序排列，最新记录在最上方
     
-    # 返回渲染的 HTML
+    # 按时间倒序排列
+    remarks <- rev(remarks)
+    
+    # 如果有留言记录，生成 HTML；否则显示 "暂无留言"
     renderUI({
       if (length(remarks) > 0) {
-        lapply(remarks, function(h) {
-          tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
-        })
+        # 将留言记录合并成一个 HTML 字符串，用 <br> 分隔
+        all_remarks <- paste(remarks, collapse = "<br>")
+        # 使用单个 tags$p 渲染
+        tags$p(HTML(all_remarks), style = "font-size: 12px; margin: 0; color: grey;")
       } else {
         tags$p("暂无留言", style = "font-size: 12px; color: grey;")
       }
     })
   }
+  
   
   refresh_todo_board <- function() {
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
