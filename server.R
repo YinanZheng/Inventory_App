@@ -652,8 +652,6 @@ server <- function(input, output, session) {
         .groups = "drop"  # 防止分组信息影响后续操作
       )
     
-    result <- dbGetQuery(con, query)
-    
     if (nrow(result) > 0) {
       output$item_preview <- renderUI({
         item <- result[1, ]
