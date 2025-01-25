@@ -685,10 +685,10 @@ server <- function(input, output, session) {
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
                 tags$div(
-                  style = "width: 80%; margin-bottom: 0;",  # 仅对当前输入框去掉 margin-bottom
-                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言")
+                  style = "width: 72%; margin-bottom: 0;",  # 仅对当前输入框去掉 margin-bottom
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%")
                 ),
-                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 20%; height: 45px; margin: 0;")
+                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px; margin: 0;")
               ),
               # 任务完成和删除按钮
               tags$div(
