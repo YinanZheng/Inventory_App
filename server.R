@@ -650,10 +650,14 @@ server <- function(input, output, session) {
             item <- requests[i, ]
             
             # 获取并解析留言记录，确保倒序排列
-            remarks <- ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]])
+            remarks <- ifelse(
+              is.na(item$Remarks) || item$Remarks == "",
+              list(),
+              strsplit(trimws(item$Remarks), "\n")[[1]]
+            )
             remarks <- rev(remarks)  # 倒序排列
             
-            # 动态渲染便签卡片
+            # 渲染便签卡片
             div(
               class = "note-card",
               style = "
@@ -686,7 +690,7 @@ server <- function(input, output, session) {
                 tags$div(
                   style = "width: 58%; height: 100px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
-                  # 直接生成留言记录的 HTML
+                  # 渲染留言记录
                   if (length(remarks) > 0) {
                     lapply(remarks, function(h) {
                       tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
@@ -717,6 +721,11 @@ server <- function(input, output, session) {
       })
     }
   }
+  
+  # 页面加载时调用 refresh_todo_board
+  refresh_todo_board()
+  
+  
   
   # 为每个提交按钮注册独立的逻辑
   observe({
