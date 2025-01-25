@@ -709,23 +709,79 @@ server <- function(input, output, session) {
   
   # 动态生成待办事项
   output$todo_board <- renderUI({
+    # 从数据库或内存中获取待办事项
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
-    lapply(1:nrow(requests), function(i) {
-      div(
-        class = "card",
-        style = "margin: 10px; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;",
-        tags$img(src = requests$ItemImage[i], height = "100px", style = "display: block; margin: auto;"),
-        tags$p(requests$ItemDescription[i], style = "text-align: center; margin: 10px 0;"),
-        tags$p(paste("数量:", requests$Quantity[i]), style = "text-align: center;"),
-        textAreaInput(paste0("remark_", i), "留言", value = requests$Remarks[i], width = "100%"),
-        fluidRow(
-          column(4, actionButton(paste0("submit_remark_", i), "提交留言")),
-          column(4, actionButton(paste0("complete_task_", i), "任务完成", class = "btn-success")),
-          column(4, actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger"))
+    
+    # 如果没有请求，显示提示
+    if (nrow(requests) == 0) {
+      return(div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项")))
+    }
+    
+    # 如果有请求，动态生成卡片
+    div(
+      style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px;",
+      lapply(1:nrow(requests), function(i) {
+        item <- requests[i, ]
+        div(
+          class = "note-card",
+          style = "
+          position: relative;
+          width: 300px;
+          height: 350px;
+          background-color: #fff9c4;
+          border: 1px solid #ffd54f;
+          border-radius: 10px;
+          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+          padding: 15px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+        ",
+          # 模拟大头针
+          tags$div(
+            style = "
+            position: absolute;
+            top: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 20px;
+            background-color: #4CAF50;
+            border-radius: 50%;
+            box-shadow: 0 4px 4px rgba(0,0,0,0.2);
+          "
+          ),
+          # 物品图片
+          tags$div(
+            style = "flex: 1; display: flex; align-items: center; justify-content: center;",
+            tags$img(
+              src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
+              height = "100px"
+            )
+          ),
+          # 留言历史记录
+          tags$div(
+            style = "flex: 1; border: 1px solid #ddd; margin: 10px 0; padding: 5px; background-color: #fff;",
+            tags$p("留言记录", style = "font-weight: bold; margin-bottom: 5px;"),
+            tags$p(ifelse(is.na(item$Remarks), "暂无留言", item$Remarks), style = "font-size: 12px; color: grey;")
+          ),
+          # 留言输入和按钮
+          tags$div(
+            style = "display: flex; justify-content: space-between; align-items: center;",
+            textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "75%"),
+            actionButton(paste0("submit_remark_", i), "提交", class = "btn-success")
+          ),
+          # 任务完成和删除按钮
+          tags$div(
+            style = "display: flex; justify-content: space-between; margin-top: 10px;",
+            actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary"),
+            actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger")
+          )
         )
-      )
-    })
+      })
+    )
   })
+  
   
   
   
