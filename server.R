@@ -438,6 +438,10 @@ server <- function(input, output, session) {
     req(unique_items_data())
     data <- unique_items_data()
     
+    # 只显示本页相关状态
+    data <- data %>%
+      filter(Status %in% c("国内出库", "国内售出"), Defect != "瑕疵")
+    
     data <- filter_unique_items_data_by_inputs(
       data = data,
       input = input,
@@ -570,8 +574,7 @@ server <- function(input, output, session) {
                                                                                                           paging = TRUE,
                                                                                                           pageLength = 30,
                                                                                                           lengthMenu = c(30, 100, 200),
-                                                                                                          dom = 'lftip'
-                                                                                                          )))
+                                                                                                          dom = 'lftip')))
   
   output$filtered_inventory_table_query <- renderDT({  # input$filtered_inventory_table_query_rows_selected
     column_mapping <- list(
