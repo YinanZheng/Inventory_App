@@ -562,7 +562,12 @@ server <- function(input, output, session) {
                                                             IntlTracking = "国际运单"
                                                           )), selection = "multiple",
                                                           data = filtered_unique_items_data_logistics,
-                                                          option = modifyList(table_default_options, list(scrollY = "730px", searching = TRUE)))
+                                                          option = modifyList(table_default_options, list(scrollY = "730px", 
+                                                                                                          searching = TRUE, 
+                                                                                                          paging = TRUE,
+                                                                                                          pageLength = 30,
+                                                                                                          lengthMenu = c(30, 50, 100)
+                                                                                                          )))
   
   output$filtered_inventory_table_query <- renderDT({  # input$filtered_inventory_table_query_rows_selected
     column_mapping <- list(
