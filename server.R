@@ -647,6 +647,34 @@ server <- function(input, output, session) {
           style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px;",
           lapply(1:nrow(requests), function(i) {
             item <- requests[i, ]
+            
+            # 动态注册 observeEvent
+            observeEvent(input[[paste0("submit_remark_", i)]], {
+              # 获取当前留言内容
+              remark <- input[[paste0("remark_input_", i)]]
+              req(remark != "")  # 确保留言不为空
+              
+              # 获取当前请求的 ID 或主键
+              request_id <- item$RequestID  # 每次迭代直接从 item 中取值
+              
+              # 查询当前的 Remarks 内容
+              current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+              current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
+              
+              # 将新留言追加到现有内容
+              updated_remarks <- paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
+              
+              # 更新数据库中的 Remarks 字段
+              dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+                        params = list(updated_remarks, request_id))
+              
+              # 清空输入框并刷新留言历史
+              updateTextInput(session, paste0("remark_input_", i), value = "")
+              refresh_todo_board()  # 刷新便签板
+              showNotification("留言已提交", type = "message")
+            })
+            
+            # 渲染便签卡片
             div(
               class = "note-card",
               style = "
@@ -678,7 +706,11 @@ server <- function(input, output, session) {
                 ),
                 tags$div(
                   style = "width: 48%; height: auto; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
-                  tags$p(ifelse(is.na(item$Remarks), "暂无留言", item$Remarks), style = "font-size: 12px; color: grey;")
+                  tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
+                  # 动态生成留言历史
+                  lapply(ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]]), function(h) {
+                    tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
+                  })
                 )
               ),
               # 留言输入和提交按钮
@@ -702,6 +734,7 @@ server <- function(input, output, session) {
       })
     }
   }
+  
   
   # 页面加载时，初始化便签板
   refresh_todo_board()
@@ -796,19 +829,8 @@ server <- function(input, output, session) {
     }
   })
   
-
   
   
-  
-  
-  # 提交自定义物品请求
-  observeEvent(input$submit_custom_request, {
-    req(input$upload_image, input$custom_description, input$custom_quantity > 0)
-    image_path <- save_uploaded_file(input$upload_image)  # 自定义函数保存图片
-    dbExecute(con, "INSERT INTO purchase_requests (ItemImage, ItemDescription, Quantity, RequestStatus) VALUES (?, ?, ?, '待处理')", 
-              params = list(image_path, input$custom_description, input$custom_quantity))
-    showNotification("新物品请求已创建", type = "message")
-  })
 
   
   
