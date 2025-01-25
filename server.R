@@ -651,14 +651,27 @@ server <- function(input, output, session) {
     # 渲染 UI
     renderUI({
       if (length(remarks) > 0) {
-        # 将所有留言记录合并并渲染
-        all_remarks <- paste(remarks, collapse = "<br>")
-        tags$p(HTML(all_remarks), style = "font-size: 12px; margin: 0; color: grey;")
+        # 解析每条记录并生成 HTML
+        lapply(remarks, function(h) {
+          # 将记录拆分为时间和内容
+          split_remarks <- strsplit(h, ": ", fixed = TRUE)[[1]]
+          remark_time <- ifelse(length(split_remarks) > 1, split_remarks[1], "")  # 时间部分
+          remark_text <- ifelse(length(split_remarks) > 1, split_remarks[2], split_remarks[1])  # 信息部分
+          
+          # 渲染每条记录
+          div(
+            style = "margin-bottom: 8px;",
+            tags$p(remark_time, style = "font-size: 10px; color: grey; text-align: right; margin: 0;"),  # 时间灰色右对齐
+            tags$p(remark_text, style = "font-size: 12px; color: black; text-align: left; margin: 0;")  # 信息黑色左对齐
+          )
+        })
       } else {
+        # 无留言时显示默认内容
         tags$p("暂无留言", style = "font-size: 12px; color: grey;")
       }
     })
   }
+  
   
   refresh_todo_board <- function() {
     # 获取所有请求并按状态和创建时间排序
