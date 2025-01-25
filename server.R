@@ -702,8 +702,11 @@ server <- function(input, output, session) {
               # 留言输入和提交按钮
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
-                textInput(paste0("remark_input_", i), NULL, placeholder = "留言打字区", width = "72%"),
-                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
+                tags$div(
+                  style = "flex: 1; margin: 0; padding: 0;",  # 移除默认 margin 和 padding
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%")
+                ),
+                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 20%; height: 45px; margin: 0;")
               ),
               # 任务完成和删除按钮
               tags$div(
