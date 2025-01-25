@@ -14,12 +14,13 @@ db_connection <- function() {
 }
 
 # 日志记录函数
-log_message <- function(msg) {
+log_message <- function(msg, reset = FALSE) {
   log_file <- "/var/log/update_dhl_tracking_status.log"
   
-  if (!file.exists(log_file)) {
-    dir.create(dirname(log_file), showWarnings = FALSE, recursive = TRUE)
-    file.create(log_file)
+  # 如果需要清空日志
+  if (reset) {
+    fileConn <- file(log_file, "w")  # 以写入模式打开文件（截断文件内容）
+    close(fileConn)
   }
   
   cat(sprintf("[%s] %s\n", Sys.time(), msg), file = log_file, append = TRUE)
@@ -87,6 +88,23 @@ extract_dhl_status <- function(latest_description) {
   return(status)
 }
 
+get_logged_tracking_numbers <- function(log_file) {
+  if (!file.exists(log_file)) {
+    return(character(0))  # 如果日志文件不存在，返回空集合
+  }
+  
+  # 读取日志文件
+  log_content <- readLines(log_file, warn = FALSE)
+  
+  # 提取包含 "Updated status for:" 的行
+  tracking_lines <- grep("Updated status for:", log_content, value = TRUE)
+  
+  # 提取 TrackingNumber
+  tracking_numbers <- sub(".*Updated status for: ([^ ]+) .*", "\\1", tracking_lines)
+  
+  return(unique(tracking_numbers))  # 返回唯一的 TrackingNumber 集合
+}
+
 # 更新国际物流运单状态
 update_dhl_tracking_status <- function() {
   log_message("DHL Tracking status update started.")
@@ -103,10 +121,25 @@ update_dhl_tracking_status <- function() {
     WHERE Status IN ('运单创建', '包裹发出', '在途运输')
   ")
   
+  # 如果没有运单，直接退出
   if (nrow(eligible_shipments) == 0) {
     log_message("No eligible DHL shipments for update.")
     dbDisconnect(con)
     return()
+  }
+  
+  # 从日志文件中提取已登记的 TrackingNumber
+  logged_tracking_numbers <- get_logged_tracking_numbers(log_file)
+  current_tracking_numbers <- eligible_shipments$TrackingNumber
+  
+  # 找到新的 TrackingNumber
+  new_tracking_numbers <- setdiff(current_tracking_numbers, logged_tracking_numbers)
+  
+  # 如果有新运单，清空日志
+  if (length(new_tracking_numbers) > 0) {
+    log_message("New eligible DHL shipments detected. Clearing log...", reset = TRUE)
+  } else {
+    log_message("No new shipments detected. Continuing with existing log.")
   }
   
   for (i in 1:nrow(eligible_shipments)) {
