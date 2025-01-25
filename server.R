@@ -673,7 +673,7 @@ server <- function(input, output, session) {
             item <- requests[i, ]
             request_id <- item$RequestID
             
-            # 初始化留言记录
+            # 动态输出留言记录（绑定 uiOutput）
             output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
             
             # 渲染便签卡片
@@ -813,19 +813,39 @@ server <- function(input, output, session) {
         item <- requests[i, ]
         request_id <- item$RequestID
         
+        # 动态绑定删除逻辑
+        delete_button_id <- paste0("delete_request_", i)
+        if (!(delete_button_id %in% registered_buttons())) {
+          observeEvent(input[[delete_button_id]], {
+            dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
+            refresh_todo_board()
+            showNotification("便签已删除", type = "message")
+          })
+          registered_buttons(c(registered_buttons(), delete_button_id))
+        }
+        
+        # 动态绑定任务完成逻辑
+        complete_button_id <- paste0("complete_task_", i)
+        if (!(complete_button_id %in% registered_buttons())) {
+          observeEvent(input[[complete_button_id]], {
+            dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+            refresh_todo_board()
+            showNotification("任务已完成", type = "message")
+          })
+          registered_buttons(c(registered_buttons(), complete_button_id))
+        }
+        
         # 动态绑定提交留言逻辑
         submit_button_id <- paste0("submit_remark_", i)
         if (!(submit_button_id %in% registered_buttons())) {
           observeEvent(input[[submit_button_id]], {
             # 获取留言内容
             remark <- input[[paste0("remark_input_", i)]]
-            req(remark != "")  # 确保留言不为空
+            req(remark != "")
             
-            # 查询当前 Remarks 内容
+            # 更新数据库中的 Remarks 字段
             current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
             current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
-            
-            # 拼接新的留言内容，用 ; 分隔
             new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
             updated_remarks <- if (current_remarks_text == "") {
               new_remark
@@ -833,14 +853,7 @@ server <- function(input, output, session) {
               paste(current_remarks_text, new_remark, sep = ";")
             }
             
-            # 更新数据库
-            tryCatch({
-              dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
-                        params = list(updated_remarks, request_id))
-              showNotification("留言已成功写入数据库", type = "message")
-            }, error = function(e) {
-              showNotification(paste("数据库更新失败:", e$message), type = "error")
-            })
+            dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
             
             # 刷新对应的留言记录
             output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
@@ -856,6 +869,7 @@ server <- function(input, output, session) {
       })
     }
   })
+  
   
   
   # SKU 和物品名称搜索预览
