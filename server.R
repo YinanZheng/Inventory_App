@@ -702,24 +702,57 @@ server <- function(input, output, session) {
             # 动态绑定留言记录到 UI
             output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id)
             
+            # 根据状态设置便签背景颜色和边框颜色
+            card_colors <- switch(
+              item$RequestStatus,
+              "紧急" = list(bg = "#ffcdd2", border = "#e57373"),    # 红色背景，深红色边框
+              "待处理" = list(bg = "#fff9c4", border = "#ffd54f"),  # 橙色背景，深橙色边框
+              "已完成" = list(bg = "#c8e6c9", border = "#81c784")   # 绿色背景，深绿色边框
+            )
+            
             # 渲染便签卡片
             div(
               class = "note-card",
               style = sprintf("
               position: relative;
               width: 400px;
-              background-color: #fff;
-              border: 2px solid #ddd;
+              background-color: %s;
+              border: 2px solid %s;
               border-radius: 10px;
               box-shadow: 0 4px 8px rgba(0,0,0,0.1);
               padding: 10px;
               display: flex;
               flex-direction: column;
               justify-content: space-between;
-            "),
+            ", card_colors$bg, card_colors$border),
+              
+              # 图片和留言记录
+              div(
+                style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
+                tags$div(
+                  style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
+                  tags$img(
+                    src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
+                    style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
+                  ),
+                  tags$div(
+                    style = "width: 100%; text-align: left; font-size: 12px; color: #333;",
+                    tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
+                    tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
+                  )
+                ),
+                tags$div(
+                  style = "width: 58%; height: 160px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  uiOutput(paste0("remarks_", item$RequestID))  # 使用 RequestID 动态绑定到具体记录
+                )
+              ),
+              
+              # 状态按钮
               tags$div(
-                style = "width: 58%; height: 160px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
-                uiOutput(paste0("remarks_", request_id))  # 使用 RequestID 动态绑定
+                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
+                actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("complete_task_", request_id), "任务完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("delete_request_", request_id), "删除便签", class = "btn-warning", style = "width: 30%; height: 45px;")
               )
             )
           })
