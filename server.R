@@ -661,39 +661,21 @@ server <- function(input, output, session) {
               flex-direction: column;
               justify-content: space-between;
             ",
-              # 模拟绿色图钉
-              tags$div(
-                style = "
-                position: absolute;
-                top: -10px;
-                left: 50%;
-                transform: translateX(-50%);
-                width: 20px;
-                height: 20px;
-                background-color: #4CAF50;
-                border-radius: 50%;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-                z-index: 10;
-              "
-              ),
               # 图片和留言记录并排
               div(
                 style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
-                # 图片区域
                 tags$div(
                   style = "width: 48%; display: flex; flex-direction: column; align-items: center;",
                   tags$img(
                     src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
                     style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
                   ),
-                  # 物品名称和采购数量
                   tags$div(
                     style = "width: 100%; text-align: left; font-size: 12px; color: #333;",
                     tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
                     tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
                   )
                 ),
-                # 留言记录区域
                 tags$div(
                   style = "width: 48%; height: auto; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   tags$p(ifelse(is.na(item$Remarks), "暂无留言", item$Remarks), style = "font-size: 12px; color: grey;")
@@ -703,10 +685,10 @@ server <- function(input, output, session) {
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
                 tags$div(
-                  style = "flex: 1; margin: 0; padding: 0;",  # 移除默认 margin 和 padding
-                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%")
+                  style = "width: 80%; margin-bottom: 0;",  # 仅对当前输入框去掉 margin-bottom
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "72%")
                 ),
-                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 20%; height: 45px; margin: 0;")
+                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px; margin: 0;")
               ),
               # 任务完成和删除按钮
               tags$div(
@@ -720,6 +702,7 @@ server <- function(input, output, session) {
       })
     }
   }
+  
   
   # 页面加载时，初始化便签板
   refresh_todo_board()
