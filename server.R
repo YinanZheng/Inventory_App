@@ -647,12 +647,12 @@ server <- function(input, output, session) {
           style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px;",
           lapply(1:nrow(requests), function(i) {
             item <- requests[i, ]
-            # 确保 i 的值正确绑定
-            current_index <- i
+            current_index <- i  # 捕获当前索引
             
             # 动态渲染留言记录区域
             output[[paste0("remarks_", current_index)]] <- renderUI({
               remarks <- ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]])
+              remarks <- rev(remarks)  # 倒序排列
               lapply(remarks, function(h) {
                 tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
               })
@@ -681,9 +681,10 @@ server <- function(input, output, session) {
               # 清空输入框
               updateTextInput(session, paste0("remark_input_", current_index), value = "")
               
-              # 更新留言区域
+              # 更新留言区域（倒序显示）
               output[[paste0("remarks_", current_index)]] <- renderUI({
                 updated_history <- strsplit(updated_remarks, "\n")[[1]]
+                updated_history <- rev(updated_history)  # 倒序排列
                 lapply(updated_history, function(h) {
                   tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
                 })
