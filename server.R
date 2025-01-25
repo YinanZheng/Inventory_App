@@ -563,7 +563,7 @@ server <- function(input, output, session) {
                                                           )), selection = "multiple",
                                                           data = filtered_unique_items_data_logistics,
                                                           option = modifyList(table_default_options, list(scrollY = "730px", 
-                                                                                                          searching = TRUE, 
+                                                                                                          searching = FALSE, 
                                                                                                           paging = TRUE,
                                                                                                           pageLength = 30,
                                                                                                           lengthMenu = c(30, 50, 100),
