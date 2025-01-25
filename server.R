@@ -725,8 +725,6 @@ server <- function(input, output, session) {
   # 页面加载时调用 refresh_todo_board
   refresh_todo_board()
   
-  
-  
   # 为每个提交按钮注册独立的逻辑
   observe({
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
@@ -770,8 +768,30 @@ server <- function(input, output, session) {
     }
   })
   
-  # 页面加载时，初始化便签板
-  refresh_todo_board()
+  observe({
+    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    if (nrow(requests) > 0) {
+      lapply(1:nrow(requests), function(i) {
+        item <- requests[i, ]
+        
+        # 为每个删除按钮绑定逻辑
+        observeEvent(input[[paste0("delete_request_", i)]], {
+          # 获取当前请求的 ID
+          request_id <- item$RequestID
+          
+          # 从数据库中删除对应记录
+          dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
+          
+          # 刷新便签板
+          refresh_todo_board()
+          
+          # 显示删除成功通知
+          showNotification("便签已删除", type = "message")
+        })
+      })
+    }
+  })
+  
   
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
