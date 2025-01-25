@@ -219,7 +219,14 @@ ui <- navbarPage(
       ),
       div(
         class = "main-panel",
-        uiOutput("todo_board")
+        tabsetPanel(
+          id = "collaboration_tabs",
+          type = "pills",
+          tabPanel(
+            title = "采购请求",  
+            uiOutput("todo_board")
+          )
+        )
       )
     )
   ), # End of 协作 tab
