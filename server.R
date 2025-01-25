@@ -639,16 +639,18 @@ server <- function(input, output, session) {
   observeEvent(c(input$search_sku, input$search_name), {
     req(input$search_sku != "" | input$search_name != "")
     
-    query <- paste0(
-      "SELECT SKU, ItemName, ItemImagePath, 
-     SUM(CASE WHEN Status = '国内入库' THEN 1 ELSE 0 END) AS DomesticStock,
-     SUM(CASE WHEN Status = '国内出库' THEN 1 ELSE 0 END) AS InTransitStock,
-     SUM(CASE WHEN Status = '美国入库' THEN 1 ELSE 0 END) AS UsStock
-     FROM unique_items 
-     WHERE SKU LIKE '%", input$search_sku, "%' 
-     OR ItemName LIKE '%", input$search_name, "%' 
-     GROUP BY SKU, ItemName, ItemImagePath"
-    )
+    result <- unique_items_data() %>%
+      filter(
+        grepl(trimws(input$search_sku), SKU, ignore.case = TRUE) |  # SKU 模糊匹配
+          grepl(trimws(input$search_name), ItemName, ignore.case = TRUE)  # 名称模糊匹配
+      ) %>%
+      group_by(SKU, ItemName, ItemImagePath) %>%
+      summarise(
+        DomesticStock = sum(Status == "国内入库", na.rm = TRUE),  # 统计国内库存
+        InTransitStock = sum(Status == "国内出库", na.rm = TRUE),  # 统计在途库存
+        UsStock = sum(Status == "美国入库", na.rm = TRUE),  # 统计美国库存
+        .groups = "drop"  # 防止分组信息影响后续操作
+      )
     
     result <- dbGetQuery(con, query)
     
