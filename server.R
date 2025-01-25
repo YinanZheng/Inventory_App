@@ -637,12 +637,11 @@ server <- function(input, output, session) {
   
   registered_buttons <- reactiveVal(c())  # 记录所有已注册的按钮 ID
   
-  remarks_data <- reactiveVal(list()) # 预加载所有 Remarks 数据并缓存：
-  
   # 渲染留言板
   renderRemarks <- function(request_id) {
-  current_remarks <- remarks_data()[remarks_data()$RequestID == request_id, "Remarks"]
-
+    # 从数据库获取当前请求的 Remarks 字段
+    current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+    
     # 如果当前 Remarks 为空或 NULL，则初始化为空列表
     remarks <- if (nrow(current_remarks) > 0 && !is.na(current_remarks$Remarks[1]) && trimws(current_remarks$Remarks[1]) != "") {
       # 使用 ; 分隔记录，并按时间倒序排列
@@ -688,9 +687,6 @@ server <- function(input, output, session) {
      WHERE RequestStatus IN ('待处理', '紧急', '已完成')
      ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
     )
-    
-    # 缓存所有 Remarks 数据
-    remarks_data(dbGetQuery(con, "SELECT RequestID, Remarks FROM purchase_requests"))
     
     if (nrow(requests) == 0) {
       output$todo_board <- renderUI({
