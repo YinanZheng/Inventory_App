@@ -700,7 +700,7 @@ server <- function(input, output, session) {
               div(
                 style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
                 tags$div(
-                  style = "width: 48%; display: flex; flex-direction: column; align-items: center;",
+                  style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
                   tags$img(
                     src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
                     style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
@@ -712,7 +712,7 @@ server <- function(input, output, session) {
                   )
                 ),
                 tags$div(
-                  style = "width: 48%; height: 100px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  style = "width: 58%; height: 100px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
                   # 直接生成留言记录的 HTML
                   if (length(remarks) > 0) {
