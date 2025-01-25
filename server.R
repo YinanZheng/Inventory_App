@@ -686,7 +686,7 @@ server <- function(input, output, session) {
                 style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
                 tags$div(
                   style = "width: 72%; margin-bottom: 0 !important; padding: 0;",  # 覆盖默认样式
-                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%", style = "margin-bottom: 0 !important;")
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%")
                 ),
                 actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px; margin: 0;")
               ),
