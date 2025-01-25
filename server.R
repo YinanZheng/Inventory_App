@@ -635,72 +635,62 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 注册按钮记录
   registered_buttons <- reactiveVal(c())  # 记录所有已注册的按钮 ID
   
-  # 缓存数据
-  remarks_data <- reactiveVal(data.frame())  # 缓存 Remarks 数据
-  requests_data <- reactiveVal(data.frame())  # 缓存请求数据
+  remarks_data <- reactiveVal(list()) # 预加载所有 Remarks 数据并缓存：
   
   # 渲染留言板
   renderRemarks <- function(request_id) {
-    # 从缓存中获取 Remarks 数据
     current_remarks <- remarks_data()[remarks_data()$RequestID == request_id, "Remarks"]
     
-    # 如果为空或 NULL，则初始化为空列表
-    remarks <- if (!is.na(current_remarks) && trimws(current_remarks) != "") {
-      rev(unlist(strsplit(trimws(current_remarks), ";")))
+    # 如果当前 Remarks 为空或 NULL，则初始化为空列表
+    remarks <- if (nrow(current_remarks) > 0 && !is.na(current_remarks$Remarks[1]) && trimws(current_remarks$Remarks[1]) != "") {
+      # 使用 ; 分隔记录，并按时间倒序排列
+      rev(unlist(strsplit(trimws(current_remarks$Remarks[1]), ";")))
     } else {
-      list()
+      list()  # 如果为空，则返回空列表
     }
     
-    # 生成 HTML
+    # 生成 HTML 字符串
     remarks_html <- if (length(remarks) > 0) {
       paste0(
         lapply(remarks, function(h) {
+          # 将记录拆分为时间和内容
           split_remarks <- strsplit(h, ": ", fixed = TRUE)[[1]]
-          remark_time <- ifelse(length(split_remarks) > 1, split_remarks[1], "")
-          remark_text <- ifelse(length(split_remarks) > 1, split_remarks[2], split_remarks[1])
+          remark_time <- ifelse(length(split_remarks) > 1, split_remarks[1], "")  # 时间部分
+          remark_text <- ifelse(length(split_remarks) > 1, split_remarks[2], split_remarks[1])  # 信息部分
+          
+          # 生成每条记录的 HTML
           paste0(
             "<div style='margin-bottom: 8px;'>",
-            "<p style='font-size: 10px; color: grey; text-align: right; margin: 0;'>", remark_time, "</p>",
-            "<p style='font-size: 12px; color: black; text-align: left; margin: 0;'>", remark_text, "</p>",
+            "<p style='font-size: 10px; color: grey; text-align: right; margin: 0;'>", remark_time, "</p>",  # 时间灰色右对齐
+            "<p style='font-size: 12px; color: black; text-align: left; margin: 0;'>", remark_text, "</p>",  # 信息黑色左对齐
             "</div>"
           )
         }),
         collapse = ""
       )
     } else {
-      "<p style='font-size: 12px; color: grey;'>暂无留言</p>"
+      "<p style='font-size: 12px; color: grey;'>暂无留言</p>"  # 无记录时的默认内容
     }
     
-    renderUI({ HTML(remarks_html) })
+    # 渲染 HTML
+    renderUI({
+      HTML(remarks_html)
+    })
   }
   
-  # 局部刷新便签卡片
-  card_update <- function(request_id) {
-    # 获取单条数据
-    item <- requests_data()[requests_data()$RequestID == request_id, ]
-    
-    # 动态更新 UI
-    output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id)
-    # 其他可能需要更新的部分可在此扩展
-  }
-  
-  # 全局刷新任务板
+  # 渲染任务板与便签
   refresh_todo_board <- function() {
-    # 更新缓存数据
     requests <- dbGetQuery(
       con, 
       "SELECT * FROM purchase_requests 
      WHERE RequestStatus IN ('待处理', '紧急', '已完成')
      ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
     )
-    remarks <- dbGetQuery(con, "SELECT RequestID, Remarks FROM purchase_requests")
     
-    # 缓存数据
-    requests_data(requests)
-    remarks_data(remarks)
+    # 缓存所有 Remarks 数据
+    remarks_data(dbGetQuery(con, "SELECT RequestID, Remarks FROM purchase_requests"))
     
     if (nrow(requests) == 0) {
       output$todo_board <- renderUI({
@@ -714,16 +704,18 @@ server <- function(input, output, session) {
             item <- requests[i, ]
             request_id <- item$RequestID
             
-            # 初始化便签
+            # 动态绑定留言记录到 UI
             output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id)
             
+            # 根据状态设置便签背景颜色和边框颜色
             card_colors <- switch(
               item$RequestStatus,
-              "紧急" = list(bg = "#ffcdd2", border = "#e57373"),
-              "待处理" = list(bg = "#fff9c4", border = "#ffd54f"),
-              "已完成" = list(bg = "#c8e6c9", border = "#81c784")
+              "紧急" = list(bg = "#ffcdd2", border = "#e57373"),    # 红色背景，深红色边框
+              "待处理" = list(bg = "#fff9c4", border = "#ffd54f"),  # 橙色背景，深橙色边框
+              "已完成" = list(bg = "#c8e6c9", border = "#81c784")   # 绿色背景，深绿色边框
             )
             
+            # 渲染便签卡片
             div(
               class = "note-card",
               style = sprintf("
@@ -738,15 +730,39 @@ server <- function(input, output, session) {
               flex-direction: column;
               justify-content: space-between;
             ", card_colors$bg, card_colors$border),
-              tags$div(
-                style = "width: 58%; height: 160px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
-                uiOutput(paste0("remarks_", request_id))
+              
+              # 图片和留言记录
+              div(
+                style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
+                tags$div(
+                  style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
+                  tags$img(
+                    src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
+                    style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
+                  ),
+                  tags$div(
+                    style = "width: 100%; text-align: left; font-size: 12px; color: #333;",
+                    tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
+                    tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
+                  )
+                ),
+                tags$div(
+                  style = "width: 58%; height: 160px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  uiOutput(paste0("remarks_", item$RequestID))  # 使用 RequestID 动态绑定到具体记录
+                )
               ),
+              
+              # 留言输入框和提交按钮
               tags$div(
-                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
-                textInput(paste0("remark_input_", request_id), NULL, placeholder = "输入留言", width = "72%"),
-                actionButton(paste0("submit_remark_", request_id), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
+                style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
+                tags$div(
+                  style = "width: 100%; display: flex; justify-content: space-between;",
+                  textInput(paste0("remark_input_", request_id), NULL, placeholder = "输入留言", width = "72%"),
+                  actionButton(paste0("submit_remark_", request_id), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
+                )
               ),
+              
+              # 状态按钮
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
                 actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
@@ -760,34 +776,64 @@ server <- function(input, output, session) {
     }
   }
   
-  # 动态绑定按钮
+  bindButton <- function(button_id, event_logic) {
+    if (!(button_id %in% registered_buttons())) {
+      observeEvent(input[[button_id]], {
+        event_logic()
+      })
+      registered_buttons(c(registered_buttons(), button_id))
+    }
+  }
+  
+  # 页面加载时调用 refresh_todo_board
+  refresh_todo_board()
+ 
+  # 动态绑定按钮逻辑
   observe({
-    requests <- requests_data()
+    # 查询所有请求，并按状态和创建时间排序
+    requests <- dbGetQuery(
+      con, 
+      "SELECT * FROM purchase_requests 
+     WHERE RequestStatus IN ('待处理', '紧急', '已完成')
+     ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
+    )
+    
+    # 检查是否有记录
     if (nrow(requests) > 0) {
       lapply(requests$RequestID, function(request_id) {
         bindButton(paste0("mark_urgent_", request_id), function() {
           dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
-          card_update(request_id)
+          refresh_todo_board()
           showNotification("状态已标记为紧急", type = "warning")
         })
+        
         bindButton(paste0("complete_task_", request_id), function() {
           dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
-          card_update(request_id)
+          refresh_todo_board()
           showNotification("任务已完成", type = "message")
         })
+        
         bindButton(paste0("delete_request_", request_id), function() {
           dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
           refresh_todo_board()
           showNotification("便签已删除", type = "message")
         })
+        
         bindButton(paste0("submit_remark_", request_id), function() {
           remark <- input[[paste0("remark_input_", request_id)]]
           req(remark != "")
+          
           current_remarks <- remarks_data()[remarks_data()$RequestID == request_id, "Remarks"]
           current_remarks_text <- ifelse(is.na(current_remarks), "", current_remarks)
           new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
-          updated_remarks <- if (current_remarks_text == "") new_remark else paste(current_remarks_text, new_remark, sep = ";")
-          dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
+          updated_remarks <- if (current_remarks_text == "") {
+            new_remark
+          } else {
+            paste(current_remarks_text, new_remark, sep = ";")
+          }
+          
+          dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+                    params = list(updated_remarks, request_id))
           remarks_data()[remarks_data()$RequestID == request_id, "Remarks"] <<- updated_remarks
           output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id)
           updateTextInput(session, paste0("remark_input_", request_id), value = "")
