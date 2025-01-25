@@ -692,36 +692,38 @@ server <- function(input, output, session) {
   
   # 创建采购请求
   observeEvent(input$add_request, {
-    req(input$request_quantity > 0)  # 确保输入的采购数量大于 0
+    req(input$request_quantity > 0)  # 确保采购数量大于 0
     
-    # 获取搜索结果
+    # 获取清理后的输入值
     search_sku <- trimws(input$search_sku)
     search_name <- trimws(input$search_name)
     
-    # 根据 SKU 或物品名称精准匹配搜索结果
+    # 根据 SKU 或物品名称过滤数据，并按 SKU 和物品名称分组去重
     filtered_data <- unique_items_data() %>%
       filter(
         (SKU == search_sku & search_sku != "") |  # SKU 精准匹配
           (grepl(search_name, ItemName, ignore.case = TRUE) & search_name != "")  # 名称模糊匹配
-      )
+      ) %>%
+      distinct(SKU, ItemName, ItemImagePath)  # 仅保留唯一的 SKU、名称和图片路径
     
-    # 检查搜索结果数量
-    if (nrow(filtered_data) == 1) {  # 搜索结果必须唯一
+    # 判断搜索结果的唯一性
+    if (nrow(filtered_data) == 1) {  # 如果结果唯一
       # 获取物品描述和图片路径
       item_description <- filtered_data$ItemName[1]
       item_image_path <- filtered_data$ItemImagePath[1]
       
-      # 插入到数据库
+      # 插入请求到数据库
       dbExecute(con, 
                 "INSERT INTO purchase_requests (ItemDescription, ItemImage, Quantity, RequestStatus) VALUES (?, ?, ?, '待处理')", 
                 params = list(item_description, item_image_path, input$request_quantity))
       showNotification("请求已成功创建", type = "message")
-    } else if (nrow(filtered_data) > 1) {
+    } else if (nrow(filtered_data) > 1) {  # 如果结果不唯一
       showNotification("搜索结果不唯一，请更精确地搜索 SKU 或物品名称", type = "error")
-    } else {
+    } else {  # 如果没有结果
       showNotification("未找到匹配的物品，请检查搜索条件", type = "error")
     }
   })
+  
   
   
   # 提交自定义物品请求
