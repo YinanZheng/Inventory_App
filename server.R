@@ -653,35 +653,7 @@ server <- function(input, output, session) {
             remarks <- ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]])
             remarks <- rev(remarks)  # 倒序排列
             
-            # 动态注册提交按钮的 observeEvent
-            observeEvent(input[[paste0("submit_remark_", i)]], {
-              # 获取当前留言内容
-              remark <- input[[paste0("remark_input_", i)]]
-              req(remark != "")  # 确保留言不为空
-              
-              # 获取当前请求的 ID 或主键
-              request_id <- item$RequestID
-              
-              # 查询当前的 Remarks 内容
-              current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
-              current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
-              
-              # 将新留言追加到现有内容
-              updated_remarks <- paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
-              
-              # 更新数据库中的 Remarks 字段
-              dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
-                        params = list(updated_remarks, request_id))
-              
-              # 清空输入框
-              updateTextInput(session, paste0("remark_input_", i), value = "")
-              
-              # 刷新留言记录
-              refresh_todo_board()  # 调用自身以更新留言显示
-              showNotification("留言已提交", type = "message")
-            })
-            
-            # 渲染便签卡片
+            # 动态渲染便签卡片
             div(
               class = "note-card",
               style = "
@@ -745,6 +717,49 @@ server <- function(input, output, session) {
       })
     }
   }
+  
+  # 为每个提交按钮注册独立的逻辑
+  observe({
+    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    if (nrow(requests) > 0) {
+      lapply(1:nrow(requests), function(i) {
+        item <- requests[i, ]
+        observeEvent(input[[paste0("submit_remark_", i)]], {
+          # 获取当前留言内容
+          remark <- input[[paste0("remark_input_", i)]]
+          req(remark != "")  # 确保留言不为空
+          
+          # 获取当前请求的 ID 或主键
+          request_id <- item$RequestID
+          
+          # 查询当前的 Remarks 内容
+          current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+          current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
+          
+          # 将新留言追加到现有内容
+          updated_remarks <- paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
+          
+          # 更新数据库中的 Remarks 字段
+          dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+                    params = list(updated_remarks, request_id))
+          
+          # 清空输入框
+          updateTextInput(session, paste0("remark_input_", i), value = "")
+          
+          # 更新留言记录（仅更新对应便签）
+          output[[paste0("remarks_", i)]] <- renderUI({
+            updated_history <- rev(strsplit(updated_remarks, "\n")[[1]])
+            lapply(updated_history, function(h) {
+              tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
+            })
+          })
+          
+          # 显示提交成功通知
+          showNotification("留言已提交", type = "message")
+        })
+      })
+    }
+  })
   
   # 页面加载时，初始化便签板
   refresh_todo_board()
