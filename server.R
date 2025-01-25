@@ -683,17 +683,15 @@ server <- function(input, output, session) {
               ),
               # 留言输入和提交按钮
               tags$div(
-                style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 5px;",
+                style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
                 tags$div(
-                  style = "width: 72%; margin-bottom: 0 !important; padding: 0;",  # 移除父容器 margin
-                  tags$style(HTML(paste0("
-                  #remark_input_", i, " .form-group {
-                    margin-bottom: 0 !important;  /* 强制去掉 form-group 的 margin-bottom */
-                  }
-                "))),
-                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "100%")
+                  style = "width: 100%; display: flex; justify-content: space-between;",
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "80%"),
+                  actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 20%; height: 45px;")
                 ),
-                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px; margin: 0;")
+                tags$div(
+                  style = "width: 100%; height: 15px;"  # 在提交按钮下方增加一个 15px 的 margin
+                )
               ),
               # 任务完成和删除按钮
               tags$div(
