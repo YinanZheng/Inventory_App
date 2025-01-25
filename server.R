@@ -655,6 +655,7 @@ server <- function(input, output, session) {
       if (length(remarks) > 0) {
         # 将留言记录合并成一个 HTML 字符串，用 <br> 分隔
         all_remarks <- paste(remarks, collapse = "<br>")
+        showNotification(all_remarks)
         # 使用单个 tags$p 渲染
         tags$p(HTML(all_remarks), style = "font-size: 12px; margin: 0; color: grey;")
       } else {
