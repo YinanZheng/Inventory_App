@@ -644,7 +644,7 @@ server <- function(input, output, session) {
      SUM(CASE WHEN Status = '国内入库' THEN 1 ELSE 0 END) AS DomesticStock,
      SUM(CASE WHEN Status = '国内出库' THEN 1 ELSE 0 END) AS InTransitStock,
      SUM(CASE WHEN Status = '美国入库' THEN 1 ELSE 0 END) AS UsStock
-     FROM inventory 
+     FROM unique_items 
      WHERE SKU LIKE '%", input$search_sku, "%' 
      OR ItemName LIKE '%", input$search_name, "%' 
      GROUP BY SKU, ItemName, ItemImagePath"
