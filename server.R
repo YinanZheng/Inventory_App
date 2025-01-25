@@ -725,7 +725,7 @@ server <- function(input, output, session) {
                 ),
                 # 留言记录区域
                 tags$div(
-                  style = "width: 48%; height: auto; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  style = "width: 48%; height: 100px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
                   uiOutput(paste0("remarks_", current_index))  # 使用单独的 output 渲染留言记录
                 )
