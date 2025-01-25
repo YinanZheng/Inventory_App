@@ -737,7 +737,7 @@ server <- function(input, output, session) {
                     style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
                   ),
                   tags$div(
-                    style = "width: 100%; text-align: left; font-size: 12px; color: #333;",
+                    style = "width: 100%; text-align: center; font-size: 12px; color: #333;",
                     tags$p(item$ItemDescription, style = "margin: 0;"),
                     tags$p(item$SKU, style = "margin: 0;"),
                     tags$p(
@@ -895,7 +895,7 @@ server <- function(input, output, session) {
               tags$h5(item$ItemName, style = "text-align: center; margin-top: 10px;"),
               tags$h5(item$SKU, style = "text-align: center; margin-top: 10px;"),
               div(
-                style = "text-align: center; font-size: 10px;",
+                style = "text-align: center; font-size: 12px;",
                 tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
                 tags$span(paste("在途库存:", item$InTransitStock), style = "margin-right: 10px;"),
                 tags$span(paste("美国库存:", item$UsStock))
