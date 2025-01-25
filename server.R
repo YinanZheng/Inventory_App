@@ -648,9 +648,9 @@ server <- function(input, output, session) {
           lapply(1:nrow(requests), function(i) {
             item <- requests[i, ]
             
-            # 解析留言记录
+            # 获取并解析留言记录，确保倒序排列
             remarks <- ifelse(is.na(item$Remarks) || item$Remarks == "", list(), strsplit(item$Remarks, "\n")[[1]])
-            remarks <- rev(remarks)  # 倒序排列，最新记录显示在最上方
+            remarks <- rev(remarks)  # 倒序排列
             
             # 渲染便签卡片
             div(
@@ -686,9 +686,13 @@ server <- function(input, output, session) {
                   style = "width: 48%; height: 100px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
                   # 直接生成留言记录的 HTML
-                  lapply(remarks, function(h) {
-                    tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
-                  })
+                  if (length(remarks) > 0) {
+                    lapply(remarks, function(h) {
+                      tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
+                    })
+                  } else {
+                    tags$p("暂无留言", style = "font-size: 12px; color: grey;")
+                  }
                 )
               ),
               # 留言输入和提交按钮
