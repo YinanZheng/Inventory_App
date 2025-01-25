@@ -566,7 +566,7 @@ server <- function(input, output, session) {
                                                                                                           searching = FALSE, 
                                                                                                           paging = TRUE,
                                                                                                           pageLength = 30,
-                                                                                                          lengthMenu = c(30, 50, 100),
+                                                                                                          lengthMenu = c(30, 100, 200),
                                                                                                           dom = 'lftip'
                                                                                                           )))
   
