@@ -635,6 +635,9 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 页面加载时，初始化便签板
+  refresh_todo_board()
+  
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
     req(trimws(input$search_sku) != "" | trimws(input$search_name) != "")  # 确保至少一个搜索条件不为空
