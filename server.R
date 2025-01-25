@@ -457,6 +457,9 @@ server <- function(input, output, session) {
       data <- data %>% filter(IntlShippingMethod == shipping_method)
     }
     
+    # 优先显示没有国际运单号的物品
+    data <- data %>% arrange(is.na(IntlTracking), IntlTracking)
+    
     data
   })
   
