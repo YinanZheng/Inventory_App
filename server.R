@@ -692,37 +692,126 @@ server <- function(input, output, session) {
   
   # 创建采购请求
   observeEvent(input$add_request, {
-    req(input$request_quantity > 0)  # 确保采购数量大于 0
+    req(input$request_quantity > 0)  # 确保输入合法
     
-    # 获取清理后的输入值
+    # 获取用户输入
     search_sku <- trimws(input$search_sku)
     search_name <- trimws(input$search_name)
     
-    # 根据 SKU 或物品名称过滤数据，并按 SKU 和物品名称分组去重
+    # 检索数据并插入到数据库
     filtered_data <- unique_items_data() %>%
       filter(
         (SKU == search_sku & search_sku != "") |  # SKU 精准匹配
           (grepl(search_name, ItemName, ignore.case = TRUE) & search_name != "")  # 名称模糊匹配
       ) %>%
-      distinct(SKU, ItemName, ItemImagePath)  # 仅保留唯一的 SKU、名称和图片路径
+      distinct(SKU, ItemName, ItemImagePath)  # 去重
     
-    # 判断搜索结果的唯一性
-    if (nrow(filtered_data) == 1) {  # 如果结果唯一
-      # 获取物品描述和图片路径
+    if (nrow(filtered_data) == 1) {  # 确保唯一结果
       item_description <- filtered_data$ItemName[1]
       item_image_path <- filtered_data$ItemImagePath[1]
       
-      # 插入请求到数据库
+      # 插入新的采购请求
       dbExecute(con, 
                 "INSERT INTO purchase_requests (ItemDescription, ItemImage, Quantity, RequestStatus) VALUES (?, ?, ?, '待处理')", 
                 params = list(item_description, item_image_path, input$request_quantity))
+      
+      # 刷新 todo_board 的输出
+      refresh_todo_board()
       showNotification("请求已成功创建", type = "message")
-    } else if (nrow(filtered_data) > 1) {  # 如果结果不唯一
+    } else if (nrow(filtered_data) > 1) {
       showNotification("搜索结果不唯一，请更精确地搜索 SKU 或物品名称", type = "error")
-    } else {  # 如果没有结果
+    } else {
       showNotification("未找到匹配的物品，请检查搜索条件", type = "error")
     }
   })
+  
+  refresh_todo_board <- function() {
+    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    
+    if (nrow(requests) == 0) {
+      output$todo_board <- renderUI({
+        div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项"))
+      })
+    } else {
+      output$todo_board <- renderUI({
+        div(
+          style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; padding: 10px;",
+          lapply(1:nrow(requests), function(i) {
+            item <- requests[i, ]
+            div(
+              class = "note-card",
+              style = "
+              position: relative;
+              width: 380px;
+              background-color: #fff9c4;
+              border: 1px solid #ffd54f;
+              border-radius: 10px;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+              padding: 10px;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              align-items: center;
+            ",
+              # 模拟绿色图钉
+              tags$div(
+                style = "
+                position: absolute;
+                top: -10px;
+                left: 50%;
+                transform: translateX(-50%);
+                width: 20px;
+                height: 20px;
+                background-color: #4CAF50;
+                border-radius: 50%;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                z-index: 10;
+              "
+              ),
+              # 图片和留言记录并排
+              div(
+                style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
+                # 图片区域
+                tags$div(
+                  style = "width: 50%; display: flex; flex-direction: column; align-items: center;",
+                  tags$img(
+                    src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
+                    style = "width: 100%; max-height: 180px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px;"
+                  ),
+                  # 显示物品名称和采购数量
+                  tags$div(
+                    style = "width: 100%; text-align: left; font-size: 14px; color: #333;",
+                    tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
+                    tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
+                  )
+                ),
+                # 留言记录区域
+                tags$div(
+                  style = "width: 45%; height: 240px; border: 1px solid #ddd; padding: 10px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px;"),
+                  tags$p(ifelse(is.na(item$Remarks), "暂无留言", item$Remarks), style = "font-size: 12px; color: grey;")
+                )
+              ),
+              # 留言输入和提交按钮
+              tags$div(
+                style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 10px;",
+                textInput(paste0("remark_input_", i), NULL, placeholder = "留言打字区", width = "70%"),
+                actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 35px;")
+              ),
+              # 任务完成和删除便签按钮
+              tags$div(
+                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 10px;",
+                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 45%; height: 40px;"),
+                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 45%; height: 40px;")
+              )
+            )
+          })
+        )
+      })
+    }
+  }
+  
+  
   
   
   
@@ -734,92 +823,7 @@ server <- function(input, output, session) {
               params = list(image_path, input$custom_description, input$custom_quantity))
     showNotification("新物品请求已创建", type = "message")
   })
-  
-  # 动态生成待办事项
-  output$todo_board <- renderUI({
-    # 获取待办事项
-    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
-    
-    # 如果没有请求，显示提示
-    if (nrow(requests) == 0) {
-      return(div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项")))
-    }
-    
-    # 动态生成便签
-    div(
-      style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 20px; padding: 10px;",
-      lapply(1:nrow(requests), function(i) {
-        item <- requests[i, ]
-        div(
-          class = "note-card",
-          style = "
-          position: relative;
-          width: 380px;
-          background-color: #fff9c4;
-          border: 1px solid #ffd54f;
-          border-radius: 10px;
-          box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-          padding: 10px;
-          display: flex;
-          flex-direction: column;
-          justify-content: space-between;
-        ",
-          # 模拟绿色图钉
-          tags$div(
-            style = "
-            position: absolute;
-            top: -10px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 20px;
-            height: 20px;
-            background-color: #4CAF50;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-            z-index: 10;
-          "
-          ),
-          # 图片和留言记录并排
-          div(
-            style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
-            # 图片区域
-            tags$div(
-              style = "width: 50%; display: flex; flex-direction: column; align-items: center;",
-              tags$img(
-                src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
-                style = "width: 100%; max-height: 180px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 10px;"
-              ),
-              # 显示物品名称和采购数量
-              tags$div(
-                style = "width: 100%; text-align: left; font-size: 14px; color: #333;",
-                tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
-                tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
-              )
-            ),
-            # 留言记录区域
-            tags$div(
-              style = "width: 45%; height: 240px; border: 1px solid #ddd; padding: 10px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
-              tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px;"),
-              tags$p(ifelse(is.na(item$Remarks), "暂无留言", item$Remarks), style = "font-size: 12px; color: grey;")
-            )
-          ),
-          # 留言输入和提交按钮
-          tags$div(
-            style = "width: 100%; display: flex; justify-content: space-between; align-items: center; margin-top: 10px;",
-            textInput(paste0("remark_input_", i), NULL, placeholder = "留言打字区", width = "70%"),
-            actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 35px;")
-          ),
-          # 任务完成和删除便签按钮
-          tags$div(
-            style = "width: 100%; display: flex; justify-content: space-between; margin-top: 10px;",
-            actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 45%; height: 40px;"),
-            actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 45%; height: 40px;")
-          )
-        )
-      })
-    )
-  })
-  
+
   
   
   
