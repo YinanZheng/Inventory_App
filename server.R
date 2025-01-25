@@ -952,6 +952,10 @@ server <- function(input, output, session) {
       
       # 刷新 todo_board 的输出
       refresh_todo_board()
+      
+      # 重新触发动态绑定逻辑
+      invalidateLater(500, session)  # 稍后触发以确保新记录加载
+      
       showNotification("请求已成功创建", type = "message")
     } else if (nrow(filtered_data) > 1) {
       showNotification("搜索结果不唯一，请更精确地搜索 SKU 或物品名称", type = "error")
