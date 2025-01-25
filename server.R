@@ -661,7 +661,12 @@ server <- function(input, output, session) {
   }
   
   refresh_todo_board <- function() {
-    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    # 获取所有请求并按状态和创建时间排序
+    requests <- dbGetQuery(
+      con, 
+      "SELECT * FROM purchase_requests 
+     ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
+    )
     
     if (nrow(requests) == 0) {
       output$todo_board <- renderUI({
@@ -675,16 +680,23 @@ server <- function(input, output, session) {
             item <- requests[i, ]
             request_id <- item$RequestID
             
-            # 动态输出留言记录（绑定 uiOutput）
+            # 动态输出留言记录
             output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
+            
+            # 根据状态设置便签颜色
+            card_color <- switch(item$RequestStatus,
+                                 "紧急" = "#ffcdd2",  # 红色
+                                 "待处理" = "#fff9c4",  # 橙色
+                                 "已完成" = "#c8e6c9"   # 绿色
+            )
             
             # 渲染便签卡片
             div(
               class = "note-card",
-              style = "
+              style = sprintf("
               position: relative;
               width: 400px;
-              background-color: #fff9c4;
+              background-color: %s;
               border: 1px solid #ffd54f;
               border-radius: 10px;
               box-shadow: 0 4px 8px rgba(0,0,0,0.1);
@@ -692,7 +704,8 @@ server <- function(input, output, session) {
               display: flex;
               flex-direction: column;
               justify-content: space-between;
-            ",
+            ", card_color),
+              
               # 图片和留言记录
               div(
                 style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
@@ -713,6 +726,7 @@ server <- function(input, output, session) {
                   uiOutput(paste0("remarks_", i))  # 动态绑定到页面
                 )
               ),
+              
               # 留言输入和提交按钮
               tags$div(
                 style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
@@ -722,11 +736,13 @@ server <- function(input, output, session) {
                   actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
                 )
               ),
-              # 任务完成和删除按钮
+              
+              # 状态按钮
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
-                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 48%; height: 45px;"),
-                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 48%; height: 45px;")
+                actionButton(paste0("mark_urgent_", i), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-warning", style = "width: 30%; height: 45px;")
               )
             )
           })
@@ -744,6 +760,17 @@ server <- function(input, output, session) {
       lapply(1:nrow(requests), function(i) {
         item <- requests[i, ]
         request_id <- item$RequestID
+        
+        # 动态绑定加急逻辑
+        urgent_button_id <- paste0("mark_urgent_", i)
+        if (!(urgent_button_id %in% registered_buttons())) {
+          observeEvent(input[[urgent_button_id]], {
+            dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
+            refresh_todo_board()
+            showNotification("状态已标记为紧急", type = "warning")
+          })
+          registered_buttons(c(registered_buttons(), urgent_button_id))
+        }
         
         # 动态绑定删除逻辑
         delete_button_id <- paste0("delete_request_", i)
