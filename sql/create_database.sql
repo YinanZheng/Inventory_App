@@ -110,6 +110,17 @@ CREATE TABLE `transactions` (
   PRIMARY KEY (`TransactionID`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
+CREATE TABLE `purchase_requests` (
+  `RequestID` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `ItemImage` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '物品图片路径',
+  `ItemDescription` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '物品描述',
+  `Quantity` int NOT NULL COMMENT '采购数量',
+  `RequestStatus` enum('待处理','已完成','紧急') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待处理',
+  `Remarks` text COLLATE utf8mb4_unicode_ci COMMENT '留言',
+  `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `UpdatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`RequestID`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci 
 
 DELIMITER //
 
