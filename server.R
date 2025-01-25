@@ -634,6 +634,107 @@ server <- function(input, output, session) {
   ## 协作分页                                                   ##
   ##                                                            ##
   ################################################################
+  
+  renderRemarks <- function(request_id) {
+    # 从数据库中获取当前的 Remarks 字段
+    current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+    remarks <- ifelse(
+      is.na(current_remarks$Remarks[1]) || current_remarks$Remarks[1] == "",
+      list(),
+      strsplit(trimws(current_remarks$Remarks[1]), "\n")[[1]]
+    )
+    remarks <- rev(remarks)  # 倒序排列
+    
+    # 渲染留言记录
+    renderUI({
+      if (length(remarks) > 0) {
+        lapply(remarks, function(h) {
+          tags$p(h, style = "font-size: 12px; margin: 0; color: grey;")
+        })
+      } else {
+        tags$p("暂无留言", style = "font-size: 12px; color: grey;")
+      }
+    })
+  }
+  
+  refresh_todo_board <- function() {
+    # 从数据库获取所有待处理的请求
+    requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+    
+    if (nrow(requests) == 0) {
+      output$todo_board <- renderUI({
+        div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项"))
+      })
+    } else {
+      output$todo_board <- renderUI({
+        div(
+          style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 10px; padding: 10px;",
+          lapply(1:nrow(requests), function(i) {
+            item <- requests[i, ]
+            request_id <- item$RequestID  # 获取唯一标识
+            
+            # 初始化留言记录
+            output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
+            
+            # 渲染便签卡片
+            div(
+              class = "note-card",
+              style = "
+              position: relative;
+              width: 400px;
+              background-color: #fff9c4;
+              border: 1px solid #ffd54f;
+              border-radius: 10px;
+              box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+              padding: 10px;
+              display: flex;
+              flex-direction: column;
+              justify-content: space-between;
+            ",
+              # 图片和留言记录并排
+              div(
+                style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
+                tags$div(
+                  style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
+                  tags$img(
+                    src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
+                    style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
+                  ),
+                  tags$div(
+                    style = "width: 100%; text-align: left; font-size: 12px; color: #333;",
+                    tags$p(tags$b("物品名:"), item$ItemDescription, style = "margin: 0;"),
+                    tags$p(tags$b("请求采购数量:"), item$Quantity, style = "margin: 0;")
+                  )
+                ),
+                tags$div(
+                  style = "width: 58%; height: 100px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  tags$p("留言记录:", style = "font-weight: bold; margin-bottom: 5px; font-size: 12px;"),
+                  uiOutput(paste0("remarks_", i))  # 动态绑定留言记录
+                )
+              ),
+              # 留言输入和提交按钮
+              tags$div(
+                style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
+                tags$div(
+                  style = "width: 100%; display: flex; justify-content: space-between;",
+                  textInput(paste0("remark_input_", i), NULL, placeholder = "输入留言", width = "72%"),
+                  actionButton(paste0("submit_remark_", i), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
+                )
+              ),
+              # 任务完成和删除按钮
+              tags$div(
+                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
+                actionButton(paste0("complete_task_", i), "任务完成", class = "btn-primary", style = "width: 48%; height: 45px;"),
+                actionButton(paste0("delete_request_", i), "删除便签", class = "btn-danger", style = "width: 48%; height: 45px;")
+              )
+            )
+          })
+        )
+      })
+    }
+  }
+  
+  
   refresh_todo_board <- function() {
     # 从数据库获取所有待处理的请求
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
