@@ -645,7 +645,7 @@ server <- function(input, output, session) {
     } else {
       output$todo_board <- renderUI({
         div(
-          style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 10px;",
+          style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 10px; padding: 10px;",
           lapply(1:nrow(requests), function(i) {
             item <- requests[i, ]
             
