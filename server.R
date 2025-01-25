@@ -637,39 +637,50 @@ server <- function(input, output, session) {
   
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
-    req(input$search_sku != "" | input$search_name != "")  # 确保至少有一个搜索条件不为空
+    req(trimws(input$search_sku) != "" | trimws(input$search_name) != "")  # 确保至少一个搜索条件不为空
+    
+    # 获取清理后的输入值
+    search_sku <- trimws(input$search_sku)
+    search_name <- trimws(input$search_name)
     
     # 使用 unique_items_data() 进行过滤和统计
     result <- unique_items_data() %>%
       filter(
-        grepl(input$search_sku, SKU, ignore.case = TRUE) |  # SKU 模糊匹配
-          grepl(input$search_name, ItemName, ignore.case = TRUE)  # 名称模糊匹配
+        (SKU == search_sku & search_sku != "") |  # SKU 精准匹配
+          (grepl(search_name, ItemName, ignore.case = TRUE) & search_name != "")  # 名称模糊匹配
       ) %>%
       group_by(SKU, ItemName, ItemImagePath) %>%
       summarise(
         DomesticStock = sum(Status == "国内入库", na.rm = TRUE),  # 国内库存
         InTransitStock = sum(Status == "国内出库", na.rm = TRUE),  # 在途库存
         UsStock = sum(Status == "美国入库", na.rm = TRUE),  # 美国库存
-        .groups = "drop"  # 防止分组信息影响后续操作
+        .groups = "drop"
       )
     
     # 动态更新预览界面
     if (nrow(result) > 0) {
       output$item_preview <- renderUI({
-        item <- result[1, ]  # 获取第一条匹配记录
-        img_path <- ifelse(
-          is.na(item$ItemImagePath),
-          placeholder_150px_path,  # 占位符路径
-          paste0(host_url, "/images/", basename(item$ItemImagePath))  # 构建完整路径
-        )
         div(
-          tags$img(src = img_path, height = "150px", style = "display: block; margin: auto;"),
-          tags$h5(paste("物品名称:", item$ItemName), style = "text-align: center; margin-top: 10px;"),
-          div(
-            tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
-            tags$span(paste("在途库存:", item$InTransitStock), style = "margin-right: 10px;"),
-            tags$span(paste("美国库存:", item$UsStock))
-          )
+          style = "max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;",
+          lapply(1:nrow(result), function(i) {
+            item <- result[i, ]
+            img_path <- ifelse(
+              is.na(item$ItemImagePath),
+              placeholder_150px_path,  # 占位符路径
+              paste0(host_url, "/images/", basename(item$ItemImagePath))  # 构建完整路径
+            )
+            div(
+              style = "margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #ccc;",
+              tags$img(src = img_path, height = "150px", style = "display: block; margin: auto;"),
+              tags$h5(paste("物品名称:", item$ItemName), style = "text-align: center; margin-top: 10px;"),
+              div(
+                style = "text-align: center;",
+                tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
+                tags$span(paste("在途库存:", item$InTransitStock), style = "margin-right: 10px;"),
+                tags$span(paste("美国库存:", item$UsStock))
+              )
+            )
+          })
         )
       })
     } else {
