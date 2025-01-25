@@ -642,7 +642,7 @@ server <- function(input, output, session) {
     remarks <- ifelse(
       is.na(current_remarks$Remarks[1]) || current_remarks$Remarks[1] == "",
       list(),
-      strsplit(trimws(current_remarks$Remarks[1]), "\n")[[1]]  # 分割成列表
+      strsplit(trimws(current_remarks$Remarks[1]), ";")[[1]]  # 使用 ; 分隔记录
     )
     remarks <- rev(remarks)  # 倒序排列，最新记录在最上方
     
@@ -672,7 +672,7 @@ server <- function(input, output, session) {
           style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 10px; padding: 10px;",
           lapply(1:nrow(requests), function(i) {
             item <- requests[i, ]
-            request_id <- item$RequestID  # 获取唯一标识
+            request_id <- item$RequestID
             
             # 初始化留言记录
             output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
@@ -735,6 +735,7 @@ server <- function(input, output, session) {
     }
   }
   
+                
   # 页面加载时调用 refresh_todo_board
   refresh_todo_board()
   
@@ -780,11 +781,12 @@ server <- function(input, output, session) {
             current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
             current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
             
-            # 拼接新的留言内容
+            # 拼接新的留言内容，用 ; 分隔
+            new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
             updated_remarks <- if (current_remarks_text == "") {
-              paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
+              new_remark
             } else {
-              paste(current_remarks_text, paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark), sep = "\n")
+              paste(current_remarks_text, new_remark, sep = ";")
             }
             
             # 更新数据库
