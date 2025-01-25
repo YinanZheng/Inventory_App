@@ -658,7 +658,6 @@ server <- function(input, output, session) {
     })
   }
   
-  
   refresh_todo_board <- function() {
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
     
@@ -735,39 +734,84 @@ server <- function(input, output, session) {
     }
   }
   
-                
   # 页面加载时调用 refresh_todo_board
   refresh_todo_board()
   
   # 绑定逻辑：提交留言、任务完成、删除便签
+  # observe({
+  #   requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
+  #   if (nrow(requests) > 0) {
+  #     lapply(1:nrow(requests), function(i) {
+  #       item <- requests[i, ]
+  #       request_id <- item$RequestID
+  #       
+  #       # 动态绑定删除逻辑
+  #       delete_button_id <- paste0("delete_request_", i)
+  #       if (!(delete_button_id %in% registered_buttons())) {
+  #         observeEvent(input[[delete_button_id]], {
+  #           dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
+  #           refresh_todo_board()
+  #           showNotification("便签已删除", type = "message")
+  #         })
+  #         registered_buttons(c(registered_buttons(), delete_button_id))
+  #       }
+  #       
+  #       # 动态绑定任务完成逻辑
+  #       complete_button_id <- paste0("complete_task_", i)
+  #       if (!(complete_button_id %in% registered_buttons())) {
+  #         observeEvent(input[[complete_button_id]], {
+  #           dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+  #           refresh_todo_board()
+  #           showNotification("任务已完成", type = "message")
+  #         })
+  #         registered_buttons(c(registered_buttons(), complete_button_id))
+  #       }
+  #       
+  #       # 动态绑定提交留言逻辑
+  #       submit_button_id <- paste0("submit_remark_", i)
+  #       if (!(submit_button_id %in% registered_buttons())) {
+  #         observeEvent(input[[submit_button_id]], {
+  #           # 获取留言内容
+  #           remark <- input[[paste0("remark_input_", i)]]
+  #           req(remark != "")  # 确保留言不为空
+  #           
+  #           # 查询当前 Remarks 内容
+  #           current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+  #           current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
+  #           
+  #           # 拼接新的留言内容，用 ; 分隔
+  #           new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
+  #           updated_remarks <- if (current_remarks_text == "") {
+  #             new_remark
+  #           } else {
+  #             paste(current_remarks_text, new_remark, sep = ";")
+  #           }
+  #           
+  #           # 更新数据库
+  #           dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+  #                     params = list(updated_remarks, request_id))
+  #           
+  #           # 刷新对应的留言记录
+  #           output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
+  #           
+  #           # 清空输入框
+  #           updateTextInput(session, paste0("remark_input_", i), value = "")
+  #           
+  #           # 显示通知
+  #           showNotification("留言已成功提交", type = "message")
+  #         })
+  #         registered_buttons(c(registered_buttons(), submit_button_id))
+  #       }
+  #     })
+  #   }
+  # })
+  # 
   observe({
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
     if (nrow(requests) > 0) {
       lapply(1:nrow(requests), function(i) {
         item <- requests[i, ]
         request_id <- item$RequestID
-        
-        # 动态绑定删除逻辑
-        delete_button_id <- paste0("delete_request_", i)
-        if (!(delete_button_id %in% registered_buttons())) {
-          observeEvent(input[[delete_button_id]], {
-            dbExecute(con, "DELETE FROM purchase_requests WHERE RequestID = ?", params = list(request_id))
-            refresh_todo_board()
-            showNotification("便签已删除", type = "message")
-          })
-          registered_buttons(c(registered_buttons(), delete_button_id))
-        }
-        
-        # 动态绑定任务完成逻辑
-        complete_button_id <- paste0("complete_task_", i)
-        if (!(complete_button_id %in% registered_buttons())) {
-          observeEvent(input[[complete_button_id]], {
-            dbExecute(con, "UPDATE purchase_requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
-            refresh_todo_board()
-            showNotification("任务已完成", type = "message")
-          })
-          registered_buttons(c(registered_buttons(), complete_button_id))
-        }
         
         # 动态绑定提交留言逻辑
         submit_button_id <- paste0("submit_remark_", i)
@@ -790,8 +834,13 @@ server <- function(input, output, session) {
             }
             
             # 更新数据库
-            dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
-                      params = list(updated_remarks, request_id))
+            tryCatch({
+              dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", 
+                        params = list(updated_remarks, request_id))
+              showNotification("留言已成功写入数据库", type = "message")
+            }, error = function(e) {
+              showNotification(paste("数据库更新失败:", e$message), type = "error")
+            })
             
             # 刷新对应的留言记录
             output[[paste0("remarks_", i)]] <- renderRemarks(request_id)
@@ -808,7 +857,6 @@ server <- function(input, output, session) {
     }
   })
   
-
   
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
