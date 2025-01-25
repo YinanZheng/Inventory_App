@@ -734,7 +734,7 @@ server <- function(input, output, session) {
                   style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
                   tags$img(
                     src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
-                    style = "width: 100%; max-height: 176px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
+                    style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
                   ),
                   tags$div(
                     style = "width: 100%; text-align: center; font-size: 12px; color: #333;",
@@ -748,7 +748,7 @@ server <- function(input, output, session) {
                   )
                 ),
                 tags$div(
-                  style = "width: 58%; height: 160px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+                  style = "width: 58%; height: 176px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
                   uiOutput(paste0("remarks_", item$RequestID))  # 使用 RequestID 动态绑定到具体记录
                 )
               ),
