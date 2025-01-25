@@ -642,8 +642,9 @@ server <- function(input, output, session) {
     remarks <- ifelse(
       is.na(current_remarks$Remarks[1]) || current_remarks$Remarks[1] == "",
       list(),
-      rev(strsplit(trimws(current_remarks$Remarks[1]), "\n")[[1]])
+      strsplit(trimws(current_remarks$Remarks[1]), "\n")[[1]]  # 分割成列表
     )
+    remarks <- rev(remarks)  # 倒序排列，最新记录在最上方
     
     # 返回渲染的 HTML
     renderUI({
@@ -656,6 +657,7 @@ server <- function(input, output, session) {
       }
     })
   }
+  
   
   refresh_todo_board <- function() {
     requests <- dbGetQuery(con, "SELECT * FROM purchase_requests WHERE RequestStatus = '待处理'")
