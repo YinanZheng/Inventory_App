@@ -637,26 +637,33 @@ server <- function(input, output, session) {
   
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
-    req(input$search_sku != "" | input$search_name != "")
+    req(input$search_sku != "" | input$search_name != "")  # 确保至少有一个搜索条件不为空
     
+    # 使用 unique_items_data() 进行过滤和统计
     result <- unique_items_data() %>%
       filter(
-        grepl(trimws(input$search_sku), SKU, ignore.case = TRUE) |  # SKU 模糊匹配
-          grepl(trimws(input$search_name), ItemName, ignore.case = TRUE)  # 名称模糊匹配
+        grepl(input$search_sku, SKU, ignore.case = TRUE) |  # SKU 模糊匹配
+          grepl(input$search_name, ItemName, ignore.case = TRUE)  # 名称模糊匹配
       ) %>%
       group_by(SKU, ItemName, ItemImagePath) %>%
       summarise(
-        DomesticStock = sum(Status == "国内入库", na.rm = TRUE),  # 统计国内库存
-        InTransitStock = sum(Status == "国内出库", na.rm = TRUE),  # 统计在途库存
-        UsStock = sum(Status == "美国入库", na.rm = TRUE),  # 统计美国库存
+        DomesticStock = sum(Status == "国内入库", na.rm = TRUE),  # 国内库存
+        InTransitStock = sum(Status == "国内出库", na.rm = TRUE),  # 在途库存
+        UsStock = sum(Status == "美国入库", na.rm = TRUE),  # 美国库存
         .groups = "drop"  # 防止分组信息影响后续操作
       )
     
+    # 动态更新预览界面
     if (nrow(result) > 0) {
       output$item_preview <- renderUI({
-        item <- result[1, ]
+        item <- result[1, ]  # 获取第一条匹配记录
+        img_path <- ifelse(
+          is.na(item$ItemImagePath),
+          placeholder_150px_path,  # 占位符路径
+          paste0(host_url, "/images/", basename(item$ItemImagePath))  # 构建完整路径
+        )
         div(
-          tags$img(src = item$ItemImagePath, height = "150px", style = "display: block; margin: auto;"),
+          tags$img(src = img_path, height = "150px", style = "display: block; margin: auto;"),
           tags$h5(paste("物品名称:", item$ItemName), style = "text-align: center; margin-top: 10px;"),
           div(
             tags$span(paste("国内库存:", item$DomesticStock), style = "margin-right: 10px;"),
