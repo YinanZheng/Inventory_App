@@ -818,13 +818,34 @@ server <- function(input, output, session) {
       observeEvent(input[[submit_button_id]], {
         remark <- input[[paste0("remark_input_", request_id)]]
         req(remark != "")
+        
+        # 根据系统 ID 添加前缀
+        remark_prefix <- if (input$id == "inventory_china") {
+          "[京]"
+        } else if (input$id == "inventory_us") {
+          "[圳]"
+        } else {
+          ""
+        }
+        
+        # 拼接时间戳、前缀和留言
+        new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", remark)
+        
+        # 获取当前 Remarks 并更新
         current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
         current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
-        new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark)
         updated_remarks <- if (current_remarks_text == "") new_remark else paste(current_remarks_text, new_remark, sep = ";")
+        
+        # 更新数据库中的 Remarks 字段
         dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
+        
+        # 刷新对应的留言记录
         output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id)
+        
+        # 清空输入框
         updateTextInput(session, paste0("remark_input_", request_id), value = "")
+        
+        # 显示通知
         showNotification("留言已成功提交", type = "message")
       })
       registered_buttons(c(registered_buttons(), submit_button_id))
