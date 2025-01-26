@@ -1011,7 +1011,7 @@ server <- function(input, output, session) {
     # 清空输入字段
     updateTextAreaInput(session, "custom_description", value = "")
     updateNumericInput(session, "custom_quantity", value = 1)
-    image_path$reset()
+    image_purchase_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
   })
   
