@@ -819,10 +819,10 @@ server <- function(input, output, session) {
         remark <- input[[paste0("remark_input_", request_id)]]
         req(remark != "")
         
-        # 根据 session 判断系统类型
-        remark_prefix <- if (grepl("china", session$ns(""))) {
+        # 根据系统类型添加前缀
+        remark_prefix <- if (system_type == "china") {
           "[京]"
-        } else if (grepl("us", session$ns(""))) {
+        } else if (system_type == "us") {
           "[圳]"
         } else {
           ""
