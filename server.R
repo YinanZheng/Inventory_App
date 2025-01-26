@@ -873,9 +873,6 @@ server <- function(input, output, session) {
     }
   })
   
-  
-  
-  
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
     req(trimws(input$search_sku) != "" | trimws(input$search_name) != "")  # 确保至少一个搜索条件不为空
@@ -932,7 +929,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # 创建采购请求
+  # 库存品采购请求按钮
   observeEvent(input$add_request, {
     req(input$request_quantity > 0)  # 确保输入合法
     
@@ -974,10 +971,10 @@ server <- function(input, output, session) {
     }
   })
   
-  
   # 初始化图片上传模块
   image_purchase_requests <- imageModuleServer("image_purchase_requests")
   
+  # 新商品采购请求按钮
   observeEvent(input$submit_custom_request, {
     # 确保必要字段已填写
     req(input$custom_quantity > 0)
@@ -1014,8 +1011,6 @@ server <- function(input, output, session) {
     image_purchase_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
   })
-  
-  
   
   
   
