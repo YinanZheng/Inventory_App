@@ -629,6 +629,12 @@ server <- function(input, output, session) {
   
   
   
+  ################################################################
+  ##                                                            ##
+  ## 协作分页                                                   ##
+  ##                                                            ##
+  ################################################################
+  
   # 记录所有已注册的按钮 ID
   registered_buttons <- reactiveVal(c())  
   
@@ -971,38 +977,39 @@ server <- function(input, output, session) {
         (SKU == search_sku & search_sku != "") |  # SKU 精准匹配
           (grepl(search_name, ItemName, ignore.case = TRUE) & search_name != "")  # 名称模糊匹配
       ) %>%
-      distinct(SKU, ItemName, ItemImagePath)  # 去重
+      distinct(SKU, Maker, ItemName, ItemImagePath)  # 去重
     
-    if (nrow(filtered_data) == 1) {  # 确保唯一结果
-      item_sku <- filtered_data$SKU[1]
-      item_maker <- filtered_data$Maker[1]
-      item_description <- filtered_data$ItemName[1]
-      item_image_path <- filtered_data$ItemImagePath[1]
-      
-      request_id <- uuid::UUIDgenerate()
-      
-      # 插入新的采购请求
-      dbExecute(con, 
-                "INSERT INTO purchase_requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
-                VALUES (?, ?, ?, ?, ?, ?, '待处理')", 
-                params = list(request_id, item_sku, item_maker, item_image_path, item_description, input$request_quantity))
-      
-      # 刷新 todo_board 的输出
-      refresh_todo_board()
-      
-      bind_buttons(request_id) #绑定按钮逻辑
-      
-      # 清空输入字段
-      updateTextInput(session, "search_sku", value = "")
-      updateTextInput(session, "search_name", value = "")
-      updateNumericInput(session, "request_quantity", value = 1)
-      
-      showNotification("请求已成功创建", type = "message")
-    } else if (nrow(filtered_data) > 1) {
-      showNotification("搜索结果不唯一，请更精确地搜索 SKU 或物品名称", type = "error")
-    } else {
-      showNotification("未找到匹配的物品，请检查搜索条件", type = "error")
-    }
+    tryCatch({
+      # 主逻辑
+      if (nrow(filtered_data) == 1) {
+        request_id <- uuid::UUIDgenerate()
+        
+        item_image_path <- ifelse(is.na(filtered_data$ItemImagePath[1]), placeholder_150px_path, filtered_data$ItemImagePath[1])
+        item_description <- ifelse(is.na(filtered_data$ItemName[1]), "未知", filtered_data$ItemName[1])
+        
+        dbExecute(con, 
+                  "INSERT INTO purchase_requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
+              VALUES (?, ?, ?, ?, ?, ?, '待处理')", 
+                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, input$request_quantity))
+        
+        refresh_todo_board()
+        bind_buttons(request_id)
+        
+        updateTextInput(session, "search_sku", value = "")
+        updateTextInput(session, "search_name", value = "")
+        updateNumericInput(session, "request_quantity", value = 1)
+        
+        showNotification("请求已成功创建", type = "message")
+      } else if (nrow(filtered_data) > 1) {
+        showNotification("搜索结果不唯一，请更精确地搜索 SKU 或物品名称", type = "error")
+      } else {
+        showNotification("未找到匹配的物品，请检查搜索条件", type = "error")
+      }
+    }, error = function(e) {
+      # 捕获错误并打印详细信息
+      showNotification(e, type = "error")
+    })
+    
   })
   
   # 初始化图片上传模块
@@ -1032,8 +1039,8 @@ server <- function(input, output, session) {
     
     # 将数据插入到数据库
     dbExecute(con, 
-              "INSERT INTO purchase_requests (RequestID, SKU, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
-             VALUES (?, ?, ?, ?, ?, '待处理')", 
+              "INSERT INTO purchase_requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
+             VALUES (?, ?, '待定', ?, ?, ?, '待处理')", 
               params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity))
     
     # 刷新任务板
