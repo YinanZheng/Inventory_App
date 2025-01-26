@@ -211,7 +211,7 @@ ui <- navbarPage(
           actionButton("add_request", "创建请求", icon = icon("plus"), class = "btn-success", style = "width: 100%; margin-top: 10px;"),
           tags$hr(),
           tags$h4("自定义新物品", style = "font-weight: bold; color: #007BFF;"),
-          fileInput("upload_image", "上传图片", accept = c('image/png', 'image/jpeg'), width = "100%"),
+          imageModuleUI("image_purchase_requests", label = "请求物品图片上传"),
           textAreaInput("custom_description", "物品描述", placeholder = "描述物品信息", width = "100%"),
           numericInput("custom_quantity", "采购数量", value = 1, min = 1, width = "100%"),
           actionButton("submit_custom_request", "提交请求", icon = icon("check"), class = "btn-primary", style = "width: 100%; margin-top: 10px;")
