@@ -112,7 +112,9 @@ CREATE TABLE `transactions` (
 
 CREATE TABLE `purchase_requests` (
   `RequestID` varchar(36) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `ItemImage` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '物品图片路径',
+  `SKU` varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `Maker` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '制造商名称',
+  `ItemImagePath` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT '物品图片路径',
   `ItemDescription` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT '物品描述',
   `Quantity` int NOT NULL COMMENT '采购数量',
   `RequestStatus` enum('待处理','已完成','紧急') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT '待处理',
@@ -120,7 +122,7 @@ CREATE TABLE `purchase_requests` (
   `CreatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
   `UpdatedAt` timestamp NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`RequestID`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci ,m,
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
 
 DELIMITER //
 

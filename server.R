@@ -629,25 +629,22 @@ server <- function(input, output, session) {
   
   
   
-  ################################################################
-  ##                                                            ##
-  ## 协作分页                                                   ##
-  ##                                                            ##
-  ################################################################
+  # 记录所有已注册的按钮 ID
+  registered_buttons <- reactiveVal(c())  
   
-  registered_buttons <- reactiveVal(c())  # 记录所有已注册的按钮 ID
+  # 缓存请求数据
+  requests_data <- reactiveVal(data.frame())
   
-  # 渲染留言板
+  # Function: 渲染留言板
   renderRemarks <- function(request_id) {
-    # 从数据库获取当前请求的 Remarks 字段
-    current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
+    # 提取当前 RequestID 的 Remarks
+    current_remarks <- requests_data() %>% filter(RequestID == request_id) %>% pull(Remarks)
     
     # 如果当前 Remarks 为空或 NULL，则初始化为空列表
-    remarks <- if (nrow(current_remarks) > 0 && !is.na(current_remarks$Remarks[1]) && trimws(current_remarks$Remarks[1]) != "") {
-      # 使用 ; 分隔记录，并按时间倒序排列
-      rev(unlist(strsplit(trimws(current_remarks$Remarks[1]), ";")))
+    if (is.null(current_remarks) || is.na(current_remarks)) {
+      remarks <- list()  # 如果为空，则返回空列表
     } else {
-      list()  # 如果为空，则返回空列表
+      remarks <- unlist(strsplit(trimws(current_remarks), ";"))  # 使用 ; 分隔记录
     }
     
     # 生成 HTML 字符串
@@ -679,14 +676,9 @@ server <- function(input, output, session) {
     })
   }
   
-  # 渲染任务板与便签
+  # Function: 渲染任务板与便签
   refresh_todo_board <- function() {
-    requests <- dbGetQuery(
-      con, 
-      "SELECT * FROM purchase_requests 
-     WHERE RequestStatus IN ('待处理', '紧急', '已完成')
-     ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
-    )
+    requests <- requests_data()  # 使用缓存数据
     
     if (nrow(requests) == 0) {
       output$todo_board <- renderUI({
@@ -697,7 +689,7 @@ server <- function(input, output, session) {
         div(
           style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 10px; padding: 10px;",
           lapply(1:nrow(requests), function(i) {
-            item <- requests[i, ]
+            item <- requests[i, , drop = FALSE]
             request_id <- item$RequestID
             
             # 动态绑定留言记录到 UI
@@ -733,13 +725,14 @@ server <- function(input, output, session) {
                 tags$div(
                   style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
                   tags$img(
-                    src = ifelse(is.na(item$ItemImage), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImage))),
+                    src = ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))),
                     style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
                   ),
                   tags$div(
                     style = "width: 100%; text-align: center; font-size: 12px; color: #333;",
                     tags$p(item$ItemDescription, style = "margin: 0;"),
                     tags$p(item$SKU, style = "margin: 0;"),
+                    tags$p(item$Maker, style = "margin: 0;"),
                     tags$p(
                       tags$b("请求数量:"), 
                       tags$span(item$Quantity, style = "color: red; font-weight: bold;"), 
@@ -767,8 +760,8 @@ server <- function(input, output, session) {
               tags$div(
                 style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
                 actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
-                actionButton(paste0("complete_task_", request_id), "任务完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
-                actionButton(paste0("delete_request_", request_id), "删除便签", class = "btn-warning", style = "width: 30%; height: 45px;")
+                actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
+                actionButton(paste0("delete_request_", request_id), "删除", class = "btn-warning", style = "width: 30%; height: 45px;")
               )
             )
           })
@@ -777,7 +770,7 @@ server <- function(input, output, session) {
     }
   }
   
-  # 绑定按钮
+  # Function: 绑定按钮
   bind_buttons <- function(request_id) {
     # 动态绑定“加急”按钮逻辑
     urgent_button_id <- paste0("mark_urgent_", request_id)
@@ -831,10 +824,10 @@ server <- function(input, output, session) {
         # 拼接时间戳、前缀和留言
         new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", remark)
         
-        # 获取当前 Remarks 并更新
-        current_remarks <- dbGetQuery(con, paste0("SELECT Remarks FROM purchase_requests WHERE RequestID = '", request_id, "'"))
-        current_remarks_text <- ifelse(is.na(current_remarks$Remarks[1]), "", current_remarks$Remarks[1])
-        updated_remarks <- if (current_remarks_text == "") new_remark else paste(current_remarks_text, new_remark, sep = ";")
+        # 提取当前 RequestID 的 Remarks
+        current_remarks <- requests_data() %>% filter(RequestID == request_id) %>% pull(Remarks)
+        current_remarks_text <- ifelse(is.na(current_remarks), "", current_remarks)
+        updated_remarks <- if (current_remarks_text == "") new_remark else paste(new_remark, current_remarks_text, sep = ";")
         
         # 更新数据库中的 Remarks 字段
         dbExecute(con, "UPDATE purchase_requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
@@ -852,18 +845,30 @@ server <- function(input, output, session) {
     }
   }
   
-  # 页面加载时调用 refresh_todo_board
-  refresh_todo_board()
- 
-  # 动态绑定按钮逻辑
+  # 定期检查采购请求数据库的最新数据
+  poll_requests <- reactivePoll(
+    intervalMillis = poll_interval,  # 每2秒检查一次
+    session = session,
+    checkFunc = function() {
+      # 查询最新更新时间
+      last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM purchase_requests")$last_updated[1]
+      if (is.null(last_updated)) {
+        Sys.time()  # 如果无数据，返回当前时间
+      } else {
+        last_updated
+      }    
+    },
+    valueFunc = function() {
+      result <- dbGetQuery(con, "SELECT * FROM purchase_requests")
+      if (nrow(result) == 0) { data.frame() } else { result }
+    }
+  )
+  
+  # 页面加载时渲染UI，绑定按钮
   observe({
-    # 查询所有请求
-    requests <- dbGetQuery(
-      con, 
-      "SELECT * FROM purchase_requests 
-     WHERE RequestStatus IN ('待处理', '紧急', '已完成')
-     ORDER BY FIELD(RequestStatus, '紧急', '待处理', '已完成'), CreatedAt ASC"
-    )
+    requests <- poll_requests()
+    requests_data(requests)  # 更新缓存
+    refresh_todo_board()  # 刷新任务板
     
     if (nrow(requests) > 0) {
       # 为每条记录绑定按钮逻辑
@@ -873,9 +878,32 @@ server <- function(input, output, session) {
     }
   })
   
+  
+  # SKU 和物品名输入互斥逻辑
+  observeEvent(input$search_sku, {
+    # 如果 SKU 搜索框有值，则清空物品名称搜索框
+    if (input$search_sku != "") {
+      updateTextInput(session, "search_name", value = "")  # 清空物品名称搜索框
+    }
+  })
+  
+  # SKU 和物品名输入互斥逻辑
+  observeEvent(input$search_name, {
+    # 如果物品名称搜索框有值，则清空 SKU 搜索框
+    if (input$search_name != "") {
+      updateTextInput(session, "search_sku", value = "")  # 清空 SKU 搜索框
+    }
+  })
+  
   # SKU 和物品名称搜索预览
   observeEvent(c(input$search_sku, input$search_name), {
-    req(trimws(input$search_sku) != "" | trimws(input$search_name) != "")  # 确保至少一个搜索条件不为空
+    # 如果两个输入框都为空，则清空预览
+    if (input$search_sku == "" && input$search_name == "") {
+      output$item_preview <- renderUI({ NULL })
+      return()  # 结束逻辑
+    }
+    
+    req(input$search_sku != "" | input$search_name != "")  # 确保至少一个搜索条件不为空
     
     # 获取清理后的输入值
     search_sku <- trimws(input$search_sku)
@@ -947,21 +975,27 @@ server <- function(input, output, session) {
     
     if (nrow(filtered_data) == 1) {  # 确保唯一结果
       item_sku <- filtered_data$SKU[1]
+      item_maker <- filtered_data$Maker[1]
       item_description <- filtered_data$ItemName[1]
       item_image_path <- filtered_data$ItemImagePath[1]
       
       request_id <- uuid::UUIDgenerate()
-   
+      
       # 插入新的采购请求
       dbExecute(con, 
-                "INSERT INTO purchase_requests (RequestID, SKU, ItemImage, ItemDescription, Quantity, RequestStatus) VALUES (?, ?, ?, ?, ?, '待处理')", 
-                params = list(request_id, item_sku, item_image_path, item_description, input$request_quantity))
+                "INSERT INTO purchase_requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
+                VALUES (?, ?, ?, ?, ?, ?, '待处理')", 
+                params = list(request_id, item_sku, item_maker, item_image_path, item_description, input$request_quantity))
       
       # 刷新 todo_board 的输出
       refresh_todo_board()
       
-      # 重新触发动态绑定逻辑
-      bind_buttons(request_id)  # 调用封装的函数
+      bind_buttons(request_id) #绑定按钮逻辑
+      
+      # 清空输入字段
+      updateTextInput(session, "search_sku", value = "")
+      updateTextInput(session, "search_name", value = "")
+      updateNumericInput(session, "request_quantity", value = 1)
       
       showNotification("请求已成功创建", type = "message")
     } else if (nrow(filtered_data) > 1) {
@@ -998,15 +1032,17 @@ server <- function(input, output, session) {
     
     # 将数据插入到数据库
     dbExecute(con, 
-              "INSERT INTO purchase_requests (RequestID, SKU, ItemImage, ItemDescription, Quantity, RequestStatus) 
+              "INSERT INTO purchase_requests (RequestID, SKU, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
              VALUES (?, ?, ?, ?, ?, '待处理')", 
               params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity))
     
     # 刷新任务板
     refresh_todo_board()
     
+    bind_buttons(request_id) #绑定按钮逻辑
+    
     # 清空输入字段
-    updateTextAreaInput(session, "custom_description", value = "")
+    updateTextInput(session, "custom_description", value = "")
     updateNumericInput(session, "custom_quantity", value = 1)
     image_purchase_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
