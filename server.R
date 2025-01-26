@@ -819,14 +819,16 @@ server <- function(input, output, session) {
         remark <- input[[paste0("remark_input_", request_id)]]
         req(remark != "")
         
-        # 根据系统 ID 添加前缀
-        remark_prefix <- if (input$id == "inventory_china") {
-          "[京]"
-        } else if (input$id == "inventory_us") {
-          "[圳]"
-        } else {
-          ""
-        }
+        showNotification(input$id)
+        # 
+        # # 根据系统 ID 添加前缀
+        # remark_prefix <- if (input$id == "inventory_china") {
+        #   "[京]"
+        # } else if (input$id == "inventory_us") {
+        #   "[圳]"
+        # } else {
+        #   ""
+        # }
         
         # 拼接时间戳、前缀和留言
         new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", remark)
