@@ -71,10 +71,15 @@ ui <- navbarPage(
       }
       
       .sticky-sidebar {
-        flex: 0 0 350px;
-        min-width: 280px;
-        max-width: 580px;
-        overflow-y: auto;
+        position: sticky; /* 保持固定 */
+        top: 70px; /* 与导航栏对齐 */
+        z-index: 900;
+        flex: 0 0 auto; /* 固定宽度并防止被压缩 */
+        width: 350px; /* 默认宽度 */
+        min-width: 280px; /* 最小宽度 */
+        max-width: 580px; /* 最大宽度 */
+        height: calc(100vh - 70px); /* 自动计算高度 */
+        overflow-y: auto; /* 滚动支持 */
         border-right: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 20px;
