@@ -226,7 +226,6 @@ ui <- navbarPage(
       
       div(
         class = "resizable-divider",
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
       ),
       
       div(
