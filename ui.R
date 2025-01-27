@@ -96,10 +96,13 @@ ui <- navbarPage(
       }
       
       .resizable-divider {
-        background-color: #ccc;
+        background-color: #aaa; /* 修改为稍深的颜色 */
         width: 5px;
         cursor: ew-resize;
         flex-shrink: 0;
+        height: 100%;
+        border-left: 1px solid #e0e0e0; /* 添加一个边框以突出区分 */
+        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1); /* 添加内阴影增强立体感 */
       }
     
       table.dataTable thead th {
