@@ -1619,8 +1619,6 @@ ui <- navbarPage(
           class = "btn-primary",
           style = "width: 100%; margin-top: 10px;"
         )
-        
-        
       ),
       
       div(
