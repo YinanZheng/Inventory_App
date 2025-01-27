@@ -94,15 +94,12 @@ ui <- navbarPage(
         background-color: #ffffff;
         transition: width 0.2s ease; /* 增加平滑过渡效果 */
       }
-            
+      
       .resizable-divider {
-        background-color: #aaa; /* 修改为稍深的颜色 */
+        background-color: #aaa;
         width: 5px;
         cursor: ew-resize;
         flex-shrink: 0;
-        height: 100%;
-        border-left: 1px solid #e0e0e0; /* 添加一个边框以突出区分 */
-        box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1); /* 添加内阴影增强立体感 */
       }
     
       table.dataTable thead th {
@@ -298,7 +295,6 @@ ui <- navbarPage(
       
       div(
         class = "resizable-divider",
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
       ),
       
       div(
@@ -449,8 +445,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -521,8 +516,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -675,8 +669,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       # 主面板：售出和订单管理的分页
@@ -942,8 +935,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -1023,8 +1015,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       # 主面板：物品状态表
@@ -1114,8 +1105,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -1242,8 +1232,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -1334,8 +1323,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -1636,8 +1624,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
@@ -1660,8 +1647,7 @@ ui <- navbarPage(
       ),
       
       div(
-        class = "resizable-divider",  # 用于调整宽度的分隔条
-        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+        class = "resizable-divider",
       ),
       
       div(
