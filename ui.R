@@ -219,6 +219,12 @@ ui <- navbarPage(
           actionButton("submit_custom_request", "创建请求", icon = icon("plus"), class = "btn-success", style = "width: 100%; margin-top: 10px;")
         )
       ),
+      
+      div(
+        class = "resizable-divider",
+        style = "cursor: ew-resize; background-color: #ccc; width: 5px; flex-shrink: 0;"
+      ),
+      
       div(
         class = "main-panel",
         tabsetPanel(
