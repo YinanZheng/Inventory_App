@@ -1170,7 +1170,7 @@ extract_shipping_label_info <- function(pdf_path, dpi = 300) {
     # 删除包含地址后缀关键词的行
     address_keywords <- c("APT", "SUITE", "UNIT", "AVE", "PKWY", "ST", "BLVD", "DR", "RD", "LN", "CT", "WAY", "PL", "HWY")
     regex_pattern <- paste0("(?i)\\b(", paste(address_keywords, collapse = "|"), ")(\\s+", paste(address_keywords, collapse = "|"), ")?\\b")
-    potential_names <- potential_names[!stringi::stri_detect_regex(potential_names, regex_pattern, case_insensitive = TRUE)]
+    potential_names <- potential_names[!stri_detect_regex(potential_names, regex_pattern, case_insensitive = TRUE)]
     
     # 检查每一行是否可能是名字
     for (potential_name in potential_names) {
