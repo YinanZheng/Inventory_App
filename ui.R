@@ -72,7 +72,6 @@ ui <- navbarPage(
       
       .sticky-sidebar {
         position: sticky; /* 保持固定 */
-        top: 70px; /* 与导航栏对齐 */
         z-index: 900;
         flex: 0 0 auto; /* 固定宽度并防止被压缩 */
         width: 350px; /* 默认宽度 */
