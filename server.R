@@ -2663,10 +2663,10 @@ server <- function(input, output, session) {
   observe({
     req(associated_items())
     if (nrow(associated_items()) == 0) {
-      renderOrderItems(output, "order_items_cards", data.frame())  # 清空物品卡片
+      renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
       return()
     }
-    renderOrderItems(output, "order_items_cards", associated_items(), deletable = TRUE)
+    renderOrderItems(output, "order_items_cards", associated_items(), con, deletable = TRUE)
   })
 
   # 订单物品删除逻辑
