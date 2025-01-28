@@ -4654,7 +4654,7 @@ server <- function(input, output, session) {
         GroupLabel = case_when(
           input$precision == "天" ~ format(GroupDate, "%Y-%m-%d"),
           input$precision == "周" ~ paste(
-            format(lubridate::floor_date(GroupDate, "week"), "%Y-%m-%d"),
+            format(floor_date(GroupDate, "week"), "%Y-%m-%d"),
             "\n至\n",
             format(ceiling_date(GroupDate, "week") - 1, "%Y-%m-%d")
           ),
@@ -4743,9 +4743,9 @@ server <- function(input, output, session) {
       # 根据精度计算时间范围
       range <- switch(precision,
                       "天" = c(clicked_date, clicked_date),
-                      "周" = c(lubridate::floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
-                      "月" = c(lubridate::floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
-                      "年" = c(lubridate::floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
+                      "周" = c(floor_date(clicked_date, "week"), ceiling_date(clicked_date, "week") - 1),
+                      "月" = c(floor_date(clicked_date, "month"), ceiling_date(clicked_date, "month") - 1),
+                      "年" = c(floor_date(clicked_date, "year"), ceiling_date(clicked_date, "year") - 1)
       )
       
       # 调用 updateDateRangeInput 更新用户界面的时间范围选择
