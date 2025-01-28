@@ -4271,7 +4271,7 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      fetchData <- fetchInputFromTable("工资卡", selected_row, cache_env, con)
+      fetchData <- fetchInputFromTable("工资卡", selected_row, cache_env, con, session)
       selected_TransactionID(fetchData$TransactionID)
       selected_TransactionImagePath(fetchData$TransactionImagePath)
       
@@ -4289,7 +4289,7 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      fetchData <- fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected, cache_env, con)
+      fetchData <- fetchInputFromTable("美元卡", input$dollar_card_table_rows_selected, cache_env, con, session)
       selected_TransactionID(fetchData$TransactionID)
       selected_TransactionImagePath(fetchData$TransactionImagePath)
       
@@ -4307,7 +4307,7 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      fetchData <- fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected, cache_env, con)
+      fetchData <- fetchInputFromTable("买货卡", input$purchase_card_table_rows_selected, cache_env, con, session)
       selected_TransactionID(fetchData$TransactionID)
       selected_TransactionImagePath(fetchData$TransactionImagePath)
       
@@ -4325,7 +4325,7 @@ server <- function(input, output, session) {
     
     if (!is.null(selected_row)) {
       # 获取选中行的数据
-      fetchData <- fetchInputFromTable("一般户卡", input$general_card_table_rows_selected, cache_env, con)
+      fetchData <- fetchInputFromTable("一般户卡", input$general_card_table_rows_selected, cache_env, con, session)
       selected_TransactionID(fetchData$TransactionID)
       selected_TransactionImagePath(fetchData$TransactionImagePath)
       
@@ -4340,16 +4340,16 @@ server <- function(input, output, session) {
   ####
   
   # 处理工资卡表格的图片点击
-  handleTransactionImageClick("工资卡", "salary_card_table", 4, input)
+  handleTransactionImageClick("工资卡", "salary_card_table", 4, input, session)
   
   # 处理美元卡表格的图片点击
-  handleTransactionImageClick("美元卡", "dollar_card_table", 4, input)
+  handleTransactionImageClick("美元卡", "dollar_card_table", 4, input, session)
   
   # 处理买货卡表格的图片点击
-  handleTransactionImageClick("买货卡", "purchase_card_table", 4, input)
+  handleTransactionImageClick("买货卡", "purchase_card_table", 4, input, session)
   
   # 处理一般户卡表格的图片点击
-  handleTransactionImageClick("一般户卡", "general_card_table", 4, input)
+  handleTransactionImageClick("一般户卡", "general_card_table", 4, input, session)
 
   
   
