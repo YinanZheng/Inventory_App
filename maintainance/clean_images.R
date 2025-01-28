@@ -22,15 +22,15 @@ clean_untracked_images <- function() {
     inventory_query <- "SELECT ItemImagePath FROM inventory WHERE ItemImagePath IS NOT NULL"
     orders_query <- "SELECT OrderImagePath FROM orders WHERE OrderImagePath IS NOT NULL"
     transactions_query <- "SELECT TransactionImagePath FROM transactions WHERE TransactionImagePath IS NOT NULL"
-    purchase_requests_query <- "SELECT ItemImagePath FROM purchase_requests WHERE ItemImagePath IS NOT NULL"
+    requests_query <- "SELECT ItemImagePath FROM requests WHERE ItemImagePath IS NOT NULL"
     
     inventory_paths <- normalizePath(dbGetQuery(con, inventory_query)$ItemImagePath, mustWork = FALSE)
     orders_paths <- normalizePath(dbGetQuery(con, orders_query)$OrderImagePath, mustWork = FALSE)
     transactions_paths <- normalizePath(dbGetQuery(con, transactions_query)$TransactionImagePath, mustWork = FALSE)
-    purchase_requests_paths <- normalizePath(dbGetQuery(con, purchase_requests_query)$ItemImagePath, mustWork = FALSE)
+    requests_paths <- normalizePath(dbGetQuery(con, requests_query)$ItemImagePath, mustWork = FALSE)
     
     # 合并所有记录路径
-    recorded_paths <- unique(c(inventory_paths, orders_paths, transactions_paths, purchase_requests_paths))
+    recorded_paths <- unique(c(inventory_paths, orders_paths, transactions_paths, requests_paths))
     
     # 2. 列出目录中所有图片文件，并规范化路径
     all_files <- normalizePath(list.files("/var/www/images/", full.names = TRUE), mustWork = FALSE)
