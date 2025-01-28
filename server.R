@@ -680,100 +680,32 @@ server <- function(input, output, session) {
   }
   
   # Function: 渲染任务板与便签
-  refresh_todo_board <- function() {
+  refresh_board <- function() {
     requests <- requests_data()  # 使用缓存数据
     
-    if (nrow(requests) == 0) {
-      output$todo_board <- renderUI({
-        div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项"))
-      })
+    # 按 RequestType 筛选
+    purchase_requests <- requests %>% filter(RequestType == "采购")
+    outbound_requests <- requests %>% filter(RequestType == "出库")
+    
+    # 按 RequestStatus 和 CreatedAt 排序
+    purchase_requests <- purchase_requests %>%
+      arrange(factor(RequestStatus, levels = c("紧急", "待处理", "已完成")), CreatedAt) 
+    
+    outbound_requests <- outbound_requests %>%
+      arrange(factor(RequestStatus, levels = c("紧急", "待处理", "已完成")), CreatedAt) 
+    
+    # 处理采购请求面板
+    if (nrow(purchase_requests) == 0) {
+      render_request_board(data.frame(), "purchase_request_board")  # 清空采购面板
     } else {
-      # 按 RequestStatus 和 CreatedAt 排序
-      requests <- requests %>%
-        arrange(
-          factor(RequestStatus, levels = c("紧急", "待处理", "已完成")),  # 自定义状态顺序
-          CreatedAt  # 按创建时间升序排列
-        )
-      
-      output$todo_board <- renderUI({
-        div(
-          style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(400px, 1fr)); gap: 10px; padding: 10px;",
-          lapply(1:nrow(requests), function(i) {
-            item <- requests[i, , drop = FALSE]
-            request_id <- item$RequestID
-            
-            # 根据状态设置便签背景颜色和边框颜色
-            card_colors <- switch(
-              item$RequestStatus,
-              "紧急" = list(bg = "#ffcdd2", border = "#e57373"),    # 红色背景，深红色边框
-              "待处理" = list(bg = "#fff9c4", border = "#ffd54f"),  # 橙色背景，深橙色边框
-              "已完成" = list(bg = "#c8e6c9", border = "#81c784")   # 绿色背景，深绿色边框
-            )
-            
-            # 渲染便签卡片
-            div(
-              class = "note-card",
-              style = sprintf("
-              position: relative;
-              width: 400px;
-              background-color: %s;
-              border: 2px solid %s;
-              border-radius: 10px;
-              box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-              padding: 10px;
-              display: flex;
-              flex-direction: column;
-              justify-content: space-between;
-            ", card_colors$bg, card_colors$border),
-              
-              # 图片和留言记录
-              div(
-                style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
-                tags$div(
-                  style = "width: 38%; display: flex; flex-direction: column; align-items: center;",
-                  tags$img(
-                    src = ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))),
-                    style = "width: 100%; max-height: 120px; object-fit: contain; border: 1px solid #ddd; border-radius: 5px; margin-bottom: 5px;"
-                  ),
-                  tags$div(
-                    style = "width: 100%; text-align: center; font-size: 12px; color: #333;",
-                    tags$p(item$ItemDescription, style = "margin: 0;"),
-                    tags$p(item$SKU, style = "margin: 0;"),
-                    tags$p(paste("供应商:", item$Maker), style = "margin: 0;"),
-                    tags$p(
-                      tags$b("请求数量:"), 
-                      tags$span(item$Quantity, style = "color: red; font-weight: bold;"), 
-                      style = "margin: 0;"
-                    )
-                  )
-                ),
-                tags$div(
-                  style = "width: 58%; height: 194px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
-                  uiOutput(paste0("remarks_", item$RequestID))  # 使用 RequestID 动态绑定到具体记录
-                )
-              ),
-              
-              # 留言输入框和提交按钮
-              tags$div(
-                style = "width: 100%; display: flex; flex-direction: column; align-items: flex-start; margin-top: 5px;",
-                tags$div(
-                  style = "width: 100%; display: flex; justify-content: space-between;",
-                  textInput(paste0("remark_input_", request_id), NULL, placeholder = "输入留言", width = "72%"),
-                  actionButton(paste0("submit_remark_", request_id), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
-                )
-              ),
-              
-              # 状态按钮
-              tags$div(
-                style = "width: 100%; display: flex; justify-content: space-between; margin-top: 5px;",
-                actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "width: 30%; height: 45px;"),
-                actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "width: 30%; height: 45px;"),
-                actionButton(paste0("delete_request_", request_id), "删除", class = "btn-warning", style = "width: 30%; height: 45px;")
-              )
-            )
-          })
-        )
-      })
+      render_request_board(purchase_requests, "purchase_request_board")  # 渲染采购面板
+    }
+    
+    # 处理出库请求面板
+    if (nrow(outbound_requests) == 0) {
+      render_request_board(data.frame(), "outbound_request_board")  # 清空出库面板
+    } else {
+      render_request_board(outbound_requests, "outbound_request_board")  # 渲染出库面板
     }
   }
   
@@ -782,19 +714,19 @@ server <- function(input, output, session) {
     # 按钮绑定逻辑
     observeEvent(input[[paste0("mark_urgent_", request_id)]], {
       dbExecute(con, "UPDATE requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
-      refresh_todo_board()
+      refresh_board()
       # showNotification(paste0("Request ", request_id, " 状态已标记为紧急"), type = "warning")
     }, ignoreInit = TRUE)  # 避免初始绑定时触发事件
     
     observeEvent(input[[paste0("complete_task_", request_id)]], {
       dbExecute(con, "UPDATE requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
-      refresh_todo_board()
+      refresh_board()
       # showNotification(paste0("Request ", request_id, " 已完成"), type = "message")
     }, ignoreInit = TRUE)
     
     observeEvent(input[[paste0("delete_request_", request_id)]], {
       dbExecute(con, "DELETE FROM requests WHERE RequestID = ?", params = list(request_id))
-      refresh_todo_board()
+      refresh_board()
       # showNotification(paste0("Request ", request_id, " 已删除"), type = "message")
     }, ignoreInit = TRUE)
     
@@ -851,7 +783,7 @@ server <- function(input, output, session) {
   
   observe({
     requests <- requests_data()
-    refresh_todo_board()
+    refresh_board()
     
     # 渲染留言内容并绑定按钮事件
     lapply(requests$RequestID, function(request_id) {
@@ -859,7 +791,6 @@ server <- function(input, output, session) {
       bind_buttons(request_id)  # 按 RequestID 动态绑定按钮
     })
   })
-  
   
   # SKU 和物品名输入互斥逻辑
   observeEvent(input$search_sku, {
@@ -939,13 +870,22 @@ server <- function(input, output, session) {
     }
   })
   
-  # 库存品采购请求按钮
+  # 库存品请求按钮
   observeEvent(input$add_request, {
     req(input$request_quantity > 0)  # 确保输入合法
     
     # 获取用户输入
     search_sku <- trimws(input$search_sku)
     search_name <- trimws(input$search_name)
+    
+    # 根据当前页面的类型确定 RequestType
+    current_tab <- input$collaboration_tabs
+    request_type <- switch(
+      current_tab,
+      "采购请求" = "采购",
+      "出库请求" = "出库",
+      stop("未知的请求类型")  # 如果页面 ID 不匹配，抛出错误
+    )
     
     # 检索数据并插入到数据库
     filtered_data <- unique_items_data() %>%
@@ -964,11 +904,11 @@ server <- function(input, output, session) {
         item_description <- ifelse(is.na(filtered_data$ItemName[1]), "未知", filtered_data$ItemName[1])
         
         dbExecute(con, 
-                  "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
-              VALUES (?, ?, ?, ?, ?, ?, '待处理')", 
-                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, input$request_quantity))
+                  "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, RequestType) 
+         VALUES (?, ?, ?, ?, ?, ?, '待处理', ?)", 
+                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, input$request_quantity, request_type))
         
-        refresh_todo_board()
+        refresh_board()
         bind_buttons(request_id)
         
         updateTextInput(session, "search_sku", value = "")
@@ -985,7 +925,6 @@ server <- function(input, output, session) {
       # 捕获错误并打印详细信息
       showNotification(e, type = "error")
     })
-    
   })
   
   # 初始化图片上传模块
@@ -1020,7 +959,7 @@ server <- function(input, output, session) {
               params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity))
     
     # 刷新任务板
-    refresh_todo_board()
+    refresh_board()
     
     bind_buttons(request_id) #绑定按钮逻辑
     
@@ -1029,6 +968,23 @@ server <- function(input, output, session) {
     updateNumericInput(session, "custom_quantity", value = 1)
     image_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
+  })
+  
+  # 出库标签页要禁用新物品请求
+  observeEvent(input$collaboration_tabs, {
+    current_tab <- input$collaboration_tabs
+    
+    if (current_tab == "出库请求") {
+      # 禁用与新商品请求相关的控件
+      shinyjs::disable("custom_description")
+      shinyjs::disable("custom_quantity")
+      shinyjs::disable("submit_custom_request")
+    } else if (current_tab == "采购请求") {
+      # 启用与新商品请求相关的控件
+      shinyjs::enable("custom_description")
+      shinyjs::enable("custom_quantity")
+      shinyjs::enable("submit_custom_request")
+    }
   })
   
   
