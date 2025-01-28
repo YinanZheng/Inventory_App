@@ -234,7 +234,7 @@ ui <- navbarPage(
           id = "collaboration_tabs",
           type = "pills",
           tabPanel(
-            title = "采购请求",  
+            title = "采购请求",
             uiOutput("todo_board")
           )
         )
