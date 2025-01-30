@@ -2536,8 +2536,7 @@ server <- function(input, output, session) {
     # 在 R 中拼接备注内容
     new_notes <- paste(existing_notes, sprintf("【预定完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
     
-    update_order_status(order_id, "备货", updated_notes = new_notes, con)
-    orders_refresh_trigger(!orders_refresh_trigger)
+    update_order_status(order_id, "备货", updated_notes = new_notes, refresh_trigger = orders_refresh_trigger, con)
   })
   
   # 渲染物品信息卡片  

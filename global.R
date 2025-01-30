@@ -20,8 +20,10 @@ library(openxlsx)
 library(lubridate)
 
 # Source shared module R file
-lapply(list.files("/srv/shiny-server/inventory_shared_module", pattern = "\\.R$", full.names = TRUE), function(f) {
-  source(f, local = TRUE)
+files <- list.files("/srv/shiny-server/inventory_shared_module", pattern = "\\.R$", full.names = TRUE)
+lapply(files, function(f) {
+  source(f, local = FALSE)  # 确保加载到全局环境
+  message(sprintf("✅ 成功加载: %s", f))
 })
 
 system_type <<- "china"
