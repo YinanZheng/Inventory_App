@@ -102,7 +102,7 @@ get_tracking_info <- function(tracking_number, access_token, request_counter, re
   }
   
   # 生成 API 请求 URL
-  url <- paste0("https://apis-tem.usps.com/tracking/v3/tracking/", tracking_number)
+  url <- paste0("https://apis.usps.com/tracking/v3/tracking/", tracking_number)
   log_message(paste("Requesting URL:", url))
   
   # 执行 API 请求
