@@ -1565,6 +1565,7 @@ server <- function(input, output, session) {
   
   # 监听出库 SKU 输入
   observeEvent(input$outbound_sku, {
+    req(input$outbound_sku)
     handleSkuInput(
       sku_input = input$outbound_sku,
       output_name = "outbound_item_info",
