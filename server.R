@@ -1346,6 +1346,8 @@ server <- function(input, output, session) {
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
+    req(input$inbound_sku)
+    
     # 调用 handleSkuInput 并获取待入库数量
     pending_quantity <- handleSkuInput(
       sku_input = input$inbound_sku,
@@ -1359,7 +1361,7 @@ server <- function(input, output, session) {
     )
     
     # 如果启用自动入库功能，直接执行入库逻辑
-    if (input$auto_inbound && !is.null(pending_quantity) && pending_quantity > 0) {
+    if (input$auto_inbound) {
       req(input$inbound_sku)
       unique_ID <- handleOperation(
         unique_items_data(),
@@ -1460,9 +1462,7 @@ server <- function(input, output, session) {
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
     
     # 重置输入
-    shinyjs::delay(2000, {
-      updateTextInput(session, "inbound_sku", value = "")
-    })    
+    updateTextInput(session, "inbound_sku", value = "")
     updateNumericInput(session, "inbound_quantity", value = 1)
     runjs("document.getElementById('inbound_sku').focus();")
   })
