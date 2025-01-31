@@ -74,24 +74,45 @@ get_access_token <- function(client_id, client_secret) {
     message("New token requested and saved.")
     return(access_token)
   } else {
-    stop("Failed to get access token: ", httr::content(response, as = "text"))
+    log_message("Failed to get access token.")
+    return()
   }
 }
 
 # 查询Tracking状态函数
 get_tracking_info <- function(tracking_number, access_token, request_counter, request_timestamp) {
   if (is.null(tracking_number) || tracking_number == "") {
-    stop("Invalid tracking number.")
+    log_message("Error: Invalid tracking number.")
+    return(list(
+      content = NULL,
+      statusSummary = "Invalid tracking number",
+      request_counter = request_counter,
+      request_timestamp = request_timestamp
+    ))
   }
   
   if (request_counter >= 30 && Sys.time() < request_timestamp + lubridate::hours(1)) {
-    stop("Hourly request limit reached. Please wait.")
+    log_message("Error: Hourly request limit reached. Waiting for reset.")
+    return(list(
+      content = NULL,
+      statusSummary = "Hourly request limit reached",
+      request_counter = request_counter,
+      request_timestamp = request_timestamp
+    ))
   }
   
-  url <- paste0("https://apis.usps.com/tracking/v3/tracking/", tracking_number, "?expand=SUMMARY")
+  # 生成 API 请求 URL
+  url <- paste0("https://apis-tem.usps.com/tracking/v3/tracking/", tracking_number)
+  log_message(paste("Requesting URL:", url))
+  
+  # 执行 API 请求
   response <- GET(url, add_headers(Authorization = paste("Bearer", access_token)))
   
-  # 更新请求计数器和时间戳
+  # 记录状态码
+  status <- status_code(response)
+  log_message(paste("Response Status:", status))
+  
+  # 更新请求计数器
   if (Sys.time() >= request_timestamp + lubridate::hours(1)) {
     request_counter <- 1
     request_timestamp <- Sys.time()
@@ -99,15 +120,39 @@ get_tracking_info <- function(tracking_number, access_token, request_counter, re
     request_counter <- request_counter + 1
   }
   
-  if (httr::status_code(response) == 200) {
+  # 处理 API 响应
+  if (status == 200) {
+    tracking_data <- httr::content(response, as = "parsed")
+    
+    # 处理 API 响应结构
+    status_summary <- tracking_data$statusSummary
+    if (is.null(status_summary) || status_summary == "") {
+      if (!is.null(tracking_data$eventSummaries) && length(tracking_data$eventSummaries) > 0) {
+        status_summary <- tracking_data$eventSummaries[[1]]
+      } else {
+        status_summary <- "No status available"
+      }
+    }
+    
     return(list(
-      content = httr::content(response, as = "parsed"),
+      content = tracking_data,
+      statusSummary = status_summary,
       request_counter = request_counter,
       request_timestamp = request_timestamp
     ))
   } else {
-    warning("Tracking request failed: ", httr::content(response, as = "text"))
-    return(NULL)
+    # 解析 API 失败响应
+    response_content <- content(response, as = "text", encoding = "UTF-8")
+    
+    # 统一错误日志输出
+    log_message(paste("Tracking request failed. Status Code:", status, "| Response:", response_content))
+    
+    return(list(
+      content = NULL,
+      statusSummary = paste("Request Failed - Status Code:", status),
+      request_counter = request_counter,
+      request_timestamp = request_timestamp
+    ))
   }
 }
 
