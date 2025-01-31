@@ -1460,7 +1460,9 @@ server <- function(input, output, session) {
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
     
     # 重置输入
-    updateTextInput(session, "inbound_sku", value = "")
+    shinyjs::delay(2000, {
+      updateTextInput(session, "inbound_sku", value = "")
+    })    
     updateNumericInput(session, "inbound_quantity", value = 1)
     runjs("document.getElementById('inbound_sku').focus();")
   })
