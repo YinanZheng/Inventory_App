@@ -76,11 +76,17 @@ git clone https://github.com/YinanZheng/Inventory_US_App.git .
 cd /srv/shiny-server/inventory_shared_module
 git clone https://github.com/YinanZheng/Inventory_Shared_Module.git .
 
+cd /srv/shiny-server/inventory_mobile_app
+git clone https://github.com/YinanZheng/Inventory_Mobile_App.git .
+
 
 
 
 
 ### Pull Github code
+cd /srv/shiny-server/inventory-mobile-app
+git pull origin main
+
 cd /srv/shiny-server/inventory
 git pull origin main
 
