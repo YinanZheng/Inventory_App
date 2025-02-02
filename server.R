@@ -4313,7 +4313,7 @@ server <- function(input, output, session) {
               tags$tr(tags$td(tags$b("库存数：")), 
                       tags$td(
                         sprintf(
-                          "国内：%d  在途：%d  美国：%d  总计：%d",
+                          "国内：%d   |  在途：%d   |  美国：%d   |  总计：%d",
                           sku_data$DomesticQuantity[1], 
                           sku_data$TransitQuantity[1], 
                           sku_data$UsQuantity[1], 
