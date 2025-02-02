@@ -83,14 +83,20 @@ server <- function(input, output, session) {
             SKU,
             AVG(ProductCost) AS AvgProductCost,
             AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost,
-            SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity
+            SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity,
+            SUM(Status = '国内入库') AS DomesticQuantity,
+            SUM(Status = '国内出库') AS TransitQuantity,
+            SUM(Status = '美国入库') AS UsQuantity
           FROM unique_items
           GROUP BY SKU
         ) u ON i.SKU = u.SKU
         SET 
           i.ProductCost = ROUND(u.AvgProductCost, 2),
           i.ShippingCost = ROUND(u.AvgShippingCost, 2),
-          i.Quantity = u.TotalQuantity
+          i.Quantity = u.TotalQuantity,
+          i.DomesticQuantity = u.DomesticQuantity,
+          i.TransitQuantity = u.TransitQuantity,
+          i.UsQuantity = u.UsQuantity
         "
       )
       
@@ -479,25 +485,6 @@ server <- function(input, output, session) {
     if (nrow(result) == 0) {
       return(create_empty_inventory())
     }
-    
-    # 计算 SKU 统计信息
-    sku_stats <- unique_items_data() %>%
-      group_by(SKU) %>%
-      summarise(
-        UsQuantity = sum(Status == "美国入库", na.rm = TRUE),
-        TransitQuantity = sum(Status == "国内出库", na.rm = TRUE),
-        DomesticQuantity = sum(Status == "国内入库", na.rm = TRUE),
-        .groups = "drop"
-      )
-    
-    # 合并库存信息
-    result <- result %>%
-      left_join(sku_stats, by = "SKU") %>%
-      mutate(
-        UsQuantity = replace_na(UsQuantity, 0),
-        TransitQuantity = replace_na(TransitQuantity, 0),
-        DomesticQuantity = replace_na(DomesticQuantity, 0)
-      )
     
     # 供应商筛选
     if (!is.null(input[["query_filter-maker"]]) && length(input[["query_filter-maker"]]) > 0 && any(input[["query_filter-maker"]] != "")) {
