@@ -4312,13 +4312,13 @@ server <- function(input, output, session) {
               tags$tr(tags$td(tags$b("平均运费：")), tags$td(sprintf("¥%.2f", sku_data$ShippingCost[1]))),
               tags$tr(tags$td(tags$b("库存数：")), 
                       tags$td(
-                        sprintf(
+                        HTML(sprintf(
                           "国内：%d &emsp;|&emsp; 在途：%d &emsp;|&emsp; 美国：%d &emsp;|&emsp; 总计：%d",
                           sku_data$DomesticQuantity[1], 
                           sku_data$TransitQuantity[1], 
                           sku_data$UsQuantity[1], 
                           sku_data$Quantity[1]
-                        )
+                        ))
                       )
               )
             )
