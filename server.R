@@ -469,20 +469,40 @@ server <- function(input, output, session) {
   
   # 查询页过滤-库存表
   filtered_inventory <- reactive({
-    req(inventory())
+    req(inventory(), unique_items_data()) # 确保数据存在
+    
     result <- inventory()
     
-    # Return empty inventory if no results
+    # 如果库存为空，返回空库存表
     if (nrow(result) == 0) {
       return(create_empty_inventory())
     }
     
-    # 按供应商筛选
+    # 计算 SKU 统计信息
+    sku_stats <- unique_items_data() %>%
+      group_by(SKU) %>%
+      summarise(
+        UsQuantity = sum(Status == "美国入库", na.rm = TRUE),
+        TransitQuantity = sum(Status == "国内出库", na.rm = TRUE),
+        DomesticQuantity = sum(Status == "国内入库", na.rm = TRUE),
+        .groups = "drop"
+      )
+    
+    # 合并库存信息
+    result <- result %>%
+      left_join(sku_stats, by = "SKU") %>%
+      mutate(
+        UsQuantity = replace_na(UsQuantity, 0),
+        TransitQuantity = replace_na(TransitQuantity, 0),
+        DomesticQuantity = replace_na(DomesticQuantity, 0)
+      )
+    
+    # 供应商筛选
     if (!is.null(input[["query_filter-maker"]]) && length(input[["query_filter-maker"]]) > 0 && any(input[["query_filter-maker"]] != "")) {
       result <- result %>% filter(Maker %in% input[["query_filter-maker"]])
     }
     
-    # 按商品名称模糊筛选
+    # 商品名称模糊筛选
     if (!is.null(input[["query_filter-name"]]) && input[["query_filter-name"]] != "") {
       result <- result %>% filter(grepl(input[["query_filter-name"]], ItemName, ignore.case = TRUE))
     }
@@ -585,6 +605,9 @@ server <- function(input, output, session) {
       MajorType = "大类",
       MinorType = "小类",
       Quantity = "总库存数",
+      DomesticQuantity = "国内库存数",
+      TransitQuantity = "在途库存数",
+      UsQuantity = "美国库存数",
       ProductCost = "平均成本",
       ShippingCost = "平均运费"
     )
