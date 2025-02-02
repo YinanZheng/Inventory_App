@@ -2324,6 +2324,8 @@ server <- function(input, output, session) {
     showNotification(paste("物品已移入箱子！SKU:", scanned_sku), type = "message")
   }
   
+  zero_stock_items <- reactiveVal(list())  # 用于存储国内库存为零的物品
+  
   # 确认售出
   observeEvent(input$confirm_order_btn, {
     req(input$order_id)
@@ -2407,7 +2409,82 @@ server <- function(input, output, session) {
       # 更新数据并触发 UI 刷新
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
       
-      showNotification("订单已完成售出并更新状态！", type = "message")
+      # 检查库存并记录库存为零的物品
+      zero_items <- list()  # 临时列表存储库存为零的物品
+      
+      for (sku in unique(box_items()$SKU)) {
+        # 检查库存
+        result <- unique_items_data() %>%
+          filter(SKU == sku) %>%
+          group_by(SKU, ItemName, ItemImagePath, Maker) %>%
+          summarise(
+            DomesticStock = sum(Status == "国内入库", na.rm = TRUE),
+            .groups = "drop"
+          )
+        
+        if (result$DomesticStock == 0) {
+          zero_items <- append(zero_items, list(result))
+        }
+      }
+      
+      # 更新 zero_stock_items
+      zero_stock_items(zero_items)
+      
+      # 弹出模态框提示补货和出库请求
+      modal_content <- tagList()
+      
+      if (length(zero_items) > 0) {
+        modal_content <- tagAppendChildren(
+          modal_content,
+          tags$div(
+            style = "padding: 10px; background-color: #ffe6e6; border-radius: 8px; margin-bottom: 20px;",
+            tags$h4("需要采购补货：", style = "color: red; margin-bottom: 15px;"),
+            tags$div(
+              style = "display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;",
+              lapply(zero_items, function(item) {
+                div(
+                  style = "background: white; box-shadow: 0 4px 8px rgba(0,0,0,0.1); border-radius: 8px; padding: 15px; display: flex; flex-direction: column; align-items: center;",
+                  tags$img(
+                    src = ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))),
+                    style = "width: 150px; height: 150px; object-fit: cover; border-radius: 8px; margin-bottom: 10px;"
+                  ),
+                  tags$p(tags$b("物品名："), item$ItemName, style = "margin: 5px 0;"),
+                  tags$p(tags$b("SKU："), item$SKU, style = "margin: 5px 0;"),
+                  numericInput(
+                    paste0("purchase_qty_", item$SKU),
+                    "请求数量",
+                    value = 1,
+                    min = 1,
+                    width = "80%"
+                  ),
+                  textAreaInput(
+                    paste0("purchase_remark_input_", item$SKU),
+                    "留言（可选）",
+                    placeholder = "输入留言...",
+                    width = "100%",
+                    rows = 2
+                  ),
+                  actionButton(
+                    paste0("create_request_purchase_", item$SKU),
+                    "发出采购请求",
+                    class = "btn-primary",
+                    style = "margin-top: 10px; width: 100%;"
+                  )
+                )
+              })
+            )
+          )
+        )
+      }
+      
+      showModal(modalDialog(
+        title = "处理库存请求",
+        div(style = "max-height: 650px; overflow-y: auto;", modal_content),
+        easyClose = FALSE,
+        footer = tagList(
+          actionButton("complete_requests", "关闭", class = "btn-success")
+        )
+      ))
       
       # 清空箱子
       box_items(create_empty_shelf_box())
@@ -2415,9 +2492,83 @@ server <- function(input, output, session) {
       # 重置所有输入框
       reset_order_form(session, image_sold)
       
+      showNotification("订单已完成售出并更新状态！", type = "message")
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
+  })
+  
+  # 用于记录已绑定的请求按钮
+  observed_request_buttons <- reactiveValues(registered = character())
+  
+  # 监听添加请求按钮
+  observe({
+    # 获取当前所有动态生成的按钮 ID
+    request_buttons <- grep("^create_request_", names(input), value = TRUE)
+    
+    # 筛选出尚未绑定的按钮
+    new_buttons <- setdiff(request_buttons, observed_request_buttons$registered)
+    
+    # 为每个新按钮动态创建监听
+    lapply(new_buttons, function(button_id) {
+      observeEvent(input[[button_id]], {
+        if (grepl("purchase", button_id)) {
+          # 采购请求处理逻辑
+          sku <- sub("create_request_purchase_", "", button_id)  # 提取 SKU
+          items <- zero_stock_items()  # 从 reactiveVal 获取库存为零的物品
+          item <- items[[which(sapply(items, function(x) x$SKU == sku))]]  # 找到匹配的物品
+          
+          # 获取请求数量
+          qty <- input[[paste0("purchase_qty_", sku)]]
+          
+          # 获取留言
+          remark <- input[[paste0("purchase_remark_input_", sku)]]
+          remark_prefix <- if (system_type == "china") "[京]" else "[圳]"
+          new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", remark)
+          
+          request_id <- uuid::UUIDgenerate()
+          
+          tryCatch({
+            # 插入采购请求到数据库
+            dbExecute(con,
+                      "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, RequestType, CreatedAt, Remarks)
+                     VALUES (?, ?, ?, ?, ?, ?, '待处理', '采购', NOW(), ?)",
+                      params = list(
+                        request_id,
+                        sku,
+                        item$Maker,
+                        item$ItemImagePath,
+                        item$ItemName,
+                        qty,
+                        ifelse(remark == "", NULL, new_remark)
+                      ))
+            
+            # 绑定按钮
+            bind_buttons(request_id, requests_data(), input, output, session, con)
+            
+            # 动态更新按钮文本和样式
+            updateActionButton(session, inputId = button_id, label = HTML("<i class='fa fa-check'></i> 采购请求已发送"))
+            runjs(sprintf("$('#%s').removeClass('btn-primary').addClass('btn-success');", button_id))
+            shinyjs::disable(button_id)
+            
+            # 提示成功消息
+            showNotification(paste0("已发出采购请求，SKU：", sku, "，数量：", qty), type = "message")
+          }, error = function(e) {
+            # 提示错误消息
+            showNotification(paste("发出采购请求失败：", e$message), type = "error")
+          })
+        }
+      }, ignoreInit = TRUE)  # 忽略初始绑定时的触发
+    })
+    
+    # 更新已注册的按钮 ID
+    observed_request_buttons$registered <- union(observed_request_buttons$registered, new_buttons)
+  })
+  
+  # 监听 "完成请求" 按钮事件
+  observeEvent(input$complete_requests, {
+    zero_stock_items(list())        # 清空补货物品列表
+    removeModal()                   # 关闭模态框
   })
   
   ############################ 
