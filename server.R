@@ -82,13 +82,15 @@ server <- function(input, output, session) {
           SELECT 
             SKU,
             AVG(ProductCost) AS AvgProductCost,
-            AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost
+            AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost,
+            SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity
           FROM unique_items
           GROUP BY SKU
         ) u ON i.SKU = u.SKU
         SET 
           i.ProductCost = ROUND(u.AvgProductCost, 2),
-          i.ShippingCost = ROUND(u.AvgShippingCost, 2)
+          i.ShippingCost = ROUND(u.AvgShippingCost, 2),
+          i.Quantity = u.TotalQuantity
         "
       )
       
