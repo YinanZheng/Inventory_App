@@ -4417,6 +4417,23 @@ server <- function(input, output, session) {
     makers_items_map = makers_items_map
   )
   
+  # 图片预览弹出框
+  observeEvent(input$show_large_image, {
+    showModal(modalDialog(
+      title = "物品图片预览",
+      tags$div(
+        style = "overflow: auto; max-height: 700px; text-align: center;",
+        tags$img(
+          src = isolate(img_path),
+          style = "max-width: 100%; height: auto; display: inline-block;"
+        )
+      ),
+      size = "l",
+      easyClose = TRUE,
+      footer = NULL
+    ))
+  })
+  
   # 根据SKU产生图表
   observe({
     sku <- trimws(input$query_sku)
@@ -4452,11 +4469,14 @@ server <- function(input, output, session) {
           div(
             style = "display: flex; align-items: flex-start; width: 100%;",
             
-            # 左侧：商品图片
+            # 图片区域（带点击事件）
             div(
               style = "flex: 1; text-align: center; padding-right: 10px;",
-              tags$img(src = img_path, height = "200px", 
-                       style = "border: 1px solid #ddd; border-radius: 8px;")
+              tags$img(
+                src = img_path, height = "200px",
+                style = "border: 1px solid #ddd; border-radius: 8px; cursor: pointer;",
+                onclick = "Shiny.setInputValue('show_large_image', Math.random())"
+              )
             ),
             
             # 右侧：商品信息
