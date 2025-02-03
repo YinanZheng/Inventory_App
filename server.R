@@ -4441,7 +4441,7 @@ server <- function(input, output, session) {
       output$query_item_info <- renderUI({
         img_path <- ifelse(
           is.na(sku_data$ItemImagePath[1]),
-          placeholder_300px_path,
+          placeholder_200px_path,
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
         
@@ -4455,7 +4455,7 @@ server <- function(input, output, session) {
             # 左侧：商品图片
             div(
               style = "flex: 1; text-align: center; padding-right: 10px;",
-              tags$img(src = img_path, height = "300px", 
+              tags$img(src = img_path, height = "200px", 
                        style = "border: 1px solid #ddd; border-radius: 8px;")
             ),
             
