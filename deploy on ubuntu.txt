@@ -37,16 +37,10 @@ sudo su - -c "R -e \"install.packages(c('shiny', 'shinyjs', 'shinyWidgets', 'dpl
 sudo ufw status
 
 
-### Edit user from shiny to ubuntu
+### Make sure shiny has access to ubuntu's R library
 sudo nano /etc/shiny-server/shiny-server.conf
 sudo systemctl restart shiny-server
 sudo systemctl status shiny-server
-
-
-### Make a testing app
-sudo mkdir /srv/shiny-server/test-app
-sudo chown -R ubuntu:ubuntu /srv/shiny-server/test-app
-sudo chmod -R 755 /srv/shiny-server/test-app
 
 
 ### My app
@@ -59,10 +53,8 @@ sudo mkdir /srv/shiny-server/inventory-us
 sudo chown -R ubuntu:ubuntu /srv/shiny-server/inventory-us
 sudo chmod -R 755 /srv/shiny-server/inventory-us
 
-sudo chown ubuntu:ubuntu /var/log/shiny-server
+sudo chown shiny:shiny /var/log/shiny-server
 sudo chmod 755 /var/log/shiny-server
-sudo -u ubuntu touch /var/log/shiny-server/test.log
-
 
 
 

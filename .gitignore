@@ -1,4 +1,3 @@
-.secrets
 .Rhistory
 Inventory_App.Rproj
 /.Rproj.user
@@ -6,5 +5,4 @@ Inventory_App.Rproj
 tests/test-app/server.R
 tests/test-app/ui.R
 .DS_Store
-/maintainance/split
 /data
