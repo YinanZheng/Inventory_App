@@ -25,7 +25,7 @@ lapply(files, function(f) {
   source(f, local = FALSE)  # 确保加载到全局环境
 })
 
-system_type <<- "china"
+system_type <<- "cn"
 
 # 定义轮询间隔（以毫秒为单位）
 poll_interval <<- 1000  # 每 1 秒检查一次

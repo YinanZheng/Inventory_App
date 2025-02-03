@@ -1344,8 +1344,8 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听标签页切换事件
-  observeEvent(input$inventory_china, {
-    if (input$inventory_china == "入库") {
+  observeEvent(input$inventory_cn, {
+    if (input$inventory_cn == "入库") {
       runjs("document.getElementById('inbound_sku').focus();")
     }
   })
@@ -1563,8 +1563,8 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听标签页切换事件
-  observeEvent(input$inventory_china, {
-    if (input$inventory_china == "出库") {
+  observeEvent(input$inventory_cn, {
+    if (input$inventory_cn == "出库") {
       runjs("document.getElementById('outbound_sku').focus();")
     }
   })
@@ -2523,7 +2523,7 @@ server <- function(input, output, session) {
           
           # 获取留言
           remark <- input[[paste0("purchase_remark_input_", sku)]]
-          remark_prefix <- if (system_type == "china") "[京]" else "[圳]"
+          remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"
           new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", remark)
           
           request_id <- uuid::UUIDgenerate()
@@ -4398,14 +4398,14 @@ server <- function(input, output, session) {
   
   # 监听主页面和子页面的切换
   observeEvent({
-    list(input$inventory_china, input$query_tabs)  # 仅在这些输入发生变化时触发
+    list(input$inventory_cn, input$query_tabs)  # 仅在这些输入发生变化时触发
   }, {
-    if (input$inventory_china == "查询" && input$query_tabs == "商品状态") {
+    if (input$inventory_cn == "查询" && input$query_tabs == "商品状态") {
       inventory_refresh_trigger(!inventory_refresh_trigger())
       showNotification("库存表已加载！", type = "message")
     }
     
-    if (input$inventory_china == "查询" && input$query_tabs == "库存总览") {
+    if (input$inventory_cn == "查询" && input$query_tabs == "库存总览") {
       item_status_history_refresh_trigger(!item_status_history_refresh_trigger())
       showNotification("库存状态历史已加载！", type = "message")
     }
