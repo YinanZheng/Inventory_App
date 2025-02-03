@@ -4419,12 +4419,14 @@ server <- function(input, output, session) {
   
   # 监听点击事件，弹出大图
   observeEvent(input$show_large_image, {
+    req(input$show_large_image)  # 确保图片路径有效
+    
     showModal(modalDialog(
       title = "物品图片预览",
       tags$div(
         style = "overflow: auto; max-height: 700px; text-align: center;",
         tags$img(
-          src = img_path,
+          src = input$show_large_image,  # 直接使用传入的图片路径
           style = "max-width: 100%; height: auto; display: inline-block; border: 1px solid #ddd; border-radius: 8px;"
         )
       ),
@@ -4475,7 +4477,7 @@ server <- function(input, output, session) {
               tags$img(
                 src = img_path, height = "200px",
                 style = "border: 1px solid #ddd; border-radius: 8px; cursor: pointer;",
-                onclick = "Shiny.setInputValue('show_large_image', true, {priority: 'event'})"
+                onclick = sprintf("Shiny.setInputValue('show_large_image', '%s', {priority: 'event'})", img_path)
               )
             ),
             
