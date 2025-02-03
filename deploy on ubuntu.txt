@@ -40,6 +40,7 @@ sudo ufw status
 ### Edit user from shiny to ubuntu
 sudo nano /etc/shiny-server/shiny-server.conf
 sudo systemctl restart shiny-server
+sudo systemctl status shiny-server
 
 
 ### Make a testing app
@@ -66,37 +67,37 @@ sudo -u ubuntu touch /var/log/shiny-server/test.log
 
 
 ### Sync Github code
-cd /srv/shiny-server/inventory
+cd /srv/shiny-server/erp-cn
 git clone https://github.com/YinanZheng/Inventory_App.git .
 
-
-cd /srv/shiny-server/inventory-us
+cd /srv/shiny-server/erp-us
 git clone https://github.com/YinanZheng/Inventory_US_App.git .
 
-cd /srv/shiny-server/inventory_shared_module
+cd /srv/shiny-server/erp-mobile
+git clone https://github.com/YinanZheng/Inventory_Mobile_App.git .
+
+cd /srv/shiny-server/erp-module
 git clone https://github.com/YinanZheng/Inventory_Shared_Module.git .
 
-cd /srv/shiny-server/inventory_mobile_app
-git clone https://github.com/YinanZheng/Inventory_Mobile_App.git .
 
 
 
 
 
 ### Pull Github code
-cd /srv/shiny-server/inventory-mobile-app
+cd /srv/shiny-server/erp-mobile
 git pull origin main
 
-cd /srv/shiny-server/inventory
+cd /srv/shiny-server/erp-cn
 git pull origin main
 
-cd /srv/shiny-server/inventory_shared_module
+cd /srv/shiny-server/erp-module
 git pull origin main
 
-cd /srv/shiny-server/inventory-us
+cd /srv/shiny-server/erp-us
 git pull origin main
 
-cd /srv/shiny-server/inventory
+cd /srv/shiny-server/erp-cn
 git pull origin main
 
 ### Restart shiny server
