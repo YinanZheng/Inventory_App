@@ -4417,15 +4417,15 @@ server <- function(input, output, session) {
     makers_items_map = makers_items_map
   )
   
-  # 图片预览弹出框
+  # 监听点击事件，弹出大图
   observeEvent(input$show_large_image, {
     showModal(modalDialog(
       title = "物品图片预览",
       tags$div(
         style = "overflow: auto; max-height: 700px; text-align: center;",
         tags$img(
-          src = isolate(img_path),
-          style = "max-width: 100%; height: auto; display: inline-block;"
+          src = img_path,
+          style = "max-width: 100%; height: auto; display: inline-block; border: 1px solid #ddd; border-radius: 8px;"
         )
       ),
       size = "l",
@@ -4475,7 +4475,7 @@ server <- function(input, output, session) {
               tags$img(
                 src = img_path, height = "200px",
                 style = "border: 1px solid #ddd; border-radius: 8px; cursor: pointer;",
-                onclick = "Shiny.setInputValue('show_large_image', Math.random())"
+                onclick = "Shiny.setInputValue('show_large_image', true, {priority: 'event'})"
               )
             ),
             
