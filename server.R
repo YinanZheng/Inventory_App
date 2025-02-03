@@ -4463,12 +4463,27 @@ server <- function(input, output, session) {
             div(
               style = "flex: 2;",
               tags$table(
-                style = "width: 100%; border-collapse: collapse; line-height: 1.8;",
-                tags$tr(tags$td(tags$b("商品名称：")), tags$td(sku_data$ItemName[1])),
-                tags$tr(tags$td(tags$b("供应商：")), tags$td(sku_data$Maker[1])),
-                tags$tr(tags$td(tags$b("分类：")), tags$td(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]))),
-                tags$tr(tags$td(tags$b("平均成本：")), tags$td(sprintf("¥%.2f", sku_data$ProductCost[1]))),
-                tags$tr(tags$td(tags$b("平均运费：")), tags$td(sprintf("¥%.2f", sku_data$ShippingCost[1])))
+                style = "width: 100%; border-collapse: collapse; line-height: 2;",
+                tags$tr(
+                  tags$td(style = "white-space: nowrap; font-weight: bold;", "商品名称："), 
+                  tags$td(sku_data$ItemName[1])
+                ),
+                tags$tr(
+                  tags$td(style = "white-space: nowrap; font-weight: bold;", "供应商："), 
+                  tags$td(sku_data$Maker[1])
+                ),
+                tags$tr(
+                  tags$td(style = "white-space: nowrap; font-weight: bold;", "分类："), 
+                  tags$td(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]))
+                ),
+                tags$tr(
+                  tags$td(style = "white-space: nowrap; font-weight: bold;", "平均成本："), 
+                  tags$td(sprintf("¥%.2f", sku_data$ProductCost[1]))
+                ),
+                tags$tr(
+                  tags$td(style = "white-space: nowrap; font-weight: bold;", "平均运费："), 
+                  tags$td(sprintf("¥%.2f", sku_data$ShippingCost[1]))
+                )
               )
             )
           ),
