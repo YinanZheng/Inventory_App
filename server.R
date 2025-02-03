@@ -5172,7 +5172,35 @@ server <- function(input, output, session) {
     }
   })
   
-  
+  # 监听用户点击图片列
+  observeEvent(input$filtered_inventory_table_cell_clicked, {
+    info <- input$filtered_inventory_table_cell_clicked
+    
+    # 检查是否点击了图片列（第三列）
+    if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
+      if (info$col == 2) {  # 第三列在 R 中的索引是 2
+        
+        img_path <- as.character(data()[info$row, "ItemImagePath"])
+        
+        img_host_path <- paste0(host_url, "/images/", basename(img_path))
+        
+        # 弹出窗口显示大图
+        showModal(modalDialog(
+          title = "物品图片预览",
+          tags$div(
+            style = "overflow: auto; max-height: 700px; text-align: center;",
+            tags$img(
+              src = img_host_path,
+              style = "max-width: 100%; height: auto; display: inline-block;"
+            )
+          ),
+          size = "l",
+          easyClose = TRUE,
+          footer = NULL
+        ))
+      }
+    }
+  })
   
   ################################################################
   ##                                                            ##
