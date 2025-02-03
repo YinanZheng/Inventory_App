@@ -4441,7 +4441,7 @@ server <- function(input, output, session) {
       output$query_item_info <- renderUI({
         img_path <- ifelse(
           is.na(sku_data$ItemImagePath[1]),
-          placeholder_150px_path,
+          placeholder_300px_path,
           paste0(host_url, "/images/", basename(sku_data$ItemImagePath[1]))
         )
         
@@ -4455,7 +4455,7 @@ server <- function(input, output, session) {
             # 左侧：商品图片
             div(
               style = "flex: 1; text-align: center; padding-right: 10px;",
-              tags$img(src = img_path, height = "150px", 
+              tags$img(src = img_path, height = "300px", 
                        style = "border: 1px solid #ddd; border-radius: 8px;")
             ),
             
@@ -4463,7 +4463,7 @@ server <- function(input, output, session) {
             div(
               style = "flex: 2;",
               tags$table(
-                style = "width: 100%; border-collapse: collapse;",
+                style = "width: 100%; border-collapse: collapse; line-height: 1.8;",
                 tags$tr(tags$td(tags$b("商品名称：")), tags$td(sku_data$ItemName[1])),
                 tags$tr(tags$td(tags$b("供应商：")), tags$td(sku_data$Maker[1])),
                 tags$tr(tags$td(tags$b("分类：")), tags$td(paste(sku_data$MajorType[1], "/", sku_data$MinorType[1]))),
