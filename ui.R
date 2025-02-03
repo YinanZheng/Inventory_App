@@ -1340,7 +1340,7 @@ ui <- navbarPage(
             "商品状态",
             fluidRow(
               column(
-                6,
+                5,
                 div(
                   class = "card",
                   style = "height: 370px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
@@ -1350,7 +1350,7 @@ ui <- navbarPage(
               ),
               
               column(
-                3,
+                4,
                 div(
                   class = "card",
                   style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
