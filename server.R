@@ -5180,7 +5180,7 @@ server <- function(input, output, session) {
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
       if (info$col == 2) {  # 第三列在 R 中的索引是 2
         
-        img_path <- as.character(data()[info$row, "ItemImagePath"])
+        img_path <- as.character(filtered_inventory()[info$row, "ItemImagePath"])
         
         img_host_path <- paste0(host_url, "/images/", basename(img_path))
         
