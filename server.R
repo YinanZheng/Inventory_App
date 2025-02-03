@@ -5173,8 +5173,8 @@ server <- function(input, output, session) {
   })
   
   # 监听用户点击图片列
-  observeEvent(input$filtered_inventory_cell_clicked, {
-    info <- input$filtered_inventory_cell_clicked
+  observeEvent(input$filtered_inventory_table_query_cell_clicked, {
+    info <- input$filtered_inventory_table_query_cell_clicked
     
     # 检查是否点击了图片列（第三列）
     if (!is.null(info) && !is.null(info$col) && !is.null(info$row)) {
