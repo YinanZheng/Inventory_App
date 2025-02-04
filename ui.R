@@ -120,7 +120,7 @@ ui <- navbarPage(
       
       /* 采购流程链条箭头 */
       .arrow-icon {
-        margin-right: 8px;
+        margin-right: 10px;
       }
     ")),
       
