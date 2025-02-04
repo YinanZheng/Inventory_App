@@ -238,6 +238,14 @@ ui <- navbarPage(
             uiOutput("purchase_request_board")
           ),
           tabPanel(
+            title = "已安排供应",
+            uiOutput("provider_arranged_board")
+          ),
+          tabPanel(
+            title = "做好已付款",
+            uiOutput("done_paid_board")
+          ),
+          tabPanel(
             title = "出库请求",
             uiOutput("outbound_request_board")
           )
