@@ -779,7 +779,7 @@ server <- function(input, output, session) {
       current_tab,
       "采购请求" = "采购",
       "出库请求" = "出库",
-      stop("未知的请求类型")  # 如果页面 ID 不匹配，抛出错误
+      return()  # 不匹配任何已知分页时，直接退出
     )
     
     # 检索数据并插入到数据库
@@ -798,10 +798,17 @@ server <- function(input, output, session) {
         item_image_path <- ifelse(is.na(filtered_data$ItemImagePath[1]), placeholder_150px_path, filtered_data$ItemImagePath[1])
         item_description <- ifelse(is.na(filtered_data$ItemName[1]), "未知", filtered_data$ItemName[1])
         
+        # 获取用户输入的留言，保持空值为 NULL
+        raw_remark <- input$request_remark
+        formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NULL else {
+          remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"  # 根据系统类型添加前缀
+          paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", raw_remark)
+        }
+        
         dbExecute(con, 
-                  "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, RequestType) 
-         VALUES (?, ?, ?, ?, ?, ?, '待处理', ?)", 
-                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, input$request_quantity, request_type))
+                  "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
+         VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, ?)", 
+                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, input$request_quantity, formatted_remark, request_type))
         
         bind_buttons(request_id, requests_data(), input, output, session, con)
         
@@ -846,11 +853,18 @@ server <- function(input, output, session) {
     # 生成唯一 RequestID
     request_id <- uuid::UUIDgenerate()
     
+    # 获取用户输入的留言，保持空值为 NULL
+    raw_remark <- input$custom_remark
+    formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NULL else {
+      remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"  # 根据系统类型添加前缀
+      paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", raw_remark)
+    }
+    
     # 将数据插入到数据库
     dbExecute(con, 
-              "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus) 
-             VALUES (?, ?, '待定', ?, ?, ?, '待处理')", 
-              params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity))
+              "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
+             VALUES (?, ?, '待定', ?, ?, ?, '待处理', ?, '采购')", 
+              params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity, formatted_remark))
     
     bind_buttons(request_id, requests_data(), input, output, session, con) #绑定按钮逻辑
     
