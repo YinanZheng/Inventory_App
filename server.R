@@ -2540,7 +2540,7 @@ server <- function(input, output, session) {
                         item$ItemImagePath,
                         item$ItemName,
                         qty,
-                        ifelse(remark == "", NULL, new_remark)
+                        ifelse(remark == "", NA_character_, new_remark)
                       ))
             
             # 绑定按钮
