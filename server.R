@@ -800,7 +800,7 @@ server <- function(input, output, session) {
         
         # 获取用户输入的留言，保持空值为 NULL
         raw_remark <- input$request_remark
-        formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NULL else {
+        formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NA_character_ else {
           remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"  # 根据系统类型添加前缀
           paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", raw_remark)
         }
@@ -855,7 +855,7 @@ server <- function(input, output, session) {
     
     # 获取用户输入的留言，保持空值为 NULL
     raw_remark <- input$custom_remark
-    formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NULL else {
+    formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NA_character_ else {
       remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"  # 根据系统类型添加前缀
       paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", raw_remark)
     }
