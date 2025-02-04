@@ -197,6 +197,8 @@ ui <- navbarPage(
     "协作", icon = icon("users"),
     div(
       class = "layout-container",
+      
+      # 左侧侧边栏
       div(
         class = "sticky-sidebar",
         div(
@@ -226,27 +228,39 @@ ui <- navbarPage(
         )
       ),
       
-      div(
-        class = "resizable-divider",
-      ),
+      # 可调整的分割线
+      div(class = "resizable-divider"),
       
+      # 右侧主要面板
       div(
         class = "main-panel",
+        
+        # 采购流程 tabset
         tabsetPanel(
           id = "collaboration_tabs",
           type = "pills",
+          
+          # 采购流程链
           tabPanel(
-            title = "采购请求",
+            title = div(
+              "采购请求",
+              tags$span(class = "arrow-icon", icon("arrow-right"))
+            ), 
             uiOutput("purchase_request_board")
           ),
           tabPanel(
-            title = "已安排供应",
+            title = div(
+              "已安排供应",
+              tags$span(class = "arrow-icon", icon("arrow-right"))
+            ), 
             uiOutput("provider_arranged_board")
           ),
           tabPanel(
             title = "做好已付款",
             uiOutput("done_paid_board")
           ),
+          
+          # 出库请求
           tabPanel(
             title = "出库请求",
             uiOutput("outbound_request_board")
