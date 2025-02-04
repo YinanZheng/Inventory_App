@@ -39,6 +39,36 @@ sudo ufw status
 
 ### Make sure shiny has access to ubuntu's R library
 sudo nano /etc/shiny-server/shiny-server.conf
+
+# 指定 Shiny Server 运行用户（默认是 shiny，如果需要也可以改为 ubuntu 用户，但注意安全性）
+run_as shiny;
+
+server {
+  listen 3838;
+
+  # 配置 erp-cn 应用
+  location /erp-cn {
+    site_dir /srv/shiny-server/erp-cn;
+    log_dir /var/log/shiny-server;
+    directory_index on;
+  }
+
+  # 配置 erp-us 应用
+  location /erp-us {
+    site_dir /srv/shiny-server/erp-us;
+    log_dir /var/log/shiny-server;
+    directory_index on;
+  }
+
+  # 配置 erp-mobile 应用
+  location /erp-mobile {
+    site_dir /srv/shiny-server/erp-mobile;
+    log_dir /var/log/shiny-server;
+    directory_index on;
+  }
+}
+
+
 sudo systemctl restart shiny-server
 sudo systemctl status shiny-server
 
