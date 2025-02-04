@@ -117,6 +117,11 @@ ui <- navbarPage(
         align-items: center;       /* 垂直居中对齐 */
         gap: 5px;                  /* 间距调整 */
       }
+      
+      /* 采购流程链条箭头 */
+      .arrow-icon {
+        margin-left: 8px;
+      }
     ")),
       
       tags$script(HTML("
