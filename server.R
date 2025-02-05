@@ -3971,6 +3971,27 @@ server <- function(input, output, session) {
     general = NULL
   )
   
+  # 定义转账种类说明映射
+  category_notes <- list(
+    "采购" = "记录购买商品的支出。",
+    "税费" = "包括会计费，公司税务等法定税款。",
+    "杂费" = "各种运营支出，例如包装材料费、网费等。",
+    "工资" = "员工薪资、劳务费等支付。",
+    "债务" = "用于偿还公司借款等。",
+    "社保" = "社保、公积金等支付。",
+    "其他" = "其他无法归类的交易。"
+  )
+  
+  # 账务登记的种类说明
+  output$transaction_category_note <- renderText({
+    category_notes[[input$transaction_category]] %||% ""
+  })
+  
+  # 资金转移的种类说明
+  output$transfer_category_note <- renderText({
+    category_notes[[input$transfer_category]] %||% ""
+  })
+  
   # 分页切换更新
   observe({
     if (input$transaction_tabs == "账户余额总览") {

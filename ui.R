@@ -1195,7 +1195,9 @@ ui <- navbarPage(
                 choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
                 selected = "其他",
                 width = "100%"
-              ))
+              ),
+              textOutput("transaction_category_note")  # 动态显示种类说明
+              )
             ),
             
             # 转账证据图片上传
@@ -1256,7 +1258,9 @@ ui <- navbarPage(
                 choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
                 selected = "其他",
                 width = "100%"
-              ))
+              ),
+              textOutput("transfer_category_note")  # 动态显示种类说明
+              )
             ),
             
             # 转账证据图片上传
