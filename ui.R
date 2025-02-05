@@ -1,6 +1,6 @@
 # Define UI
 ui <- navbarPage(
-  title = "库存管理系统（国内端）",
+  title = "ERP系统（国内端）",
   id = "inventory_cn",  # 设置 ID，用于监听当前选中的主页面
   theme = shinytheme("flatly"), # 可选主题
   position = "fixed-top",
