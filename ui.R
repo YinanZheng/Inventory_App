@@ -1197,17 +1197,15 @@ ui <- navbarPage(
                 width = "100%"
               ),
               div(
-                style = "margin-top: 8px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #555;",
+                style = "margin-top: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #555;",
                 textOutput("transaction_category_note", inline = TRUE)
               ))
             ),
             
-            tags$hr(),
-            
+            textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
+
             # 转账证据图片上传
             imageModuleUI("image_transactions", label = "转账证据上传", label_color = "#007BFF"),
-            
-            textAreaInput("remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
             
             # 提交按钮
             actionButton("record_transaction", "登记", icon = icon("save"), 
@@ -1264,19 +1262,17 @@ ui <- navbarPage(
                 width = "100%"
               ),
               div(
-                style = "margin-top: 8px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #555;",
+                style = "margin-top: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #555;",
                 textOutput("transfer_category_note", inline = TRUE)
               ))
             ),
             
-            tags$hr(),
-            
-            # 转账证据图片上传
-            imageModuleUI("image_transfer", label = "转账证据上传", label_color = "#28A745"),
-            
             # 备注输入框
             textAreaInput("transfer_remarks", "备注:", placeholder = "请输入备注内容", width = "100%"),
             
+            # 转账证据图片上传
+            imageModuleUI("image_transfer", label = "转账证据上传", label_color = "#28A745"),
+  
             # 转移登记按钮
             actionButton("record_transfer", "记录转移", icon = icon("exchange-alt"), 
                          class = "btn-success", style = "width: 100%; margin-bottom: 10px;"),
