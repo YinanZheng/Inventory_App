@@ -29,8 +29,8 @@ ui <- navbarPage(
         border-radius: 10px;
       }
       
-      /* 强制显示滚动条，小于1380px时 */
-      @media (max-width: 1380px) {
+      /* 强制显示滚动条，小于1400px时 */
+      @media (max-width: 1400px) {
         .navbar-nav {
           overflow-x: scroll !important;
         }
