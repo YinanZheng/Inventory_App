@@ -1187,6 +1187,17 @@ ui <- navbarPage(
               column(12, timeInput("custom_time", "转款时间:", value = format(Sys.time(), "%H:%M:%S"), width = "100%"))
             ),
             
+            # 转账种类下拉菜单
+            fluidRow(
+              column(12, selectInput(
+                inputId = "transaction_category",
+                label = "转账种类:",
+                choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
+                selected = "其他",
+                width = "100%"
+              ))
+            ),
+            
             # 转账证据图片上传
             imageModuleUI("image_transactions", label = "转账证据上传", label_color = "#007BFF"),
             
@@ -1235,6 +1246,17 @@ ui <- navbarPage(
               choices = c("工资卡", "美元卡", "买货卡", "一般户卡"),
               selected = NULL,
               width = "100%"
+            ),
+            
+            # 转账种类下拉菜单
+            fluidRow(
+              column(12, selectInput(
+                inputId = "transfer_category",
+                label = "转账种类:",
+                choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
+                selected = "其他",
+                width = "100%"
+              ))
             ),
             
             # 转账证据图片上传

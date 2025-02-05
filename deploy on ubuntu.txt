@@ -132,7 +132,6 @@ Rscript -e "shiny::runApp('/srv/shiny-server/inventory')"
 
 ### Log
 /var/log/shiny-server
-
 sudo rm /var/log/shiny-server/*.log
 
 
