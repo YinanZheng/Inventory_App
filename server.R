@@ -1404,7 +1404,7 @@ server <- function(input, output, session) {
       )
       
       if (!is.null(item_name) && item_name != "") {
-        if (input$speak_item_name) {  # 只有勾选“念出商品名”才朗读
+        if (input$speak_inbound_item_name) {  # 只有勾选“念出商品名”才朗读
           js_code <- sprintf('
             var msg = new SpeechSynthesisUtterance("%s");
             msg.lang = "zh-CN";
@@ -1631,7 +1631,7 @@ server <- function(input, output, session) {
     )
 
     if (!is.null(item_name) && item_name != "") {
-      if (input$speak_item_name) {  # 只有勾选“念出商品名”才朗读
+      if (input$speak_outbound_item_name) {  # 只有勾选“念出商品名”才朗读
         js_code <- sprintf('
             var msg = new SpeechSynthesisUtterance("%s");
             msg.lang = "zh-CN";
@@ -1736,16 +1736,6 @@ server <- function(input, output, session) {
     id = "sold_filter",
     makers_items_map = makers_items_map
   )
-  
-  # 监听增加运单号按钮点击
-  observeEvent(input$add_tracking_btn, {
-    rows <- tracking_rows()
-    if (rows < 3) {  # 最多允许添加2个运单号
-      tracking_rows(rows + 1)
-    } else {
-      showNotification("最多只能添加 2 个运单号！", type = "warning")
-    }
-  })
   
   # 响应点击物品表的行，更新货架上的物品
   observe({
@@ -2164,7 +2154,7 @@ server <- function(input, output, session) {
       selected_item <- shelf_data[selected_row, ]  # 获取选中的物品
       sku <- selected_item$SKU  # 获取SKU
       status <- selected_item$Status  # 获取库存状态
-      
+
       # 查询当前 SKU 的美国入库库存数量
       us_stock_count <- sum(shelf_data$SKU == sku & shelf_data$Status == "美国入库")
       
@@ -2305,14 +2295,14 @@ server <- function(input, output, session) {
           title = "注意",
           p("此商品在美国库存仅剩一件，请沟通核实后再进行调货"),
           footer = tagList(
-            actionButton("verify_and_proceed", "已核实, 继续调货", class = "btn-primary"),
+            actionButton("verify_and_proceed_auto", "已核实, 继续调货", class = "btn-primary"),
             modalButton("取消")
           ),
           easyClose = FALSE
         ))
         
         # 监听 "已核实" 按钮事件，确认操作
-        observeEvent(input$verify_and_proceed, {
+        observeEvent(input$verify_and_proceed_auto, {
           removeModal()  # 关闭模态框
           process_box_addition(scanned_sku, all_shelf_items)  # 继续处理移入箱子操作
         })

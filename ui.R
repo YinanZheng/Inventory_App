@@ -418,7 +418,7 @@ ui <- navbarPage(
                 ),
                 conditionalPanel(
                   condition = "input.auto_inbound == true",  # 只有 auto_inbound 被选中时才显示
-                  checkboxInput("speak_item_name", "念出商品名", value = FALSE)
+                  checkboxInput("speak_inbound_item_name", "念出商品名", value = FALSE)
                 ),
               ),
               
@@ -532,6 +532,10 @@ ui <- navbarPage(
             "auto_outbound",  # 勾选框的 inputId
             label = "自动出库", 
             value = FALSE  # 默认不勾选
+          ),
+          conditionalPanel(
+            condition = "input.auto_outbound == true",  # 只有 auto_outbound 被选中时才显示
+            checkboxInput("speak_outbound_item_name", "念出商品名", value = FALSE)
           ),
           
           tags$div(
