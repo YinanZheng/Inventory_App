@@ -57,7 +57,7 @@ common_columns <<- list(
 # 通用账务表列名映射
 transaction_common_columns <<- list(
   TransactionTime = "转账时间",
-  TransactionType = "类别",
+  TransactionType = "转账类别",
   AmountIn = "转入金额",
   AmountOut = "转出金额",
   Balance = "当前余额",
