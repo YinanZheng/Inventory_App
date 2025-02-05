@@ -1389,7 +1389,7 @@ server <- function(input, output, session) {
     # 如果启用自动入库功能，直接执行入库逻辑
     if (input$auto_inbound) {
       req(input$inbound_sku)
-      unique_ID <- handleOperation(
+      item_name <- handleOperation(
         unique_items_data(),
         operation_name = "入库", 
         sku_field = "inbound_sku",
@@ -1403,15 +1403,21 @@ server <- function(input, output, session) {
         input, output, session
       )
       
-      # 检查是否成功处理
-      if (!is.null(unique_ID) && unique_ID != "") {
-        # 更新库存数据
-        adjust_inventory_quantity(con, input$inbound_sku, adjustment = 1) #采购入库后 库存+1
-        
-        # 显示成功通知
-        showNotification(paste0("SKU ", input$inbound_sku, " 的一个物品已自动入库！"), type = "message")
+      if (!is.null(item_name) && item_name != "") {
+        if (input$speak_item_name) {  # 只有勾选“念出商品名”才朗读
+          js_code <- sprintf('
+            var msg = new SpeechSynthesisUtterance("%s");
+            msg.lang = "zh-CN";
+            window.speechSynthesis.speak(msg);
+          ', item_name, nchar(item_name))
+          
+          shinyjs::runjs(js_code)  # 运行 JavaScript 语音朗读
+        } else {
+          runjs("playSuccessSound()")  # 播放成功音效
+        }
       } else {
-        showNotification("自动入库失败，可能物品已全部入库或数据异常！", type = "error")
+        runjs("playErrorSound()")  # 播放失败音效
+        return()
       }
       
       # 清空 SKU 输入框

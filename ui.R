@@ -194,6 +194,18 @@ ui <- navbarPage(
           $('.dataTable').DataTable().columns.adjust();
         });
       });
+      
+      // 成功音效
+      function playSuccessSound() {
+        var audio = new Audio('https://www.goldenbeanllc.com/sounds/success-8bit.mp3');
+        audio.play();
+      }
+      
+      // 错误音效
+      function playErrorSound() {
+        var audio = new Audio('https://www.goldenbeanllc.com/sounds/error-8bit.mp3');
+        audio.play();
+      }
     "))
     )
   ),
@@ -403,6 +415,10 @@ ui <- navbarPage(
                   "auto_inbound",  # 勾选框的 inputId
                   label = "自动入库（瑕疵信息不会采用）", 
                   value = FALSE  # 默认不勾选
+                ),
+                conditionalPanel(
+                  condition = "input.auto_inbound == true",  # 只有 auto_inbound 被选中时才显示
+                  checkboxInput("speak_item_name", "念出商品名", value = FALSE)
                 ),
               ),
               
