@@ -123,16 +123,12 @@ cd /srv/shiny-server/erp-cn
 git pull origin main
 
 ### Restart shiny server
+sudo rm /var/log/shiny-server/*.log
 sudo systemctl restart shiny-server
 
 
 ###
 Rscript -e "shiny::runApp('/srv/shiny-server/inventory')"
-
-
-### Log
-/var/log/shiny-server
-sudo rm /var/log/shiny-server/*.log
 
 
 ## Move js files to /var/www/
