@@ -136,6 +136,15 @@ Rscript -e "shiny::runApp('/srv/shiny-server/inventory')"
 sudo rm /var/log/shiny-server/*.log
 
 
+## Move js files to /var/www/
+sudo mkdir -p /var/www/js/
+sudo cp /srv/shiny-server/erp-mobile/www/quagga.min.js /var/www/js/
+sudo cp /srv/shiny-server/erp-mobile/www/scan.js /var/www/js/
+sudo cp /srv/shiny-server/erp-mobile/www/service-worker.js /var/www/js/
+sudo chown -R www-data:www-data /var/www/js/
+sudo chmod -R 755 /var/www/js/
+
+
 
 ## Log in to MySQL:
 sudo mysql -u root -p
