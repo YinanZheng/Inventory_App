@@ -5003,10 +5003,11 @@ server <- function(input, output, session) {
             transaction_id <- generate_transaction_id("买货卡", TotalCost, remarks_cost, PurchaseTime)
             dbExecute(
               con,
-              "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+              "INSERT INTO transactions (TransactionID, AccountType, TransactionType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?, ?)",
               params = list(
                 transaction_id,
                 "买货卡",
+                "采购",
                 -TotalCost,
                 remarks_cost,
                 PurchaseTime
