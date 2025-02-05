@@ -1191,7 +1191,7 @@ ui <- navbarPage(
             fluidRow(
               column(12, selectInput(
                 inputId = "transaction_category",
-                label = "转账种类:",
+                label = "转账类别:",
                 choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
                 selected = "其他",
                 width = "100%"
@@ -1256,7 +1256,7 @@ ui <- navbarPage(
             fluidRow(
               column(12, selectInput(
                 inputId = "transfer_category",
-                label = "转账种类:",
+                label = "转账类别:",
                 choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
                 selected = "其他",
                 width = "100%"
