@@ -4067,10 +4067,11 @@ server <- function(input, output, session) {
         transaction_id <- generate_transaction_id(account_type, input$amount, input$remarks, transaction_datetime)
         dbExecute(
           con,
-          "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionImagePath, TransactionTime) VALUES (?, ?, ?, ?, ?, ?)",
+          "INSERT INTO transactions (TransactionID, AccountType, TransactionType, Amount, Remarks, TransactionImagePath, TransactionTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
           params = list(
             transaction_id,
             account_type,
+            input$transaction_category,
             ifelse(input$transaction_type == "in", input$amount, -input$amount),
             input$remarks,
             process_image_upload(
@@ -4106,7 +4107,7 @@ server <- function(input, output, session) {
     }
   })
   
-  # 登记资金转账记录
+  # 登记资金转移记录
   observeEvent(input$record_transfer, {
     req(!is.null(input$transfer_amount), input$transfer_amount > 0)
     req(!is.null(input$from_account), !is.null(input$to_account))
@@ -4150,17 +4151,17 @@ server <- function(input, output, session) {
       # 插入转出记录
       dbExecute(
         con,
-        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionImagePath, TransactionTime) 
-       VALUES (?, ?, ?, ?, ?, ?)",
-        params = list(transaction_id_from, input$from_account, -input$transfer_amount, transfer_remarks_from, transfer_image_path, Sys.time())
+        "INSERT INTO transactions (TransactionID, AccountType, TransactionType, Amount, Remarks, TransactionImagePath, TransactionTime) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)",
+        params = list(transaction_id_from, input$from_account, input$transfer_category, -input$transfer_amount, transfer_remarks_from, transfer_image_path, Sys.time())
       )
       
       # 插入转入记录
       dbExecute(
         con,
-        "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionImagePath, TransactionTime) 
-       VALUES (?, ?, ?, ?, ?, ?)",
-        params = list(transaction_id_to, input$to_account, input$transfer_amount, transfer_remarks_to, transfer_image_path, Sys.time())
+        "INSERT INTO transactions (TransactionID, AccountType, TransactionType, Amount, Remarks, TransactionImagePath, TransactionTime) 
+       VALUES (?, ?, ?, ?, ?, ?, ?)",
+        params = list(transaction_id_to, input$to_account, input$transfer_category, input$transfer_amount, transfer_remarks_to, transfer_image_path, Sys.time())
       )
       
       showNotification("资金转移记录成功！", type = "message")
