@@ -4037,13 +4037,14 @@ server <- function(input, output, session) {
         dbExecute(
           con,
           "UPDATE transactions 
-         SET Amount = ?, Remarks = ?, TransactionTime = ?, TransactionImagePath = ?
+         SET Amount = ?, Remarks = ?, TransactionTime = ?, TransactionImagePath = ?, TransactionType = ?,
          WHERE TransactionID = ?",
           params = list(
             ifelse(input$transaction_type == "in", input$amount, -input$amount),
             input$remarks,
             transaction_datetime,
             image_path,
+            input$transaction_category,
             transaction_id
           )
         )
