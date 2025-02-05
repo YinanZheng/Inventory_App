@@ -1202,6 +1202,8 @@ ui <- navbarPage(
               ))
             ),
             
+            tags$hr(),
+            
             # 转账证据图片上传
             imageModuleUI("image_transactions", label = "转账证据上传", label_color = "#007BFF"),
             
@@ -1266,6 +1268,8 @@ ui <- navbarPage(
                 textOutput("transfer_category_note", inline = TRUE)
               ))
             ),
+            
+            tags$hr(),
             
             # 转账证据图片上传
             imageModuleUI("image_transfer", label = "转账证据上传", label_color = "#28A745"),
