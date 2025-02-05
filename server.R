@@ -1616,7 +1616,7 @@ server <- function(input, output, session) {
     req(input$outbound_sku)   # 确保 SKU 输入框不为空
     
     # 调用出库处理逻辑
-    handleOperation(
+    item_name <- handleOperation(
       unique_items_data(),
       operation_name = "出库", 
       sku_field = "outbound_sku",
@@ -1630,6 +1630,23 @@ server <- function(input, output, session) {
       input, output, session
     )
 
+    if (!is.null(item_name) && item_name != "") {
+      if (input$speak_item_name) {  # 只有勾选“念出商品名”才朗读
+        js_code <- sprintf('
+            var msg = new SpeechSynthesisUtterance("%s");
+            msg.lang = "zh-CN";
+            window.speechSynthesis.speak(msg);
+          ', item_name, nchar(item_name))
+        
+        shinyjs::runjs(js_code)  # 运行 JavaScript 语音朗读
+      } else {
+        runjs("playSuccessSound()")  # 播放成功音效
+      }
+    } else {
+      runjs("playErrorSound()")  # 播放失败音效
+      return()
+    }
+    
     # 清空 SKU 输入框
     updateTextInput(session, "outbound_sku", value = "")
     runjs("document.getElementById('outbound_sku').focus();")
