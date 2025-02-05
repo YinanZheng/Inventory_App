@@ -1196,8 +1196,10 @@ ui <- navbarPage(
                 selected = "其他",
                 width = "100%"
               ),
-              textOutput("transaction_category_note")  # 动态显示种类说明
-              )
+              div(
+                style = "margin-top: 8px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #555;",
+                textOutput("transaction_category_note", inline = TRUE)
+              ))
             ),
             
             # 转账证据图片上传
@@ -1259,8 +1261,10 @@ ui <- navbarPage(
                 selected = "其他",
                 width = "100%"
               ),
-              textOutput("transfer_category_note")  # 动态显示种类说明
-              )
+              div(
+                style = "margin-top: 8px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd; border-radius: 4px; font-size: 14px; color: #555;",
+                textOutput("transfer_category_note", inline = TRUE)
+              ))
             ),
             
             # 转账证据图片上传
