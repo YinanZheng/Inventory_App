@@ -2317,7 +2317,6 @@ server <- function(input, output, session) {
         observeEvent(input$verify_and_proceed_auto, {
           removeModal()  # 关闭模态框
           process_box_addition(scanned_sku, all_shelf_items)  # 继续处理移入箱子操作
-          runjs("playSuccessSound()")
         })
         
         # 清空输入框
@@ -2327,7 +2326,6 @@ server <- function(input, output, session) {
       
       # 如果不需要弹窗，直接处理入箱
       process_box_addition(scanned_sku, all_shelf_items)
-      runjs("playSuccessSound()")
     }, error = function(e) {
       # 捕获错误并通知用户
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
@@ -2361,6 +2359,7 @@ server <- function(input, output, session) {
     # 更新货架上的物品
     updated_shelf <- all_shelf_items[!all_shelf_items$UniqueID %in% box_items()$UniqueID, ]
     shelf_items(updated_shelf)
+    runjs("playSuccessSound()")
   }
   
   zero_stock_items <- reactiveVal(list())  # 用于存储国内库存为零的物品
