@@ -2514,17 +2514,16 @@ server <- function(input, output, session) {
             )
           )
         )
+        showModal(modalDialog(
+          title = "处理库存请求",
+          div(style = "max-height: 650px; overflow-y: auto;", modal_content),
+          easyClose = FALSE,
+          footer = tagList(
+            actionButton("complete_requests", "关闭", class = "btn-success")
+          )
+        ))
       }
-      
-      showModal(modalDialog(
-        title = "处理库存请求",
-        div(style = "max-height: 650px; overflow-y: auto;", modal_content),
-        easyClose = FALSE,
-        footer = tagList(
-          actionButton("complete_requests", "关闭", class = "btn-success")
-        )
-      ))
-      
+
       # 清空箱子
       box_items(create_empty_shelf_box())
       
