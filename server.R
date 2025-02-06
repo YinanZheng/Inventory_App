@@ -1500,16 +1500,16 @@ server <- function(input, output, session) {
   })
   
   
-  # 监听选中行并更新 SKU
-  observeEvent(unique_items_table_inbound_selected_row(), {
-    selected_row <- unique_items_table_inbound_selected_row()
-    if (length(selected_row) > 0) {
-      # 仅处理最后一个选择的行
-      last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
-      selected_sku <- filtered_unique_items_data_inbound()[last_selected, "SKU", drop = TRUE]
-      updateTextInput(session, "inbound_sku", value = selected_sku)
-    }
-  })
+  # # 监听选中行并更新 SKU: 禁用
+  # observeEvent(unique_items_table_inbound_selected_row(), {
+  #   selected_row <- unique_items_table_inbound_selected_row()
+  #   if (length(selected_row) > 0) {
+  #     # 仅处理最后一个选择的行
+  #     last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
+  #     selected_sku <- filtered_unique_items_data_inbound()[last_selected, "SKU", drop = TRUE]
+  #     updateTextInput(session, "inbound_sku", value = selected_sku)
+  #   }
+  # })
   
   # 控制备注输入框显示/隐藏
   observeEvent(input$defective_item, {
