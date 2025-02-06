@@ -2404,8 +2404,6 @@ server <- function(input, output, session) {
       if (!order_registered) {
         runjs("playErrorSound()")
         return()
-      } else {
-        runjs("playSuccessSound()")
       }
       
       orders_refresh_trigger(!orders_refresh_trigger())
