@@ -1214,7 +1214,7 @@ ui <- navbarPage(
               column(12, selectInput(
                 inputId = "transaction_category",
                 label = "转账类别:",
-                choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "其他"),
+                choices = c("采购", "税费", "杂费", "工资", "债务", "社保", "图解", "其他"),
                 selected = "其他",
                 width = "100%"
               ),
