@@ -1753,7 +1753,6 @@ server <- function(input, output, session) {
       
       if (is.null(selected_sku) || selected_sku == "") {
         showNotification("未找到有效的 SKU！", type = "error")
-        runjs("playErrorSound()")
         return()
       }
       
@@ -1762,7 +1761,6 @@ server <- function(input, output, session) {
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
-        runjs("playErrorSound()") 
         return()
       }
       
@@ -1786,8 +1784,7 @@ server <- function(input, output, session) {
       
       shelf_items(updated_shelf_items)
       showNotification(paste("已加载 SKU:", selected_sku, "的货架物品！"), type = "message")
-      runjs("playSuccessSound()") 
-      
+
     }, error = function(e) {
       showNotification(paste("加载货架时发生错误：", e$message), type = "error")
       runjs("playErrorSound()")  
