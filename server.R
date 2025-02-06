@@ -1753,6 +1753,7 @@ server <- function(input, output, session) {
       
       if (is.null(selected_sku) || selected_sku == "") {
         showNotification("未找到有效的 SKU！", type = "error")
+        runjs("playErrorSound()")
         return()
       }
       
@@ -1761,6 +1762,7 @@ server <- function(input, output, session) {
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
+        runjs("playErrorSound()") 
         return()
       }
       
@@ -1784,8 +1786,11 @@ server <- function(input, output, session) {
       
       shelf_items(updated_shelf_items)
       showNotification(paste("已加载 SKU:", selected_sku, "的货架物品！"), type = "message")
+      runjs("playSuccessSound()") 
+      
     }, error = function(e) {
       showNotification(paste("加载货架时发生错误：", e$message), type = "error")
+      runjs("playErrorSound()")  
     })
   })
   
@@ -2049,11 +2054,13 @@ server <- function(input, output, session) {
   observeEvent(input$register_order_btn, {
     if (is.null(input$order_id) || input$order_id == "") {
       showNotification("订单号不能为空！", type = "error")
+      runjs("playErrorSound()")
       return()
     }
     
     if (is.null(input$platform) || input$platform == "") {
       showNotification("电商平台不能为空，请选择一个平台！", type = "error")
+      runjs("playErrorSound()")
       return()
     }
     
@@ -2080,7 +2087,10 @@ server <- function(input, output, session) {
     
     # 如果订单登记失败，直接退出
     if (!order_registered) {
+      runjs("playErrorSound()")
       return()
+    } else {
+      runjs("playSuccessSound()")
     }
     
     orders_refresh_trigger(!orders_refresh_trigger())
@@ -2171,6 +2181,7 @@ server <- function(input, output, session) {
       } else {
         # 直接执行入箱操作
         updateBox(selected_item, selected_row, shelf_data)
+        runjs("playSuccessSound()")
       }
     }
   })
@@ -2185,6 +2196,7 @@ server <- function(input, output, session) {
       
       # 执行入箱操作
       updateBox(selected_item, selected_row, shelf_data)
+      runjs("playSuccessSound()")
     }
   })
   
@@ -2196,8 +2208,6 @@ server <- function(input, output, session) {
     # 更新货架上的物品，移除已选的
     updated_shelf <- shelf_data[-selected_row, ]
     shelf_items(updated_shelf)
-    
-    showNotification("物品已移入箱子！", type = "message")
   }
   
   
@@ -2218,6 +2228,7 @@ server <- function(input, output, session) {
       box_items(updated_box)
       
       showNotification("物品已还回货架！", type = "message")
+      runjs("playSuccessSound()")
     }
   })
   
@@ -2231,6 +2242,7 @@ server <- function(input, output, session) {
       
       if (is.null(scanned_sku) || scanned_sku == "") {
         showNotification("请输入有效的 SKU！", type = "error")
+        runjs("playErrorSound()")
         return()
       }
       
@@ -2240,6 +2252,7 @@ server <- function(input, output, session) {
       # 如果货架中没有符合条件的物品，提示错误
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
+        runjs("playErrorSound()")
         updateTextInput(session, "sku_to_shelf", value = "")  # 清空输入框
         return()
       }
@@ -2253,15 +2266,15 @@ server <- function(input, output, session) {
       
       # 通知用户
       showNotification(paste("物品已上货架！SKU:", scanned_sku), type = "message")
-      
+      runjs("playSuccessSound()")
     }, error = function(e) {
       # 捕获错误并通知用户
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
+      runjs("playErrorSound()")
     })
     
     # 清空输入框
     updateTextInput(session, "sku_to_shelf", value = "")
-    
   })
   
   # 扫码入箱功能
@@ -2274,6 +2287,7 @@ server <- function(input, output, session) {
       
       if (is.null(scanned_sku) || scanned_sku == "") {
         showNotification("请输入有效的 SKU！", type = "error")
+        runjs("playErrorSound()")
         return()
       }
       
@@ -2282,6 +2296,7 @@ server <- function(input, output, session) {
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
+        runjs("playErrorSound()")
         updateTextInput(session, "sku_to_box", value = "")  # 清空输入框
         return()
       }
@@ -2305,6 +2320,7 @@ server <- function(input, output, session) {
         observeEvent(input$verify_and_proceed_auto, {
           removeModal()  # 关闭模态框
           process_box_addition(scanned_sku, all_shelf_items)  # 继续处理移入箱子操作
+          runjs("playSuccessSound()")
         })
         
         # 清空输入框
@@ -2314,10 +2330,11 @@ server <- function(input, output, session) {
       
       # 如果不需要弹窗，直接处理入箱
       process_box_addition(scanned_sku, all_shelf_items)
-      
+      runjs("playSuccessSound()")
     }, error = function(e) {
       # 捕获错误并通知用户
       showNotification(paste("处理 SKU 时发生错误：", e$message), type = "error")
+      runjs("playErrorSound()")
     })
     
     # 清空输入框
@@ -2333,6 +2350,7 @@ server <- function(input, output, session) {
     # 如果箱子中物品数量 >= 货架中物品总量，则阻止操作
     if (box_sku_count >= nrow(all_shelf_items)) {
       showNotification("该 SKU 的所有物品已移入箱子，无法继续添加！", type = "error")
+      runjs("playErrorSound()")
       return()
     }
     
@@ -2346,9 +2364,6 @@ server <- function(input, output, session) {
     # 更新货架上的物品
     updated_shelf <- all_shelf_items[!all_shelf_items$UniqueID %in% box_items()$UniqueID, ]
     shelf_items(updated_shelf)
-    
-    # 通知用户
-    showNotification(paste("物品已移入箱子！SKU:", scanned_sku), type = "message")
   }
   
   zero_stock_items <- reactiveVal(list())  # 用于存储国内库存为零的物品
@@ -2361,11 +2376,13 @@ server <- function(input, output, session) {
       
       if (nrow(box_items()) == 0) {
         showNotification("箱子内容不能为空！", type = "error")
+        runjs("playErrorSound()")
         return()
       }
       
       if (is.null(input$platform) || input$platform == "") {
         showNotification("电商平台不能为空，请选择一个平台！", type = "error")
+        runjs("playErrorSound()")
         return()
       }
       
@@ -2392,7 +2409,10 @@ server <- function(input, output, session) {
       
       # 如果订单登记失败，直接退出
       if (!order_registered) {
+        runjs("playErrorSound()")
         return()
+      } else {
+        runjs("playSuccessSound()")
       }
       
       orders_refresh_trigger(!orders_refresh_trigger())
@@ -2411,10 +2431,6 @@ server <- function(input, output, session) {
           current_status %in% c("美国入库", "国内出库"), "美国调货",
           ifelse(current_status == "国内入库", "国内售出", NA)
         )
-        
-        if (is.na(new_status)) {
-          showNotification(paste("无法确定 SKU", sku, "的目标状态，操作已终止！"), type = "error")
-        }
         
         # 更新 unique_items 表中的状态
         update_status(
@@ -2520,8 +2536,10 @@ server <- function(input, output, session) {
       reset_order_form(session, image_sold)
       
       showNotification("订单已完成售出并更新状态！", type = "message")
+      runjs("playSuccessSound()")
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
+      runjs("playErrorSound()")
     })
   })
   
