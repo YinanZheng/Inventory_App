@@ -2226,9 +2226,6 @@ server <- function(input, output, session) {
       # 更新箱子内的物品，移除已选的
       updated_box <- box_data[-selected_row, ]
       box_items(updated_box)
-      
-      showNotification("物品已还回货架！", type = "message")
-      runjs("playSuccessSound()")
     }
   })
   
