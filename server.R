@@ -2826,6 +2826,10 @@ server <- function(input, output, session) {
       updateTextInput(session, "filter_sku", value = "")
       updateTextInput(session, "sold-item_name", value = "")
       
+      # 清空关联物品表
+      output$associated_items_title <- renderDT({ NULL }) # 清空标题
+      renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
+      
       # 显示成功通知
       showNotification("筛选条件已清空！", type = "message")
     }, error = function(e) {
@@ -2924,7 +2928,8 @@ server <- function(input, output, session) {
       reset_order_form(session, image_sold)
       
       # 清空关联物品表
-      output$associated_items_table <- renderDT({ NULL })
+      output$associated_items_title <- renderDT({ NULL }) # 清空标题
+      renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
     }, error = function(e) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")
     })
