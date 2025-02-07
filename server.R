@@ -2849,7 +2849,7 @@ server <- function(input, output, session) {
       order_image_path <- generate_montage(order_items_image_paths, final_image_path)
 
       # 更新数据库中的 `OrderImagePath`
-      dbExecute(db_connection, "UPDATE orders SET OrderImagePath = ? WHERE OrderID = ?", params = list(order_image_path, order_id))
+      dbExecute(con, "UPDATE orders SET OrderImagePath = ? WHERE OrderID = ?", params = list(order_image_path, order_id))
 
       # 触发订单数据刷新
       orders_refresh_trigger(!orders_refresh_trigger())
