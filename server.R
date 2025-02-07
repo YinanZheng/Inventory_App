@@ -2732,7 +2732,10 @@ server <- function(input, output, session) {
   ############################ 
   
   # 订单关联物品容器
-  associated_items <- reactiveVal()
+  associated_items <- reactiveVal(NULL)
+  
+  # 用于存储当前选中的订单ID
+  selected_order_id <- reactiveVal(NULL)  
   
   # 商品名自动联想
   autocompleteInputServer("sold", get_suggestions = item_names)  # 返回商品名列表
@@ -2747,6 +2750,9 @@ server <- function(input, output, session) {
     customer_name <- selected_order$CustomerName
     order_status <- selected_order$OrderStatus
     us_tracking_number <- selected_order$UsTrackingNumber
+    
+    # 存储当前选中的订单ID
+    selected_order_id(order_id)
     
     label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(us_tracking_number, ".pdf")))
  
@@ -2766,10 +2772,15 @@ server <- function(input, output, session) {
             sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
             style = "color: #007BFF; font-weight: bold; margin: 0;"
           ),
-          if(selected_order$LabelStatus != "无") {
-            downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                           style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
-          }
+          div(
+            style = "display: flex; gap: 10px;",
+            actionButton("regen_order_image", label = "重新生成订单图", class = "btn btn-warning", 
+                         style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
+            if (selected_order$LabelStatus != "无") {
+              downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
+                             style = "height: 34px; font-size: 14px; padding: 5px 10px;")
+            }
+          )
         ))
       }
       
@@ -2800,24 +2811,55 @@ server <- function(input, output, session) {
         ),
         
         # 右侧按钮（仅在订单状态为“预定”时显示）
-        if (order_status == "预定") {
-          actionButton(
-            inputId = "complete_preorder",
-            label = "已完成预定",
-            class = "btn-success",
-            style = "margin-left: auto; font-size: 14px; padding: 5px 10px;"
-          )
-        },
-        
-        if(selected_order$LabelStatus != "无") {
-          downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                         style = "height: 34px; margin-left: 10px; font-size: 14px; padding: 5px 10px;")
-        }
+        div(
+          style = "display: flex; gap: 10px;",
+          actionButton("regen_order_image", label = "重新生成订单图", class = "btn btn-warning", 
+                       style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
+          if (order_status == "预定") {
+            actionButton("complete_preorder", label = "已完成预定", class = "btn-success", 
+                         style = "font-size: 14px; padding: 5px 10px;")
+          },
+          if (selected_order$LabelStatus != "无") {
+            downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
+                           style = "height: 34px; font-size: 14px; padding: 5px 10px;")
+          }
+        )
       )
     })
     
     # 更新关联物品数据
     associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
+  })
+  
+  observeEvent(input$regen_order_image, {
+    req(selected_order_id())  # 确保有选中的订单ID
+    order_id <- selected_order_id()
+    
+    # 获取订单内关联物品的图片路径
+    order_items <- unique_items_data() %>% filter(OrderID == order_id)
+    order_items_image_paths <- if (nrow(order_items) > 0) {
+      order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
+    } else {
+      character(0)  # 如果为空，返回空字符向量
+    }
+
+    if (length(order_items_image_paths) > 0) {
+      # 生成订单拼图
+      order_image_path <- generate_montage(order_items_image_paths)
+
+      # 拼接完整路径
+      final_image_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+
+      # 更新数据库中的 `OrderImagePath`
+      dbExecute(db_connection, "UPDATE orders SET OrderImagePath = ? WHERE OrderID = ?", params = list(final_image_path, order_id))
+
+      # 触发订单数据刷新
+      orders_refresh_trigger(!orders_refresh_trigger())
+
+      showNotification("订单拼图生成成功！", type = "success")
+    } else {
+      showNotification("当前订单没有可用的商品图片！", type = "warning")
+    }
   })
   
   # 定义运单下载处理器
