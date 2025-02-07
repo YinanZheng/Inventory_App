@@ -1513,10 +1513,13 @@ server <- function(input, output, session) {
   
   # 监听选中行并显示大图与物品信息
   observeEvent(unique_items_table_inbound_selected_row(), {
-    if (!is.null(unique_items_table_inbound_selected_row()) && length(unique_items_table_inbound_selected_row()) > 0) {
-      selected_sku <- filtered_unique_items_data_inbound()[unique_items_table_inbound_selected_row(), "SKU", drop = TRUE]
+    selected_row <- unique_items_table_inbound_selected_row()
+    if (length(selected_row) > 0) {
+      # 仅处理最后一个选择的行
+      last_selected <- tail(selected_row, 1) # 获取最后一个选择的行号
+      selected_sku <- filtered_unique_items_data_inbound()[last_selected, "SKU", drop = TRUE]
       handleSkuInput(
-        sku_input = input$inbound_sku,
+        sku_input = selected_sku,
         output_name = "inbound_item_info",
         count_label = "待入库数",
         count_field = "PendingQuantity",
@@ -1524,10 +1527,9 @@ server <- function(input, output, session) {
         output = output,
         placeholder_path = placeholder_300px_path,
         host_url = host_url
-      )
+      )    
     }
   })
-  
   
   # 控制备注输入框显示/隐藏
   observeEvent(input$defective_item, {
