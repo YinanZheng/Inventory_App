@@ -2844,14 +2844,12 @@ server <- function(input, output, session) {
     }
 
     if (length(order_items_image_paths) > 0) {
-      # 生成订单拼图
-      order_image_path <- generate_montage(order_items_image_paths)
-
-      # 拼接完整路径
       final_image_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
+            
+      order_image_path <- generate_montage(order_items_image_paths, final_image_path)
 
       # 更新数据库中的 `OrderImagePath`
-      dbExecute(db_connection, "UPDATE orders SET OrderImagePath = ? WHERE OrderID = ?", params = list(final_image_path, order_id))
+      dbExecute(db_connection, "UPDATE orders SET OrderImagePath = ? WHERE OrderID = ?", params = list(order_image_path, order_id))
 
       # 触发订单数据刷新
       orders_refresh_trigger(!orders_refresh_trigger())
