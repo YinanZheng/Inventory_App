@@ -1995,8 +1995,8 @@ server <- function(input, output, session) {
         # 如果订单记录不存在，清空出order ID以外所有相关字段
         showNotification("未找到对应订单记录，可登记新订单", type = "warning")
         
-        # 重置所有输入框, 除了order ID
-        reset_order_form(session, image_sold, keep_order_id = TRUE)
+        # 重置所有输入框, 除了order ID： 禁用
+        # reset_order_form(session, image_sold, keep_order_id = TRUE)
         
         # 动态更新按钮为“登记订单”
         output$register_order_button_ui <- renderUI({
