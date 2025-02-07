@@ -2854,7 +2854,7 @@ server <- function(input, output, session) {
       # 触发订单数据刷新
       orders_refresh_trigger(!orders_refresh_trigger())
 
-      showNotification("订单拼图生成成功！", type = "success")
+      showNotification("订单拼图生成成功！", type = "message")
     } else {
       showNotification("当前订单没有可用的商品图片！", type = "warning")
     }
