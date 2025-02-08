@@ -2832,31 +2832,12 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$regen_order_image, {
-    req(selected_order_id())  # 确保有选中的订单ID
-    order_id <- selected_order_id()
+    req(selected_order_id())
+    success <- update_order_montage(selected_order_id(), con, unique_items_data())
     
-    # 获取订单内关联物品的图片路径
-    order_items <- unique_items_data() %>% filter(OrderID == order_id)
-    order_items_image_paths <- if (nrow(order_items) > 0) {
-      order_items$ItemImagePath[!is.na(order_items$ItemImagePath)]
-    } else {
-      character(0)  # 如果为空，返回空字符向量
-    }
-
-    if (length(order_items_image_paths) > 0) {
-      final_image_path <- paste0("/var/www/images/", order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-            
-      order_image_path <- generate_montage(order_items_image_paths, final_image_path)
-
-      # 更新数据库中的 `OrderImagePath`
-      dbExecute(con, "UPDATE orders SET OrderImagePath = ? WHERE OrderID = ?", params = list(order_image_path, order_id))
-
-      # 触发订单数据刷新
+    # 只有当拼图生成成功时才刷新订单数据
+    if (success) {
       orders_refresh_trigger(!orders_refresh_trigger())
-
-      showNotification("订单拼图生成成功！", type = "message")
-    } else {
-      showNotification("当前订单没有可用的商品图片！", type = "warning")
     }
   })
   
