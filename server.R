@@ -2927,6 +2927,13 @@ server <- function(input, output, session) {
       order_id = NULL  # 清空订单号
     )
     
+    # 提示删除成功
+    showNotification("物品已删除, 库存已归还。", type = "message")
+
+    # 更新数据并触发 UI 刷新
+    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
+    orders_refresh_trigger(!orders_refresh_trigger())
+    
     # 检查并更新订单拼图
     order_id <- deleted_item$OrderID
     order_info <- dbGetQuery(con, paste0(
@@ -2940,15 +2947,6 @@ server <- function(input, output, session) {
         update_order_montage(order_id, con, unique_items_data())
       }
     }
-    
-    # 提示删除成功
-    showNotification("物品已删除, 库存已归还。", type = "message")
-
-    # 更新数据并触发 UI 刷新
-    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())
-    orders_refresh_trigger(!orders_refresh_trigger())
-    
-
   })
   
   # 清空筛选条件逻辑
