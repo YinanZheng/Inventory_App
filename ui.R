@@ -1486,8 +1486,22 @@ ui <- navbarPage(
             ),
             
             div(
-              id = "inventory_table_container_query",
-              DTOutput("filtered_inventory_table_query")
+              style = "display: flex; flex-direction: column;",
+              div(
+                style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
+                
+                div(
+                  id = "context-menu",
+                  style = "display: none; position: absolute; background: white; border: 1px solid #ccc; box-shadow: 0px 4px 6px rgba(0,0,0,0.2); padding: 5px; border-radius: 5px; z-index: 1000;",
+                  actionButton("query_purchase_request", "采购请求", class = "btn btn-primary btn-sm", style = "width: 100%; margin-bottom: 5px;"),
+                  uiOutput("query_outbound_request_btn")  # 动态生成出库请求按钮                
+                ),
+                
+                div(
+                  id = "inventory_table_container_query",
+                  DTOutput("filtered_inventory_table_query")
+                )
+              )
             )
           ), # end of 商品状态
           
