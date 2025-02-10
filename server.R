@@ -24,9 +24,6 @@ server <- function(input, output, session) {
   # 触发order刷新
   orders_refresh_trigger <- reactiveVal(FALSE)
   
-  # 触发item_status_history刷新
-  item_status_history_refresh_trigger <- reactiveVal(FALSE)
-  
   # 用于存储 barcode PDF 文件路径
   barcode_pdf_file_path <- reactiveVal(NULL)
   
@@ -69,45 +66,8 @@ server <- function(input, output, session) {
   
   # 库存表
   inventory <- reactive({
-    # 当 refresh_trigger 改变时触发更新
     inventory_refresh_trigger()
-    
-    tryCatch({
-      # 从 unique_items 表中计算聚合数据并一次性更新
-      dbExecute(
-        con,
-        "
-        UPDATE inventory i
-        JOIN (
-          SELECT 
-            SKU,
-            AVG(ProductCost) AS AvgProductCost,
-            AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost,
-            SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity,
-            SUM(Status = '国内入库') AS DomesticQuantity,
-            SUM(Status = '国内出库') AS TransitQuantity,
-            SUM(Status = '美国入库') AS UsQuantity
-          FROM unique_items
-          GROUP BY SKU
-        ) u ON i.SKU = u.SKU
-        SET 
-          i.ProductCost = ROUND(u.AvgProductCost, 2),
-          i.ShippingCost = ROUND(u.AvgShippingCost, 2),
-          i.Quantity = u.TotalQuantity,
-          i.DomesticQuantity = u.DomesticQuantity,
-          i.TransitQuantity = u.TransitQuantity,
-          i.UsQuantity = u.UsQuantity
-        "
-      )
-      
-      # 从 inventory 表中加载最新数据
-      updated_inventory <- dbGetQuery(con, "SELECT * FROM inventory")
-      return(updated_inventory)
-      
-    }, error = function(e) {
-      showNotification(paste("更新库存表时发生错误：", e$message), type = "error")
-      return(create_empty_inventory())  # 返回空的 inventory 数据表
-    })
+    dbGetQuery(con, "SELECT * FROM inventory")
   })
   
   # 商品名自动联想
@@ -119,48 +79,81 @@ server <- function(input, output, session) {
   ####################################################################################################################################
   
   # 物品追踪表
-  unique_items_data <- reactive({
-    # 当 refresh_trigger 改变时触发更新
-    unique_items_data_refresh_trigger()
+  unique_items_data <- reactivePoll(
+    intervalMillis = poll_interval, 
+    session = session,       # 绑定 Shiny session，确保只在活跃时运行
     
-    dbGetQuery(con, "
-    SELECT 
-      unique_items.UniqueID, 
-      unique_items.SKU, 
-      unique_items.OrderID,
-      unique_items.ProductCost,
-      unique_items.DomesticShippingCost,
-      unique_items.Status,
-      unique_items.Defect,
-      unique_items.DefectNotes,
-      unique_items.IntlShippingMethod,
-      unique_items.IntlTracking,
-      unique_items.IntlShippingCost,
-      unique_items.PurchaseTime,
-      unique_items.DomesticEntryTime,
-      unique_items.DomesticExitTime,
-      unique_items.DomesticSoldTime,
-      unique_items.UsEntryTime,
-      unique_items.UsShippingTime,
-      unique_items.UsRelocationTime,
-      unique_items.ReturnTime,
-      unique_items.PurchaseCheck,
-      unique_items.updated_at,
-      inventory.Maker,
-      inventory.MajorType,
-      inventory.MinorType,
-      inventory.ItemName,
-      inventory.ItemImagePath
-    FROM 
-      unique_items
-    JOIN 
-      inventory 
-    ON 
-      unique_items.SKU = inventory.SKU
-    ORDER BY 
-      unique_items.updated_at DESC
-  ")
-  })
+    # **检查是否需要更新**（返回最近更新时间）
+    checkFunc = function() {
+      dbGetQuery(con, "SELECT MAX(updated_at) FROM unique_items")[[1]]
+    },
+    
+    # **获取最新数据**
+    valueFunc = function() {
+      result <- dbGetQuery(con, "
+      SELECT 
+        unique_items.UniqueID, 
+        unique_items.SKU, 
+        unique_items.OrderID,
+        unique_items.ProductCost,
+        unique_items.DomesticShippingCost,
+        unique_items.Status,
+        unique_items.Defect,
+        unique_items.DefectNotes,
+        unique_items.IntlShippingMethod,
+        unique_items.IntlTracking,
+        unique_items.IntlShippingCost,
+        unique_items.PurchaseTime,
+        unique_items.DomesticEntryTime,
+        unique_items.DomesticExitTime,
+        unique_items.DomesticSoldTime,
+        unique_items.UsEntryTime,
+        unique_items.UsShippingTime,
+        unique_items.UsRelocationTime,
+        unique_items.ReturnTime,
+        unique_items.PurchaseCheck,
+        unique_items.updated_at,
+        inventory.Maker,
+        inventory.MajorType,
+        inventory.MinorType,
+        inventory.ItemName,
+        inventory.ItemImagePath
+      FROM 
+        unique_items
+      JOIN 
+        inventory 
+      ON 
+        unique_items.SKU = inventory.SKU
+      ORDER BY 
+        unique_items.updated_at DESC
+    ")
+      
+      # **当 `unique_items` 变更时，自动更新 `inventory`**
+      dbExecute(con, "
+      UPDATE inventory i
+      JOIN (
+        SELECT 
+          SKU,
+          AVG(ProductCost) AS AvgProductCost,
+          AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost,
+          SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity,
+          SUM(Status = '国内入库') AS DomesticQuantity,
+          SUM(Status = '国内出库') AS TransitQuantity,
+          SUM(Status = '美国入库') AS UsQuantity
+        FROM unique_items
+        GROUP BY SKU
+      ) u ON i.SKU = u.SKU
+      SET 
+        i.ProductCost = ROUND(u.AvgProductCost, 2),
+        i.ShippingCost = ROUND(u.AvgShippingCost, 2),
+        i.Quantity = u.TotalQuantity,
+        i.DomesticQuantity = u.DomesticQuantity,
+        i.TransitQuantity = u.TransitQuantity,
+        i.UsQuantity = u.UsQuantity
+    ")
+      return(result)
+    }
+  )
   
   # 加载当前已有的 makers 和 item names 的对应关系
   observe({
@@ -180,14 +173,6 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM orders")
   })
 
-  ####################################################################################################################################
-  
-  # 物品状态历史表
-  item_status_history <- reactive({
-    item_status_history_refresh_trigger()
-    dbGetQuery(con, "SELECT * FROM item_status_history")
-  })
-  
   ####################################################################################################################################
   
   clear_invalid_item_status_history(con)
@@ -807,18 +792,12 @@ server <- function(input, output, session) {
         
         item_image_path <- ifelse(is.na(filtered_data$ItemImagePath[1]), placeholder_150px_path, filtered_data$ItemImagePath[1])
         item_description <- ifelse(is.na(filtered_data$ItemName[1]), "未知", filtered_data$ItemName[1])
-        
-        # 获取用户输入的留言，保持空值为 NULL
-        raw_remark <- input$request_remark
-        formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NA_character_ else {
-          remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"  # 根据系统类型添加前缀
-          paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", raw_remark)
-        }
-        
+
         dbExecute(con, 
                   "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
          VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, ?)", 
-                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, input$request_quantity, formatted_remark, request_type))
+                  params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, 
+                                input$request_quantity, format_remark(input$request_remark, system_type), request_type))
         
         bind_buttons(request_id, requests_data(), input, output, session, con)
         
@@ -863,18 +842,11 @@ server <- function(input, output, session) {
     # 生成唯一 RequestID
     request_id <- uuid::UUIDgenerate()
     
-    # 获取用户输入的留言，保持空值为 NULL
-    raw_remark <- input$custom_remark
-    formatted_remark <- if (raw_remark == "" || is.null(raw_remark)) NA_character_ else {
-      remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"  # 根据系统类型添加前缀
-      paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", raw_remark)
-    }
-    
     # 将数据插入到数据库
     dbExecute(con, 
               "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
              VALUES (?, ?, '待定', ?, ?, ?, '待处理', ?, '采购')", 
-              params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity, formatted_remark))
+              params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity, format_remark(input$custom_remark, system_type)))
     
     bind_buttons(request_id, requests_data(), input, output, session, con) #绑定按钮逻辑
     
@@ -2686,19 +2658,13 @@ server <- function(input, output, session) {
           
           # 获取请求数量
           qty <- input[[paste0("purchase_qty_", sku)]]
-          
-          # 获取留言
-          remark <- input[[paste0("purchase_remark_input_", sku)]]
-          remark_prefix <- if (system_type == "cn") "[京]" else "[圳]"
-          new_remark <- paste0(format(Sys.time(), "%Y-%m-%d %H:%M:%S"), ": ", remark_prefix, " ", remark)
-          
           request_id <- uuid::UUIDgenerate()
           
           tryCatch({
             # 插入采购请求到数据库
             dbExecute(con,
-                      "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, RequestType, CreatedAt, Remarks)
-                     VALUES (?, ?, ?, ?, ?, ?, '待处理', '采购', NOW(), ?)",
+                      "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType)
+                     VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, '采购')",
                       params = list(
                         request_id,
                         sku,
@@ -2706,7 +2672,7 @@ server <- function(input, output, session) {
                         item$ItemImagePath,
                         item$ItemName,
                         qty,
-                        ifelse(remark == "", NA_character_, new_remark)
+                        format_remark(input[[paste0("purchase_remark_input_", sku)]], system_type)
                       ))
             
             # 绑定按钮
@@ -4534,11 +4500,6 @@ server <- function(input, output, session) {
       inventory_refresh_trigger(!inventory_refresh_trigger())
       showNotification("库存表已加载！", type = "message")
     }
-    
-    if (input$inventory_cn == "查询" && input$query_tabs == "库存总览") {
-      item_status_history_refresh_trigger(!item_status_history_refresh_trigger())
-      showNotification("库存状态历史已加载！", type = "message")
-    }
   }, ignoreInit = TRUE)  # 忽略初始值
   
   # 物品表过滤模块
@@ -5377,7 +5338,7 @@ server <- function(input, output, session) {
   # 状态流转桑基图
   output$status_sankey <- renderSankeyNetwork({
     # 获取物品状态历史数据
-    history_data <- item_status_history()
+    history_data <- dbGetQuery(con, "SELECT * FROM item_status_history")
     
     filtered_data <- history_data %>%
       # 标记含有重复状态的 UniqueID
