@@ -208,6 +208,28 @@ ui <- navbarPage(
         var audio = new Audio('https://www.goldenbeanllc.com/sounds/error-8bit.mp3');
         audio.play();
       }
+      
+      // 右键点击查询库存页面
+      $(document).ready(function() {
+        $('#filtered_inventory_table_query').on('contextmenu', 'tr', function(event) {
+          event.preventDefault();
+          var rowIdx = $(this).index();
+          
+          Shiny.setInputValue('selected_inventory_row', rowIdx + 1, {priority: 'event'});
+    
+          $('#context-menu').css({
+            display: 'block',
+            left: event.pageX + 'px',
+            top: event.pageY + 'px'
+          });
+        });
+    
+        $(document).on('click', function(event) {
+          if (!$(event.target).closest('#context-menu').length) {
+            $('#context-menu').hide();
+          }
+        });
+      });
     "))
     )
   ),
@@ -1404,6 +1426,18 @@ ui <- navbarPage(
           tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           textInput("query_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
           actionButton("clear_query_sku_btn", "清空", icon = icon("eraser"), class = "btn btn-warning")
+        ),
+        div(
+          class = "card",
+          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #DC3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+          tags$h4("售罄物品", style = "color: #DC3545; font-weight: bold; margin-bottom: 15px;"),
+          radioButtons(
+            inputId = "query_stock_status",
+            label = NULL,  # 不显示默认标题，使用 h4 作为标题
+            choices = c("不过滤" = "none", "美国售罄, 国内有货" = "us", "国内售罄, 美国有货" = "domestic", "全库存售罄" = "all"),
+            selected = "none",  # 默认选择 “不过滤”
+            inline = FALSE
+          )
         )
       ),
       
@@ -1424,7 +1458,7 @@ ui <- navbarPage(
                 5,
                 div(
                   class = "card",
-                  style = "height: 370px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                  style = "height: 373px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
                   tags$h4("商品信息", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
                   uiOutput("query_item_info") # 动态渲染物品信息
                 )

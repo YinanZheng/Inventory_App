@@ -496,8 +496,18 @@ server <- function(input, output, session) {
       result <- result %>% filter(grepl(input[["query_filter-name"]], ItemName, ignore.case = TRUE))
     }
     
-    result <- result[order(result$updated_at, decreasing = TRUE), ]
+    # 根据售罄筛选
+    if (!is.null(input$query_stock_status) && input$query_stock_status != "none") {
+      if (input$query_stock_status == "us") {
+        result <- result %>% filter(UsQuantity == 0 & DomesticQuantity > 0)  # 美国库存为 0
+      } else if (input$query_stock_status == "domestic") {
+        result <- result %>% filter(DomesticQuantity == 0 & UsQuantity > 0)  # 国内库存为 0
+      } else if (input$query_stock_status == "all") {
+        result <- result %>% filter(Quantity == 0)  # 全库存售罄
+      }
+    }
     
+    result <- result[order(result$updated_at, decreasing = TRUE), ]
     return(result)
   })
   
@@ -4555,6 +4565,187 @@ server <- function(input, output, session) {
       footer = NULL
     ))
   })
+  
+  ###
+  
+  # 右键点击选择商品
+  query_soldout_selected_item_details <- reactiveVal()
+  
+  # 监听鼠标右键 selected_inventory_row，并获取用户点击的 SKU。
+  observeEvent(input$selected_inventory_row, {
+    req(input$selected_inventory_row)
+    
+    row_index <- as.numeric(input$selected_inventory_row)  # 获取用户点击的行索引
+    selected_item <- filtered_inventory()[row_index, ]  # 获取选中的数据
+    
+    if (nrow(selected_item) > 0) {
+      # 存储物品详情
+      query_soldout_selected_item_details(list(
+        sku = selected_item$SKU,
+        name = selected_item$ItemName,
+        image = ifelse(
+          is.na(selected_item$ItemImagePath) || selected_item$ItemImagePath == "",
+          placeholder_150px_path,
+          paste0(host_url, "/images/", basename(selected_item$ItemImagePath))
+        ),
+        maker = selected_item$Maker,
+        domestic_stock = selected_item$DomesticQuantity
+      ))
+      
+      # 动态更新出库请求按钮
+      output$query_outbound_request_btn <- renderUI({
+        if (selected_item$DomesticQuantity > 0) {
+          actionButton("query_outbound_request", "出库请求", class = "btn btn-success btn-sm", style = "width: 100%;")
+        } else {
+          NULL  # 不显示按钮
+        }
+      })
+    }
+  })
+  
+  # 点击采购请求
+  observeEvent(input$query_purchase_request, {
+    req(query_soldout_selected_item_details())
+    
+    details <- query_soldout_selected_item_details()
+    
+    showModal(modalDialog(
+      title = "创建采购请求",
+      
+      div(
+        style = "display: flex; flex-direction: row; align-items: center; gap: 20px; margin-bottom: 15px;",
+        
+        # 左侧：商品图片 + 详情
+        div(
+          style = "flex: 0 0 40%; text-align: center;",
+          tags$img(src = details$image, style = "width: 150px; height: auto; object-fit: contain; border-radius: 8px;"),
+          div(
+            tags$h4(details$name, style = "margin-top: 10px; color: #007BFF;"),
+            tags$p(paste("SKU:", details$sku), style = "margin: 0; font-weight: bold;"),
+            tags$p(paste("供应商:", details$maker), style = "margin: 0; color: #6c757d; font-size: 14px;")
+          )
+        ),
+        
+        # 右侧：采购数量 + 备注
+        div(
+          style = "flex: 0 0 50%;",
+          numericInput("query_purchase_qty", "采购数量", value = 1, min = 1, width = "80%"),
+          textAreaInput("query_purchase_remark", "备注", "", width = "80%", height = "80px")
+        )
+      ),
+      
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("query_confirm_purchase", "确认采购", class = "btn-primary")
+      )
+    ))
+  })
+  
+  # 确认采购
+  observeEvent(input$query_confirm_purchase, {
+    req(query_soldout_selected_item_details(), input$query_purchase_qty)
+    
+    details <- query_soldout_selected_item_details()
+    request_id <- uuid::UUIDgenerate()
+    
+    # 数据库操作：插入采购请求
+    dbExecute(con, "
+    INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType)
+    VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, '采购')",
+              params = list(
+                request_id,
+                details$sku,
+                details$maker,
+                details$image,
+                details$name,
+                input$query_purchase_qty,
+                format_remark(input$query_purchase_remark, system_type) 
+              )
+    )
+    
+    bind_buttons(request_id, requests_data(), input, output, session, con)
+    
+    showNotification("采购请求已创建", type = "message")
+    removeModal()  # 关闭模态框
+  })
+  
+  # 点击出库请求
+  observeEvent(input$query_outbound_request, {
+    req(query_soldout_selected_item_details())
+    
+    details <- query_soldout_selected_item_details()
+    
+    showModal(modalDialog(
+      title = "创建出库请求",
+      
+      div(
+        style = "display: flex; flex-direction: row; align-items: center; gap: 20px; margin-bottom: 15px;",
+        
+        # 左侧：商品图片 + 详情
+        div(
+          style = "flex: 0 0 40%; text-align: center;",
+          tags$img(src = details$image, style = "width: 150px; height: auto; object-fit: contain; border-radius: 8px;"),
+          div(
+            tags$h4(details$name, style = "margin-top: 10px; color: #007BFF;"),
+            tags$p(paste("SKU:", details$sku), style = "margin: 0; font-weight: bold;"),
+            tags$p(paste("供应商:", details$maker), style = "margin: 0; color: #6c757d; font-size: 14px;"),
+            tags$p(
+              paste("国内库存:", details$domestic_stock),
+              style = paste("margin: 0;", ifelse(details$domestic_stock == 0, "color: #DC3545; font-weight: bold;", "color: #28A745;"))
+            )
+          )
+        ),
+        
+        # 右侧：出库数量 + 备注
+        div(
+          style = "flex: 0 0 50%; display: flex; flex-direction: column; gap: 10px;",
+          numericInput("query_outbound_qty", "出库数量", value = 1, min = 1, max = details$domestic_stock, width = "80%"),
+          textAreaInput("query_outbound_remark", "备注", "", width = "80%", height = "80px")
+        )
+      ),
+      
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("query_confirm_outbound", "确认出库", class = "btn-success")
+      )
+    ))
+  })
+  
+  # 确认出库
+  observeEvent(input$query_confirm_outbound, {
+    req(query_soldout_selected_item_details(), input$query_outbound_qty)
+    
+    details <- query_soldout_selected_item_details()
+    request_id <- uuid::UUIDgenerate()
+    
+    # 如果用户输入的出库数量大于国内库存，禁止提交
+    if (input$query_outbound_qty > details$domestic_stock) {
+      showNotification("出库数量不能大于国内库存数！", type = "error")
+      return()
+    }
+    
+    # 数据库操作：插入出库请求
+    dbExecute(con, "
+    INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType)
+    VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, '出库')",
+              params = list(
+                request_id,
+                details$sku,
+                details$maker,
+                details$image,
+                details$name,
+                input$query_outbound_qty,
+                format_remark(input$query_outbound_remark, system_type)
+              )
+    )
+    
+    bind_buttons(request_id, requests_data(), input, output, session, con)
+    
+    showNotification("出库请求已创建", type = "message")
+    removeModal()  # 关闭模态框
+  })
+  
+  ###
   
   # 根据SKU产生图表
   observe({
