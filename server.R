@@ -2518,9 +2518,6 @@ server <- function(input, output, session) {
         item <- box_items()[i, ]
         sku <- item$SKU
         
-        # 调整库存：减少数量
-        adjust_inventory_quantity(con, sku, adjustment = -1)  # 减少 1 的库存数量
-        
         # 根据当前状态决定新的状态
         current_status <- item$Status
         new_status <- ifelse(
@@ -2892,9 +2889,6 @@ server <- function(input, output, session) {
       ))    
     }
     
-    # 恢复库存数量
-    adjust_inventory_quantity(con, deleted_item$SKU, adjustment = 1)  # 增加库存数量
-    
     # 清空物品的 OrderID
     update_order_id(
       con = con,
@@ -2992,9 +2986,6 @@ server <- function(input, output, session) {
           ))
           
           if (nrow(original_state) > 0) {
-            # 恢复库存数量
-            adjust_inventory_quantity(con, item$SKU, adjustment = 1)  # 增加库存数量
-            
             # 恢复物品状态
             update_status(
               con = con,
