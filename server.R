@@ -2801,6 +2801,9 @@ server <- function(input, output, session) {
     
     # 更新关联物品数据
     associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
+    
+    # 重置图片上传模块
+    image_sold$reset()
   })
   
   observeEvent(input$regen_order_image, {
