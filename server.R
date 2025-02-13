@@ -2746,7 +2746,7 @@ server <- function(input, output, session) {
           ),
           div(
             style = "display: flex; gap: 10px;",
-            actionButton("regen_order_image", label = "重新生成订单图", class = "btn btn-warning", 
+            actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-warning", 
                          style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
             if (selected_order$LabelStatus != "无") {
               downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
@@ -2785,7 +2785,7 @@ server <- function(input, output, session) {
         # 右侧按钮（仅在订单状态为“预定”时显示）
         div(
           style = "display: flex; gap: 10px;",
-          actionButton("regen_order_image", label = "重新生成订单图", class = "btn btn-warning", 
+          actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-warning", 
                        style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
           if (order_status == "预定") {
             actionButton("complete_preorder", label = "已完成预定", class = "btn-success", 
@@ -2913,7 +2913,7 @@ server <- function(input, output, session) {
     
     if (nrow(order_info) > 0) {
       order_image_path <- order_info$OrderImagePath
-      # 检查 OrderImagePath 是否为空或包含“montage”
+      # 检查 OrderImagePath 是否为空或包含“montage” <- 只有原图是拼图的时候才能更新
       if (is.na(order_image_path) || grepl("montage", order_image_path)) {
         update_order_montage(order_id, con, unique_items_data())
       }
