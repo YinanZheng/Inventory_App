@@ -2049,7 +2049,7 @@ server <- function(input, output, session) {
   # 动态填充供应商与商品名选择器
   observe({
     update_maker_choices(session, "preorder_supplier", maker_list())
-    updateSelectizeInput(session, "preorder_item_name_db", choices = inventory()$ItemName, server = TRUE)
+    updateSelectizeInput(session, "preorder_item_name_db", choices = inventory()$ItemName, selected = NULL, server = TRUE)
   })
   
   # 控制预订单显示
@@ -2062,8 +2062,12 @@ server <- function(input, output, session) {
     selected_items <- input$preorder_item_name_db
     if (!is.null(selected_items) && selected_items != "") {
       existing_text <- input$preorder_item_name
-      new_text <- paste(existing_text, selected_items, sep = ifelse(existing_text == "", "", ";"))
-      updateTextInput(session, "preorder_item_name", value = new_text)
+      new_text <- if (existing_text == "") {
+        selected_items
+      } else {
+        paste(existing_text, selected_items, sep = ";")
+      }
+      updateTextAreaInput(session, "preorder_item_name", value = new_text)
     }
   })
   

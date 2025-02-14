@@ -708,8 +708,23 @@ ui <- navbarPage(
           hidden(
             div(id = "preorder_fields",
                 selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...')),
-                textInput("preorder_item_name", "预定单商品名（多个物品用分号分隔）", placeholder = "请输入或选择", width = "100%"),
-                selectizeInput("preorder_item_name_db", NULL, choices = NULL, width = "100%", options = list(placeholder = "已有商品名列表"))
+                textAreaInput(
+                  inputId = "preorder_item_name",
+                  label = "预定单商品名（多物品用分号分隔）",
+                  placeholder = "请输入或选择",
+                  width = "100%",
+                  resize = "vertical"  # 允许用户垂直调整高度
+                ),                
+                selectizeInput(
+                  inputId = "preorder_item_name_db",
+                  label = NULL,
+                  choices = NULL,
+                  width = "100%",
+                  options = list(
+                    placeholder = "已有商品名列表",
+                    onInitialize = I('function() { this.setValue(""); }')  # 初始化时不选中任何选项
+                  )
+                )           
             )
           ),
           
