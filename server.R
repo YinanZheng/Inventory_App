@@ -384,6 +384,18 @@ server <- function(input, output, session) {
       data <- data %>% filter(OrderID %in% item_orders)
     }
     
+    # 根据创建时间筛选
+    if (!is.null(input$filter_order_date) && !is.null(input$filter_order_date[[1]]) && !is.null(input$filter_order_date[[2]])) {
+      start_date <- input$filter_order_date[[1]]
+      end_date <- input$filter_order_date[[2]]
+      data <- data %>% filter(created_at >= start_date & created_at <= end_date)
+    }
+    
+    # 根据订单备注筛选
+    if (!is.null(input$filter_order_notes) && input$filter_order_notes != "") {
+      data <- data %>% filter(grepl(input$filter_order_notes, OrderNotes, ignore.case = TRUE))
+    }
+    
     # 按录入时间倒序排列
     data <- data %>% arrange(desc(created_at))
     

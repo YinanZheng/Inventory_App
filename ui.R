@@ -650,7 +650,10 @@ ui <- navbarPage(
                                       choices = c("全部" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
                                       selected = "", width = "100%"))
               ),
-
+              fluidRow(
+                column(6, textInput("filter_order_notes", NULL, placeholder = "订单备注", width = "100%")),
+                column(6, dateRangeInput("filter_order_date", NULL, start = Sys.Date() - 90, end = Sys.Date(), format = "yyyy-mm-dd", width = "100%"))
+              ),
               fluidRow(
                 column(6, actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
                 column(6, actionButton("reset_filter_btn", "清空筛选", class = "btn-info", style = "width: 100%;"))
