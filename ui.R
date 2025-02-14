@@ -647,7 +647,7 @@ ui <- navbarPage(
                 column(12, textInput("filter_order_notes", NULL, placeholder = "订单备注", width = "100%")),
               ),
               fluidRow(
-                column(12, dateRangeInput("filter_order_date", "订单创建时间", start = Sys.Date() - 90, end = Sys.Date() + 1, format = "yyyy-mm-dd", width = "100%"))
+                column(12, dateRangeInput("filter_order_date", "订单创建时间", start = Sys.Date() - 90, end = Sys.Date(), format = "yyyy-mm-dd", width = "100%"))
               ),
               fluidRow(
                 column(6, selectInput("filter_platform", "电商平台", choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
