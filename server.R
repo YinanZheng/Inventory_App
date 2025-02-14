@@ -2046,20 +2046,24 @@ server <- function(input, output, session) {
     }
   })
   
-  # 动态填充供应商选择器
+  # 动态填充供应商与商品名选择器
   observe({
     update_maker_choices(session, "preorder_supplier", maker_list())
+    updateSelectizeInput(session, "preorder_item_name_db", choices = inventory()$ItemName, server = TRUE)
   })
   
-  # 控制预订单供应商选择器的显示
+  # 控制预订单显示
   observeEvent(input$is_preorder, {
-    if (input$is_preorder) {
-      # 显示供应商选择器
-      shinyjs::show("preorder_supplier")
-    } else {
-      # 隐藏供应商选择器并清空选择
-      shinyjs::hide("preorder_supplier")
-      updateSelectizeInput(session, "preorder_supplier", selected = NULL)
+    toggle(id = "preorder_fields", condition = input$is_preorder)
+  })
+  
+  # 监听用户在 preorder_item_name_db 中的选择，并更新到 preorder_item_name
+  observeEvent(input$preorder_item_name_db, {
+    selected_items <- input$preorder_item_name_db
+    if (!is.null(selected_items) && selected_items != "") {
+      existing_text <- input$preorder_item_name
+      new_text <- paste(existing_text, selected_items, sep = ifelse(existing_text == "", "", ";"))
+      updateTextInput(session, "preorder_item_name", value = new_text)
     }
   })
   
