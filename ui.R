@@ -636,8 +636,12 @@ ui <- navbarPage(
               textInput("filter_order_id", NULL, placeholder = "订单号", width = "100%"),
               textInput("filter_tracking_id", NULL, placeholder = "运单号", width = "100%"),
               fluidRow(
-                column(6, textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
-                column(6, textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
+                column(6, textInput("filter_customer_name", NULL, placeholder = "顾客姓名", width = "100%")),
+                column(6, textInput("filter_customer_netname", NULL, placeholder = "顾客网名", width = "100%"))
+              ),
+              fluidRow(
+                column(6, textInput("filter_sku", NULL, placeholder = "SKU", width = "100%")),
+                column(6, autocompleteInputUI("sold", NULL, placeholder = "商品名", width = "100%"))
               ),
               fluidRow(
                 column(6, selectInput("filter_platform", "电商平台", choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
@@ -646,10 +650,7 @@ ui <- navbarPage(
                                       choices = c("全部" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
                                       selected = "", width = "100%"))
               ),
-              fluidRow(
-                column(6, textInput("filter_sku", "SKU反查", placeholder = "输入SKU", width = "100%")),
-                column(6, autocompleteInputUI("sold", label = "商品名反查", placeholder = "输入商品名"))
-              ),
+
               fluidRow(
                 column(6, actionButton("delete_order_btn", "删除订单", class = "btn-danger", style = "width: 100%;")),
                 column(6, actionButton("reset_filter_btn", "清空筛选", class = "btn-info", style = "width: 100%;"))
