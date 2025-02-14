@@ -633,8 +633,8 @@ ui <- navbarPage(
               class = "card",
               style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
               tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-              textInput("filter_order_id", "订单号", placeholder = "输入订单号", width = "100%"),
-              textInput("filter_tracking_id", "运单号", placeholder = "输入运单号", width = "100%"),
+              textInput("filter_order_id", "", placeholder = "订单号", width = "100%"),
+              textInput("filter_tracking_id", "", placeholder = "运单号", width = "100%"),
               fluidRow(
                 column(6, textInput("filter_customer_name", "顾客姓名", placeholder = "输入顾客姓名", width = "100%")),
                 column(6, textInput("filter_customer_netname", "顾客网名", placeholder = "输入顾客网名", width = "100%"))
