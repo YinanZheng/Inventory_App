@@ -2059,15 +2059,17 @@ server <- function(input, output, session) {
   
   # 监听用户在 preorder_item_name_db 中的选择，并更新到 preorder_item_name
   observeEvent(input$preorder_item_name_db, {
-    selected_items <- input$preorder_item_name_db
-    if (!is.null(selected_items) && selected_items != "") {
+    selected_item <- input$preorder_item_name_db
+    if (!is.null(selected_item) && selected_item != "") {
       existing_text <- input$preorder_item_name
-      new_text <- if (existing_text == "") {
-        selected_items
-      } else {
-        paste(existing_text, selected_items, sep = ";")
+      # 将现有文本拆分为行
+      existing_items <- unlist(strsplit(existing_text, "\n"))
+      # 检查选定的物品是否已存在于输入框中
+      if (!(selected_item %in% existing_items)) {
+        # 将新选定的物品添加到现有文本的末尾
+        new_text <- paste(existing_text, selected_item, sep = ifelse(existing_text == "", "", "\n"))
+        updateTextAreaInput(session, "preorder_item_name", value = new_text)
       }
-      updateTextAreaInput(session, "preorder_item_name", value = new_text)
     }
   })
   

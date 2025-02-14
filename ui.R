@@ -710,10 +710,10 @@ ui <- navbarPage(
                 selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...')),
                 textAreaInput(
                   inputId = "preorder_item_name",
-                  label = "预定单商品名（多物品用分号分隔）",
+                  label = "预定单商品名（每行一个物品名）",
                   placeholder = "请输入或选择",
                   width = "100%",
-                  resize = "vertical"  # 允许用户垂直调整高度
+                  rows = 5  # 设置初始显示的行数
                 ),                
                 selectizeInput(
                   inputId = "preorder_item_name_db",
