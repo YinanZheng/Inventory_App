@@ -721,8 +721,7 @@ ui <- navbarPage(
                   choices = NULL,
                   width = "100%",
                   options = list(
-                    placeholder = "已有商品名列表",
-                    onInitialize = I('function() { this.setValue(""); }')  # 初始化时不选中任何选项
+                    placeholder = "已有商品名列表"
                   )
                 )           
             )

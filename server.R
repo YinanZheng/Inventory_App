@@ -2049,7 +2049,7 @@ server <- function(input, output, session) {
   # 动态填充供应商与商品名选择器
   observe({
     update_maker_choices(session, "preorder_supplier", maker_list())
-    updateSelectizeInput(session, "preorder_item_name_db", choices = inventory()$ItemName, selected = NULL, server = TRUE)
+    updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
   })
   
   # 控制预订单显示
