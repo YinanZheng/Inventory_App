@@ -641,7 +641,7 @@ ui <- navbarPage(
               ),
               fluidRow(
                 column(6, textInput("filter_sku", NULL, placeholder = "SKU", width = "100%")),
-                column(6, autocompleteInputUI("sold", NULL, placeholder = "商品名", width = "100%"))
+                column(6, autocompleteInputUI("sold", NULL, placeholder = "商品名"))
               ),
               fluidRow(
                 column(6, selectInput("filter_platform", "电商平台", choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
