@@ -707,14 +707,14 @@ ui <- navbarPage(
           
           hidden(
             div(id = "preorder_fields",
-                style = "border: 1px solid #ccc; padding: 10px; margin-top: 5px; margin-bottom: 10px;",  # 添加边框样式
+                style = "border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;",  # 添加边框样式
                 selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...')),
                 textAreaInput(
                   inputId = "preorder_item_name",
-                  label = "预定单商品名（每行一个物品名）",
+                  label = "预定单商品名（每行一个品名）",
                   placeholder = "请输入或选择",
                   width = "100%",
-                  rows = 5  # 设置初始显示的行数
+                  rows = 3  # 设置初始显示的行数
                 ),                
                 selectizeInput(
                   inputId = "preorder_item_name_db",
