@@ -341,7 +341,8 @@ ui <- navbarPage(
           column(12,
                  h5("预订单物品备忘", style = "color: #17a2b8;"),
                  div(
-                   style = "border: 1px solid #ddd; padding: 15px; border-radius: 5px; background-color: #f5f5f5; max-height: 200px; overflow-y: auto; margin-bottom: 10px;",
+                   style = "border: 1px solid #ddd; padding: 15px; border-radius: 5px; background-color: #f5f5f5; max-height: 100px; 
+                   overflow-y: auto; margin-bottom: 15px;",
                    uiOutput("preorder_items_memo")
                  )
           ),
