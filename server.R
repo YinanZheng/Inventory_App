@@ -1980,7 +1980,7 @@ server <- function(input, output, session) {
               if (length(items_match) > 0) {
                 items_str <- sub(items_pattern, "\\1", items_match, perl = TRUE)
                 # 将物品名称按逗号分割，并用换行符连接
-                items_list <- unlist(strsplit(items_str, ","))
+                items_list <- unlist(strsplit(items_str, "，"))
                 items_text <- paste(items_list, collapse = "\n")
                 updateTextAreaInput(session, "preorder_item_name", value = items_text)
               }
