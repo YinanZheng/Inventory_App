@@ -1484,7 +1484,8 @@ server <- function(input, output, session) {
             footer = tagList(
               modalButton("取消"),
               actionButton("confirm_bind_preorder", "确认登记", class = "btn-primary")
-            )
+            ),
+            easyClose = FALSE  # 防止用户误触关闭
           ))
           
           # 监听确认按钮
