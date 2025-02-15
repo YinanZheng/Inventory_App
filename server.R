@@ -1426,7 +1426,7 @@ server <- function(input, output, session) {
     # 如果启用自动入库功能，直接执行入库逻辑
     if (input$auto_inbound) {
       req(input$inbound_sku)
-      item_name <- handleOperation(
+      result <- handleOperation(
         unique_items_data(),
         operation_name = "入库", 
         sku_field = "inbound_sku",
@@ -1440,7 +1440,10 @@ server <- function(input, output, session) {
         input, output, session
       )
       
-      if (!is.null(item_name) && item_name != "") {
+      if (!is.null(result)) {
+        item_name <- result$item_name
+        unique_id <- result$unique_id
+        
         if (input$speak_inbound_item_name) {  # 只有勾选“念出商品名”才朗读
           js_code <- sprintf('
             var msg = new SpeechSynthesisUtterance("%s");
@@ -1452,6 +1455,50 @@ server <- function(input, output, session) {
         } else {
           runjs("playSuccessSound()")  # 播放成功音效
         }
+        
+        # 查询是否有匹配的预订单（基于 `item_name`在OrderNotes中的搜索）
+        matched_order <- dbGetQuery(con, paste0(
+          "SELECT OrderID, OrderImagePath, OrderNotes FROM orders 
+     WHERE OrderStatus = '预定' AND OrderNotes LIKE '%", item_name, "%' LIMIT 1"
+        ))
+        
+        if (nrow(matched_order) > 0) {
+          order_id <- matched_order$OrderID[1]
+          order_img_path <- ifelse(
+            is.na(matched_order$OrderImagePath[1]) || matched_order$OrderImagePath[1] == "",
+            placeholder_300px_path,
+            paste0(host_url, "/images/", basename(matched_order$OrderImagePath[1]))
+          )
+          order_notes <- matched_order$OrderNotes[1]
+          
+          # 弹出确认对话框
+          showModal(modalDialog(
+            title = "预订单匹配",
+            div(
+              tags$p("该商品已被如下预订单预定，是否直接做售出操作？"),
+              tags$img(src = order_img_path, width = "100%", style = "border-radius: 8px; margin-bottom: 10px;"),
+              tags$p(paste("订单号:", order_id)),
+              tags$p(paste("备注:", order_notes)),
+              style = "text-align: center;"
+            ),
+            footer = tagList(
+              modalButton("取消"),
+              actionButton("confirm_bind_preorder", "确认登记", class = "btn-primary")
+            )
+          ))
+          
+          # 监听确认按钮
+          observeEvent(input$confirm_bind_preorder, {
+            removeModal()  # 关闭模态框
+            
+            # 更新该物品的 `OrderID` 并修改 `Status`
+            dbExecute(con, paste0(
+              "UPDATE unique_items SET OrderID = '", order_id, "', Status = '国内售出'
+         WHERE UniqueID = '", unique_id, "'"
+            ))
+            showNotification(paste0("已成功登记到预订单 ", order_id, "！"), type = "message")
+          })
+        } 
       } else {
         runjs("playErrorSound()")  # 播放失败音效
         return()
@@ -1482,7 +1529,7 @@ server <- function(input, output, session) {
     
     # 批量处理入库逻辑
     for (i in seq_len(inbound_quantity)) {
-      unique_ID <- handleOperation(
+      result <- handleOperation(
         unique_items_data(),
         operation_name = "入库", 
         sku_field = "inbound_sku",
@@ -1497,7 +1544,7 @@ server <- function(input, output, session) {
       )
       
       # 如果未找到对应的 UniqueID，停止后续操作
-      if (is.null(unique_ID) || unique_ID == "") {
+      if (is.null(result)) {
         showNotification(paste0("此SKU第 ", i, " 件物品不存在，已中止入库！"), type = "error")
         break
       }
@@ -1667,7 +1714,7 @@ server <- function(input, output, session) {
     req(input$outbound_sku)   # 确保 SKU 输入框不为空
     
     # 调用出库处理逻辑
-    item_name <- handleOperation(
+    result <- handleOperation(
       unique_items_data(),
       operation_name = "出库", 
       sku_field = "outbound_sku",
@@ -1681,13 +1728,13 @@ server <- function(input, output, session) {
       input, output, session
     )
 
-    if (!is.null(item_name) && item_name != "") {
+    if (!is.null(result)) {
       if (input$speak_outbound_item_name) {  # 只有勾选“念出商品名”才朗读
         js_code <- sprintf('
             var msg = new SpeechSynthesisUtterance("%s");
             msg.lang = "zh-CN";
             window.speechSynthesis.speak(msg);
-          ', item_name)
+          ', result$item_name)
         
         shinyjs::runjs(js_code)  # 运行 JavaScript 语音朗读
       } else {
