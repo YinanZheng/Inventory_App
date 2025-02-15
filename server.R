@@ -1522,8 +1522,7 @@ server <- function(input, output, session) {
     
     if (!is.null(current_notes) && nchar(current_notes) > 0) {
       # **删除 `OrderNotes` 里匹配的 `item_name`**
-      updated_notes <- gsub(preorder_info$item_name, "", current_notes, fixed = TRUE)
-      updated_notes <- gsub("，，", "，", updated_notes, fixed = TRUE)
+      updated_notes <- trimws(sub("^，|，$", "", sub("，，", "，", sub(item_name, "", current_notes, fixed = TRUE))))
       
       # **更新 `OrderNotes`**
       dbExecute(con, 
@@ -2176,12 +2175,12 @@ server <- function(input, output, session) {
       existing_text <- input$preorder_item_name
       # 将现有文本拆分为行
       existing_items <- unlist(strsplit(existing_text, "\n"))
-      # 检查选定的物品是否已存在于输入框中
-      if (!(selected_item %in% existing_items)) {
+      # # 检查选定的物品是否已存在于输入框中
+      # if (!(selected_item %in% existing_items)) {
         # 将新选定的物品添加到现有文本的末尾
         new_text <- paste(existing_text, selected_item, sep = ifelse(existing_text == "", "", "\n"))
         updateTextAreaInput(session, "preorder_item_name", value = new_text)
-      }
+      # }
     }
   })
   
