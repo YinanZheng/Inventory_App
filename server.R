@@ -1408,7 +1408,7 @@ server <- function(input, output, session) {
   )
   
   # 创建全局变量存储 预订单的 order_id 和 unique_id
-  preorder_info <- reactiveValues(order_id = NULL, unique_id = NULL)
+  preorder_info <- reactiveValues(order_id = NULL, item_name = NULL, unique_id = NULL)
   
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
@@ -1444,7 +1444,7 @@ server <- function(input, output, session) {
       )
       
       if (!is.null(result)) {
-        item_name <- result$item_name
+        preorder_info$item_name <- result$item_name
         preorder_info$unique_id <- result$unique_id  # 存储 unique_id
         
         if (input$speak_inbound_item_name) {  # 只有勾选“念出商品名”才朗读
@@ -1452,7 +1452,7 @@ server <- function(input, output, session) {
             var msg = new SpeechSynthesisUtterance("%s");
             msg.lang = "zh-CN";
             window.speechSynthesis.speak(msg);
-          ', item_name)
+          ', preorder_info$item_name)
           
           shinyjs::runjs(js_code)  # 运行 JavaScript 语音朗读
         } else {
@@ -1462,7 +1462,7 @@ server <- function(input, output, session) {
         # 查询是否有匹配的预订单（基于 `item_name`在OrderNotes中的搜索）
         matched_order <- dbGetQuery(con, paste0(
           "SELECT OrderID, OrderImagePath, OrderNotes FROM orders 
-     WHERE OrderStatus = '预定' AND OrderNotes LIKE '%", item_name, "%' LIMIT 1"
+     WHERE OrderStatus = '预定' AND OrderNotes LIKE '%", preorder_info$item_name, "%' LIMIT 1"
         ))
         
         if (nrow(matched_order) > 0) {
