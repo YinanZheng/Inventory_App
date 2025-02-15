@@ -668,7 +668,7 @@ ui <- navbarPage(
         tags$hr(style = "margin: 5px 0; border: none;"),
         
         # 订单登记区（共用）
-        div(
+        div(id = "orderForm",
           class = "card",
           style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           

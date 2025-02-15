@@ -2119,30 +2119,15 @@ server <- function(input, output, session) {
     orders_refresh_trigger(!orders_refresh_trigger())
   })
   
-  reset_order_form <- function(session, image_module, keep_order_id = FALSE) {
-    showNotification("check")
-    if(!keep_order_id){
-      updateTextInput(session, "order_id", value = "")
-    }
-    updateSelectInput(session, "platform", selected = "")
-    updateTextInput(session, "customer_name", value = "")
-    updateTextInput(session, "customer_netname", value = "")
-    updateCheckboxInput(session, "is_preorder", value = FALSE)
-    updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-    updateTextInput(session, "tracking_number", value = "")
-    shinyjs::reset("shiplabel_pdf_upload")
-    shinyjs::enable("tracking_number")
-    image_module$reset()
-    updateTextAreaInput(session, "order_notes", value = "")
-  }
-  
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
     selected_order_id(NULL)
     associated_items(NULL)
     
+    shinyjs::reset("orderForm")  # 一次性重置整个订单登记区
+    
     # 重置订单填写表
-    reset_order_form(session, image_sold)
+    # reset_order_form(session, image_sold)
 
     # 清空订单关联物品表
     output$associated_items_title <- renderDT({ NULL }) # 清空标题
