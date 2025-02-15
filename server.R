@@ -1407,6 +1407,9 @@ server <- function(input, output, session) {
     makers_items_map = makers_items_map
   )
   
+  # 创建全局变量存储 预订单的 order_id 和 unique_id
+  preorder_info <- reactiveValues(order_id = NULL, unique_id = NULL)
+  
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
     req(input$inbound_sku)
@@ -1442,7 +1445,7 @@ server <- function(input, output, session) {
       
       if (!is.null(result)) {
         item_name <- result$item_name
-        unique_id <- result$unique_id
+        preorder_info$unique_id <- result$unique_id  # 存储 unique_id
         
         if (input$speak_inbound_item_name) {  # 只有勾选“念出商品名”才朗读
           js_code <- sprintf('
@@ -1463,7 +1466,7 @@ server <- function(input, output, session) {
         ))
         
         if (nrow(matched_order) > 0) {
-          order_id <- matched_order$OrderID[1]
+          preorder_info$order_id <- matched_order$OrderID[1]  # 存储 order_id
           order_img_path <- ifelse(
             is.na(matched_order$OrderImagePath[1]) || matched_order$OrderImagePath[1] == "",
             placeholder_300px_path,
@@ -1477,7 +1480,7 @@ server <- function(input, output, session) {
             div(
               tags$p("该商品已被如下预订单预定，是否直接做售出操作？"),
               tags$img(src = order_img_path, width = "100%", style = "border-radius: 8px; margin-bottom: 10px;"),
-              tags$p(paste("订单号:", order_id)),
+              tags$p(paste("订单号:", preorder_info$order_id)),
               tags$p(paste("备注:", order_notes)),
               style = "text-align: center;"
             ),
@@ -1487,18 +1490,6 @@ server <- function(input, output, session) {
             ),
             easyClose = FALSE  # 防止用户误触关闭
           ))
-          
-          # 监听确认按钮
-          observeEvent(input$confirm_bind_preorder, {
-            removeModal()  # 关闭模态框
-            
-            # 更新该物品的 `OrderID` 并修改 `Status`
-            dbExecute(con, paste0(
-              "UPDATE unique_items SET OrderID = '", order_id, "', Status = '国内售出'
-         WHERE UniqueID = '", unique_id, "'"
-            ))
-            showNotification(paste0("已成功登记到预订单 ", order_id, "！"), type = "message")
-          })
         } 
       } else {
         runjs("playErrorSound()")  # 播放失败音效
@@ -1518,6 +1509,19 @@ server <- function(input, output, session) {
       }
     }
   })
+  
+  # 监听 预订单"确认登记" 按钮，**确保只绑定一次**
+  observeEvent(input$confirm_bind_preorder, {
+    req(preorder_info$order_id, preorder_info$unique_id)  # 确保数据有效
+    removeModal()  # 关闭 `预订单匹配`
+    
+    # 更新该物品的 `OrderID` 并修改 `Status`
+    dbExecute(con, paste0(
+      "UPDATE unique_items SET OrderID = '", preorder_info$order_id, "', Status = '国内售出'
+     WHERE UniqueID = '", preorder_info$unique_id, "'"
+    ))
+    showNotification(paste0("已成功登记到预订单 ", preorder_info$order_id, "！"), type = "message")
+  }, ignoreInit = TRUE, once = TRUE)  # **确保 `observeEvent` 只执行一次**
   
   # 手动确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
