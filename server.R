@@ -2121,7 +2121,8 @@ server <- function(input, output, session) {
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
-    DT::dataTableProxy("orders_table_module") %>% DT::selectRows(NULL)
+    selected_order_id(NULL)
+    associated_items(NULL)
     
     # 重置订单填写表
     reset_order_form(session, image_sold)
