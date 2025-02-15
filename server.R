@@ -1550,7 +1550,7 @@ server <- function(input, output, session) {
       "UPDATE unique_items SET OrderID = '", preorder_info$order_id, "', Status = '国内售出'
      WHERE UniqueID = '", preorder_info$unique_id, "'"
     ))
-    showNotification(paste0("已成功登记到预订单 ", preorder_info$order_id, "！"), type = "message")
+    showNotification(paste0("物品已成功登记到预定单 ", preorder_info$order_id, "！"), type = "message")
   }, ignoreInit = TRUE)  # **确保 `observeEvent` 只执行一次**
   
   # 手动确认入库逻辑
