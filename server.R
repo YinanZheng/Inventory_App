@@ -1013,14 +1013,9 @@ server <- function(input, output, session) {
   }
   
   output$preorder_items_memo <- renderUI({
-    all_items <- orders() %>%
-      filter(OrderStatus == "预定")
-      pull(OrderNotes) %>%  # 提取 OrderNotes 列
-      lapply(extract_items) %>%  # 对每个 OrderNotes 应用提取函数
-      unlist() %>%  # 展平列表为向量
-      unique()  # 去重
+    all_items <- orders() %>% filter(OrderStatus == "预定") %>% pull(OrderNotes) %>%
+      lapply(extract_items) %>% unlist() %>% unique()
     
-    # 移除空字符串
     all_items <- all_items[all_items != ""]
     
     if (length(all_items) == 0) {
