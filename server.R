@@ -1962,13 +1962,25 @@ server <- function(input, output, session) {
             
             # 从备注中提取预定供应商
             if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
-              supplier_prefix <- "【供应商】"
-              # 使用正则表达式提取供应商信息
-              supplier_match <- regmatches(existing_order$OrderNotes[1], 
-                                           regexpr(paste0(supplier_prefix, "(.*?)；"), existing_order$OrderNotes[1]))
+              # 定义正则表达式模式
+              supplier_pattern <- "【供应商】(.*?)\\s"
+              items_pattern <- "【预定物品】(.*?)(；|$)"
+              
+              # 提取供应商信息
+              supplier_match <- regmatches(order_notes, regexpr(supplier_pattern, order_notes, perl = TRUE))
               if (length(supplier_match) > 0) {
-                supplier_name <- sub(paste0(supplier_prefix, "(.*?)；"), "\\1", supplier_match)  # 提取中间的供应商名称
-                updateSelectizeInput(session, "preorder_supplier", selected = supplier_name)  # 更新下拉菜单
+                supplier_name <- sub(supplier_pattern, "\\1", supplier_match, perl = TRUE)
+                updateSelectizeInput(session, "preorder_supplier", selected = supplier_name)
+              }
+              
+              # 提取物品信息
+              items_match <- regmatches(order_notes, regexpr(items_pattern, order_notes, perl = TRUE))
+              if (length(items_match) > 0) {
+                items_str <- sub(items_pattern, "\\1", items_match, perl = TRUE)
+                # 将物品名称按逗号分割，并用换行符连接
+                items_list <- unlist(strsplit(items_str, ","))
+                items_text <- paste(items_list, collapse = "\n")
+                updateTextAreaInput(session, "preorder_item_name", value = items_text)
               }
             }
           } else {
