@@ -1515,6 +1515,35 @@ server <- function(input, output, session) {
     req(preorder_info$order_id, preorder_info$unique_id)  # 确保数据有效
     removeModal()  # 关闭 `预订单匹配`
     
+    # 获取当前订单备注
+    current_notes <- dbGetQuery(con, paste0(
+      "SELECT OrderNotes FROM orders WHERE OrderID = '", preorder_info$order_id, "'"
+    ))$OrderNotes
+    
+    if (!is.null(current_notes) && nchar(current_notes) > 0) {
+      # **删除 `OrderNotes` 里匹配的 `item_name`**
+      updated_notes <- gsub(preorder_info$item_name, "", current_notes, fixed = TRUE)
+      
+      # **清理掉可能多余的逗号、空格**
+      updated_notes <- gsub(",\\s*,", ",", updated_notes)  # 避免多个逗号
+      updated_notes <- gsub("^,|,$", "", updated_notes)  # 删除首尾逗号
+      updated_notes <- trimws(updated_notes)  # 删除空格
+      
+      # **如果 `OrderNotes` 为空，则设为 NULL**
+      if (updated_notes == "") {
+        updated_notes <- NULL
+      }
+      
+      # **更新 `OrderNotes`**
+      dbExecute(con, paste0(
+        "UPDATE orders SET OrderNotes = ", 
+        if (is.null(updated_notes)) "NULL" else paste0("'", updated_notes, "'"),
+        " WHERE OrderID = '", preorder_info$order_id, "'"
+      ))
+      
+      orders_refresh_trigger(!orders_refresh_trigger())
+    }
+    
     # 更新该物品的 `OrderID` 并修改 `Status`
     dbExecute(con, paste0(
       "UPDATE unique_items SET OrderID = '", preorder_info$order_id, "', Status = '国内售出'
