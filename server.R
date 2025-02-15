@@ -2103,7 +2103,8 @@ server <- function(input, output, session) {
       unique_items_data = unique_items_data,
       is_transfer_order = input$is_transfer_order,
       is_preorder = input$is_preorder,
-      preorder_supplier = input$preorder_supplier
+      preorder_supplier = input$preorder_supplier,
+      preorder_item_name = input$preorder_item_name
     )
     
     # 如果订单登记失败，直接退出
@@ -2524,7 +2525,8 @@ server <- function(input, output, session) {
         unique_items_data = unique_items_data,
         is_transfer_order = input$is_transfer_order,
         is_preorder = input$is_preorder,
-        preorder_supplier = input$preorder_supplier
+        preorder_supplier = input$preorder_supplier,
+        preorder_item_name = input$preorder_item_name
       )
       
       # 如果订单登记失败，直接退出
