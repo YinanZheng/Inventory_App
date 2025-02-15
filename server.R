@@ -999,24 +999,6 @@ server <- function(input, output, session) {
   
   autocompleteInputServer("purchase", get_suggestions = item_names)  # 返回商品名列表
   
-  extract_items_and_suppliers <- function(order_notes) {
-    supplier_pattern <- "【供应商】(.*?)【预定物品】"
-    items_pattern <- "【预定物品】(.*?)(；|$)"
-    
-    supplier_match <- regmatches(order_notes, regexpr(supplier_pattern, order_notes, perl = TRUE))
-    items_match <- regmatches(order_notes, regexpr(items_pattern, order_notes, perl = TRUE))
-    
-    if (length(supplier_match) > 0 && length(items_match) > 0) {
-      supplier <- sub(supplier_pattern, "\\1", supplier_match, perl = TRUE)
-      items_str <- sub(items_pattern, "\\1", items_match, perl = TRUE)
-      items_list <- unlist(strsplit(items_str, "，"))
-      items_list <- trimws(items_list)  # 去除前后空白
-      return(data.frame(Item = items_list, Supplier = supplier, stringsAsFactors = FALSE))
-    } else {
-      return(data.frame(Item = character(0), Supplier = character(0), stringsAsFactors = FALSE))
-    }
-  }
-  
   output$preorder_items_memo <- renderUI({
     # 从 orders() 中筛选出 OrderStatus 为“预定”的订单
     preorder_orders <- orders() %>% filter(OrderStatus == "预定")
@@ -2017,27 +1999,17 @@ server <- function(input, output, session) {
             
             # 从备注中提取预定供应商
             if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
-              order_notes <- existing_order$OrderNotes[1]
+              extracted <- extract_items_and_suppliers(existing_order$OrderNotes[1])
               
-              # 定义正则表达式模式
-              supplier_pattern <- "【供应商】(.*?)\\s"
-              items_pattern <- "【预定物品】(.*?)(；|$)"
-              
-              # 提取供应商信息
-              supplier_match <- regmatches(order_notes, regexpr(supplier_pattern, order_notes, perl = TRUE))
-              if (length(supplier_match) > 0) {
-                supplier_name <- sub(supplier_pattern, "\\1", supplier_match, perl = TRUE)
-                updateSelectizeInput(session, "preorder_supplier", selected = supplier_name)
-              }
-              
-              # 提取物品信息
-              items_match <- regmatches(order_notes, regexpr(items_pattern, order_notes, perl = TRUE))
-              if (length(items_match) > 0) {
-                items_str <- sub(items_pattern, "\\1", items_match, perl = TRUE)
-                # 将物品名称按逗号分割，并用换行符连接
-                items_list <- unlist(strsplit(items_str, "，"))
-                items_text <- paste(items_list, collapse = "\n")
-                updateTextAreaInput(session, "preorder_item_name", value = items_text)
+              if (nrow(extracted) > 0) {
+                # 提取并更新供应商（取第一项）
+                unique_suppliers <- unique(extracted$Supplier)
+                if (length(unique_suppliers) > 0) {
+                  updateSelectizeInput(session, "preorder_supplier", selected = unique_suppliers[1])
+                }
+                
+                # 提取并更新物品列表（换行显示）
+                updateTextAreaInput(session, "preorder_item_name", value = paste(extracted$Item, collapse = "\n"))
               }
             }
           } else {
