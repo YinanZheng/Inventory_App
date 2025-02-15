@@ -339,13 +339,10 @@ ui <- navbarPage(
         fluidRow(
           column(12, autocompleteInputUI("purchase", label = "商品名：", placeholder = "请输入商品名...")),  
           column(12,
-                 box(
-                   title = "预订单物品备忘",
-                   status = "info",
-                   solidHeader = TRUE,
-                   width = 12,
-                   collapsible = TRUE,
-                   tableOutput("preorder_items_table")  # 使用表格输出预订单物品
+                 div(
+                   style = "border: 1px solid #17a2b8; border-radius: 5px; padding: 15px; background-color: #f8f9fa;",
+                   h4("预订单物品备忘", style = "color: #17a2b8;"),
+                   tableOutput("preorder_items_memo")
                  )
           ),
           column(12, dateInput(
