@@ -1962,6 +1962,8 @@ server <- function(input, output, session) {
             
             # 从备注中提取预定供应商
             if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
+              order_notes <- existing_order$OrderNotes[1]
+              
               # 定义正则表达式模式
               supplier_pattern <- "【供应商】(.*?)\\s"
               items_pattern <- "【预定物品】(.*?)(；|$)"
