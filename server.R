@@ -1461,8 +1461,12 @@ server <- function(input, output, session) {
         
         # 查询是否有匹配的预订单（基于 `item_name`在OrderNotes中的搜索）
         matched_order <- dbGetQuery(con, paste0(
-          "SELECT OrderID, OrderImagePath, OrderNotes FROM orders 
-     WHERE OrderStatus = '预定' AND OrderNotes LIKE '%", preorder_info$item_name, "%' LIMIT 1"
+          "SELECT OrderID, OrderImagePath, OrderNotes 
+           FROM orders 
+           WHERE OrderStatus = '预定' 
+             AND OrderNotes LIKE '%", preorder_info$item_name, "%' 
+           ORDER BY created_at ASC 
+           LIMIT 1"
         ))
         
         if (nrow(matched_order) > 0) {
@@ -1474,14 +1478,23 @@ server <- function(input, output, session) {
           )
           order_notes <- matched_order$OrderNotes[1]
           
+          # 将备注中的匹配物品名称高亮显示
+          highlighted_notes <- gsub(preorder_info$item_name, paste0("<mark>", preorder_info$item_name, "</mark>"), order_notes)
+          
           # 弹出确认对话框
           showModal(modalDialog(
             title = "预订单匹配",
             div(
               tags$p("该商品已被如下预订单预定，是否直接做售出操作？"),
-              tags$img(src = order_img_path, width = "100%", style = "border-radius: 8px; margin-bottom: 10px;"),
-              tags$p(paste("订单号:", preorder_info$order_id)),
-              tags$p(paste("备注:", order_notes)),
+              fluidRow(
+                column(6,
+                       tags$img(src = order_img_path, height = "300px", style = "border-radius: 8px; margin-bottom: 10px;")
+                ),
+                column(6,
+                       tags$p(HTML(paste("订单号:", preorder_info$order_id))),
+                       tags$p(HTML(paste("备注:", highlighted_notes)))
+                )
+              ),
               style = "text-align: center;"
             ),
             footer = tagList(
