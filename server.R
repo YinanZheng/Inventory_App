@@ -1928,7 +1928,10 @@ server <- function(input, output, session) {
   # 在输入订单号时检查订单信息并填充
   observeEvent(input$order_id, {
     # 检查订单号是否为空
-    req(input$order_id)  # 如果订单号为空，停止执行
+    # req(input$order_id)  # 如果订单号为空，停止执行
+    
+    if (input$order_id == "") return()  # 如果订单号为空，直接退出
+    
     
     tryCatch({
       # 去除空格和#号
@@ -2120,11 +2123,7 @@ server <- function(input, output, session) {
   })
   
   # 清空订单信息按钮
-  isClearing <- reactiveVal(FALSE)
-  
   observeEvent(input$clear_order_btn, {
-    isClearing(TRUE)
-    
     # 重置订单填写表
     reset_order_form(session, image_sold)
 
@@ -2741,8 +2740,6 @@ server <- function(input, output, session) {
   
   # 监听订单选择事件
   observeEvent(selected_order_row(), {
-    if (isTRUE(isClearing())) return()  # 如果正在清空，则不执行自动填充
-    
     selected_row <- selected_order_row()
     
     # 如果用户选择了订单，获取选中的订单数据
