@@ -2120,37 +2120,21 @@ server <- function(input, output, session) {
   })
   
   # 清空订单信息按钮
-  # observeEvent(input$clear_order_btn, {
-  #   reset_order_form(session, image_sold)
-  #   
-  #   # 清空订单关联物品表
-  #   output$associated_items_title <- renderDT({ NULL }) # 清空标题
-  #   renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
-  #   
-  #   showNotification("已清空所有输入！", type = "message")
-  # })
+  isClearing <- reactiveVal(FALSE)
   
   observeEvent(input$clear_order_btn, {
-    # 先显示所有需要更新的控件
-    shinyjs::show("order_id")
-    shinyjs::show("platform")
-    shinyjs::show("customer_name")
-    shinyjs::show("customer_netname")
-    shinyjs::show("tracking_number")
-    shinyjs::show("order_notes")
+    isClearing(TRUE)
     
-    # 延时执行重置，确保控件已经显示
-    shinyjs::delay(100, {
-      reset_order_form(session, image_sold)
-      
-      output$associated_items_title <- renderDT({ NULL })
-      renderOrderItems(output, "order_items_cards", data.frame(), con)
-      
-      showNotification("已清空所有输入！", type = "message")
-    })
+    # 重置订单填写表
+    reset_order_form(session, image_sold)
+
+    # 清空订单关联物品表
+    output$associated_items_title <- renderDT({ NULL }) # 清空标题
+    renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
+
+    showNotification("已清空所有输入！", type = "message")
   })
-  
-  
+
   # 订单合并
   observeEvent(input$merge_order_btn, {
     tryCatch({
@@ -2757,6 +2741,8 @@ server <- function(input, output, session) {
   
   # 监听订单选择事件
   observeEvent(selected_order_row(), {
+    if (isTRUE(isClearing())) return()  # 如果正在清空，则不执行自动填充
+    
     selected_row <- selected_order_row()
     
     # 如果用户选择了订单，获取选中的订单数据
