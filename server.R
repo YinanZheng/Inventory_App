@@ -1006,14 +1006,14 @@ server <- function(input, output, session) {
     
     # 从 OrderNotes 中提取物品名称
     preorder_items <- preorder_orders %>%
-      mutate(Items = str_extract(OrderNotes, "【预定物品】(.*?)(；|$)")) %>%
-      mutate(Items = str_replace_all(Items, "【预定物品】|；", "")) %>%
+      mutate(Items = stri_extract_first_regex(OrderNotes, "【预定物品】(.*?)(；|$)")) %>%
+      mutate(Items = stri_replace_all_regex(Items, "【预定物品】|；", "")) %>%
       filter(!is.na(Items) & Items != "")
     
     # 将物品名称拆分并汇总
     all_preorder_items <- preorder_items %>%
       select(Items) %>%
-      separate_rows(Items, sep = ",") %>%
+      separate_rows(Items, sep = "，") %>%
       distinct() %>%
       pull(Items)
     
