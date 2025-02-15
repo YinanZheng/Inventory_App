@@ -1737,13 +1737,13 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听 sold_tabs 的变化，调整 filter_tabs
-  # observeEvent(input$sold_tabs, {
-  #   if (input$sold_tabs == "物品售出") {
-  #     updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
-  #   } else if (input$sold_tabs == "订单管理") {
-  #     updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
-  #   }
-  # })
+  observeEvent(input$sold_tabs, {
+    if (input$sold_tabs == "物品售出") {
+      updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
+    } else if (input$sold_tabs == "订单管理") {
+      updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
+    }
+  })
   
   ############################ 
   #####   物品售出子页   ##### 
@@ -2120,15 +2120,36 @@ server <- function(input, output, session) {
   })
   
   # 清空订单信息按钮
+  # observeEvent(input$clear_order_btn, {
+  #   reset_order_form(session, image_sold)
+  #   
+  #   # 清空订单关联物品表
+  #   output$associated_items_title <- renderDT({ NULL }) # 清空标题
+  #   renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
+  #   
+  #   showNotification("已清空所有输入！", type = "message")
+  # })
+  
   observeEvent(input$clear_order_btn, {
-    reset_order_form(session, image_sold)
+    # 先显示所有需要更新的控件
+    shinyjs::show("order_id")
+    shinyjs::show("platform")
+    shinyjs::show("customer_name")
+    shinyjs::show("customer_netname")
+    shinyjs::show("tracking_number")
+    shinyjs::show("order_notes")
     
-    # 清空订单关联物品表
-    output$associated_items_title <- renderDT({ NULL }) # 清空标题
-    renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
-    
-    showNotification("已清空所有输入！", type = "message")
+    # 延时执行重置，确保控件已经显示
+    shinyjs::delay(100, {
+      reset_order_form(session, image_sold)
+      
+      output$associated_items_title <- renderDT({ NULL })
+      renderOrderItems(output, "order_items_cards", data.frame(), con)
+      
+      showNotification("已清空所有输入！", type = "message")
+    })
   })
+  
   
   # 订单合并
   observeEvent(input$merge_order_btn, {
