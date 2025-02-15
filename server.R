@@ -1990,12 +1990,14 @@ server <- function(input, output, session) {
             updateCheckboxInput(session, "is_transfer_order", value = FALSE)
             updateCheckboxInput(session, "is_preorder", value = FALSE)
             updateSelectizeInput(session, "preorder_supplier", selected = NULL)  # 清空供应商下拉菜单
+            updateTextAreaInput(session, "preorder_item_name", value = "")
           }
         } else {
           # 如果 OrderStatus 为空或 NULL，清空复选框和下拉菜单
           updateCheckboxInput(session, "is_transfer_order", value = FALSE)
           updateCheckboxInput(session, "is_preorder", value = FALSE)
           updateSelectizeInput(session, "preorder_supplier", selected = NULL)
+          updateTextAreaInput(session, "preorder_item_name", value = "")
         }
         
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
