@@ -1485,21 +1485,20 @@ server <- function(input, output, session) {
           showModal(modalDialog(
             title = "预订单匹配",
             div(
-              tags$p("该商品已被如下预订单预定，是否直接做售出操作？"),
-              fluidRow(
-                column(6,
-                       tags$img(src = order_img_path, height = "300px", style = "border-radius: 8px; margin-bottom: 10px;")
-                ),
-                column(6,
-                       tags$p(HTML(paste("订单号:", preorder_info$order_id))),
-                       tags$p(HTML(paste("备注:", highlighted_notes)))
-                )
+              # 提示导语，使用强调样式
+              tags$p("该商品已被如下预订单预定，是否直接做售出操作？", style = "font-weight: bold; color: #d9534f; text-align: center;"),
+              div(
+                tags$img(src = order_img_path, height = "300px", style = "display: block; margin: 10px auto; border-radius: 8px;")
               ),
-              style = "text-align: center;"
+              div(
+                tags$p(HTML(paste("<strong>订单号:</strong>", preorder_info$order_id)), style = "margin-top: 10px;"),
+                tags$p(HTML(paste("<strong>备注:</strong>", highlighted_notes)), style = "white-space: pre-wrap;")
+              ),
+              style = "text-align: left;"
             ),
             footer = tagList(
               modalButton("取消"),
-              actionButton("confirm_bind_preorder", "确认登记", class = "btn-primary")
+              actionButton("confirm_bind_preorder", "确认登记", class = "btn btn-primary")
             ),
             easyClose = FALSE  # 防止用户误触关闭
           ))
