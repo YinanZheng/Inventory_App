@@ -1957,9 +1957,7 @@ server <- function(input, output, session) {
         if (!is.null(existing_order$OrderStatus[1]) && !is.na(existing_order$OrderStatus[1])) {
           if (existing_order$OrderStatus[1] == "调货") {
             updateCheckboxInput(session, "is_transfer_order", value = TRUE)
-            # updateCheckboxInput(session, "is_preorder", value = FALSE)  # 确保互斥
           } else if (existing_order$OrderStatus[1] == "预定") {
-            # updateCheckboxInput(session, "is_transfer_order", value = FALSE)  # 确保互斥
             updateCheckboxInput(session, "is_preorder", value = TRUE)
             
             # 从备注中提取预定供应商
