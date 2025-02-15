@@ -999,29 +999,39 @@ server <- function(input, output, session) {
   
   autocompleteInputServer("purchase", get_suggestions = item_names)  # 返回商品名列表
   
-  output$preorder_items_memo <- renderText({
-    # 从 orders() 中筛选出 OrderStatus 为“预定”的订单
-    preorder_orders <- orders() %>%
-      filter(OrderStatus == "预定")
-    
-    # 从 OrderNotes 中提取物品名称
-    preorder_items <- preorder_orders %>%
-      mutate(Items = stri_extract_first_regex(OrderNotes, "【预定物品】(.*?)(；|$)")) %>%
-      mutate(Items = stri_replace_all_regex(Items, "【预定物品】|；", "")) %>%
-      filter(!is.na(Items) & Items != "")
-    
-    # 将物品名称拆分并汇总
-    all_preorder_items <- preorder_items %>%
-      select(Items) %>%
-      separate_rows(Items, sep = "，") %>%
-      distinct() %>%
-      pull(Items)
-    
-    # 渲染预订单物品备忘
-    if (length(all_preorder_items) == 0) {
-      "当前没有预订单物品。"
+  extract_items <- function(order_notes) {
+    items_pattern <- "【预定物品】(.*?)(；|$)"
+    items_match <- regmatches(order_notes, regexpr(items_pattern, order_notes, perl = TRUE))
+    if (length(items_match) > 0) {
+      items_str <- sub(items_pattern, "\\1", items_match, perl = TRUE)
+      items_list <- unlist(strsplit(items_str, "，"))
+      items_list <- trimws(items_list)  # 去除前后空白
+      return(items_list)
     } else {
-      paste(all_preorder_items, collapse = "\n")
+      return(character(0))
+    }
+  }
+  
+  output$preorder_items_memo <- renderUI({
+    all_items <- orders() %>%
+      filter(OrderStatus == "预定")
+      pull(OrderNotes) %>%  # 提取 OrderNotes 列
+      lapply(extract_items) %>%  # 对每个 OrderNotes 应用提取函数
+      unlist() %>%  # 展平列表为向量
+      unique()  # 去重
+    
+    # 移除空字符串
+    all_items <- all_items[all_items != ""]
+    
+    if (length(all_items) == 0) {
+      div("当前没有预订单物品。")
+    } else {
+      # 创建物品列表
+      item_list <- lapply(all_items, function(item) {
+        div(style = "padding: 5px 0; border-bottom: 1px solid #eee;", item)
+      })
+      # 返回 UI 组件
+      do.call(tagList, item_list)
     }
   })
   
