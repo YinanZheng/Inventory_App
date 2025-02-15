@@ -1928,10 +1928,7 @@ server <- function(input, output, session) {
   # 在输入订单号时检查订单信息并填充
   observeEvent(input$order_id, {
     # 检查订单号是否为空
-    # req(input$order_id)  # 如果订单号为空，停止执行
-    
-    if (input$order_id == "") return()  # 如果订单号为空，直接退出
-    
+    req(input$order_id)  # 如果订单号为空，停止执行
     
     tryCatch({
       # 去除空格和#号
@@ -2124,6 +2121,8 @@ server <- function(input, output, session) {
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
+    DT::dataTableProxy("orders_table_module") %>% DT::selectRows(NULL)
+    
     # 重置订单填写表
     reset_order_form(session, image_sold)
 
