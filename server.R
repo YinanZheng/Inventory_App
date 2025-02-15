@@ -2126,9 +2126,6 @@ server <- function(input, output, session) {
     
     shinyjs::reset("orderForm")  # 一次性重置整个订单登记区
     
-    # 重置订单填写表
-    # reset_order_form(session, image_sold)
-
     # 清空订单关联物品表
     output$associated_items_title <- renderDT({ NULL }) # 清空标题
     renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
