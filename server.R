@@ -1539,7 +1539,7 @@ server <- function(input, output, session) {
      WHERE UniqueID = '", preorder_info$unique_id, "'"
     ))
     showNotification(paste0("已成功登记到预订单 ", preorder_info$order_id, "！"), type = "message")
-  }, ignoreInit = TRUE, once = TRUE)  # **确保 `observeEvent` 只执行一次**
+  }, ignoreInit = TRUE)  # **确保 `observeEvent` 只执行一次**
   
   # 手动确认入库逻辑
   observeEvent(input$confirm_inbound_btn, {
