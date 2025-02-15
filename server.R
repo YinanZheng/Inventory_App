@@ -1019,7 +1019,7 @@ server <- function(input, output, session) {
     all_items <- all_items[all_items$Item != "", ]
     
     if (nrow(all_items) == 0) {
-      div("当前没有预订单物品。")
+      div("当前没有预订单物品")
     } else {
       # 创建物品列表，格式为“物品名（供应商）”
       item_list <- lapply(seq_len(nrow(all_items)), function(i) {
