@@ -1522,7 +1522,7 @@ server <- function(input, output, session) {
     
     if (!is.null(current_notes) && nchar(current_notes) > 0) {
       # **删除 `OrderNotes` 里匹配的 `item_name`**
-      updated_notes <- trimws(sub("^，|，$", "", sub("，，", "，", sub(item_name, "", current_notes, fixed = TRUE))))
+      updated_notes <- trimws(sub("^，|，$", "", sub("，，", "，", sub(preorder_info$item_name, "", current_notes, fixed = TRUE))))
       
       # **更新 `OrderNotes`**
       dbExecute(con, 
