@@ -1960,6 +1960,9 @@ server <- function(input, output, session) {
           } else if (existing_order$OrderStatus[1] == "预定") {
             updateCheckboxInput(session, "is_preorder", value = TRUE)
             
+            updateSelectizeInput(session, "preorder_supplier", selected = NULL)
+            updateTextAreaInput(session, "preorder_item_name", value = "")
+            
             # 从备注中提取预定供应商
             if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
               order_notes <- existing_order$OrderNotes[1]
