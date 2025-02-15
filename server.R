@@ -999,6 +999,32 @@ server <- function(input, output, session) {
   
   autocompleteInputServer("purchase", get_suggestions = item_names)  # 返回商品名列表
   
+  output$preorder_items_memo <- renderText({
+    # 从 orders() 中筛选出 OrderStatus 为“预定”的订单
+    preorder_orders <- orders() %>%
+      filter(OrderStatus == "预定")
+    
+    # 从 OrderNotes 中提取物品名称
+    preorder_items <- preorder_orders %>%
+      mutate(Items = str_extract(OrderNotes, "【预定物品】(.*?)(；|$)")) %>%
+      mutate(Items = str_replace_all(Items, "【预定物品】|；", "")) %>%
+      filter(!is.na(Items) & Items != "")
+    
+    # 将物品名称拆分并汇总
+    all_preorder_items <- preorder_items %>%
+      select(Items) %>%
+      separate_rows(Items, sep = ",") %>%
+      distinct() %>%
+      pull(Items)
+    
+    # 渲染预订单物品备忘
+    if (length(all_preorder_items) == 0) {
+      "当前没有预订单物品。"
+    } else {
+      paste(all_preorder_items, collapse = "\n")
+    }
+  })
+  
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
   
