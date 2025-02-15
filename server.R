@@ -2124,18 +2124,11 @@ server <- function(input, output, session) {
     selected_order_id(NULL)
     associated_items(NULL)
     
-    updateTextInput(session, "order_id", value = "")
-    updateSelectInput(session, "platform", selected = "")
-    updateTextInput(session, "customer_name", value = "")
-    updateTextInput(session, "customer_netname", value = "")
-    updateCheckboxInput(session, "is_preorder", value = FALSE)
-    updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-    updateTextInput(session, "tracking_number", value = "")
-    shinyjs::reset("shiplabel_pdf_upload")
-    shinyjs::enable("tracking_number")
-    image_sold$reset()
-    updateTextAreaInput(session, "order_notes", value = "")
-  
+    shinyjs::reset("orderForm")  # 一次性重置整个订单登记区
+    
+    # 重置订单填写表
+    reset_order_form(session, image_sold)
+
     # 清空订单关联物品表
     output$associated_items_title <- renderDT({ NULL }) # 清空标题
     renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
