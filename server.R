@@ -1957,9 +1957,9 @@ server <- function(input, output, session) {
         if (!is.null(existing_order$OrderStatus[1]) && !is.na(existing_order$OrderStatus[1])) {
           if (existing_order$OrderStatus[1] == "调货") {
             updateCheckboxInput(session, "is_transfer_order", value = TRUE)
-            updateCheckboxInput(session, "is_preorder", value = FALSE)  # 确保互斥
+            # updateCheckboxInput(session, "is_preorder", value = FALSE)  # 确保互斥
           } else if (existing_order$OrderStatus[1] == "预定") {
-            updateCheckboxInput(session, "is_transfer_order", value = FALSE)  # 确保互斥
+            # updateCheckboxInput(session, "is_transfer_order", value = FALSE)  # 确保互斥
             updateCheckboxInput(session, "is_preorder", value = TRUE)
             
             # 从备注中提取预定供应商
@@ -2130,8 +2130,6 @@ server <- function(input, output, session) {
     # 清空订单关联物品表
     output$associated_items_title <- renderDT({ NULL }) # 清空标题
     renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
-
-    showNotification("已清空所有输入！", type = "message")
   })
 
   # 订单合并
