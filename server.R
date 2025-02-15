@@ -999,36 +999,57 @@ server <- function(input, output, session) {
   
   autocompleteInputServer("purchase", get_suggestions = item_names)  # 返回商品名列表
   
-  extract_items <- function(order_notes) {
+  extract_items_and_suppliers <- function(order_notes) {
+    supplier_pattern <- "【供应商】(.*?)【预定物品】"
     items_pattern <- "【预定物品】(.*?)(；|$)"
+    
+    supplier_match <- regmatches(order_notes, regexpr(supplier_pattern, order_notes, perl = TRUE))
     items_match <- regmatches(order_notes, regexpr(items_pattern, order_notes, perl = TRUE))
-    if (length(items_match) > 0) {
+    
+    if (length(supplier_match) > 0 && length(items_match) > 0) {
+      supplier <- sub(supplier_pattern, "\\1", supplier_match, perl = TRUE)
       items_str <- sub(items_pattern, "\\1", items_match, perl = TRUE)
       items_list <- unlist(strsplit(items_str, "，"))
       items_list <- trimws(items_list)  # 去除前后空白
-      return(items_list)
+      return(data.frame(Item = items_list, Supplier = supplier, stringsAsFactors = FALSE))
     } else {
-      return(character(0))
+      return(data.frame(Item = character(0), Supplier = character(0), stringsAsFactors = FALSE))
     }
   }
   
   output$preorder_items_memo <- renderUI({
-    all_items <- orders() %>% filter(OrderStatus == "预定") %>% pull(OrderNotes) %>%
-      lapply(extract_items) %>% unlist() %>% unique()
+    # 从 orders() 中筛选出 OrderStatus 为“预定”的订单
+    preorder_orders <- orders() %>% filter(OrderStatus == "预定")
     
-    all_items <- all_items[all_items != ""]
+    # 初始化空的数据框，用于存储所有物品和供应商信息
+    all_items <- data.frame(Item = character(0), Supplier = character(0), stringsAsFactors = FALSE)
     
-    if (length(all_items) == 0) {
+    # 遍历每个订单的 OrderNotes，提取物品和供应商信息
+    for (order_note in preorder_orders$OrderNotes) {
+      extracted <- extract_items_and_suppliers(order_note)
+      all_items <- rbind(all_items, extracted)
+    }
+    
+    # 去除重复的物品-供应商组合
+    all_items <- unique(all_items)
+    
+    # 移除空字符串
+    all_items <- all_items[all_items$Item != "", ]
+    
+    if (nrow(all_items) == 0) {
       div("当前没有预订单物品。")
     } else {
-      # 创建物品列表
-      item_list <- lapply(all_items, function(item) {
-        div(style = "padding: 5px 0; border-bottom: 1px solid #eee;", item)
+      # 创建物品列表，格式为“物品名（供应商）”
+      item_list <- lapply(seq_len(nrow(all_items)), function(i) {
+        item <- all_items$Item[i]
+        supplier <- all_items$Supplier[i]
+        div(style = "padding: 5px 0; border-bottom: 1px solid #eee;", paste0(item, "（", supplier, "）"))
       })
       # 返回 UI 组件
       do.call(tagList, item_list)
     }
   })
+  
   
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
