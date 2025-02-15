@@ -1737,13 +1737,13 @@ server <- function(input, output, session) {
   ################################################################
   
   # 监听 sold_tabs 的变化，调整 filter_tabs
-  observeEvent(input$sold_tabs, {
-    if (input$sold_tabs == "物品售出") {
-      updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
-    } else if (input$sold_tabs == "订单管理") {
-      updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
-    }
-  })
+  # observeEvent(input$sold_tabs, {
+  #   if (input$sold_tabs == "物品售出") {
+  #     updateTabsetPanel(session, inputId = "filter_tabs", selected = "物品筛选")
+  #   } else if (input$sold_tabs == "订单管理") {
+  #     updateTabsetPanel(session, inputId = "filter_tabs", selected = "订单筛选")
+  #   }
+  # })
   
   ############################ 
   #####   物品售出子页   ##### 
