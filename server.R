@@ -2043,8 +2043,7 @@ server <- function(input, output, session) {
   
   # 在输入订单号时检查订单信息并填充
   observeEvent(input$order_id, {
-    # 检查订单号是否为空
-    req(input$order_id)  # 如果订单号为空，停止执行
+    req(input$order_id)  # 确保订单号不为空
     
     tryCatch({
       # 去除空格和#号
@@ -2065,88 +2064,97 @@ server <- function(input, output, session) {
       # 查询数据库，优先查找完整匹配的 `OrderID`（如 `1234@1`）
       existing_order <- orders() %>% filter(OrderID == sanitized_order_id)
       
+      # **检查主订单 `1234` 是否存在**
+      main_order_exists <- nrow(orders() %>% filter(OrderID == main_order_id)) > 0
+      
       # **如果找不到 `1234@1`，但 `1234` 存在，则填充 `1234` 的信息**
-      if (nrow(existing_order) == 0) {
+      if (nrow(existing_order) == 0 && main_order_exists) {
         existing_order <- orders() %>% filter(OrderID == main_order_id)
       }
       
-      # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
         # 填充各字段信息
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
-        # updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1]) # 交给网名自动填写功能
+        updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
+        updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
         
+        # **检查 LabelStatus**
+        if (existing_order$LabelStatus[1] != "无") {
+          shinyjs::disable("tracking_number")  # 禁用输入框
+        } else {
+          shinyjs::enable("tracking_number")  # 启用输入框
+        }
+        
+        # **处理 `调货` 和 `预定` 订单状态**
         if (!is.null(existing_order$OrderStatus[1]) && !is.na(existing_order$OrderStatus[1])) {
           if (existing_order$OrderStatus[1] == "调货") {
             updateCheckboxInput(session, "is_transfer_order", value = TRUE)
-          } else if (existing_order$OrderStatus[1] == "预定") {
+          } else {
+            updateCheckboxInput(session, "is_transfer_order", value = FALSE)
+          }
+          
+          if (existing_order$OrderStatus[1] == "预定") {
             updateCheckboxInput(session, "is_preorder", value = TRUE)
-            
             updateSelectizeInput(session, "preorder_supplier", selected = character(0))
             updateTextAreaInput(session, "preorder_item_name", value = "")
             
-            # 从备注中提取预定供应商
+            # **从 `OrderNotes` 提取预定供应商和物品信息**
             if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
               extracted <- extract_items_and_suppliers(existing_order$OrderNotes[1])
-              
               if (nrow(extracted) > 0) {
-                # 提取并更新供应商（取第一项）
                 unique_suppliers <- unique(extracted$Supplier)
                 if (length(unique_suppliers) > 0) {
                   updateSelectizeInput(session, "preorder_supplier", selected = unique_suppliers[1])
                 }
-                
-                # 提取并更新物品列表（换行显示）
                 updateTextAreaInput(session, "preorder_item_name", value = paste(extracted$Item, collapse = "\n"))
               }
             }
           } else {
-            # 其他情况，全部复选框设为 FALSE
-            updateCheckboxInput(session, "is_transfer_order", value = FALSE)
             updateCheckboxInput(session, "is_preorder", value = FALSE)
-            updateSelectizeInput(session, "preorder_supplier", selected = character(0))  # 清空供应商下拉菜单
+            updateSelectizeInput(session, "preorder_supplier", selected = character(0))
             updateTextAreaInput(session, "preorder_item_name", value = "")
           }
         } else {
-          # 如果 OrderStatus 为空或 NULL，清空复选框和下拉菜单
           updateCheckboxInput(session, "is_transfer_order", value = FALSE)
           updateCheckboxInput(session, "is_preorder", value = FALSE)
           updateSelectizeInput(session, "preorder_supplier", selected = character(0))
           updateTextAreaInput(session, "preorder_item_name", value = "")
         }
         
-        updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
-        
-        # 检查 LabelStatus
-        if (existing_order$LabelStatus[1] != "无") {
-          shinyjs::disable("tracking_number")  # 禁用输入框
+        # **判断按钮逻辑**
+        if (nrow(existing_order) > 0 && sanitized_order_id == main_order_id) {
+          # **情况 1：当前输入的订单号已存在（如 `1234` 存在） → 显示“更新订单”**
+          output$register_order_button_ui <- renderUI({
+            actionButton(
+              "register_order_btn",
+              "更新订单",
+              icon = icon("edit"),
+              class = "btn-success",
+              style = "font-size: 16px; min-width: 130px; height: 42px;"
+            )
+          })
         } else {
-          shinyjs::enable("tracking_number")  # 启用输入框（以防之前禁用过）
+          # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
+          showNotification("主订单已存在，正在创建子订单", type = "warning")
+          
+          output$register_order_button_ui <- renderUI({
+            actionButton(
+              "register_order_btn",
+              "登记订单",
+              icon = icon("plus"),
+              class = "btn-primary",
+              style = "font-size: 16px; min-width: 130px; height: 42px;"
+            )
+          })
         }
         
-        updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
-        
-        # 动态更新按钮为“更新订单”
-        output$register_order_button_ui <- renderUI({
-          actionButton(
-            "register_order_btn",
-            "更新订单",
-            icon = icon("edit"),
-            class = "btn-success",
-            style = "font-size: 16px; min-width: 130px; height: 42px;"
-          )
-        })
-        
         showNotification("已找到订单信息！字段已自动填充", type = "message")
+        
       } else {
-        # 如果订单记录不存在
+        # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
         showNotification("未找到对应订单记录，可登记新订单", type = "warning")
         
-        # 重置所有输入框, 除了order ID： 禁用
-        # reset_order_form(session, image_sold, keep_order_id = TRUE)
-        
-        # 动态更新按钮为“登记订单”
         output$register_order_button_ui <- renderUI({
           actionButton(
             "register_order_btn",
@@ -2158,7 +2166,6 @@ server <- function(input, output, session) {
         })
       }
     }, error = function(e) {
-      # 捕获错误并通知用户
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
     })
   })
