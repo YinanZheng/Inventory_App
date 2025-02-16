@@ -2138,6 +2138,7 @@ server <- function(input, output, session) {
           # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
           showNotification("主订单已存在，正在创建子订单", type = "warning")
           updateTextAreaInput(session, "order_notes", value = "")
+          updateTextAreaInput(session, "preorder_item_name", value = "")
           
           output$register_order_button_ui <- renderUI({
             actionButton(
