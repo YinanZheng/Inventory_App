@@ -2050,23 +2050,30 @@ server <- function(input, output, session) {
       # 去除空格和#号
       sanitized_order_id <- gsub("#", "", trimws(input$order_id))
       
-      # 查询订单信息，包含新增字段
-      existing_order <- orders() %>% {
-        if (grepl("@", sanitized_order_id)) {
-          # 如果 OrderID 包含 "@"
-          at_prefix <- sub("@.*", "", sanitized_order_id)  # 提取 "@" 之前的所有字符
-          filter(., grepl(paste0("^", at_prefix, "@"), OrderID))  # 匹配包含 "@" 且符合前缀的 OrderID
-        } else {
-          # 如果 OrderID 不包含 "@"
-          filter(., OrderID == sanitized_order_id)
-        }
+      # 处理不同输入情况
+      if (grepl("@$", sanitized_order_id)) {
+        # **用户输入 `1234@`，提取 `1234` 作为主单号**
+        main_order_id <- sub("@$", "", sanitized_order_id)
+      } else if (grepl("@", sanitized_order_id)) {
+        # **用户输入完整的 `1234@1`，提取 `1234` 作为前缀**
+        main_order_id <- sub("@.*", "", sanitized_order_id)
+      } else {
+        # **用户输入 `1234`，直接使用**
+        main_order_id <- sanitized_order_id
+      }
+      
+      # 查询数据库，优先查找完整匹配的 `OrderID`（如 `1234@1`）
+      existing_order <- orders() %>% filter(OrderID == sanitized_order_id)
+      
+      # **如果找不到 `1234@1`，但 `1234` 存在，则填充 `1234` 的信息**
+      if (nrow(existing_order) == 0) {
+        existing_order <- orders() %>% filter(OrderID == main_order_id)
       }
       
       # 如果订单存在，填充对应字段
       if (nrow(existing_order) > 0) {
         # 填充各字段信息
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
-        
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
         # updateTextInput(session, "customer_netname", value = existing_order$CustomerNetName[1]) # 交给网名自动填写功能
         
@@ -2110,6 +2117,7 @@ server <- function(input, output, session) {
         }
         
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
+        
         # 检查 LabelStatus
         if (existing_order$LabelStatus[1] != "无") {
           shinyjs::disable("tracking_number")  # 禁用输入框
@@ -2132,7 +2140,7 @@ server <- function(input, output, session) {
         
         showNotification("已找到订单信息！字段已自动填充", type = "message")
       } else {
-        # 如果订单记录不存在，清空出order ID以外所有相关字段
+        # 如果订单记录不存在
         showNotification("未找到对应订单记录，可登记新订单", type = "warning")
         
         # 重置所有输入框, 除了order ID： 禁用
@@ -2268,32 +2276,27 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 检查订单号是否包含 "@"
-      if (!grepl("@", selected_order_id)) {
-        showNotification("选中的订单不包含识别符 '@'，无法进行合并！", type = "error")
-        return()
-      }
+      # 判断选中的订单是否包含 '@'，如果没有 '@'，则其本身就是主单
+      main_order_id <- ifelse(grepl("@", selected_order_id), sub("@.*", "", selected_order_id), selected_order_id)
       
-      # 提取主单号
-      main_order_id <- sub("@.*", "", selected_order_id)  # 提取 '@' 之前的部分
-      
-      # 获取可能的子单
+      # 获取可能的子单，包括主单本身和所有 `@` 子单
       possible_sub_orders <- orders() %>%
-        filter(grepl(paste0("^", main_order_id, "@"), OrderID))
+        filter(grepl(paste0("^", main_order_id, "(@\\d+)?$"), OrderID))
       
-      # 检查子单是否满足合并条件
-      if (nrow(possible_sub_orders) == 0) {
-        showNotification("未找到符合条件的子单！", type = "error")
+      # 如果只找到 **1 个** 订单，且它本身就是主单（无 `@`），则不能合并
+      if (nrow(possible_sub_orders) == 1 && !grepl("@", selected_order_id)) {
+        showNotification("当前订单未找到可合并的子单！", type = "error")
         return()
       }
       
+      # 获取所有子单的订单状态、运单号和平台信息
       order_statuses <- unique(possible_sub_orders$OrderStatus)
       tracking_numbers <- unique(possible_sub_orders$UsTrackingNumber)
       platforms <- unique(possible_sub_orders$Platform)
       
       # 检查订单状态、运单号和平台是否满足合并条件
       if (!all(order_statuses == "备货") || length(tracking_numbers) > 1 || length(platforms) > 1) {
-        showNotification("子单的订单状态必须全部为 '备货'，运单号和平台必须一致，无法合并！", type = "error")
+        showNotification("子单的订单状态必须全部为 '备货'，运单号和平台必须一致才可合并！", type = "error")
         return()
       }
       
@@ -2301,19 +2304,25 @@ server <- function(input, output, session) {
       sub_items <- unique_items_data() %>%
         filter(OrderID %in% possible_sub_orders$OrderID)
       
-      # 子单物品图片路径拼接
+      # 处理子单物品图片路径拼接
       image_paths <- unique(sub_items$ItemImagePath[!is.na(sub_items$ItemImagePath)])
-      
-      if (length(image_paths) > 0) {
-        # 生成拼接图片路径（带时间戳）
+      merged_image_path <- if (length(image_paths) > 0) {
         montage_path <- paste0("/var/www/images/", main_order_id, "_montage_", format(Sys.time(), "%Y%m%d%H%M%S"), ".jpg")
-        # 调用拼接图片函数
-        merged_image_path <- generate_montage(image_paths, montage_path)
+        generate_montage(image_paths, montage_path)
       } else {
-        merged_image_path <- NA  # 如果没有图片，路径设为 NA
+        NA
       }
       
-      # 更新订单信息
+      # 获取最早的 `created_at` 时间
+      earliest_created_at <- min(possible_sub_orders$created_at, na.rm = TRUE)
+      
+      # **先删除所有子单（包括可能存在的主单）**
+      dbExecute(con, sprintf(
+        "DELETE FROM orders WHERE OrderID IN (%s)",
+        paste(shQuote(possible_sub_orders$OrderID), collapse = ", ")
+      ))
+      
+      # **插入合并后的主订单**
       merged_order <- tibble(
         OrderID = main_order_id,
         Platform = platforms[1],
@@ -2322,22 +2331,18 @@ server <- function(input, output, session) {
                               paste(unique(possible_sub_orders$CustomerName), collapse = ", "), NA),
         CustomerNetName = ifelse(length(unique(possible_sub_orders$CustomerNetName)) > 0,
                                  paste(unique(possible_sub_orders$CustomerNetName), collapse = ", "), NA),
-        OrderImagePath = merged_image_path,  # 使用拼接后的图片路径
+        OrderImagePath = merged_image_path,  # 合并图片路径
         OrderNotes = ifelse(length(unique(possible_sub_orders$OrderNotes)) > 0,
                             paste(unique(possible_sub_orders$OrderNotes), collapse = " | "), NA),
-        OrderStatus = "备货"
+        OrderStatus = "备货",
+        created_at = earliest_created_at,  # 使用子单中最早的创建时间
+        updated_at = Sys.time()
       )
-      # 更新数据库中的订单
+      
       dbWriteTable(
         con, "orders", merged_order,
         append = TRUE, overwrite = FALSE
       )
-      
-      # 删除子单
-      dbExecute(con, sprintf(
-        "DELETE FROM orders WHERE OrderID IN (%s)",
-        paste(shQuote(possible_sub_orders$OrderID), collapse = ", ")
-      ))
       
       # 更新子单物品的订单号为主单号
       update_order_id(con, sub_items$UniqueID, main_order_id)
