@@ -2137,6 +2137,7 @@ server <- function(input, output, session) {
         } else {
           # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
           showNotification("主订单已存在，正在创建子订单", type = "warning")
+          updateTextAreaInput(session, "order_notes", value = "")
           
           output$register_order_button_ui <- renderUI({
             actionButton(
@@ -2148,9 +2149,6 @@ server <- function(input, output, session) {
             )
           })
         }
-        
-        showNotification("已找到订单信息！字段已自动填充", type = "message")
-        
       } else {
         # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
         showNotification("未找到对应订单记录，可登记新订单", type = "warning")
