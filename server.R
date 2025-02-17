@@ -1469,6 +1469,8 @@ server <- function(input, output, session) {
            LIMIT 1"
         ))
         
+        showNotification(nrow(matched_order))
+        
         if (nrow(matched_order) > 0) {
           preorder_info$order_id <- matched_order$OrderID[1]  # 存储 order_id
           order_img_path <- ifelse(
