@@ -1466,7 +1466,7 @@ server <- function(input, output, session) {
           "SELECT OrderID, OrderImagePath, OrderNotes 
            FROM orders 
            WHERE OrderStatus = '预定' 
-             AND OrderNotes REGEXP '【预定物品】([^；]*)\\b", preorder_info$item_name, "\\b(，|；)' 
+             AND OrderNotes REGEXP '【预定物品】([^；]*)((^|，)", preorder_info$item_name, "(，|；))' 
            ORDER BY created_at ASC 
            LIMIT 1"
         ))
