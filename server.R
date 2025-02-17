@@ -642,6 +642,7 @@ server <- function(input, output, session) {
                                      CustomerName = "姓名",
                                      CustomerNetName = "网名",
                                      Platform = "平台",
+                                     TransactionAmount = "成交额",
                                      UsTrackingNumber = "运单号",
                                      LabelStatus = "运单PDF",
                                      OrderStatus = "状态",
