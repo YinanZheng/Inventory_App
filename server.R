@@ -2080,6 +2080,7 @@ server <- function(input, output, session) {
       if (nrow(existing_order) > 0) {
         # 填充各字段信息
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
+        updateNumericInput(session, "transaction_amount", value = existing_order$TransactionAmount[1])
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
