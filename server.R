@@ -1860,6 +1860,11 @@ server <- function(input, output, session) {
     }
   })
   
+  observeEvent(input$refresh_orders, {
+    orders_refresh_trigger(!orders_refresh_trigger()) # 触发 orders 数据刷新
+    showNotification("订单数据已刷新！", type = "message")
+  })
+  
   ############################ 
   #####   物品售出子页   ##### 
   ############################ 
