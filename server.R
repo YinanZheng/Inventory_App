@@ -5523,7 +5523,23 @@ server <- function(input, output, session) {
                         jsonlite::toJSON(status_colors, auto_unbox = TRUE))
     
     
-    # 渲染桑基图
+    # 自定义桑基图 JS 代码，手动调整节点位置
+    sankey_options <- '
+    function(el, x) {
+      var sankey = d3.sankey()
+          .nodeWidth(40)
+          .nodePadding(20)
+          .size([x.options.width, x.options.height])
+          .iterations(64);
+
+      x.sankey.nodes.forEach(function(d) {
+        d.x = d.level * (x.options.width / 8);  // 固定每个节点的 x 轴位置
+      });
+
+      sankey(x.sankey);
+    }
+  '
+    
     sankeyNetwork(
       Links = links,
       Nodes = nodes,
@@ -5531,10 +5547,14 @@ server <- function(input, output, session) {
       Target = "target",
       Value = "value",
       NodeID = "name",
-      fontSize = 12,
-      nodeWidth = 30,
-      colourScale = color_js
-    )
+      fontSize = 14,
+      nodeWidth = 40,
+      nodePadding = 20,
+      colourScale = JS(color_js),
+      sinksRight = FALSE,
+      margin = list(top = 20, right = 50, bottom = 20, left = 50)
+    ) %>%
+      htmlwidgets::onRender(JS(sankey_options))
   })
   
   #################################################################
