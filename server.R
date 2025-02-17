@@ -1557,18 +1557,8 @@ server <- function(input, output, session) {
      WHERE UniqueID = '", preorder_info$unique_id, "'"
     ))
     showNotification(paste0("物品已成功登记到预定单 ", preorder_info$order_id, "！"), type = "message")
-    
     updateTabsetPanel(session, "sold_tabs", selected = "订单管理")  
-
-    # **等待 `DT` 表加载完成后选中订单行**
-    shinyjs::delay(500, {
-      orders_table_data <- filtered_orders()  # 获取 `orders` 数据
-      selected_row <- which(orders_table_data$OrderID == preorder_info$order_id)  # 找到订单行号
-      if (length(selected_row) > 0) {
-        selectRows("orders_table_module-orders_table", selected_row)  # 选中订单行
-      }
-    })
-      
+    updateTextInput(session, "filter_order_id", value = preorder_info$order_id)
   }, ignoreInit = TRUE)  # **确保 `observeEvent` 只执行一次**
   
   # 手动确认入库逻辑
