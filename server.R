@@ -1557,7 +1557,11 @@ server <- function(input, output, session) {
      WHERE UniqueID = '", preorder_info$unique_id, "'"
     ))
     showNotification(paste0("物品已成功登记到预定单 ", preorder_info$order_id, "！"), type = "message")
-    updateTabsetPanel(session, "sold_tabs", selected = "订单管理")  
+    updateTabsetPanel(session, "inventory_cn", selected = "售出") # 跳转到“发货”页面
+    # **延迟执行，确保 UI 加载完成后再切换子分页**
+    shinyjs::delay(300, {
+      updateTabsetPanel(session, "sold_tabs", selected = "订单管理")
+    })    
     updateTextInput(session, "filter_order_id", value = preorder_info$order_id)
   }, ignoreInit = TRUE)  # **确保 `observeEvent` 只执行一次**
   
