@@ -1459,7 +1459,7 @@ server <- function(input, output, session) {
           runjs("playSuccessSound()")  # 播放成功音效
         }
         
-        showNotification("searching")
+        showNotification(preorder_info$item_name)
         
         # 查询是否有匹配的预订单（基于 `item_name`在OrderNotes中的搜索）
         matched_order <- dbGetQuery(con, paste0(
