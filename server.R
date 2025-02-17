@@ -1459,6 +1459,8 @@ server <- function(input, output, session) {
           runjs("playSuccessSound()")  # 播放成功音效
         }
         
+        orders_data <- dbGetQuery(con, "SELECT OrderID, OrderImagePath, OrderNotes, created_at FROM orders WHERE OrderStatus = '预定'")
+        
         # 处理预定物品数据
         orders_data <- orders_data %>%
           mutate(PreorderItems = stri_match_first_regex(OrderNotes, "【预定物品】(.*?)；")[,2]) %>%
