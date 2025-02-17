@@ -706,7 +706,7 @@ ui <- navbarPage(
             )
           ),
           
-          fluidRow(column(12, numericInput("transaction_amount", "总成交额", value = 0, min = 0, step = 0.01, width = "100%"))),
+          fluidRow(column(12, numericInput("transaction_amount", "总成交额（美元）", value = 0, min = 0, step = 0.01, width = "100%"))),
      
           textInput("customer_name", "顾客姓名", placeholder = "请输入或运单提取", width = "100%"),
           textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"),
