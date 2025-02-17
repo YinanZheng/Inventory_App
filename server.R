@@ -1461,15 +1461,28 @@ server <- function(input, output, session) {
         
         showNotification(preorder_info$item_name)
         
-        # 查询是否有匹配的预订单（基于 `item_name`在OrderNotes中的搜索）
-        matched_order <- dbGetQuery(con, paste0(
-          "SELECT OrderID, OrderImagePath, OrderNotes 
-           FROM orders 
-           WHERE OrderStatus = '预定' 
-             AND OrderNotes REGEXP '【预定物品】([^；]*)((^|，)", preorder_info$item_name, "(，|；))' 
-           ORDER BY created_at ASC 
-           LIMIT 1"
-        ))
+        # 获取所有 "预定" 状态的订单
+        orders_data <- orders() %>%
+          filter(OrderStatus == "预定") %>%
+          select(OrderID, OrderImagePath, OrderNotes, created_at)
+        
+        # 提取 "【预定物品】" 到 "；" 之间的内容
+        orders_data <- orders_data %>%
+          mutate(PreorderItems = stri_extract_first_regex(OrderNotes, "【预定物品】(.*?)；")) %>%
+          filter(!is.na(PreorderItems))  # 过滤掉没有预定物品的订单
+        
+        # 清理 "【预定物品】" 和 "；"
+        orders_data$PreorderItems <- stri_replace_all_regex(orders_data$PreorderItems, "【预定物品】|；", "")
+        
+        # 分割多个物品项
+        orders_data <- orders_data %>%
+          mutate(ItemList = stri_split_fixed(PreorderItems, "，"))
+        
+        # **精准匹配 `preorder_info$item_name`**
+        matched_order <- orders_data %>%
+          filter(sapply(ItemList, function(items) any(stri_detect_fixed(items, preorder_info$item_name)))) %>%
+          arrange(created_at) %>%
+          slice_head(n = 1)  # 取最早的匹配订单
         
         showNotification(nrow(matched_order))
         
