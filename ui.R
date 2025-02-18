@@ -12,8 +12,16 @@ ui <- navbarPage(
     tags$div(
       id = "loading-screen",
       style = "position: fixed; width: 100%; height: 100%; background: white; 
-               z-index: 9999; display: flex; justify-content: center; align-items: center;",
-      tags$img(src = "https://www.goldenbeanllc.com/icons/favicon-96x96.png", style = "width: 120px; height: 120px;") 
+           z-index: 9999; display: flex; flex-direction: column; 
+           justify-content: center; align-items: center; text-align: center;",
+      
+      # 旋转的毛线球 GIF
+      tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
+               style = "width: 120px; height: 120px;"),
+      
+      # 加载提示文字
+      tags$p("系统加载中，请稍后...", 
+             style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
     ),
     
     tags$head(

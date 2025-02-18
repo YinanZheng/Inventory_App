@@ -18,6 +18,8 @@ library(plotly)
 library(networkD3)
 library(openxlsx)
 library(lubridate)
+library(future)
+library(promises)
 
 # Source shared module R file
 files <- list.files("/srv/shiny-server/erp-module", pattern = "\\.R$", full.names = TRUE)

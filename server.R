@@ -1,9 +1,6 @@
 # Define server logic
 server <- function(input, output, session) {
   
-  library(future)
-  library(promises)
-  
   # 显示加载动画
   shinyjs::show("loading-screen")
   plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
