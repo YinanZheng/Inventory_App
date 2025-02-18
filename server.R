@@ -1484,8 +1484,9 @@ server <- function(input, output, session) {
           )
           order_notes <- matched_order$OrderNotes[1]
           
-          # 将备注中的匹配物品名称高亮显示
-          highlighted_notes <- gsub(preorder_info$item_name, paste0("<mark>", preorder_info$item_name, "</mark>"), order_notes)
+          # **确保 `preorder_info$item_name` 只匹配以 `，` 或 `；` 结尾的完整项**
+          pattern <- paste0("(^|，)(", preorder_info$item_name, ")(，|；)")
+          highlighted_notes <- gsub(pattern, paste0("\\1<mark>\\2</mark>\\3"), order_notes, perl = TRUE)
           
           # 弹出确认对话框
           showModal(modalDialog(
