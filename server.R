@@ -2192,6 +2192,7 @@ server <- function(input, output, session) {
             # **从 `OrderNotes` 提取预定供应商和物品信息**
             if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
               extracted <- extract_items_and_suppliers(existing_order$OrderNotes[1])
+              showNotification(nrow(extracted))
               if (nrow(extracted) > 0) {
                 unique_suppliers <- unique(extracted$Supplier)
                 if (length(unique_suppliers) > 0) {
