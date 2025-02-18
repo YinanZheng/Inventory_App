@@ -159,11 +159,6 @@ ui <- navbarPage(
       .status-new {
         background-color: #FFA500; /* 橙色 */
       }
-      
-      /* 成交额placeholder */
-      $(document).ready(function() {
-        $('#transaction_amount').attr('placeholder', '成交额（$）');
-      });
     ")),
       
       tags$script(HTML("
@@ -275,6 +270,11 @@ ui <- navbarPage(
             $('#context-menu').hide();
           }
         });
+      });
+      
+      // 成交额placeholder
+      $(document).ready(function() {
+        $('#transaction_amount').attr('placeholder', '成交额（$）');
       });
     "))
     )
