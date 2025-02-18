@@ -759,7 +759,7 @@ ui <- navbarPage(
                   )
                 ),
                 div(id = "preorder_image_preview",
-                    style = "width: 300px; height: auto; margin-top: 10px; text-align: center;",
+                    style = "width: 200px; height: auto; margin-top: 10px; text-align: center;",
                     img(src = "", id = "preorder_img", style = "max-width: 100%; max-height: 200px; display: none; border: 1px solid #ddd; border-radius: 8px;")
                 )
             )
