@@ -746,15 +746,16 @@ ui <- navbarPage(
               )
             )
           ),
-          
-          fluidRow(column(12, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%"))),
-     
-          textInput("customer_name", "顾客姓名", placeholder = "请输入或运单提取", width = "100%"),
-          textInput("customer_netname", "顾客网名", placeholder = "请输入", width = "100%"),
+
+          fluidRow(
+            column(7, textInput("customer_name", NULL, placeholder = "顾客姓名", width = "100%")),
+            column(5, textInput("customer_netname", NULL, placeholder = "顾客网名", width = "100%")),
+          ),
           
           fluidRow(
-            column(6, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
-            column(6, div(checkboxInput("is_preorder", "预定", value = FALSE))),
+            column(4, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
+            column(4, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
+            column(4, div(checkboxInput("is_preorder", "预定", value = FALSE))),
           ),
           
           hidden(
