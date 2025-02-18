@@ -1,6 +1,10 @@
 # Define server logic
 server <- function(input, output, session) {
   
+  source("global.R", local = TRUE)
+  
+  ##############################################################################
+  
   # 显示加载动画
   plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
   shinyjs::show("loading-screen")  # 显示加载界面
@@ -17,8 +21,6 @@ server <- function(input, output, session) {
     })
   
   ##############################################################################
-  
-  source("global.R", local = TRUE)
   
   # Database
   con <- db_connection()
