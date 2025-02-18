@@ -17,7 +17,7 @@ ui <- navbarPage(
       
       # 旋转的毛线球 GIF
       tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
-               style = "width: 96px; height: 96px;"),
+               style = "width: 80px; height: 80px;"),
       
       # 加载提示文字
       tags$p("系统加载中，请稍后...", 
