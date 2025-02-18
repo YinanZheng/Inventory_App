@@ -726,9 +726,9 @@ ui <- navbarPage(
           
           fluidRow(
             column(7, textInput("order_id", NULL, placeholder = "订单号", width = "100%")),
-            column(5, selectInput(inputId = "platform", label = "电商平台",
+            column(5, selectInput(inputId = "platform", NULL,
                                   choices = c(
-                                    "请选择" = "",
+                                    "电商平台" = "",
                                     "Etsy" = "Etsy",
                                     "Shopify" = "Shopify",
                                     "TikTok" = "TikTok",
@@ -742,19 +742,9 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(7, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
-            column(5, 
-                   div(
-                     style = "display: flex; flex-direction: column; justify-content: center;",
-                     tags$style(HTML("
-                        #is_transfer_order, #is_preorder {
-                          margin-bottom: 5px !important;
-                        }
-                      ")),
-                     checkboxInput("is_transfer_order", "调货", value = FALSE),
-                     checkboxInput("is_preorder", "预定", value = FALSE)
-                   )
-            )
+            column(6, numericInput("transaction_amount", "成交额（$）", value = 0.00, min = 0, step = 0.01, width = "100%")),
+            column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
+            column(3, checkboxInput("is_preorder", "预定", value = FALSE)),
           ),
           
           hidden(
