@@ -1893,7 +1893,7 @@ server <- function(input, output, session) {
   )
   
   # **存储排序方向**
-  sort_order_reactive <- reactiveVal(input$arrow_direction)
+  sort_order_reactive <- reactiveVal("up")
   
   # 响应点击物品表的行，更新货架上的物品
   observeEvent(unique_items_table_sold_selected_row(), {
