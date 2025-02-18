@@ -2197,8 +2197,7 @@ server <- function(input, output, session) {
                 if (length(unique_suppliers) > 0) {
                   updateSelectizeInput(session, "preorder_supplier", selected = unique_suppliers[1])
                 }
-                preorder_text <- paste(c(extracted$Item), collapse = "\n")
-                updateTextAreaInput(session, "preorder_item_name", value = preorder_text)
+                updateTextAreaInput(session, "preorder_item_name", value = paste(extracted$Item, collapse = "\n"))
               }
             }
           } else {
@@ -2214,7 +2213,7 @@ server <- function(input, output, session) {
         }
         
         # **判断按钮逻辑**
-        if (nrow(existing_order) > 0 && sanitized_order_id == main_order_id) {
+        if (nrow(existing_order)) {
           # **情况 1：当前输入的订单号已存在（如 `1234` 存在） → 显示“更新订单”**
           output$register_order_button_ui <- renderUI({
             actionButton(
@@ -2225,7 +2224,7 @@ server <- function(input, output, session) {
               style = "font-size: 16px; min-width: 130px; height: 42px;"
             )
           })
-        } else {
+        } else if (main_order_exists) {
           # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
           showNotification("主订单已存在，正在创建子订单", type = "warning")
           updateTextAreaInput(session, "order_notes", value = "")
