@@ -747,11 +747,7 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(6, div(
-              style = "display: flex; align-items: center; gap: 5px;",
-              tags$span("$", style = "font-size: 16px; font-weight: bold;"),
-              numericInput("transaction_amount", NULL, value = NULL, min = 0, step = 0.01, width = "100%")
-            )),
+            column(6, numericInput("transaction_amount", NULL, value = NULL, min = 0, step = 0.01, width = "100%")),
             column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
             column(3, checkboxInput("is_preorder", "预定", value = FALSE)),
           ),
