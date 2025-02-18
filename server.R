@@ -1062,31 +1062,6 @@ server <- function(input, output, session) {
     }
   })
   
-  # 在 UI 的 head 部分添加 CSS 样式
-  tags$head(tags$style(HTML("
-  .status-badge {
-    display: inline-block;
-    padding: 2px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: bold;
-    color: white;
-    text-align: center;
-    margin-left: 10px;
-    min-width: 24px;
-  }
-  
-  .status-existing {
-    background-color: #28A745; /* 绿色 */
-  }
-  
-  .status-new {
-    background-color: #FFA500; /* 橙色 */
-  }
-")))
-  
-  
-  
   # 采购商品图片处理模块
   image_purchase <- imageModuleServer("image_purchase")
   
