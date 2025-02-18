@@ -2246,7 +2246,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    if (is.null(input$transfer_amount) || input$transfer_amount == "") {
+    if (is.null(input$transaction_amount) || input$transaction_amount == "") {
       showNotification("总成交额不能为空！", type = "error")
       runjs("playErrorSound()")
       return()
