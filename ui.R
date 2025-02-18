@@ -725,26 +725,15 @@ ui <- navbarPage(
           tags$h4("订单登记与更新", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
           
           fluidRow(
-            column(
-              7,
-              textInput("order_id", "订单号", placeholder = "请输入订单号", width = "100%")
-            ),
-            column(
-              5,
-              selectInput(
-                inputId = "platform",
-                label = "电商平台",
-                choices = c(
-                  "请选择" = "",
-                  "Etsy" = "Etsy",
-                  "Shopify" = "Shopify",
-                  "TikTok" = "TikTok",
-                  "其他" = "其他"
-                ),
-                selected = "",
-                width = "100%"
-              )
-            )
+            column(7, textInput("order_id", NULL, placeholder = "订单号", width = "100%")),
+            column(5, selectInput(inputId = "platform", label = "电商平台",
+                                  choices = c(
+                                    "请选择" = "",
+                                    "Etsy" = "Etsy",
+                                    "Shopify" = "Shopify",
+                                    "TikTok" = "TikTok",
+                                    "其他" = "其他"
+                                  ), selected = "", width = "100%"))
           ),
 
           fluidRow(
@@ -753,9 +742,11 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(6, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
-            column(3, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
-            column(3, div(checkboxInput("is_preorder", "预定", value = FALSE))),
+            column(7, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
+            column(5, fluidRow(
+              column(12, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
+              column(12, div(checkboxInput("is_preorder", "预定", value = FALSE)))
+            )
           ),
           
           hidden(
@@ -786,7 +777,7 @@ ui <- navbarPage(
           ),
           
           div(
-            style = "border: 2px solid #007BFF; border-radius: 8px; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px;",
+            style = "border: 1px solid #28A745; border-radius: 8px; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px;",
             
             # 运单号输入框
             textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
