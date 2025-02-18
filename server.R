@@ -4368,7 +4368,7 @@ server <- function(input, output, session) {
             transaction_datetime,
             image_path,
             input$transaction_category,
-            transaction_id
+            selected_TransactionID()
           )
         )
         showNotification("记录更新成功！", type = "message")
