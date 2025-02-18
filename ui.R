@@ -5,12 +5,6 @@ ui <- navbarPage(
   theme = shinytheme("flatly"), # 可选主题
   position = "fixed-top",
   
-  tags$div(
-    id = "loading-screen",
-    style = "position: fixed; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; justify-content: center; align-items: center;",
-    # tags$img(src = "loading.gif", style = "width: 150px; height: 150px;") # 替换成你的GIF文件
-  ),
-  
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
 
