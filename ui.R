@@ -6,7 +6,7 @@ ui <- navbarPage(
   position = "fixed-top",
   
   header = tagList(
-    shinyjs::useShinyjs(),  # 启用 shinyjs
+    useShinyjs(),  # 启用 shinyjs
 
     # 加载动画界面
     tags$div(

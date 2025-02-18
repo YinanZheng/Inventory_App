@@ -7,13 +7,13 @@ server <- function(input, output, session) {
   
   # 显示加载动画
   plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
-  shinyjs::show("loading-screen")  # 显示加载界面
+  show("loading-screen")  # 显示加载界面
   
   future({
     return(TRUE)  # 任务完成
   }) %>% 
     promises::then(function(result) {
-      shinyjs::runjs("$('#loading-screen').fadeOut(1000);")  # 1秒淡出加载界面
+      runjs("$('#loading-screen').fadeOut(1000);")  # 1秒淡出加载界面
     })
   
   ##############################################################################
@@ -901,14 +901,14 @@ server <- function(input, output, session) {
     
     if (current_tab == "出库请求") {
       # 禁用与新商品请求相关的控件
-      shinyjs::disable("custom_description")
-      shinyjs::disable("custom_quantity")
-      shinyjs::disable("submit_custom_request")
+      disable("custom_description")
+      disable("custom_quantity")
+      disable("submit_custom_request")
     } else if (current_tab == "采购请求") {
       # 启用与新商品请求相关的控件
-      shinyjs::enable("custom_description")
-      shinyjs::enable("custom_quantity")
-      shinyjs::enable("submit_custom_request")
+      enable("custom_description")
+      enable("custom_quantity")
+      enable("submit_custom_request")
     }
   })
   
@@ -1345,7 +1345,7 @@ server <- function(input, output, session) {
       # Update input fields in the sidebar
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
-      shinyjs::delay(100, {  # 延迟 100 毫秒
+      delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
       updateTextInput(session, "purchase-item_name", value = selected_data$ItemName)
@@ -1367,7 +1367,7 @@ server <- function(input, output, session) {
       # 更新侧边栏的输入字段
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
-      shinyjs::delay(100, {  # 延迟 100 毫秒
+      delay(100, {  # 延迟 100 毫秒
         updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
       })
       updateTextInput(session, "purchase-item_name", value = selected_data$ItemName)
@@ -1525,7 +1525,7 @@ server <- function(input, output, session) {
             window.speechSynthesis.speak(msg);
           ', preorder_info$item_name)
           
-          shinyjs::runjs(js_code)  # 运行 JavaScript 语音朗读
+          runjs(js_code)  # 运行 JavaScript 语音朗读
         } else {
           runjs("playSuccessSound()")  # 播放成功音效
         }
@@ -1634,7 +1634,7 @@ server <- function(input, output, session) {
     showNotification(paste0("物品已成功登记到预定单 ", preorder_info$order_id, "！"), type = "message")
     updateTabsetPanel(session, "inventory_cn", selected = "售出") # 跳转到“发货”页面
     # **延迟执行，确保 UI 加载完成后再切换子分页**
-    shinyjs::delay(300, {
+    delay(300, {
       updateTabsetPanel(session, "sold_tabs", selected = "订单管理")
     })    
     updateTextInput(session, "filter_order_id", value = preorder_info$order_id)
@@ -1734,16 +1734,16 @@ server <- function(input, output, session) {
   # 控制备注输入框显示/隐藏
   observeEvent(input$defective_item, {
     if (input$defective_item) {
-      shinyjs::show("defective_notes_container")
+      show("defective_notes_container")
     } else {
-      shinyjs::hide("defective_notes_container")
+      hide("defective_notes_container")
       updateTextInput(session, "defective_notes", value = "") # 清空备注
     }
   })
   
   # PDF下载按钮默认禁用
   session$onFlushed(function() {
-    shinyjs::disable("download_select_pdf")
+    disable("download_select_pdf")
   })
   
   # 生成选中商品条形码 PDF
@@ -1775,10 +1775,10 @@ server <- function(input, output, session) {
       barcode_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
       
       showNotification("选中商品条形码已生成！", type = "message")
-      shinyjs::enable("download_select_pdf")  # 启用下载按钮
+      enable("download_select_pdf")  # 启用下载按钮
     }, error = function(e) {
       showNotification(paste("生成条形码失败：", e$message), type = "error")
-      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+      disable("download_select_pdf")  # 禁用下载按钮
     })
   })
   
@@ -1789,7 +1789,7 @@ server <- function(input, output, session) {
     },
     content = function(file) {
       file.copy(barcode_pdf_file_path(), file, overwrite = TRUE)
-      shinyjs::disable("download_select_pdf")  # 禁用下载按钮
+      disable("download_select_pdf")  # 禁用下载按钮
       barcode_pdf_file_path(NULL)  # 清空路径
     }
   )
@@ -1858,7 +1858,7 @@ server <- function(input, output, session) {
             window.speechSynthesis.speak(msg);
           ', result$item_name)
         
-        shinyjs::runjs(js_code)  # 运行 JavaScript 语音朗读
+        runjs(js_code)  # 运行 JavaScript 语音朗读
       } else {
         runjs("playSuccessSound()")  # 播放成功音效
       }
@@ -2103,7 +2103,7 @@ server <- function(input, output, session) {
       
       # 将提取的运单号填充到输入框
       updateTextInput(session, "tracking_number", value = label_info$tracking_number)
-      shinyjs::disable("tracking_number")
+      disable("tracking_number")
       
       # 保存文件到目标目录
       dest_file <- file.path("/var/uploads/shiplabels", paste0(label_info$tracking_number, ".pdf"))
@@ -2171,9 +2171,9 @@ server <- function(input, output, session) {
         
         # **检查 LabelStatus**
         if (existing_order$LabelStatus[1] != "无") {
-          shinyjs::disable("tracking_number")  # 禁用输入框
+          disable("tracking_number")  # 禁用输入框
         } else {
-          shinyjs::enable("tracking_number")  # 启用输入框
+          enable("tracking_number")  # 启用输入框
         }
         
         # **处理 `调货` 和 `预定` 订单状态**
@@ -2953,7 +2953,7 @@ server <- function(input, output, session) {
             # 动态更新按钮文本和样式
             updateActionButton(session, inputId = button_id, label = HTML("<i class='fa fa-check'></i> 采购请求已发送"))
             runjs(sprintf("$('#%s').removeClass('btn-primary').addClass('btn-success');", button_id))
-            shinyjs::disable(button_id)
+            disable(button_id)
             
             # 提示成功消息
             showNotification(paste0("已发出采购请求，SKU：", sku, "，数量：", qty), type = "message")
@@ -3740,7 +3740,7 @@ server <- function(input, output, session) {
       # # 重新计算所有balance记录
       # update_balance("一般户卡", con)
       
-      shinyjs::enable("link_tracking_btn")  # 启用挂靠运单按钮
+      enable("link_tracking_btn")  # 启用挂靠运单按钮
     }, error = function(e) {
       showNotification(paste("操作失败：", e$message), type = "error")
     })
@@ -3754,7 +3754,7 @@ server <- function(input, output, session) {
       # 如果运单号为空，清空相关输入字段并禁用按钮
       updateSelectInput(session, "intl_shipping_method", selected = "空运")
       updateNumericInput(session, "intl_total_shipping_cost", value = 0)
-      shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
+      disable("link_tracking_btn")  # 禁用挂靠运单按钮
       output$intl_status_display <- renderText({ "" })  # 清空状态显示
       return()
     }
@@ -3771,7 +3771,7 @@ server <- function(input, output, session) {
         # 如果运单号存在，回填信息
         updateSelectInput(session, "intl_shipping_method", selected = shipment_info$ShippingMethod[1])
         updateNumericInput(session, "intl_total_shipping_cost", value = shipment_info$TotalCost[1])
-        shinyjs::enable("link_tracking_btn")  # 启用挂靠运单按钮
+        enable("link_tracking_btn")  # 启用挂靠运单按钮
         
         # 显示物流状态
         output$intl_status_display <- renderText({
@@ -3782,7 +3782,7 @@ server <- function(input, output, session) {
         # 如果运单号不存在，清空相关字段并禁用按钮
         updateSelectInput(session, "intl_shipping_method", selected = "空运")
         updateNumericInput(session, "intl_total_shipping_cost", value = 0)
-        shinyjs::disable("link_tracking_btn")  # 禁用挂靠运单按钮
+        disable("link_tracking_btn")  # 禁用挂靠运单按钮
         
         # 提示未找到状态
         output$intl_status_display <- renderText({
@@ -3791,7 +3791,7 @@ server <- function(input, output, session) {
       }
     }, error = function(e) {
       # 遇到错误时禁用按钮并清空状态显示
-      shinyjs::disable("link_tracking_btn")
+      disable("link_tracking_btn")
       output$intl_status_display <- renderText({
         paste("查询失败：", e$message)
       })
@@ -3964,7 +3964,7 @@ server <- function(input, output, session) {
     })
     
     # 禁用挂靠按钮
-    shinyjs::disable("link_tracking_btn")
+    disable("link_tracking_btn")
     
     # 关闭确认对话框
     removeModal()
@@ -3989,8 +3989,8 @@ server <- function(input, output, session) {
     if (is.null(selected_rows) || length(selected_rows) == 0) {
       # 如果没有选中行，清空运单号输入框，并禁用挂靠按钮
       updateTextInput(session, "intl_tracking_number", value = "")
-      shinyjs::disable("link_tracking_btn")  # 禁用按钮
-      shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+      disable("link_tracking_btn")  # 禁用按钮
+      disable("unlink_tracking_btn")  # 禁用按钮
       return()
     }
     
@@ -4013,17 +4013,17 @@ server <- function(input, output, session) {
           updateTextInput(session, "intl_tracking_number", value = selected_data$IntlTracking[nrow(selected_data)])
         }
         # 如果选中物品中存在已挂靠国际运单的物品
-        shinyjs::disable("link_tracking_btn")  # 禁用按钮
-        shinyjs::enable("unlink_tracking_btn")  # 启用按钮
+        disable("link_tracking_btn")  # 禁用按钮
+        enable("unlink_tracking_btn")  # 启用按钮
       } else {
         # 如果所有物品都未挂靠国际运单
-        shinyjs::enable("link_tracking_btn")  # 启用按钮
-        shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+        enable("link_tracking_btn")  # 启用按钮
+        disable("unlink_tracking_btn")  # 禁用按钮
       }
     }, error = function(e) {
       # 捕获错误并提示
-      shinyjs::disable("link_tracking_btn")  # 禁用按钮
-      shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+      disable("link_tracking_btn")  # 禁用按钮
+      disable("unlink_tracking_btn")  # 禁用按钮
       showNotification(paste("操作失败：", e$message), type = "error")
     })
   })
@@ -4069,8 +4069,8 @@ server <- function(input, output, session) {
     tracking_number <- input$intl_link_tracking_number  # 获取用户输入的运单号
     
     if (is.null(tracking_number) || tracking_number == "") {
-      shinyjs::disable("link_tracking_btn")  # 禁用按钮
-      shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+      disable("link_tracking_btn")  # 禁用按钮
+      disable("unlink_tracking_btn")  # 禁用按钮
       
       output$intl_link_display <- renderText({
         "请输入运单号以查看运单信息"
@@ -4087,8 +4087,8 @@ server <- function(input, output, session) {
       )
       
       if (nrow(shipment_info) == 0) {
-        shinyjs::disable("link_tracking_btn")  # 禁用按钮
-        shinyjs::disable("unlink_tracking_btn")  # 禁用按钮
+        disable("link_tracking_btn")  # 禁用按钮
+        disable("unlink_tracking_btn")  # 禁用按钮
         
         output$intl_link_display <- renderText({
           "未找到对应的运单信息，请检查"
