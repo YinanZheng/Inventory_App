@@ -790,7 +790,7 @@ ui <- navbarPage(
           imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
           
           # 订单备注
-          textAreaInput("order_notes", NULL, placeholder = "请输入备注内容", width = "100%"),
+          textAreaInput("order_notes", NULL, placeholder = "请输入备注内容", width = "100%", height = "200px"),
           
           # 按钮区
           div(
