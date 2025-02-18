@@ -1086,11 +1086,16 @@ server <- function(input, output, session) {
   
   # 监听“新”物品的点击事件，填充到 `new_maker` 和 `purchase-item_name`
   observeEvent(input$selected_new_item, {
-    req(input$selected_new_item, input$selected_new_supplier)
+    req(input$selected_new_item)
     
-    updateSelectizeInput(session, "new_maker", selected = input$selected_new_supplier)
     updateTextInput(session, "purchase-item_name", value = input$selected_new_item)
+    
+    delay(50, {
+      req(input$selected_new_supplier)  # 确保 `selected_new_supplier` 存在
+      updateSelectizeInput(session, "new_maker", selected = input$selected_new_supplier)
+    })
   })
+  
   
   # 监听“现”物品的点击事件，填充到 `purchase_filter-name`
   observeEvent(input$selected_existing_item, {
