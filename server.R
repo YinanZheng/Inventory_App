@@ -4276,7 +4276,7 @@ server <- function(input, output, session) {
     "采购" = "记录购买商品与相关运费的支出",
     "税费" = "包括会计费，公司税务等法定税款",
     "杂费" = "各种运营支出，例如包装材料费、网费等",
-    "工资" = "员工薪资、劳务费等支付",
+    "工资" = "员工薪资、劳务费、兼职费等支付",
     "债务" = "记录公司借款还款",
     "社保" = "社保、公积金等相关转账",
     "图解" = "记录购买图解的支出",
@@ -4356,7 +4356,6 @@ server <- function(input, output, session) {
       }
       
       tryCatch({
-        showNotification(input$transaction_category)
         dbExecute(
           con,
           "UPDATE transactions 
