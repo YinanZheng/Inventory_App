@@ -742,7 +742,12 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(6, numericInput("transaction_amount", "成交额（$）", value = 0.00, min = 0, step = 0.01, width = "100%")),
+            tags$script(HTML("
+    $(document).ready(function() {
+      $('#transaction_amount').attr('placeholder', '成交额（美元）');
+    });
+  ")), 
+            column(6, numericInput("transaction_amount", NULL, value = 0.00, min = 0, step = 0.01, width = "100%")),
             column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
             column(3, checkboxInput("is_preorder", "预定", value = FALSE)),
           ),
