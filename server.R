@@ -2358,6 +2358,7 @@ server <- function(input, output, session) {
       merged_order <- tibble(
         OrderID = main_order_id,
         Platform = platforms[1],
+        TransactionAmount = max(possible_sub_orders$TransactionAmount),
         UsTrackingNumber = tracking_numbers[1],
         CustomerName = ifelse(length(unique(possible_sub_orders$CustomerName)) > 0,
                               paste(unique(possible_sub_orders$CustomerName), collapse = ", "), NA),
