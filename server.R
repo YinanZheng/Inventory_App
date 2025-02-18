@@ -1892,13 +1892,11 @@ server <- function(input, output, session) {
     makers_items_map = makers_items_map
   )
   
-  # **存储排序方向**
-  sort_order_reactive <- reactiveVal("up")
-  
   # 响应点击物品表的行，更新货架上的物品
-  observeEvent(unique_items_table_sold_selected_row(), {
-    selected_row <- unique_items_table_sold_selected_row()  # 获取选中的行
-
+  observeEvent(list(unique_items_table_sold_selected_row(), input$arrow_direction), {
+    selected_row <- unique_items_table_sold_selected_row()
+    sort_order <- input$arrow_direction
+    
     if (is.null(selected_row) || length(selected_row) == 0) {
       return()
     }
@@ -1913,7 +1911,7 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order_reactive())
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order)
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
@@ -1947,13 +1945,7 @@ server <- function(input, output, session) {
     })
   }, ignoreNULL = TRUE, ignoreInit = TRUE)  # **防止初始时触发**
 
-  # 监听排序方向变化，更新 `sort_order_reactive()
-  observeEvent(input$arrow_direction, {
-    sort_order_reactive(input$arrow_direction)
-  }, ignoreInit = TRUE)
-  
-  ##### 网名自动填写
-  
+  ##### 网名自动填写组件
   matching_customer <- reactive({
     req(input$customer_name)  # 确保用户输入了顾客姓名
     tryCatch({
@@ -1978,7 +1970,6 @@ server <- function(input, output, session) {
       return(NULL)
     })
   })
-  
   
   # 缓存最近查询过的顾客姓名与网名
   cache <- reactiveVal(list())
@@ -2015,7 +2006,6 @@ server <- function(input, output, session) {
     # 更新网名输入框
     updateTextInput(session, "customer_netname", value = netname %||% "")
   })
-  
   ######
   
   #运单PDF上传模块
