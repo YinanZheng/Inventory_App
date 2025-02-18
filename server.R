@@ -1,6 +1,26 @@
 # Define server logic
 server <- function(input, output, session) {
   
+  # 在应用初始化时显示加载动画
+  observe({
+    showModal(modalDialog(
+      title = "系统加载中",
+      tags$div(
+        style = "text-align: center;",
+        tags$img(src = "loading.gif", style = "width: 100px; height: 100px;"),
+        tags$p("正在加载数据，请稍候...", style = "font-size: 16px; font-weight: bold;")
+      ),
+      footer = NULL,
+      easyClose = FALSE
+    ))
+    
+    # 模拟数据加载（实际情况是等待数据加载完成）
+    Sys.sleep(3)  # 假设加载 3 秒数据
+    
+    removeModal()  # 数据加载完毕后移除模态框
+    shinyjs::hide("loading-screen")  # 隐藏加载动画
+  })
+  
   source("global.R", local = TRUE)
   
   # Database
@@ -2815,6 +2835,9 @@ server <- function(input, output, session) {
       # 重置所有输入框
       reset_order_form(session, image_sold)
       
+      # 重置库存商品名列表
+      updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
+      
       showNotification("订单已完成售出并更新状态！", type = "message")
       runjs("playSuccessSound()")
     }, error = function(e) {
@@ -3216,6 +3239,9 @@ server <- function(input, output, session) {
       
       # 重置输入
       reset_order_form(session, image_sold)
+      
+      # 重置库存商品名列表
+      updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
       
       # 清空关联物品表
       output$associated_items_title <- renderDT({ NULL }) # 清空标题
