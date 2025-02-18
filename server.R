@@ -2197,8 +2197,8 @@ server <- function(input, output, session) {
                 if (length(unique_suppliers) > 0) {
                   updateSelectizeInput(session, "preorder_supplier", selected = unique_suppliers[1])
                 }
-                showNotification(paste(extracted$Item, collapse = "\n"))
-                updateTextAreaInput(session, "preorder_item_name", value = paste(extracted$Item, collapse = "\n"))
+                preorder_text <- paste(c(extracted$Item), collapse = "\n")
+                updateTextAreaInput(session, "preorder_item_name", value = preorder_text)
               }
             }
           } else {
