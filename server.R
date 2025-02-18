@@ -2231,16 +2231,27 @@ server <- function(input, output, session) {
   # 监听用户在 preorder_item_name_db 中的选择，并更新到 preorder_item_name
   observeEvent(input$preorder_item_name_db, {
     selected_item <- input$preorder_item_name_db
+    
     if (!is.null(selected_item) && selected_item != "") {
       existing_text <- input$preorder_item_name
-      # 将现有文本拆分为行
       existing_items <- unlist(strsplit(existing_text, "\n"))
-      # # 检查选定的物品是否已存在于输入框中
-      # if (!(selected_item %in% existing_items)) {
-        # 将新选定的物品添加到现有文本的末尾
-        new_text <- paste(existing_text, selected_item, sep = ifelse(existing_text == "", "", "\n"))
-        updateTextAreaInput(session, "preorder_item_name", value = new_text)
-      # }
+      
+      # 将新选定的物品添加到文本框
+      new_text <- paste(existing_text, selected_item, sep = ifelse(existing_text == "", "", "\n"))
+      updateTextAreaInput(session, "preorder_item_name", value = new_text)
+      
+      # 从 inventory() 获取商品图片路径
+      selected_inventory <- inventory() %>% filter(ItemName == selected_item)
+      
+      if (nrow(selected_inventory) > 0) {
+        img_path <- ifelse(is.na(selected_inventory$ItemImagePath) || selected_inventory$ItemImagePath == "",
+                           placeholder_150px_path,
+                           paste0(host_url, "/images/", basename(selected_inventory$ItemImagePath)))
+        
+        runjs(sprintf("$('#preorder_img').attr('src', '%s').show();", img_path))
+      } else {
+        runjs("$('#preorder_img').hide();")
+      }
     }
   })
   
