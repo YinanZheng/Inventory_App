@@ -2,11 +2,10 @@
 server <- function(input, output, session) {
   
   # 显示加载动画
-  future::plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
+  plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
   shinyjs::show("loading-screen")  # 显示加载界面
   
   future({
-    Sys.sleep(3)  # 模拟数据加载（3秒）
     return(TRUE)  # 任务完成
   }) %>% 
     then(function(result) {
