@@ -8,8 +8,6 @@ server <- function(input, output, session) {
   shinyjs::show("loading-screen")
   plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
   future({
-    # 模拟数据加载（例如数据库查询）
-    Sys.sleep(5)  # 假设数据加载需要 5 秒
     return(TRUE)  # 任务完成
   }) %>% 
     then(function(result) {
