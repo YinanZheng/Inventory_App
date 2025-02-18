@@ -2135,34 +2135,26 @@ server <- function(input, output, session) {
     req(input$order_id)  # 确保订单号不为空
     
     tryCatch({
-      # 去除空格和#号
+      # **去除空格和#号**
       sanitized_order_id <- gsub("#", "", trimws(input$order_id))
       
-      # 处理不同输入情况
+      # **提取主订单号**
       if (grepl("@$", sanitized_order_id)) {
-        # **用户输入 `1234@`，提取 `1234` 作为主单号**
-        main_order_id <- sub("@$", "", sanitized_order_id)
+        main_order_id <- sub("@$", "", sanitized_order_id)  # `1234@` → `1234`
       } else if (grepl("@", sanitized_order_id)) {
-        # **用户输入完整的 `1234@1`，提取 `1234` 作为前缀**
-        main_order_id <- sub("@.*", "", sanitized_order_id)
+        main_order_id <- sub("@.*", "", sanitized_order_id)  # `1234@1` → `1234`
       } else {
-        # **用户输入 `1234`，直接使用**
-        main_order_id <- sanitized_order_id
+        main_order_id <- sanitized_order_id  # `1234`
       }
       
-      # 查询数据库，优先查找完整匹配的 `OrderID`（如 `1234@1`）
+      # **查询当前输入的订单**
       existing_order <- orders() %>% filter(OrderID == sanitized_order_id)
       
-      # **检查主订单 `1234` 是否存在**
+      # **检查主订单是否存在**
       main_order_exists <- nrow(orders() %>% filter(OrderID == main_order_id)) > 0
       
-      # **如果找不到 `1234@1`，但 `1234` 存在，则填充 `1234` 的信息**
-      if (nrow(existing_order) == 0 && main_order_exists) {
-        existing_order <- orders() %>% filter(OrderID == main_order_id)
-      }
-      
       if (nrow(existing_order) > 0) {
-        # 填充各字段信息
+        # **情况 1：当前输入的订单号（如 `1234` 或 `1234@1`）存在，更新订单**
         updateSelectInput(session, "platform", selected = existing_order$Platform[1])
         updateNumericInput(session, "transaction_amount", value = existing_order$TransactionAmount[1])
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
@@ -2171,51 +2163,41 @@ server <- function(input, output, session) {
         
         # **检查 LabelStatus**
         if (existing_order$LabelStatus[1] != "无") {
-          disable("tracking_number")  # 禁用输入框
+          shinyjs::disable("tracking_number")  # 禁用输入框
         } else {
-          enable("tracking_number")  # 启用输入框
+          shinyjs::enable("tracking_number")  # 启用输入框
         }
         
         # **处理 `调货` 和 `预定` 订单状态**
-        if (!is.null(existing_order$OrderStatus[1]) && !is.na(existing_order$OrderStatus[1])) {
-          if (existing_order$OrderStatus[1] == "调货") {
-            updateCheckboxInput(session, "is_transfer_order", value = TRUE)
-          } else {
-            updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-          }
+        updateCheckboxInput(session, "is_transfer_order", value = (existing_order$OrderStatus[1] == "调货"))
+        updateCheckboxInput(session, "is_preorder", value = (existing_order$OrderStatus[1] == "预定"))
+        
+        # **处理 `预定` 订单的供应商和物品**
+        if (existing_order$OrderStatus[1] == "预定") {
+          updateSelectizeInput(session, "preorder_supplier", selected = character(0))
+          updateTextAreaInput(session, "preorder_item_name", value = "")
           
-          if (existing_order$OrderStatus[1] == "预定") {
-            updateCheckboxInput(session, "is_preorder", value = TRUE)
-            updateSelectizeInput(session, "preorder_supplier", selected = character(0))
-            updateTextAreaInput(session, "preorder_item_name", value = "")
+          if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
+            extracted <- extract_items_and_suppliers(existing_order$OrderNotes[1])
             
-            # **从 `OrderNotes` 提取预定供应商和物品信息**
-            if (!is.null(existing_order$OrderNotes[1]) && !is.na(existing_order$OrderNotes[1])) {
-              extracted <- extract_items_and_suppliers(existing_order$OrderNotes[1])
-              if (nrow(extracted) > 0) {
-                unique_suppliers <- unique(extracted$Supplier)
-                if (length(unique_suppliers) > 0) {
-                  updateSelectizeInput(session, "preorder_supplier", selected = unique_suppliers[1])
-                }
-                updateTextAreaInput(session, "preorder_item_name", value = paste(extracted$Item, collapse = "\n"))
+            if (nrow(extracted) > 0) {
+              unique_suppliers <- unique(extracted$Supplier)
+              if (length(unique_suppliers) > 0) {
+                updateSelectizeInput(session, "preorder_supplier", selected = unique_suppliers[1])
               }
+              
+              # **确保 TextArea 正确更新**
+              delay(50, {
+                updateTextAreaInput(session, "preorder_item_name", value = paste(c(extracted$Item), collapse = "\n"))
+              })
             }
-          } else {
-            updateCheckboxInput(session, "is_preorder", value = FALSE)
-            updateSelectizeInput(session, "preorder_supplier", selected = character(0))
-            updateTextAreaInput(session, "preorder_item_name", value = "")
           }
         } else {
-          updateCheckboxInput(session, "is_transfer_order", value = FALSE)
-          updateCheckboxInput(session, "is_preorder", value = FALSE)
           updateSelectizeInput(session, "preorder_supplier", selected = character(0))
           updateTextAreaInput(session, "preorder_item_name", value = "")
         }
-      }
-      
-      # **判断按钮逻辑**
-      if (nrow(existing_order) > 0) {
-        # **情况 1：当前输入的订单号已存在（如 `1234` 存在） → 显示“更新订单”**
+        
+        # **显示“更新订单”按钮**
         output$register_order_button_ui <- renderUI({
           actionButton(
             "register_order_btn",
@@ -2226,7 +2208,7 @@ server <- function(input, output, session) {
           )
         })
       } else if (main_order_exists) {
-        # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
+        # **情况 2：主订单 `1234` 存在，但 `1234@1` 不存在 → 允许创建子订单**
         showNotification("主订单已存在，正在创建子订单", type = "warning")
         updateTextAreaInput(session, "order_notes", value = "")
         updateTextAreaInput(session, "preorder_item_name", value = "")
@@ -2241,7 +2223,7 @@ server <- function(input, output, session) {
           )
         })
       } else {
-        # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
+        # **情况 3：`1234` 和 `1234@1` 都不存在，创建新订单**
         showNotification("未找到对应订单记录，可登记新订单", type = "warning")
         
         output$register_order_button_ui <- renderUI({
