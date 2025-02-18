@@ -2246,6 +2246,12 @@ server <- function(input, output, session) {
       return()
     }
     
+    if (is.null(input$transfer_amount) || input$transfer_amount == "") {
+      showNotification("总成交额不能为空！", type = "error")
+      runjs("playErrorSound()")
+      return()
+    }
+    
     # 去除空格和#号
     sanitized_order_id <- gsub("#", "", trimws(input$order_id))
     
