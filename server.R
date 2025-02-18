@@ -2239,20 +2239,20 @@ server <- function(input, output, session) {
               style = "font-size: 16px; min-width: 130px; height: 42px;"
             )
           })
+        } else {
+          # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
+          showNotification("未找到对应订单记录，可登记新订单", type = "warning")
+          
+          output$register_order_button_ui <- renderUI({
+            actionButton(
+              "register_order_btn",
+              "登记订单",
+              icon = icon("plus"),
+              class = "btn-primary",
+              style = "font-size: 16px; min-width: 130px; height: 42px;"
+            )
+          })
         }
-      } else {
-        # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
-        showNotification("未找到对应订单记录，可登记新订单", type = "warning")
-        
-        output$register_order_button_ui <- renderUI({
-          actionButton(
-            "register_order_btn",
-            "登记订单",
-            icon = icon("plus"),
-            class = "btn-primary",
-            style = "font-size: 16px; min-width: 130px; height: 42px;"
-          )
-        })
       }
     }, error = function(e) {
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
