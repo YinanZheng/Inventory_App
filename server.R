@@ -992,7 +992,7 @@ server <- function(input, output, session) {
       } else {
         # 如果 SKU 不冲突，更新输入字段
         updateTextInput(session, "new_sku", value = sku)
-        showNotification("SKU 生成成功！", type = "message")
+        # showNotification("SKU 生成成功！", type = "message")
       }
     }
   })
@@ -1505,7 +1505,7 @@ server <- function(input, output, session) {
             ),
             footer = tagList(
               modalButton("取消"),
-              actionButton("confirm_bind_preorder", "确认售出", class = "btn btn-primary")
+              actionButton("confirm_bind_preorder", "确认预定品售出", class = "btn btn-primary")
             ),
             easyClose = FALSE  # 防止用户误触关闭
           ))
@@ -1893,12 +1893,10 @@ server <- function(input, output, session) {
   )
   
   # 响应点击物品表的行，更新货架上的物品
-  observe({
+  observeEvent(unique_items_table_sold_selected_row(), {
     selected_row <- unique_items_table_sold_selected_row()  # 获取选中的行
-    sort_order <- input$arrow_direction  # 获取排序方向
-    
-    # 如果未选中行或未设置排序方向，则退出
-    if (is.null(selected_row) || length(selected_row) == 0 || is.null(sort_order)) {
+
+    if (is.null(selected_row) || length(selected_row) == 0) {
       return()
     }
     
@@ -1910,6 +1908,9 @@ server <- function(input, output, session) {
         showNotification("未找到有效的 SKU！", type = "error")
         return()
       }
+      
+      # 获取排序方向（但不作为触发条件）
+      sort_order <- isolate(input$arrow_direction)  
       
       # 从 unique_items_data 获取货架中符合条件的物品
       all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order)
@@ -1944,7 +1945,7 @@ server <- function(input, output, session) {
       showNotification(paste("加载货架时发生错误：", e$message), type = "error")
       runjs("playErrorSound()")  
     })
-  })
+  }, ignoreNULL = TRUE, ignoreInit = TRUE)  # **防止初始时触发**
   
   ##### 网名自动填写
   
