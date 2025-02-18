@@ -343,12 +343,12 @@ server <- function(input, output, session) {
 
     # 根据顾客姓名筛选
     if (!is.null(input$filter_customer_name) && input$filter_customer_name != "") {
-      data <- data %>% filter(grepl(input$filter_customer_name, CustomerName, ignore.case = TRUE))
+      data <- data %>% filter(grepl(trimws(input$filter_customer_name), CustomerName, ignore.case = TRUE))
     }
     
     # 根据顾客网名筛选
     if (!is.null(input$filter_customer_netname) && input$filter_customer_netname != "") {
-      data <- data %>% filter(grepl(input$filter_customer_netname, CustomerNetName, ignore.case = TRUE))
+      data <- data %>% filter(grepl(trimws(input$filter_customer_netname), CustomerNetName, ignore.case = TRUE))
     }
     
     # 根据电商平台筛选
