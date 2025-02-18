@@ -12,7 +12,7 @@ server <- function(input, output, session) {
   future({
     return(TRUE)  # 任务完成
   }) %>% 
-    then(function(result) {
+    promises::then(function(result) {
       shinyjs::runjs("$('#loading-screen').fadeOut(1000);")  # 1秒淡出加载界面
     })
   
