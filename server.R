@@ -2210,13 +2210,14 @@ server <- function(input, output, session) {
       } else if (main_order_exists) {
         # **情况 2：主订单 `1234` 存在，但 `1234@1` 不存在 → 允许创建子订单**
         showNotification("主订单已存在，正在创建子订单", type = "warning")
+        
         updateTextAreaInput(session, "order_notes", value = "")
         updateTextAreaInput(session, "preorder_item_name", value = "")
         
         output$register_order_button_ui <- renderUI({
           actionButton(
             "register_order_btn",
-            "登记订单",
+            "登记子单",
             icon = icon("plus"),
             class = "btn-primary",
             style = "font-size: 16px; min-width: 130px; height: 42px;"
