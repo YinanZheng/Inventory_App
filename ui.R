@@ -740,7 +740,7 @@ ui <- navbarPage(
           
           hidden(
             div(id = "preorder_fields",
-                style = "border: 1px solid #ccc; padding: 10px; margin-bottom: 15px;",  # 添加边框样式
+                style = "border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center;",
                 selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...')),
                 textAreaInput(
                   inputId = "preorder_item_name",
