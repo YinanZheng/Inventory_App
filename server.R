@@ -1485,7 +1485,7 @@ server <- function(input, output, session) {
           order_notes <- matched_order$OrderNotes[1]
           
           # **确保 `preorder_info$item_name` 只匹配以 `，` 或 `；` 结尾的完整项**
-          pattern <- paste0("(^|，)(", preorder_info$item_name, ")(，|；)")
+          pattern <- paste0("(】|，)(", preorder_info$item_name, ")(，|；)")
           highlighted_notes <- gsub(pattern, paste0("\\1<mark>\\2</mark>\\3"), order_notes, perl = TRUE)
           
           # 弹出确认对话框
