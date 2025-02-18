@@ -140,6 +140,25 @@ ui <- navbarPage(
       .arrow-icon {
         margin-right: 10px;
       }
+      
+      /* 预定单采购备忘小icon */
+      .status-badge {
+        display: inline-block;
+        padding: 2px 8px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: bold;
+        color: white;
+        text-align: center;
+        margin-left: 10px;
+        min-width: 24px;
+      }
+      .status-existing {
+        background-color: #28A745; /* 绿色 */
+      }
+      .status-new {
+        background-color: #FFA500; /* 橙色 */
+      }
     ")),
       
       tags$script(HTML("
