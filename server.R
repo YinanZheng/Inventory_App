@@ -1876,6 +1876,7 @@ server <- function(input, output, session) {
     }
   })
   
+  # 手动刷新订单表
   observeEvent(input$refresh_orders, {
     orders_refresh_trigger(!orders_refresh_trigger()) # 触发 orders 数据刷新
     showNotification("订单数据已刷新！", type = "message")
