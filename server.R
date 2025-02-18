@@ -1,10 +1,12 @@
 # Define server logic
 server <- function(input, output, session) {
   
+  library(future)
+  
   # 显示加载动画
   shinyjs::show("loading-screen")
-  future::plan(multisession)  # 让数据加载异步执行，避免阻塞 UI
-  future::future({
+  plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
+  future({
     Sys.sleep(5)  # 假设数据加载需要 5 秒
     return(TRUE)  # 任务完成
   }) %...>% (function(result) {
