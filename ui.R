@@ -743,9 +743,12 @@ ui <- navbarPage(
           
           fluidRow(
             column(7, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
-            column(5, fluidRow(
-              column(12, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
-              column(12, div(checkboxInput("is_preorder", "预定", value = FALSE)))
+            column(5, 
+                   div(
+                     style = "display: flex; flex-direction: column; justify-content: center;",
+                     checkboxInput("is_transfer_order", "调货", value = FALSE),
+                     checkboxInput("is_preorder", "预定", value = FALSE)
+                   )
             )
           ),
           
