@@ -745,7 +745,7 @@ ui <- navbarPage(
             column(7, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
             column(5, 
                    div(
-                     style = "display: flex; flex-direction: column; justify-content: center;",
+                     style = "display: flex; flex-direction: column; justify-content: center; gap: 3px",
                      checkboxInput("is_transfer_order", "调货", value = FALSE),
                      checkboxInput("is_preorder", "预定", value = FALSE)
                    )
@@ -781,24 +781,16 @@ ui <- navbarPage(
           
           div(
             style = "border: 1px solid #28A745; border-radius: 8px; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px;",
-            
-            # 运单号输入框
             textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
-            
-            # 运单PDF 文件上传组件
             fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
-            
-            # 上传状态消息
             uiOutput("upload_status_message")
           ),
-          
-          tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
           
           # 订单图片上传
           imageModuleUI("image_sold", label = "订单图片上传", label_color = "#007BFF"),
           
           # 订单备注
-          textAreaInput("order_notes", "订单备注", placeholder = "请输入备注内容", width = "100%"),
+          textAreaInput("order_notes", NULL, placeholder = "请输入备注内容", width = "100%"),
           
           # 按钮区
           div(
