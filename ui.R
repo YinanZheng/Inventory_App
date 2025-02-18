@@ -753,9 +753,9 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            column(4, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
-            column(4, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
-            column(4, div(checkboxInput("is_preorder", "预定", value = FALSE))),
+            column(6, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
+            column(3, div(checkboxInput("is_transfer_order", "调货", value = FALSE))),
+            column(3, div(checkboxInput("is_preorder", "预定", value = FALSE))),
           ),
           
           hidden(
@@ -785,12 +785,18 @@ ui <- navbarPage(
             )
           ),
           
-          # 运单号
-          textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
-          
-          # 运单PDF 文件上传组件
-          fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
-          uiOutput("upload_status_message"),
+          div(
+            style = "border: 2px solid #007BFF; border-radius: 8px; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px;",
+            
+            # 运单号输入框
+            textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
+            
+            # 运单PDF 文件上传组件
+            fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
+            
+            # 上传状态消息
+            uiOutput("upload_status_message")
+          ),
           
           tags$div(style = "margin-top: 20px;"),  # 增加20px垂直间距
           
