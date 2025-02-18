@@ -15,10 +15,9 @@ server <- function(input, output, session) {
     ))
     
     # 模拟数据加载（实际情况是等待数据加载完成）
-    Sys.sleep(5)  # 假设加载 3 秒数据
+    Sys.sleep(10)  # 假设加载 3 秒数据
     
     removeModal()  # 数据加载完毕后移除模态框
-    shinyjs::hide("loading-screen")  # 隐藏加载动画
   })
   
   source("global.R", local = TRUE)
