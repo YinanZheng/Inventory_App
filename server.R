@@ -4356,6 +4356,7 @@ server <- function(input, output, session) {
       }
       
       tryCatch({
+        showNotification(input$transaction_category)
         dbExecute(
           con,
           "UPDATE transactions 
