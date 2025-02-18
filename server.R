@@ -1540,8 +1540,8 @@ server <- function(input, output, session) {
     
     if (!is.null(current_notes) && nchar(current_notes) > 0) {
       # **删除 `OrderNotes` 里匹配的 `item_name`**
-      updated_notes <- trimws(sub("，；", "；", sub("】，", "】", sub("，，", "，", sub(preorder_info$item_name, "", current_notes, fixed = TRUE)))))
-      
+      updated_notes <- remove_preorder_item_note(current_notes, preorder_info$item_name)
+        
       # **如果 `updated_notes` 仅剩 `"【预定物品】；"`，改为 `"【预定物品登记完毕】"`**
       updated_notes <- sub("【预定物品】；", "【预定物品登记完毕】", updated_notes, fixed = TRUE)
       
