@@ -1033,19 +1033,58 @@ server <- function(input, output, session) {
     # 移除空字符串
     all_items <- all_items[all_items$Item != "", ]
     
+    # 获取当前库存商品名称
+    existing_items <- unique(inventory()$ItemName)
+    
     if (nrow(all_items) == 0) {
       div("当前没有预订单物品")
     } else {
-      # 创建物品列表，格式为“物品名（供应商）”
+      # 创建物品列表，判断是否存在于库存
       item_list <- lapply(seq_len(nrow(all_items)), function(i) {
         item <- all_items$Item[i]
         supplier <- all_items$Supplier[i]
-        div(style = "padding: 5px 0; border-bottom: 1px solid #eee;", paste0(item, "（", supplier, "）"))
+        
+        # 判断该物品是否在库存中
+        status_label <- if (item %in% existing_items) {
+          tags$span("现", class = "status-badge status-existing")
+        } else {
+          tags$span("新", class = "status-badge status-new")
+        }
+        
+        div(style = "padding: 5px 0; border-bottom: 1px solid #eee; display: flex; align-items: center;",
+            tags$span(paste0(item, "（", supplier, "）"), style = "flex-grow: 1;"),
+            status_label
+        )
       })
+      
       # 返回 UI 组件
       do.call(tagList, item_list)
     }
   })
+  
+  # 在 UI 的 head 部分添加 CSS 样式
+  tags$head(tags$style(HTML("
+  .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: bold;
+    color: white;
+    text-align: center;
+    margin-left: 10px;
+    min-width: 24px;
+  }
+  
+  .status-existing {
+    background-color: #28A745; /* 绿色 */
+  }
+  
+  .status-new {
+    background-color: #FFA500; /* 橙色 */
+  }
+")))
+  
   
   
   # 采购商品图片处理模块
