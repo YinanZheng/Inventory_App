@@ -2,7 +2,7 @@
 server <- function(input, output, session) {
   
   library(future)
-  libarry(promises)
+  library(promises)
   
   # 显示加载动画
   shinyjs::show("loading-screen")
