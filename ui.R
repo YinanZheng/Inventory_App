@@ -745,7 +745,12 @@ ui <- navbarPage(
             column(7, numericInput("transaction_amount", "总成交额（美元）", value = 0.00, min = 0, step = 0.01, width = "100%")),
             column(5, 
                    div(
-                     style = "display: flex; flex-direction: column; justify-content: center; gap: 3px",
+                     style = "display: flex; flex-direction: column; justify-content: center;",
+                     tags$style(HTML("
+                        #is_transfer_order, #is_preorder {
+                          margin-bottom: 5px !important;
+                        }
+                      ")),
                      checkboxInput("is_transfer_order", "调货", value = FALSE),
                      checkboxInput("is_preorder", "预定", value = FALSE)
                    )
@@ -754,7 +759,7 @@ ui <- navbarPage(
           
           hidden(
             div(id = "preorder_fields",
-                style = "border: 1px solid #ccc; padding: 10px; margin-bottom: 15px; display: flex; flex-direction: column; align-items: center;",
+                style = "border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; align-items: center;",
                 selectizeInput("preorder_supplier", "预定单供应商", choices = NULL, width = "100%", options = list(placeholder = '填选供应商...')),
                 textAreaInput(
                   inputId = "preorder_item_name",
@@ -780,7 +785,7 @@ ui <- navbarPage(
           ),
           
           div(
-            style = "border: 1px solid #28A745; border-radius: 8px; background-color: #f9f9f9; padding: 15px; margin-bottom: 15px;",
+            style = "border: 1px solid #28A745; border-radius: 8px; background-color: #f9f9f9; padding: 15px; margin-bottom: 10px;",
             textInput("tracking_number", "运单号", placeholder = "输入运单号或运单提取", width = "100%"),
             fileInput("shiplabel_pdf_upload", "上传运单PDF", accept = ".pdf", width = "100%"),
             uiOutput("upload_status_message")
