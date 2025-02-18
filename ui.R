@@ -8,6 +8,14 @@ ui <- navbarPage(
   header = tagList(
     shinyjs::useShinyjs(),  # 启用 shinyjs
 
+    # 加载动画界面
+    tags$div(
+      id = "loading-screen",
+      style = "position: fixed; width: 100%; height: 100%; background: white; 
+               z-index: 9999; display: flex; justify-content: center; align-items: center;",
+      tags$img(src = "https://www.goldenbeanllc.com/icons/favicon-96x96.png", style = "width: 120px; height: 120px;") 
+    ),
+    
     tags$head(
       tags$link(rel = "icon", type = "image/x-icon", href = "https://www.goldenbeanllc.com/icons/favicon-96x96.png"),
       
