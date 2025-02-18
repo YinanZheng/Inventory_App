@@ -6,14 +6,15 @@ server <- function(input, output, session) {
   shinyjs::show("loading-screen")  # 显示加载界面
   
   future({
+    Sys.sleep(3)  # 模拟数据加载（3秒）
     return(TRUE)  # 任务完成
   }) %>% 
     then(function(result) {
-      shinyjs::fadeOut("loading-screen", duration = 1000)  # 1秒淡出加载界面
+      shinyjs::runjs("$('#loading-screen').fadeOut(1000);")  # 1秒淡出加载界面
     }) %>% 
     catch(function(e) {
       showNotification(paste("数据加载失败:", e$message), type = "error")
-      shinyjs::fadeOut("loading-screen", duration = 1000)  # 失败时也淡出
+      shinyjs::runjs("$('#loading-screen').fadeOut(1000);")  # 失败时也淡出
     })
   
   ##############################################################################

@@ -143,6 +143,12 @@ ui <- navbarPage(
     ")),
       
       tags$script(HTML("
+      // 系统加载画面淡出
+      $(document).ready(function() {
+        $('#loading-screen').css('transition', 'opacity 1s ease-out');
+      });
+      
+      // 复制粘贴图片
       $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
         const items = (event.originalEvent.clipboardData || event.clipboardData).items;
         for (let i = 0; i < items.length; i++) {
