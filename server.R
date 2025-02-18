@@ -2,17 +2,18 @@
 server <- function(input, output, session) {
   
   # 显示加载动画
-  shinyjs::show("loading-screen")
   future::plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
-  future::future({
+  shinyjs::show("loading-screen")  # 显示加载界面
+  
+  future({
     return(TRUE)  # 任务完成
   }) %>% 
     then(function(result) {
-      shinyjs::hide("loading-screen")  # 数据加载完成后隐藏加载界面
+      shinyjs::fadeOut("loading-screen", duration = 1000)  # 1秒淡出加载界面
     }) %>% 
     catch(function(e) {
       showNotification(paste("数据加载失败:", e$message), type = "error")
-      shinyjs::hide("loading-screen")  # 失败时也隐藏
+      shinyjs::fadeOut("loading-screen", duration = 1000)  # 失败时也淡出
     })
   
   ##############################################################################
