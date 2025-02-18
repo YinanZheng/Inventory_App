@@ -159,6 +159,11 @@ ui <- navbarPage(
       .status-new {
         background-color: #FFA500; /* 橙色 */
       }
+      
+      /* 成交额placeholder */
+      $(document).ready(function() {
+        $('#transaction_amount').attr('placeholder', '成交额（$）');
+      });
     ")),
       
       tags$script(HTML("
@@ -742,11 +747,6 @@ ui <- navbarPage(
           ),
           
           fluidRow(
-            tags$script(HTML("
-    $(document).ready(function() {
-      $('#transaction_amount').attr('placeholder', '成交额（美元）');
-    });
-  ")), 
             column(6, numericInput("transaction_amount", NULL, value = NULL, min = 0, step = 0.01, width = "100%")),
             column(3, checkboxInput("is_transfer_order", "调货", value = FALSE)),
             column(3, checkboxInput("is_preorder", "预定", value = FALSE)),
