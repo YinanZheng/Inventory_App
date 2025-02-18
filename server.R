@@ -988,7 +988,7 @@ server <- function(input, output, session) {
     if (is_from_table) {
       # 如果 SKU 来源于表格，直接更新输入字段
       updateTextInput(session, "new_sku", value = sku)
-      showNotification("SKU 已生成（来源于表格选择）", type = "message")
+      # showNotification("SKU 已生成（来源于表格选择）", type = "message")
     } else {
       # 如果 SKU 不是来源于表格，检查是否冲突
       existing_sku <- inventory() %>% filter(SKU == sku)
