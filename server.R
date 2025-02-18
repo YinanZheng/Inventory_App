@@ -3,8 +3,8 @@ server <- function(input, output, session) {
   
   # 显示加载动画
   shinyjs::show("loading-screen")
-  plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
-  future({
+  future::plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
+  future::future({
     return(TRUE)  # 任务完成
   }) %>% 
     then(function(result) {
