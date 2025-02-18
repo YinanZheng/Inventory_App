@@ -1892,6 +1892,9 @@ server <- function(input, output, session) {
     makers_items_map = makers_items_map
   )
   
+  # **存储排序方向**
+  sort_order_reactive <- reactiveVal(input$arrow_direction)
+  
   # 响应点击物品表的行，更新货架上的物品
   observeEvent(unique_items_table_sold_selected_row(), {
     selected_row <- unique_items_table_sold_selected_row()  # 获取选中的行
@@ -1909,11 +1912,8 @@ server <- function(input, output, session) {
         return()
       }
       
-      # 获取排序方向（但不作为触发条件）
-      sort_order <- isolate(input$arrow_direction)  
-      
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order)
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order_reactive())
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
@@ -1946,6 +1946,11 @@ server <- function(input, output, session) {
       runjs("playErrorSound()")  
     })
   }, ignoreNULL = TRUE, ignoreInit = TRUE)  # **防止初始时触发**
+
+  # 监听排序方向变化，更新 `sort_order_reactive()
+  observeEvent(input$arrow_direction, {
+    sort_order_reactive(input$arrow_direction)
+  }, ignoreInit = TRUE)
   
   ##### 网名自动填写
   
