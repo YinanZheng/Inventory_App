@@ -2211,48 +2211,48 @@ server <- function(input, output, session) {
           updateSelectizeInput(session, "preorder_supplier", selected = character(0))
           updateTextAreaInput(session, "preorder_item_name", value = "")
         }
+      }
+      
+      # **判断按钮逻辑**
+      if (nrow(existing_order) > 0) {
+        # **情况 1：当前输入的订单号已存在（如 `1234` 存在） → 显示“更新订单”**
+        output$register_order_button_ui <- renderUI({
+          actionButton(
+            "register_order_btn",
+            "更新订单",
+            icon = icon("edit"),
+            class = "btn-success",
+            style = "font-size: 16px; min-width: 130px; height: 42px;"
+          )
+        })
+      } else if (main_order_exists) {
+        # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
+        showNotification("主订单已存在，正在创建子订单", type = "warning")
+        updateTextAreaInput(session, "order_notes", value = "")
+        updateTextAreaInput(session, "preorder_item_name", value = "")
         
-        # **判断按钮逻辑**
-        if (nrow(existing_order)) {
-          # **情况 1：当前输入的订单号已存在（如 `1234` 存在） → 显示“更新订单”**
-          output$register_order_button_ui <- renderUI({
-            actionButton(
-              "register_order_btn",
-              "更新订单",
-              icon = icon("edit"),
-              class = "btn-success",
-              style = "font-size: 16px; min-width: 130px; height: 42px;"
-            )
-          })
-        } else if (main_order_exists) {
-          # **情况 2：当前输入的是 `1234@1`，但 `1234@1` 不存在，且 `1234` 存在 → 显示“登记订单”**
-          showNotification("主订单已存在，正在创建子订单", type = "warning")
-          updateTextAreaInput(session, "order_notes", value = "")
-          updateTextAreaInput(session, "preorder_item_name", value = "")
-          
-          output$register_order_button_ui <- renderUI({
-            actionButton(
-              "register_order_btn",
-              "登记订单",
-              icon = icon("plus"),
-              class = "btn-primary",
-              style = "font-size: 16px; min-width: 130px; height: 42px;"
-            )
-          })
-        } else {
-          # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
-          showNotification("未找到对应订单记录，可登记新订单", type = "warning")
-          
-          output$register_order_button_ui <- renderUI({
-            actionButton(
-              "register_order_btn",
-              "登记订单",
-              icon = icon("plus"),
-              class = "btn-primary",
-              style = "font-size: 16px; min-width: 130px; height: 42px;"
-            )
-          })
-        }
+        output$register_order_button_ui <- renderUI({
+          actionButton(
+            "register_order_btn",
+            "登记订单",
+            icon = icon("plus"),
+            class = "btn-primary",
+            style = "font-size: 16px; min-width: 130px; height: 42px;"
+          )
+        })
+      } else {
+        # **情况 3：订单 `1234` 和 `1234@1` 都不存在，用户创建新订单**
+        showNotification("未找到对应订单记录，可登记新订单", type = "warning")
+        
+        output$register_order_button_ui <- renderUI({
+          actionButton(
+            "register_order_btn",
+            "登记订单",
+            icon = icon("plus"),
+            class = "btn-primary",
+            style = "font-size: 16px; min-width: 130px; height: 42px;"
+          )
+        })
       }
     }, error = function(e) {
       showNotification(paste("检查订单时发生错误：", e$message), type = "error")
