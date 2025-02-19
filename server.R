@@ -6008,7 +6008,15 @@ server <- function(input, output, session) {
                     selected = NULL, width = "100%"),
         
         # 更新选中物品瑕疵品状态
-        actionButton("admin_update_defect_btn", "更新瑕疵品状态", class = "btn-info", style = "width: 100%; margin-top: 10px;")
+        actionButton("admin_update_defect_btn", "更新瑕疵品状态", class = "btn-info", style = "width: 100%; margin-top: 10px;"),
+        
+        div(
+          class = "card shadow-sm",
+          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          tags$h4("物品状态流转", style = "color: #007BFF; font-weight: bold; margin-bottom: 10px;"),
+          textOutput("selected_item_unique_id"),  # 显示 UniqueID
+          DTOutput("item_status_history_table")   # 渲染状态流转表
+        )
       )
     } else {
       div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
@@ -6112,6 +6120,39 @@ server <- function(input, output, session) {
       showNotification(paste("瑕疵品状态更新失败：", e$message), type = "error")
     })
   })
+  
+  # 监听表格选中行，获取 UniqueID
+  observeEvent(unique_items_table_admin_selected_row(), {
+    selected_rows <- unique_items_table_admin_selected_row()
+    if (is.null(selected_rows) || length(selected_rows) == 0) {
+      updateTextOutput(session, "selected_item_unique_id", value = "未选择")
+      output$item_status_history_table <- renderDT({ data.frame() })  # 清空表格
+      return()
+    }
+    
+    selected_item <- unique_items_data()[selected_rows, ]
+    unique_id <- selected_item$UniqueID[1]
+    
+    # 显示 UniqueID
+    output$selected_item_unique_id <- renderText({ paste("选中物品 UniqueID:", unique_id) })
+    
+    # 查询该物品的状态历史
+    status_history <- dbGetQuery(con, 
+                                 "SELECT previous_status, previous_status_timestamp 
+     FROM item_status_history 
+     WHERE UniqueID = ? 
+     ORDER BY previous_status_timestamp DESC",
+                                 params = list(unique_id))
+    
+    # 渲染状态历史表格
+    output$item_status_history_table <- renderDT({
+      datatable(status_history, options = list(
+        searching = FALSE, paging = FALSE, info = FALSE
+      ))
+    })
+  })
+  
+  
   
   #########################################################################################################################
   
