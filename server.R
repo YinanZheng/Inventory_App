@@ -2354,19 +2354,19 @@ server <- function(input, output, session) {
       updateTabsetPanel(session, "sold_tabs", selected = "物品售出")
     })
     
-    delay(100, {
-          selected_order_id(NULL)
-    associated_items(NULL)
-    
-    # 重置订单填写表
-    reset_order_form(session, image_sold)
-    
-    # 重置库存商品名列表
-    updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
-    
-    # 清空订单关联物品表
-    output$associated_items_title <- renderDT({ NULL }) # 清空标题
-    renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
+    delay(300, {
+      selected_order_id(NULL)
+      associated_items(NULL)
+      
+      # 重置订单填写表
+      reset_order_form(session, image_sold)
+      
+      # 重置库存商品名列表
+      updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
+      
+      # 清空订单关联物品表
+      output$associated_items_title <- renderDT({ NULL }) # 清空标题
+      renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
     })
   })
 
