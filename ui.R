@@ -167,6 +167,13 @@ ui <- navbarPage(
         $('#loading-screen').css('transition', 'opacity 1s ease-out');
       });
       
+      // 刷新物品表
+      $(document).ready(function() {
+        $('#refresh_global_items_btn').click(function() {
+          Shiny.setInputValue('refresh_item_table', Math.random());
+        });
+      });
+    
       // 复制粘贴图片
       $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
         const items = (event.originalEvent.clipboardData || event.clipboardData).items;
@@ -278,6 +285,14 @@ ui <- navbarPage(
       });
     "))
     )
+  ),
+  
+  actionButton(
+    "refresh_global_items_btn",
+    "刷新物品表",
+    icon = icon("sync"),
+    class = "btn-success",
+    style = "position: absolute; top: 8px; right: 20px; z-index: 9999;"
   ),
   
   tabPanel(
