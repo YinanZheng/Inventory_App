@@ -6013,7 +6013,7 @@ server <- function(input, output, session) {
         div(
           class = "card shadow-sm",
           style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px; margin-top: 20px;",
-          tags$h4("物品状态流转", style = "color: #007BFF; font-weight: bold; margin-bottom: 10px;"),
+          tags$h4("历史库存状态流转记录", style = "color: #007BFF; font-weight: bold; margin-bottom: 10px;"),
           textOutput("selected_item_unique_id"),  # 显示 UniqueID
           DTOutput("item_status_history_table")   # 渲染状态流转表
         )
@@ -6131,7 +6131,7 @@ server <- function(input, output, session) {
     }
     
     selected_item <- unique_items_data()[selected_rows, ]
-    unique_id <- selected_item$UniqueID[1]
+    unique_id <- selected_item$UniqueID[length(selected_rows)]
     
     # 显示 UniqueID
     output$selected_item_unique_id <- renderText({ unique_id })
