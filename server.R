@@ -2354,7 +2354,7 @@ server <- function(input, output, session) {
       updateTabsetPanel(session, "sold_tabs", selected = "物品售出")
     })
     
-    delay(300, {
+    delay(500, {
       selected_order_id(NULL)
       associated_items(NULL)
       
