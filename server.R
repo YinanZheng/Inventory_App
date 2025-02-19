@@ -2350,12 +2350,12 @@ server <- function(input, output, session) {
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
-    
     delay(100, {
       updateTabsetPanel(session, "sold_tabs", selected = "物品售出")
     })
     
-    selected_order_id(NULL)
+    delay(100, {
+          selected_order_id(NULL)
     associated_items(NULL)
     
     # 重置订单填写表
@@ -2367,6 +2367,7 @@ server <- function(input, output, session) {
     # 清空订单关联物品表
     output$associated_items_title <- renderDT({ NULL }) # 清空标题
     renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
+    })
   })
 
   # 订单合并
