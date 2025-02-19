@@ -169,8 +169,8 @@ ui <- navbarPage(
       
       // 刷新物品表
       $(document).ready(function() {
-        $('#refresh_global_items_btn').click(function() {
-          Shiny.setInputValue('refresh_item_table', Math.random());
+        $('#refresh_global_items_btn').on('click', function() {
+          Shiny.setInputValue('refresh_item_table', new Date().getTime(), {priority: 'event'});
         });
       });
     

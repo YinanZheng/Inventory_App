@@ -673,8 +673,10 @@ server <- function(input, output, session) {
   ####################################################################################################################################
   
   observeEvent(input$refresh_item_table, {
-    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发物品表数据刷新
-    showNotification("物品表已刷新！", type = "message")
+    isolate({
+      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发数据刷新
+      showNotification("物品表已刷新！", type = "message")
+    })
   })
   
   ################################################################
