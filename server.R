@@ -4434,7 +4434,7 @@ server <- function(input, output, session) {
       pasted_data = image_transfer$pasted_file()
     )
     
-    if (is.null(transfer_image_path) || transfer_image_path == "") {
+    if (is.null(transfer_image_path) || is.na(transfer_image_path)) {
       transfer_image_path <- NULL  # 如果未上传图片，设置为 NULL
     }
     
@@ -5997,6 +5997,8 @@ server <- function(input, output, session) {
         
         # 更新选中物品瑕疵品状态
         actionButton("admin_update_defect_btn", "更新瑕疵品状态", class = "btn-info", style = "width: 100%; margin-top: 10px;"),
+        
+        actionButton("select_all_btn", "全选/取消全选", icon = icon("check-square"), class = "btn-primary")
       )
     } else {
       div(tags$p("请输入密码以访问管理员功能", style = "color: red; font-weight: bold; text-align: center;"))
