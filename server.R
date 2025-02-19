@@ -2350,6 +2350,8 @@ server <- function(input, output, session) {
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
+    updateTabsetPanel(session, "sold_tabs", selected = "物品出售")
+    
     selected_order_id(NULL)
     associated_items(NULL)
     
