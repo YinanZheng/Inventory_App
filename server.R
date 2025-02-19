@@ -3683,12 +3683,6 @@ server <- function(input, output, session) {
     id = "logistic_filter",
     makers_items_map = makers_items_map)
   
-  # 手动刷新订单表
-  observeEvent(input$refresh_logistic_item_table, {
-    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger()) # 触发 orders 数据刷新
-    showNotification("物品表已刷新！", type = "message")
-  })
-  
   ######################
   ### 国际运单登记分页
   ######################
