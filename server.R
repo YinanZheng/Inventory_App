@@ -6134,7 +6134,7 @@ server <- function(input, output, session) {
     unique_id <- selected_item$UniqueID[1]
     
     # 显示 UniqueID
-    output$selected_item_unique_id <- renderText({ paste("UniqueID:\n", unique_id) })
+    output$selected_item_unique_id <- renderText({ unique_id })
     
     # 查询该物品的状态历史
     status_history <- dbGetQuery(con, 
