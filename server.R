@@ -6134,7 +6134,7 @@ server <- function(input, output, session) {
     unique_id <- selected_item$UniqueID[1]
     
     # 显示 UniqueID
-    output$selected_item_unique_id <- renderText({ paste("选中物品 UniqueID:", unique_id) })
+    output$selected_item_unique_id <- renderText({ paste("UniqueID:\n", unique_id) })
     
     # 查询该物品的状态历史
     status_history <- dbGetQuery(con, 
@@ -6146,7 +6146,7 @@ server <- function(input, output, session) {
     
     # 格式化时间列
     if (nrow(status_history) > 0) {
-      status_history$Time <- format(as.POSIXct(status_history$Time, format = "%Y-%m-%dT%H:%M:%SZ"), "%Y-%m-%d\n%H:%M:%S")
+      status_history$Time <- format(as.POSIXct(status_history$Time, format = "%Y-%m-%dT%H:%M:%SZ"))
     }
     
     # 渲染状态历史表格
