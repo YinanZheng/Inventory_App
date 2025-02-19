@@ -1252,7 +1252,7 @@ ui <- navbarPage(
               fluidRow(
                 column(6, actionButton("link_tracking_btn", "挂靠运单", icon = icon("link"), class = "btn-primary", style = "margin-top: 20px; width: 100%;", disabled = TRUE)),
                 column(6, actionButton("unlink_tracking_btn", "解除挂靠", icon = icon("link-slash"), class = "btn-danger", style = "margin-top: 20px; width: 100%;", disabled = TRUE)),
-                column(12, actionButton("refresh_logistic_item_table", "刷新表格", class = "btn-secondary", style = "width: 100%;"))
+                column(12, actionButton("refresh_logistic_item_table", "刷新表格", class = "btn-success", style = "margin-top: 20px; width: 100%;"))
               )
             )
           )
