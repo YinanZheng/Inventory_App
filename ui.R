@@ -8,6 +8,14 @@ ui <- navbarPage(
   header = tagList(
     useShinyjs(),  # 启用 shinyjs
 
+    actionButton(
+      "refresh_global_items_btn",
+      "刷新物品表",
+      icon = icon("sync"),
+      class = "btn-success",
+      style = "position: absolute; top: 8px; right: 20px; z-index: 9999;"
+    ),
+    
     # 加载动画界面
     tags$div(
       id = "loading-screen",
@@ -285,14 +293,6 @@ ui <- navbarPage(
       });
     "))
     )
-  ),
-  
-  actionButton(
-    "refresh_global_items_btn",
-    "刷新物品表",
-    icon = icon("sync"),
-    class = "btn-success",
-    style = "position: absolute; top: 8px; right: 20px; z-index: 9999;"
   ),
   
   tabPanel(
