@@ -492,10 +492,8 @@ server <- function(input, output, session) {
     }
     
     # 优先显示没有国际运单号的物品
-    data <- data %>%
-      mutate(IntlTracking = as.character(IntlTracking)) %>%
-      arrange(is.na(IntlTracking), IntlTracking)
-    
+    data <- data %>% arrange(desc(is.na(IntlTracking)), IntlTracking)
+
     data
   })
   
