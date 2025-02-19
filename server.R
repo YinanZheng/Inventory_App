@@ -6130,7 +6130,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    selected_item <- filtered_unique_items_data_admin()[selected_rows, ]
+    selected_item <- unique_items_data()[selected_rows, ]
     unique_id <- selected_item$UniqueID[1]
     
     # 显示 UniqueID
@@ -6141,7 +6141,7 @@ server <- function(input, output, session) {
                                  "SELECT previous_status AS 'Status', previous_status_timestamp AS 'Time' 
                                   FROM item_status_history 
                                   WHERE UniqueID = ? 
-                                  ORDER BY previous_status_timestamp DESC",
+                                  ORDER BY previous_status_timestamp",
                                  params = list(unique_id))
     
     # 格式化时间列
