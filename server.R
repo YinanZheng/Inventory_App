@@ -4435,7 +4435,7 @@ server <- function(input, output, session) {
     )
     
     if (is.null(transfer_image_path) || is.na(transfer_image_path)) {
-      transfer_image_path <- NULL  # 如果未上传图片，设置为 NULL
+      transfer_image_path <- NA_character_  # 如果未上传图片，空
     }
     
     tryCatch({
