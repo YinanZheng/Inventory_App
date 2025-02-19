@@ -8,6 +8,7 @@ ui <- navbarPage(
   header = tagList(
     useShinyjs(),  # 启用 shinyjs
 
+    # 物品表刷新（联动刷新库存表与订单表）
     actionButton(
       "refresh_global_items_btn",
       "",
