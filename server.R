@@ -6012,7 +6012,7 @@ server <- function(input, output, session) {
         
         div(
           class = "card shadow-sm",
-          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px;",
+          style = "padding: 15px; border: 1px solid #007BFF; border-radius: 8px; margin-top: 20px;",
           tags$h4("物品状态流转", style = "color: #007BFF; font-weight: bold; margin-bottom: 10px;"),
           textOutput("selected_item_unique_id"),  # 显示 UniqueID
           DTOutput("item_status_history_table")   # 渲染状态流转表
@@ -6130,7 +6130,7 @@ server <- function(input, output, session) {
       return()
     }
     
-    selected_item <- unique_items_data()[selected_rows, ]
+    selected_item <- filtered_unique_items_data_admin()[selected_rows, ]
     unique_id <- selected_item$UniqueID[1]
     
     # 显示 UniqueID
@@ -6138,21 +6138,24 @@ server <- function(input, output, session) {
     
     # 查询该物品的状态历史
     status_history <- dbGetQuery(con, 
-                                 "SELECT previous_status, previous_status_timestamp 
-     FROM item_status_history 
-     WHERE UniqueID = ? 
-     ORDER BY previous_status_timestamp DESC",
+                                 "SELECT previous_status AS 'Status', previous_status_timestamp AS 'Time' 
+                                  FROM item_status_history 
+                                  WHERE UniqueID = ? 
+                                  ORDER BY previous_status_timestamp DESC",
                                  params = list(unique_id))
+    
+    # 格式化时间列
+    if (nrow(status_history) > 0) {
+      status_history$Time <- format(as.POSIXct(status_history$Time, format = "%Y-%m-%dT%H:%M:%SZ"), "%Y-%m-%d\n%H:%M:%S")
+    }
     
     # 渲染状态历史表格
     output$item_status_history_table <- renderDT({
-      datatable(status_history, options = list(
+      datatable(status_history, rownames = FALSE, options = list(
         searching = FALSE, paging = FALSE, info = FALSE
       ))
     })
   })
-  
-  
   
   #########################################################################################################################
   
