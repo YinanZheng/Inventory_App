@@ -2271,23 +2271,23 @@ server <- function(input, output, session) {
   observe({
     selected_supplier <- input$preorder_supplier  # 获取当前选择的供应商
     
-    # 只在选择了供应商时显示 `preorder_item_name_db`
-    toggle(id = "preorder_item_name_db", condition = !is.null(selected_supplier) && selected_supplier != "")
-    
     # 根据供应商筛选库存中的商品名称
-    if (!is.null(selected_supplier) && selected_supplier != "") {
-      filtered_items <- inventory() %>% 
-        filter(Maker == selected_supplier) %>% 
-        pull(ItemName) %>% 
-        unique()
+    filtered_items <- if (!is.null(selected_supplier) && selected_supplier != "") {
+      inventory() %>% filter(Maker == selected_supplier) %>% pull(ItemName) %>% unique()
     } else {
-      filtered_items <- NULL  # 供应商未选择时，不提供任何选项
+      NULL  # 供应商未选择时，不提供任何选项
     }
     
-    # 更新供应商选择器和商品名称选择器
-    update_maker_choices(session, "preorder_supplier", maker_list())
+    # 更新供应商选择器，确保不会清空当前选择
+    updateSelectizeInput(session, "preorder_supplier", choices = maker_list(), selected = selected_supplier)
+    
+    # 更新商品名称选择器
     updateSelectizeInput(session, "preorder_item_name_db", choices = c("", filtered_items), selected = NULL, server = TRUE)
+    
+    # 控制 `preorder_item_name_db` 的显示
+    toggle(id = "preorder_item_name_db", condition = !is.null(selected_supplier) && selected_supplier != "")
   })
+  
   
   # 监听用户在 preorder_item_name_db 中的选择，并更新到 preorder_item_name
   observeEvent(input$preorder_item_name_db, {
