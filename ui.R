@@ -1427,6 +1427,22 @@ ui <- navbarPage(
                              class = "btn-info", style = "width: 100%;")
               )
             )
+          ),
+          
+          # 统计汇总分页
+          tabPanel(
+            title = "统计汇总", icon = icon("chart-bar"),
+            tags$h4("统计汇总", style = "color: #17A2B8; font-weight: bold; margin-bottom: 15px;"),
+            
+            dateRangeInput("summary_date_range", "选择时间范围:", 
+                           start = Sys.Date() - 30, end = Sys.Date(), width = "100%"),
+            
+            fluidRow(
+              column(3, actionButton("summary_daily", "按天汇总", class = "btn-primary", style = "width: 100%;")),
+              column(3, actionButton("summary_weekly", "按周汇总", class = "btn-info", style = "width: 100%;")),
+              column(3, actionButton("summary_monthly", "按月汇总", class = "btn-success", style = "width: 100%;")),
+              column(3, actionButton("summary_yearly", "按年汇总", class = "btn-warning", style = "width: 100%;"))
+            )
           )
         )
       ),
