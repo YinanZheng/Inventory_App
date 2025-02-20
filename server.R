@@ -4681,6 +4681,21 @@ server <- function(input, output, session) {
     start_date <- input$summary_date_range[1]
     end_date <- input$summary_date_range[2]
     
+    # **获取当前选中的账户类型**
+    account_type <- switch(
+      input$transaction_tabs,
+      "工资卡" = "工资卡",
+      "美元卡" = "美元卡",
+      "买货卡" = "买货卡",
+      "一般户卡" = "一般户卡",
+      NULL
+    )
+    
+    if (is.null(account_type)) {
+      showNotification("请选择一个账户再进行统计！", type = "error")
+      return()
+    }
+    
     summary_data <- dbGetQuery(con, sprintf("
     SELECT DATE_FORMAT(TransactionTime, CASE 
       WHEN '%s' = 'day' THEN '%%Y-%%m-%%d'
@@ -4691,13 +4706,14 @@ server <- function(input, output, session) {
     SUM(CASE WHEN Amount > 0 THEN Amount ELSE 0 END) AS Income,
     SUM(CASE WHEN Amount < 0 THEN ABS(Amount) ELSE 0 END) AS Expense
     FROM transactions
-    WHERE TransactionTime BETWEEN '%s' AND '%s'
+    WHERE TransactionTime BETWEEN '%s' AND '%s' AND AccountType = '%s'
     GROUP BY Period
     ORDER BY Period ASC
-  ", period, period, period, period, start_date, end_date))
+  ", period, period, period, period, start_date, end_date, account_type))
     
+    # **弹出窗口显示统计结果**
     showModal(modalDialog(
-      title = paste0("账务统计 - ", switch(period, day="每日", week="每周", month="每月", year="每年")),
+      title = paste0("账务统计 - ", switch(period, day="每日", week="每周", month="每月", year="每年"), "（", account_type, "）"),
       renderTable(summary_data),
       easyClose = TRUE,
       footer = modalButton("关闭")
