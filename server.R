@@ -2279,7 +2279,7 @@ server <- function(input, output, session) {
     }
     
     # 更新供应商选择器，确保不会清空当前选择
-    updateSelectizeInput(session, "preorder_supplier", choices = maker_list(), selected = selected_supplier)
+    updateSelectizeInput(session, "preorder_supplier", choices = maker_list()$Maker, selected = selected_supplier)
     
     # 更新商品名称选择器
     updateSelectizeInput(session, "preorder_item_name_db", choices = c("", filtered_items), selected = NULL, server = TRUE)
