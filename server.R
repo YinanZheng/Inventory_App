@@ -4659,6 +4659,51 @@ server <- function(input, output, session) {
     showNotification("表单已重置！", type = "message")
   })
   
+  ###
+  
+  # 汇总
+  observeEvent(input$summary_daily, {
+    calculate_summary("day")
+  })
+  observeEvent(input$summary_weekly, {
+    calculate_summary("week")
+  })
+  observeEvent(input$summary_monthly, {
+    calculate_summary("month")
+  })
+  observeEvent(input$summary_yearly, {
+    calculate_summary("year")
+  })
+  
+  calculate_summary <- function(period) {
+    req(input$summary_date_range)
+    
+    start_date <- input$summary_date_range[1]
+    end_date <- input$summary_date_range[2]
+    
+    summary_data <- dbGetQuery(con, sprintf("
+    SELECT DATE_FORMAT(TransactionTime, CASE 
+      WHEN '%s' = 'day' THEN '%%Y-%%m-%%d'
+      WHEN '%s' = 'week' THEN '%%x-%%v'
+      WHEN '%s' = 'month' THEN '%%Y-%%m'
+      WHEN '%s' = 'year' THEN '%%Y'
+    END) AS Period,
+    SUM(CASE WHEN Amount > 0 THEN Amount ELSE 0 END) AS Income,
+    SUM(CASE WHEN Amount < 0 THEN ABS(Amount) ELSE 0 END) AS Expense
+    FROM transactions
+    WHERE TransactionTime BETWEEN '%s' AND '%s'
+    GROUP BY Period
+    ORDER BY Period ASC
+  ", period, period, period, period, start_date, end_date))
+    
+    showModal(modalDialog(
+      title = paste0("账务统计 - ", switch(period, day="每日", week="每周", month="每月", year="每年")),
+      renderTable(summary_data),
+      easyClose = TRUE,
+      footer = modalButton("关闭")
+    ))
+  }
+  
   ####
 
   # 监听 工资卡 点选
