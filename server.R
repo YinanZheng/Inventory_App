@@ -2262,20 +2262,37 @@ server <- function(input, output, session) {
     }
   })
   
-  # 动态填充供应商与商品名选择器
-  observe({
-    update_maker_choices(session, "preorder_supplier", maker_list())
-    updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
-  })
-  
-  # 控制预订单显示
+  # 控制预订单额外显示区域
   observeEvent(input$is_preorder, {
     toggle(id = "preorder_fields", condition = input$is_preorder)
+  })
+  
+  # 动态填充供应商与商品名选择器
+  observe({
+    selected_supplier <- input$preorder_supplier  # 获取当前选择的供应商
+    
+    # 只在选择了供应商时显示 `preorder_item_name_db`
+    toggle(id = "preorder_item_name_db", condition = !is.null(selected_supplier) && selected_supplier != "")
+    
+    # 根据供应商筛选库存中的商品名称
+    if (!is.null(selected_supplier) && selected_supplier != "") {
+      filtered_items <- inventory() %>% 
+        filter(Maker == selected_supplier) %>% 
+        pull(ItemName) %>% 
+        unique()
+    } else {
+      filtered_items <- NULL  # 供应商未选择时，不提供任何选项
+    }
+    
+    # 更新供应商选择器和商品名称选择器
+    update_maker_choices(session, "preorder_supplier", maker_list())
+    updateSelectizeInput(session, "preorder_item_name_db", choices = c("", filtered_items), selected = NULL, server = TRUE)
   })
   
   # 监听用户在 preorder_item_name_db 中的选择，并更新到 preorder_item_name
   observeEvent(input$preorder_item_name_db, {
     selected_item <- input$preorder_item_name_db
+    selected_supplier <- input$preorder_supplier  # 获取当前供应商
     
     if (!is.null(selected_item) && selected_item != "") {
       existing_text <- input$preorder_item_name
@@ -2285,15 +2302,20 @@ server <- function(input, output, session) {
       new_text <- paste(existing_text, selected_item, sep = ifelse(existing_text == "", "", "\n"))
       updateTextAreaInput(session, "preorder_item_name", value = new_text)
       
-      # 从 inventory() 获取商品图片路径
-      selected_inventory <- inventory() %>% filter(ItemName == selected_item)
-      
-      if (nrow(selected_inventory) > 0) {
-        img_path <- ifelse(is.na(selected_inventory$ItemImagePath) || selected_inventory$ItemImagePath == "",
-                           placeholder_150px_path,
-                           paste0(host_url, "/images/", basename(selected_inventory$ItemImagePath)))
+      # 仅在 `preorder_supplier` 选中的情况下查找库存
+      if (!is.null(selected_supplier) && selected_supplier != "") {
+        selected_inventory <- inventory() %>% 
+          filter(ItemName == selected_item, Maker == selected_supplier)
         
-        runjs(sprintf("$('#preorder_img').attr('src', '%s').show();", img_path))
+        if (nrow(selected_inventory) > 0) {
+          img_path <- ifelse(is.na(selected_inventory$ItemImagePath) || selected_inventory$ItemImagePath == "",
+                             placeholder_150px_path,
+                             paste0(host_url, "/images/", basename(selected_inventory$ItemImagePath)))
+          
+          runjs(sprintf("$('#preorder_img').attr('src', '%s').show();", img_path))
+        } else {
+          runjs("$('#preorder_img').hide();")
+        }
       } else {
         runjs("$('#preorder_img').hide();")
       }
