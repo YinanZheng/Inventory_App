@@ -1670,7 +1670,7 @@ server <- function(input, output, session) {
         update_status_value = "国内入库",
         count_label = "待入库数", 
         count_field = "PendingQuantity", 
-        refresh_trigger = NULL,      
+        refresh_trigger = unique_items_data_refresh_trigger,      
         con,                  
         input, output, session
       )
