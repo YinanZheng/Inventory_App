@@ -5537,10 +5537,11 @@ server <- function(input, output, session) {
             transaction_id <- generate_transaction_id("买货卡", TotalDomesticShipping, remarks_ship, PurchaseTime)
             dbExecute(
               con,
-              "INSERT INTO transactions (TransactionID, AccountType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
+              "INSERT INTO transactions (TransactionID, AccountType, TransactionType, Amount, Remarks, TransactionTime) VALUES (?, ?, ?, ?, ?)",
               params = list(
                 transaction_id,
                 "买货卡",
+                "采购",
                 -TotalDomesticShipping,
                 remarks_ship,
                 PurchaseTime
@@ -5554,9 +5555,10 @@ server <- function(input, output, session) {
       
       showNotification("核对后的采购开销与国内运费已登记到'买货卡（139）'！", type = "message")
       
-      # 重新计算所有balance记录
+      # 重新计算所有balance记录并刷新显示
       update_balance("买货卡", con)
-
+      refreshTransactionTable("买货卡", cache_env, transaction_table_hash, output, con)
+      
     }, error = function(e) {
       showNotification(paste0("更新失败!", e), type = "error")
     })
