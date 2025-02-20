@@ -674,6 +674,9 @@ server <- function(input, output, session) {
     isolate({
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发数据刷新
       refreshTransactionTable("买货卡", cache_env, transaction_table_hash, output, con)
+      refreshTransactionTable("工资卡", cache_env, transaction_table_hash, output, con)
+      refreshTransactionTable("美元卡", cache_env, transaction_table_hash, output, con)
+      refreshTransactionTable("一般户卡", cache_env, transaction_table_hash, output, con)
     })
   })
   
