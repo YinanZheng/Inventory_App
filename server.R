@@ -4665,9 +4665,6 @@ server <- function(input, output, session) {
   observeEvent(input$summary_daily, {
     calculate_summary("day")
   })
-  observeEvent(input$summary_weekly, {
-    calculate_summary("week")
-  })
   observeEvent(input$summary_monthly, {
     calculate_summary("month")
   })
@@ -4699,7 +4696,6 @@ server <- function(input, output, session) {
     summary_data <- dbGetQuery(con, sprintf("
     SELECT DATE_FORMAT(TransactionTime, CASE 
       WHEN '%s' = 'day' THEN '%%Y-%%m-%%d'
-      WHEN '%s' = 'week' THEN '%%x-%%v'
       WHEN '%s' = 'month' THEN '%%Y-%%m'
       WHEN '%s' = 'year' THEN '%%Y'
     END) AS Period,
@@ -4709,15 +4705,42 @@ server <- function(input, output, session) {
     WHERE TransactionTime BETWEEN '%s' AND '%s' AND AccountType = '%s'
     GROUP BY Period
     ORDER BY Period ASC
-  ", period, period, period, period, start_date, end_date, account_type))
+  ", period, period, period, start_date, end_date, account_type))
     
-    # **弹出窗口显示统计结果**
+    # **修正 Period 格式**
+    summary_data$Period <- sapply(summary_data$Period, function(x) {
+      if (period == "month") {
+        return(paste0(substr(x, 1, 4), "年", substr(x, 6, 7), "月"))
+      } else if (period == "year") {
+        return(paste0(x, "年"))
+      } else {
+        return(x)  # 按天时，格式不变 YYYY-MM-DD
+      }
+    })
+    
+    # **修改列名，显示中文**
+    colnames(summary_data) <- c("时期", "总收入（元）", "总支出（元）")
+    
+    # **弹出窗口显示统计结果（使用 `DT::datatable` 渲染表格）**
     showModal(modalDialog(
-      title = paste0("账务统计 - ", switch(period, day="每日", week="每周", month="每月", year="每年"), "（", account_type, "）"),
-      renderTable(summary_data),
+      title = paste0("账务统计 - ", switch(period, day="每日", month="每月", year="每年"), "（", account_type, "）"),
+      DT::dataTableOutput("summary_table"),
       easyClose = TRUE,
       footer = modalButton("关闭")
     ))
+    
+    output$summary_table <- DT::renderDataTable({
+      DT::datatable(
+        summary_data, 
+        options = list(
+          dom = "t",   # 仅显示表格
+          paging = FALSE,  # 关闭分页
+          ordering = FALSE,  # 关闭排序
+          columnDefs = list(list(className = "dt-center", targets = "_all"))  # 让表格内容居中
+        ),
+        rownames = FALSE  # 不显示行号
+      )
+    })
   }
   
   ####
