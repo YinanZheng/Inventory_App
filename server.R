@@ -965,7 +965,7 @@ server <- function(input, output, session) {
         inventory_status_data <- inventory_status_data %>% arrange(Status)
         
         # # 过滤掉数量为 0 的状态
-        # inventory_status_data <- inventory_status_data %>% filter(Count > 0)
+        inventory_status_data <- inventory_status_data %>% filter(Count > 0)
         
         plot_ly(
           data = inventory_status_data,
