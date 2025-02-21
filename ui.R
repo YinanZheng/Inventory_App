@@ -191,24 +191,25 @@ ui <- navbarPage(
       });
     
       // 协作页鼠标悬停显示库存状态
-      let inventoryStatusTimeout;
-      
       function showInventoryStatus(event, sku) {
-        clearTimeout(inventoryStatusTimeout);
-      
+        // 发送 SKU 给 Shiny
         Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
       
-        inventoryStatusTimeout = setTimeout(function () {
-          var popup = document.getElementById('inventory-status-popup');
+        var popup = document.getElementById('inventory-status-popup');
+        popup.style.display = 'block';
+      
+        // 设置位置
+        popup.style.position = 'absolute';
+        popup.style.left = (event.pageX + 20) + 'px';
+        popup.style.top = (event.pageY + 20) + 'px';
+      
+        // 强制触发重新渲染
+        setTimeout(function() {
           popup.style.display = 'block';
-          popup.style.position = 'absolute';
-          popup.style.left = (event.pageX + 20) + 'px';
-          popup.style.top = (event.pageY + 20) + 'px';
-        }, 1000);
+        }, 100);
       }
       
       function hideInventoryStatus() {
-        clearTimeout(inventoryStatusTimeout);
         document.getElementById('inventory-status-popup').style.display = 'none';
       }
 
