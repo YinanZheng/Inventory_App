@@ -944,22 +944,18 @@ server <- function(input, output, session) {
       tryCatch({
         data <- unique_items_data()
         
-        # 确保数据存在
         inventory_status_data <- data %>%
           filter(SKU == input$hover_sku) %>%
           group_by(Status) %>%
           summarise(Count = n(), .groups = "drop")
-
-        # 如果数据为空，返回 NULL
+        
         if (nrow(inventory_status_data) == 0) {
           return(NULL)
         }
         
-        # 固定类别顺序和颜色
         status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国发货", "交易完毕")
         status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#faf0d4", "#f4c7fc")
         
-        # 确保所有状态都存在，填充 0
         inventory_status_data <- merge(
           data.frame(Status = status_levels),
           inventory_status_data,
@@ -968,7 +964,6 @@ server <- function(input, output, session) {
         )
         inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
         
-        # 生成饼图
         plot_ly(
           data = inventory_status_data,
           labels = ~Status,
@@ -978,12 +973,9 @@ server <- function(input, output, session) {
           hoverinfo = "label+percent+value",
           marker = list(colors = status_colors)
         ) %>%
-          layout(
-            showlegend = FALSE, 
-            margin = list(l = 5, r = 5, t = 5, b = 5)
-          )
+          layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
       }, error = function(e) {
-        showNotification("库存状态图表生成错误！", type = "error")
+        showNotification("库存状态图表生成错误", type = "error")
         return(NULL)
       })
     })

@@ -191,28 +191,24 @@ ui <- navbarPage(
       });
     
       // 协作页鼠标悬停显示库存状态
-      let inventoryStatusTimeout;  // 用于存储定时器 ID
+      let inventoryStatusTimeout;
       
       function showInventoryStatus(event, sku) {
-        // 清除之前的定时器，防止重复触发
         clearTimeout(inventoryStatusTimeout);
       
-        // 设置定时器，延迟 1 秒执行
-        inventoryStatusTimeout = setTimeout(function () {
-          Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
+        Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
       
+        inventoryStatusTimeout = setTimeout(function () {
           var popup = document.getElementById('inventory-status-popup');
           popup.style.display = 'block';
-      
-          // 设置位置
           popup.style.position = 'absolute';
           popup.style.left = (event.pageX + 20) + 'px';
           popup.style.top = (event.pageY + 20) + 'px';
-        }, 1000);  // 1 秒（1000 毫秒）延迟
+        }, 1000);
       }
       
       function hideInventoryStatus() {
-        clearTimeout(inventoryStatusTimeout);  // 鼠标移开时清除定时器，防止误触发
+        clearTimeout(inventoryStatusTimeout);
         document.getElementById('inventory-status-popup').style.display = 'none';
       }
 
