@@ -940,11 +940,11 @@ server <- function(input, output, session) {
   observeEvent(input$hover_sku, {
     req(input$hover_sku)
     
-    showNotification(paste("收到 hover_sku:", input$hover_sku), type = "message")
-    
     output$colab_inventory_status_chart <- renderPlotly({
-      tryCatch({
-        data <- unique_items_data()
+      future({
+        req(input$hover_sku)
+        
+        data <- unique_items_cache()
         
         inventory_status_data <- data %>%
           filter(SKU == input$hover_sku) %>%
@@ -956,15 +956,14 @@ server <- function(input, output, session) {
         }
         
         status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国发货", "交易完毕")
-        status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#faf0d4", "#f4c7fc")
+        status_colors <- c("#D3D3D3", "#C7E89B", "#9CA695", "#46A80D", "#6F52FF", "#529AFF", "#FAF0D4", "#F4C7FC")
         
-        inventory_status_data <- merge(
-          data.frame(Status = status_levels),
-          inventory_status_data,
-          by = "Status",
-          all.x = TRUE
-        )
-        inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
+        inventory_status_data <- data.frame(Status = status_levels) %>%
+          left_join(inventory_status_data, by = "Status") %>%
+          mutate(Count = replace_na(Count, 0))
+        
+        inventory_status_data$Status <- factor(inventory_status_data$Status, levels = status_levels)
+        inventory_status_data <- inventory_status_data %>% arrange(Status)
         
         plot_ly(
           data = inventory_status_data,
@@ -972,14 +971,16 @@ server <- function(input, output, session) {
           values = ~Count,
           type = "pie",
           textinfo = "label+value",
-          hoverinfo = "label+percent+value",
           marker = list(colors = status_colors)
         ) %>%
-          layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
-      }, error = function(e) {
-        showNotification("库存状态图表生成错误", type = "error")
-        return(NULL)
-      })
+          layout(
+            showlegend = FALSE,
+            margin = list(l = 5, r = 5, t = 5, b = 5),
+            dragmode = FALSE
+          )
+      }) %...>%
+        bindCache(input$hover_sku) %...>%
+        bindEvent(input$hover_sku)
     })
   })
   
