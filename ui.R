@@ -192,16 +192,22 @@ ui <- navbarPage(
     
       // 协作页鼠标悬停显示库存状态
       function showInventoryStatus(event, sku) {
-        // 更新 Shiny 输入
+        // 发送 SKU 给 Shiny 处理
         Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
       
         // 获取弹窗元素
         var popup = document.getElementById('inventory-status-popup');
-        popup.style.display = 'block';
       
-        // 计算弹窗位置
+        // 设置初始位置
+        popup.style.display = 'block';
+        popup.style.position = 'absolute';
         popup.style.left = (event.pageX + 15) + 'px';
         popup.style.top = (event.pageY + 15) + 'px';
+        
+        // 强制触发重新绘制
+        setTimeout(function() {
+          popup.style.display = 'block';
+        }, 100);
       }
       
       function hideInventoryStatus() {
