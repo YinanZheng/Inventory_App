@@ -940,49 +940,43 @@ server <- function(input, output, session) {
   observeEvent(input$hover_sku, {
     req(input$hover_sku)
     
-    showNotification(input$hover_sku)
-    
     output$colab_inventory_status_chart <- renderPlotly({
-      future({
-        req(input$hover_sku)
-        
-        data <- unique_items_cache()
-        
-        inventory_status_data <- data %>%
-          filter(SKU == input$hover_sku) %>%
-          group_by(Status) %>%
-          summarise(Count = n(), .groups = "drop")
-        
-        if (nrow(inventory_status_data) == 0) {
-          return(NULL)
-        }
-        
-        status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国发货", "交易完毕")
-        status_colors <- c("#D3D3D3", "#C7E89B", "#9CA695", "#46A80D", "#6F52FF", "#529AFF", "#FAF0D4", "#F4C7FC")
-        
-        inventory_status_data <- data.frame(Status = status_levels) %>%
-          left_join(inventory_status_data, by = "Status") %>%
-          mutate(Count = replace_na(Count, 0))
-        
-        inventory_status_data$Status <- factor(inventory_status_data$Status, levels = status_levels)
-        inventory_status_data <- inventory_status_data %>% arrange(Status)
-        
-        plot_ly(
-          data = inventory_status_data,
-          labels = ~Status,
-          values = ~Count,
-          type = "pie",
-          textinfo = "label+value",
-          marker = list(colors = status_colors)
-        ) %>%
-          layout(
-            showlegend = FALSE,
-            margin = list(l = 5, r = 5, t = 5, b = 5),
-            dragmode = FALSE
-          )
-      }) %...>%
-        bindCache(input$hover_sku) %...>%
-        bindEvent(input$hover_sku)
+      req(input$hover_sku)
+      
+      data <- unique_items_cache()
+      
+      inventory_status_data <- data %>%
+        filter(SKU == input$hover_sku) %>%
+        group_by(Status) %>%
+        summarise(Count = n(), .groups = "drop")
+      
+      if (nrow(inventory_status_data) == 0) {
+        return(NULL)
+      }
+      
+      status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国发货", "交易完毕")
+      status_colors <- c("#D3D3D3", "#C7E89B", "#9CA695", "#46A80D", "#6F52FF", "#529AFF", "#FAF0D4", "#F4C7FC")
+      
+      inventory_status_data <- data.frame(Status = status_levels) %>%
+        left_join(inventory_status_data, by = "Status") %>%
+        mutate(Count = replace_na(Count, 0))
+      
+      inventory_status_data$Status <- factor(inventory_status_data$Status, levels = status_levels)
+      inventory_status_data <- inventory_status_data %>% arrange(Status)
+      
+      plot_ly(
+        data = inventory_status_data,
+        labels = ~Status,
+        values = ~Count,
+        type = "pie",
+        textinfo = "label+value",
+        marker = list(colors = status_colors)
+      ) %>%
+        layout(
+          showlegend = FALSE,
+          margin = list(l = 5, r = 5, t = 5, b = 5),
+          dragmode = FALSE
+        )
     })
   })
   
