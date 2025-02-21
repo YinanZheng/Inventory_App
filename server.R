@@ -893,7 +893,7 @@ server <- function(input, output, session) {
     # 将数据插入到数据库
     dbExecute(con, 
               "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
-             VALUES (?, ?, '待定', ?, ?, ?, '待处理', ?, '采购')", 
+             VALUES (?, ?, '待定', ?, ?, ?, '待处理', ?, '新品')", 
               params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity, format_remark(input$custom_remark, system_type)))
     
     bind_buttons(request_id, requests_data(), input, output, session, con) #绑定按钮逻辑

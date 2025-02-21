@@ -362,14 +362,17 @@ ui <- navbarPage(
             ), 
             uiOutput("done_paid_board")
           ),
-          
-          # 出库请求
           tabPanel(
             title = div(
               tags$span(class = "arrow-icon", icon("arrow-right")),
               "待出库",
             ), 
             uiOutput("outbound_request_board")
+          ),
+          
+          tabPanel(
+            title = "新品请求",
+            uiOutput("new_product_board")
           )
         )
       )
