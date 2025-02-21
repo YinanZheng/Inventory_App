@@ -33,6 +33,13 @@ ui <- navbarPage(
              style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
     ),
     
+    # 库存状态浮动框 （协作页）
+    tags$div(
+      id = "inventory-status-popup",
+      style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px;",
+      plotlyOutput("inventory_status_chart", width = "200px", height = "200px")
+    ),
+    
     tags$head(
       tags$link(rel = "icon", type = "image/x-icon", href = "https://www.goldenbeanllc.com/icons/favicon-96x96.png"),
       
@@ -176,12 +183,31 @@ ui <- navbarPage(
         $('#loading-screen').css('transition', 'opacity 1s ease-out');
       });
       
-      // 刷新物品表
+      // 导航栏右上角刷新物品表
       $(document).ready(function() {
         $('#refresh_global_items_btn').on('click', function() {
           Shiny.setInputValue('refresh_item_table', new Date().getTime(), {priority: 'event'});
         });
       });
+    
+      // 协作页鼠标悬停显示库存状态
+      function showInventoryStatus(event, sku) {
+        // 更新 Shiny 输入
+        Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
+      
+        // 获取弹窗元素
+        var popup = document.getElementById('inventory-status-popup');
+        popup.style.display = 'block';
+      
+        // 计算弹窗位置
+        popup.style.left = (event.pageX + 15) + 'px';
+        popup.style.top = (event.pageY + 15) + 'px';
+      }
+      
+      function hideInventoryStatus() {
+        var popup = document.getElementById('inventory-status-popup');
+        popup.style.display = 'none';
+      }
     
       // 复制粘贴图片
       $(document).on('paste', '[id$=\"paste_area\"]', function(event) {

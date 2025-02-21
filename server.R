@@ -936,6 +936,50 @@ server <- function(input, output, session) {
     ))
   })
   
+  # 鼠标悬停请求图片显示库存分布
+  observeEvent(input$hover_sku, {
+    req(input$hover_sku)
+    
+    output$inventory_status_chart <- renderPlotly({
+      tryCatch({
+        data <- unique_items_data()
+        
+        # 筛选 SKU 数据
+        inventory_status_data <- data %>%
+          filter(SKU == input$hover_sku) %>%
+          group_by(Status) %>%
+          summarise(Count = n(), .groups = "drop")
+        
+        # 定义固定类别顺序和颜色
+        status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国发货", "交易完毕")
+        status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#faf0d4", "#f4c7fc")
+        
+        # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
+        inventory_status_data <- merge(
+          data.frame(Status = status_levels),
+          inventory_status_data,
+          by = "Status",
+          all.x = TRUE
+        )
+        inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
+        
+        # 生成饼图
+        plot_ly(
+          data = inventory_status_data,
+          labels = ~Status,
+          values = ~Count,
+          type = "pie",
+          textinfo = "label+value",
+          hoverinfo = "label+percent+value",
+          marker = list(colors = status_colors)
+        ) %>%
+          layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
+      }, error = function(e) {
+        showNotification(paste("库存状态图表生成错误：", e$message), type = "error")
+      })
+    })
+  })
+  
   
   
   ################################################################
