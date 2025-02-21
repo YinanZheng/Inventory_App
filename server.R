@@ -944,17 +944,22 @@ server <- function(input, output, session) {
       tryCatch({
         data <- unique_items_data()
         
-        # 筛选 SKU 数据
+        # 确保 SKU 存在
         inventory_status_data <- data %>%
           filter(SKU == input$hover_sku) %>%
           group_by(Status) %>%
           summarise(Count = n(), .groups = "drop")
         
-        # 定义固定类别顺序和颜色
+        # 确保数据正确
+        if (nrow(inventory_status_data) == 0) {
+          return(NULL)
+        }
+        
+        # 固定类别顺序和颜色
         status_levels <- c("采购", "国内入库", "国内售出", "国内出库", "美国入库", "美国调货", "美国发货", "交易完毕")
         status_colors <- c("lightgray", "#c7e89b", "#9ca695", "#46a80d", "#6f52ff", "#529aff", "#faf0d4", "#f4c7fc")
         
-        # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
+        # 确保所有状态都存在，填充 0
         inventory_status_data <- merge(
           data.frame(Status = status_levels),
           inventory_status_data,
@@ -975,7 +980,8 @@ server <- function(input, output, session) {
         ) %>%
           layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
       }, error = function(e) {
-        showNotification(paste("库存状态图表生成错误：", e$message), type = "error")
+        showNotification("库存状态图表生成错误！", type = "error")
+        return(NULL)
       })
     })
   })

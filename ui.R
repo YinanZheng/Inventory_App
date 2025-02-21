@@ -36,7 +36,7 @@ ui <- navbarPage(
     # 库存状态浮动框 （协作页）
     tags$div(
       id = "inventory-status-popup",
-      style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px;",
+      style = "display: none; position: absolute; z-index: 9999; background: rgba(255, 255, 255, 0.95); border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px;",
       plotlyOutput("inventory_status_chart", width = "200px", height = "200px")
     ),
     
@@ -192,29 +192,27 @@ ui <- navbarPage(
     
       // 协作页鼠标悬停显示库存状态
       function showInventoryStatus(event, sku) {
-        // 发送 SKU 给 Shiny 处理
+        // 发送 SKU 给 Shiny
         Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
-      
-        // 获取弹窗元素
-        var popup = document.getElementById('inventory-status-popup');
-      
-        // 设置初始位置
-        popup.style.display = 'block';
-        popup.style.position = 'absolute';
-        popup.style.left = (event.pageX + 15) + 'px';
-        popup.style.top = (event.pageY + 15) + 'px';
         
-        // 强制触发重新绘制
+        var popup = document.getElementById('inventory-status-popup');
+        popup.style.display = 'block';
+        
+        // 让窗口始终出现在鼠标右下角
+        popup.style.position = 'absolute';
+        popup.style.left = (event.pageX + 20) + 'px';
+        popup.style.top = (event.pageY + 20) + 'px';
+        
+        // 触发重新渲染
         setTimeout(function() {
           popup.style.display = 'block';
         }, 100);
       }
       
       function hideInventoryStatus() {
-        var popup = document.getElementById('inventory-status-popup');
-        popup.style.display = 'none';
+        document.getElementById('inventory-status-popup').style.display = 'none';
       }
-    
+
       // 复制粘贴图片
       $(document).on('paste', '[id$=\"paste_area\"]', function(event) {
         const items = (event.originalEvent.clipboardData || event.clipboardData).items;
