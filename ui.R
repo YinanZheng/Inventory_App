@@ -37,7 +37,7 @@ ui <- navbarPage(
     tags$div(
       id = "inventory-status-popup",
       style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px; min-width: 220px; min-height: 220px;",
-      plotlyOutput("inventory_status_chart", width = "220px", height = "220px")
+      plotlyOutput("colab_inventory_status_chart", width = "220px", height = "220px")
     ),
     
     tags$head(
