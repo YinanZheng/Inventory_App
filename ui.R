@@ -36,8 +36,8 @@ ui <- navbarPage(
     # 库存状态浮动框 （协作页）
     tags$div(
       id = "inventory-status-popup",
-      style = "display: none; position: absolute; z-index: 9999; background: rgba(255, 255, 255, 0.95); border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px;",
-      plotlyOutput("inventory_status_chart", width = "200px", height = "200px")
+      style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px; min-width: 220px; min-height: 220px;",
+      plotlyOutput("inventory_status_chart", width = "220px", height = "220px")
     ),
     
     tags$head(
@@ -194,16 +194,16 @@ ui <- navbarPage(
       function showInventoryStatus(event, sku) {
         // 发送 SKU 给 Shiny
         Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
-        
+      
         var popup = document.getElementById('inventory-status-popup');
         popup.style.display = 'block';
-        
-        // 让窗口始终出现在鼠标右下角
+      
+        // 设置位置
         popup.style.position = 'absolute';
         popup.style.left = (event.pageX + 20) + 'px';
         popup.style.top = (event.pageY + 20) + 'px';
-        
-        // 触发重新渲染
+      
+        // 强制触发重新渲染
         setTimeout(function() {
           popup.style.display = 'block';
         }, 100);

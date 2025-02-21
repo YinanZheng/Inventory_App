@@ -950,9 +950,9 @@ server <- function(input, output, session) {
           group_by(Status) %>%
           summarise(Count = n(), .groups = "drop")
         
-        # 确保数据正确
+        # 检查数据是否为空
         if (nrow(inventory_status_data) == 0) {
-          return(NULL)
+          return(NULL)  # 如果无数据，不显示图表
         }
         
         # 固定类别顺序和颜色
@@ -978,7 +978,10 @@ server <- function(input, output, session) {
           hoverinfo = "label+percent+value",
           marker = list(colors = status_colors)
         ) %>%
-          layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
+          layout(
+            showlegend = FALSE, 
+            margin = list(l = 5, r = 5, t = 5, b = 5)
+          )
       }, error = function(e) {
         showNotification("库存状态图表生成错误！", type = "error")
         return(NULL)
