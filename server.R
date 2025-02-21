@@ -940,19 +940,29 @@ server <- function(input, output, session) {
   observeEvent(input$hover_sku, {
     req(input$hover_sku)
     
+    # ✅ 添加调试信息
+    print(paste("收到 hover_sku:", input$hover_sku))
+    showNotification(paste("收到 hover_sku:", input$hover_sku), type = "message")
+    
     output$inventory_status_chart <- renderPlotly({
       tryCatch({
         data <- unique_items_data()
         
-        # 确保 SKU 存在
+        print("获取 unique_items_data() 成功")  # ✅ 添加调试日志
+        
+        # 确保数据存在
         inventory_status_data <- data %>%
           filter(SKU == input$hover_sku) %>%
           group_by(Status) %>%
           summarise(Count = n(), .groups = "drop")
         
-        # 检查数据是否为空
+        print("库存数据筛选成功")  # ✅ 添加调试日志
+        print(inventory_status_data)  # ✅ 打印数据，看看是否为空
+        
+        # 如果数据为空，返回 NULL
         if (nrow(inventory_status_data) == 0) {
-          return(NULL)  # 如果无数据，不显示图表
+          print("⚠️ 没有找到该 SKU 的库存数据")
+          return(NULL)
         }
         
         # 固定类别顺序和颜色
@@ -967,6 +977,8 @@ server <- function(input, output, session) {
           all.x = TRUE
         )
         inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
+        
+        print("✅ 数据处理完成，准备绘制图表")
         
         # 生成饼图
         plot_ly(
@@ -983,11 +995,13 @@ server <- function(input, output, session) {
             margin = list(l = 5, r = 5, t = 5, b = 5)
           )
       }, error = function(e) {
+        print(paste("❌ 错误:", e$message))
         showNotification("库存状态图表生成错误！", type = "error")
         return(NULL)
       })
     })
   })
+  
   
   
   
