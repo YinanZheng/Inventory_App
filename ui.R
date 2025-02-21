@@ -1867,7 +1867,8 @@ ui <- navbarPage(
               placeholder = "请输入商品名称...",
               create = FALSE         # 不允许用户输入新值
             ),
-            width = "100%"
+            width = "100%",
+            server = TRUE
           ),
           
           # 采购日期筛选
