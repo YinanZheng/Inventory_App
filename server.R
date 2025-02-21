@@ -1529,13 +1529,7 @@ server <- function(input, output, session) {
         preorder_info$unique_id <- result$unique_id  # 存储 unique_id
         
         if (input$speak_inbound_item_name) {  # 只有勾选“念出商品名”才朗读
-          js_code <- sprintf('
-            var msg = new SpeechSynthesisUtterance("%s");
-            msg.lang = "zh-CN";
-            window.speechSynthesis.speak(msg);
-          ', preorder_info$item_name)
-          
-          runjs(js_code)  # 运行 JavaScript 语音朗读
+          speak_text(preorder_info$item_name)
         } else {
           runjs("playSuccessSound()")  # 播放成功音效
         }
@@ -1862,13 +1856,7 @@ server <- function(input, output, session) {
 
     if (!is.null(result)) {
       if (input$speak_outbound_item_name) {  # 只有勾选“念出商品名”才朗读
-        js_code <- sprintf('
-            var msg = new SpeechSynthesisUtterance("%s");
-            msg.lang = "zh-CN";
-            window.speechSynthesis.speak(msg);
-          ', result$item_name)
-        
-        runjs(js_code)  # 运行 JavaScript 语音朗读
+        speak_text(result$item_name)
       } else {
         runjs("playSuccessSound()")  # 播放成功音效
       }

@@ -365,7 +365,10 @@ ui <- navbarPage(
           
           # 出库请求
           tabPanel(
-            title = "出库请求",
+            title = div(
+              tags$span(class = "arrow-icon", icon("arrow-right")),
+              "待出库",
+            ), 
             uiOutput("outbound_request_board")
           )
         )
