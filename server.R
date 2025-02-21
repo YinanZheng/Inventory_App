@@ -940,6 +940,8 @@ server <- function(input, output, session) {
   observeEvent(input$hover_sku, {
     req(input$hover_sku)
     
+    showNotification(paste("收到 hover_sku:", input$hover_sku), type = "message")
+    
     output$colab_inventory_status_chart <- renderPlotly({
       tryCatch({
         data <- unique_items_data()
