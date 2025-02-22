@@ -100,7 +100,7 @@ server <- function(input, output, session) {
     
     # **检查是否需要更新**（返回最近更新时间）
     checkFunc = function() {
-      db_time <- dbGetQuery(con, "SELECT MAX(updated_at) FROM unique_items")[[1]]
+      db_time <- dbGetQuery(con, "SELECT last_updated FROM update_log WHERE table_name = 'unique_items'")[[1]]
       trigger_val <- unique_items_data_refresh_trigger()
       paste(db_time, trigger_val)
     },
@@ -144,38 +144,40 @@ server <- function(input, output, session) {
         unique_items.updated_at DESC
     ")
       
-      # **当 `unique_items` 变更时，自动更新 `inventory`**
-      dbExecute(con, "
-      UPDATE inventory i
-      JOIN (
-        SELECT 
-          SKU,
-          AVG(ProductCost) AS AvgProductCost,
-          AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost,
-          SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity,
-          SUM(Status = '国内入库') AS DomesticQuantity,
-          SUM(Status = '国内出库') AS TransitQuantity,
-          SUM(Status = '美国入库') AS UsQuantity,
-          MAX(updated_at) AS LatestUpdateTime
-        FROM unique_items
-        GROUP BY SKU
-      ) u ON i.SKU = u.SKU
-      SET 
-        i.ProductCost = ROUND(u.AvgProductCost, 2),
-        i.ShippingCost = ROUND(u.AvgShippingCost, 2),
-        i.Quantity = u.TotalQuantity,
-        i.DomesticQuantity = u.DomesticQuantity,
-        i.TransitQuantity = u.TransitQuantity,
-        i.UsQuantity = u.UsQuantity,
-        i.updated_at = u.LatestUpdateTime
-    ")
-      
-      # **删除 `inventory` 中 SKU 在 `unique_items` 中不存在的物品**
-      dbExecute(con, "
-      DELETE FROM inventory 
-      WHERE SKU NOT IN (SELECT DISTINCT SKU FROM unique_items)
-    ")
-      
+      dbWithTransaction(con, {
+        # **当 `unique_items` 变更时，自动更新 `inventory`**
+        dbExecute(con, "
+          UPDATE inventory i
+          JOIN (
+            SELECT 
+              SKU,
+              AVG(ProductCost) AS AvgProductCost,
+              AVG(DomesticShippingCost + IntlShippingCost) AS AvgShippingCost,
+              SUM(Status IN ('国内入库', '国内出库', '美国入库')) AS TotalQuantity,
+              SUM(Status = '国内入库') AS DomesticQuantity,
+              SUM(Status = '国内出库') AS TransitQuantity,
+              SUM(Status = '美国入库') AS UsQuantity,
+              MAX(updated_at) AS LatestUpdateTime
+            FROM unique_items
+            GROUP BY SKU
+          ) u ON i.SKU = u.SKU
+          SET 
+            i.ProductCost = ROUND(u.AvgProductCost, 2),
+            i.ShippingCost = ROUND(u.AvgShippingCost, 2),
+            i.Quantity = u.TotalQuantity,
+            i.DomesticQuantity = u.DomesticQuantity,
+            i.TransitQuantity = u.TransitQuantity,
+            i.UsQuantity = u.UsQuantity,
+            i.updated_at = u.LatestUpdateTime
+        ")
+        
+        # 删除不存在的 SKU
+        dbExecute(con, "
+          DELETE i FROM inventory i
+          LEFT JOIN unique_items u ON i.SKU = u.SKU
+          WHERE u.SKU IS NULL
+        ")
+      })
       return(result)
     }
   )
