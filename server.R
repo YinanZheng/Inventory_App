@@ -940,8 +940,6 @@ server <- function(input, output, session) {
   observeEvent(input$hover_sku, {
     req(input$hover_sku)
     
-    # showNotification(input$hover_sku)
-    
     output$colab_inventory_status_chart <- renderPlotly({
       tryCatch({
         data <- unique_items_data()
@@ -960,12 +958,11 @@ server <- function(input, output, session) {
           left_join(inventory_status_data, by = "Status") %>%
           mutate(Count = replace_na(Count, 0))
         
-        #  # # 过滤掉数量为 0 的状态
-        # inventory_status_data <- inventory_status_data %>% filter(Count > 0)
-        # 
-        # 确保按照 `status_levels` 设定的顺序排列
-        inventory_status_data$Status <- factor(inventory_status_data$Status, levels = status_levels)
-        inventory_status_data <- inventory_status_data %>% arrange(Status)
+        # 过滤掉数量为 0 的状态
+        inventory_status_data <- inventory_status_data %>% filter(Count > 0)
+        
+        # 重新匹配颜色：只取 **inventory_status_data$Status** 里有的颜色
+        matched_colors <- status_colors[match(inventory_status_data$Status, status_levels)]
         
         plot_ly(
           data = inventory_status_data,
@@ -973,7 +970,7 @@ server <- function(input, output, session) {
           values = ~Count,
           type = "pie",
           textinfo = "label+value",
-          marker = list(colors = status_colors)
+          marker = list(colors = matched_colors)
         ) %>%
           layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
       }, error = function(e) {
