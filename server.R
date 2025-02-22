@@ -959,6 +959,16 @@ server <- function(input, output, session) {
     current_requests <- requests_data()
     current_items <- unique_items_data()
     
+    message("current_requests type: ", class(current_requests), 
+            ", rows: ", if (is.data.frame(current_requests)) nrow(current_requests) else "NULL")
+    message("current_items type: ", class(current_items), 
+            ", rows: ", if (is.data.frame(current_items)) nrow(current_items) else "NULL")
+    
+    if (!is.data.frame(current_requests) || !is.data.frame(current_items) || 
+        nrow(current_requests) == 0 || nrow(current_items) == 0) {
+      return()
+    }
+    
     dbWithTransaction(con, {
       # 遍历所有请求
       for (i in seq_len(nrow(current_requests))) {
