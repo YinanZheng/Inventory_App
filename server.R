@@ -953,7 +953,6 @@ server <- function(input, output, session) {
   
   # 自动转换 RequestType
   observe({
-    # 每 5 秒检查一次
     invalidateLater(5000, session)
     
     current_requests <- requests_data()
@@ -970,7 +969,6 @@ server <- function(input, output, session) {
     }
     
     dbWithTransaction(con, {
-      # 遍历所有请求
       for (i in seq_len(nrow(current_requests))) {
         req <- current_requests[i, ]
         req_sku <- req$SKU
@@ -978,38 +976,42 @@ server <- function(input, output, session) {
         req_type <- req$RequestType
         req_id <- req$RequestID
         
-        # 如果 SKU 为空，跳过
-        if (is.null(req_sku) || is.na(req_sku)) next
+        if (is.null(req_sku) || is.na(req_sku) || is.null(req_qty) || is.na(req_qty)) {
+          message("Request ", req_id, " has invalid SKU or Quantity")
+          next
+        }
         
-        # 计算 unique_items 中对应状态的数量
+        if (is.null(req_type) || is.na(req_type)) {
+          req_type <- "采购"
+          message("Request ", req_id, " RequestType is missing, defaulting to '采购'")
+        }
+        
         items_count <- current_items %>%
           filter(SKU == req_sku) %>%
           group_by(Status) %>%
           summarise(count = n(), .groups = "drop")
         
-        # 状态转换逻辑
         if (req_type == "安排") {
           procure_count <- items_count$count[items_count$Status == "采购"] %||% 0
+          if (!is.numeric(procure_count) || length(procure_count) == 0) procure_count <- 0
           if (procure_count >= req_qty) {
-            dbExecute(con, 
-                      "UPDATE requests SET RequestType = '完成', UpdatedAt = NOW() WHERE RequestID = ?",
+            dbExecute(con, "UPDATE requests SET RequestType = '完成', UpdatedAt = NOW() WHERE RequestID = ?", 
                       params = list(req_id))
             message("Request ", req_id, " updated to '完成'")
           }
         } else if (req_type == "完成") {
           domestic_count <- items_count$count[items_count$Status == "国内入库"] %||% 0
+          if (!is.numeric(domestic_count) || length(domestic_count) == 0) domestic_count <- 0
           if (domestic_count >= req_qty) {
-            dbExecute(con, 
-                      "UPDATE requests SET RequestType = '出库', UpdatedAt = NOW() WHERE RequestID = ?",
+            dbExecute(con, "UPDATE requests SET RequestType = '出库', UpdatedAt = NOW() WHERE RequestID = ?", 
                       params = list(req_id))
             message("Request ", req_id, " updated to '出库'")
           }
         } else if (req_type == "出库") {
           transit_count <- items_count$count[items_count$Status == "国内出库"] %||% 0
+          if (!is.numeric(transit_count) || length(transit_count) == 0) transit_count <- 0
           if (transit_count >= req_qty) {
-            dbExecute(con, 
-                      "DELETE FROM requests WHERE RequestID = ?",
-                      params = list(req_id))
+            dbExecute(con, "DELETE FROM requests WHERE RequestID = ?", params = list(req_id))
             message("Request ", req_id, " deleted")
           }
         }
