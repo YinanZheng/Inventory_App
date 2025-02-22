@@ -1003,7 +1003,7 @@ server <- function(input, output, session) {
           domestic_count <- items_count$count[items_count$Status == "国内入库"] %||% 0
           if (!is.numeric(domestic_count) || length(domestic_count) == 0) domestic_count <- 0
           if (domestic_count >= req_qty) {
-            dbExecute(con, "UPDATE requests SET RequestType = '出库', UpdatedAt = NOW() WHERE RequestID = ?", 
+            dbExecute(con, "UPDATE requests SET RequestType = '出库', RequestStatus = '已完成' , UpdatedAt = NOW() WHERE RequestID = ?", 
                       params = list(req_id))
             message("Request ", req_id, " updated to '出库'")
           }
