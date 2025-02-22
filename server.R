@@ -21,6 +21,10 @@ server <- function(input, output, session) {
   # Database
   con <- db_connection()
   
+  # 初始化 requests_data 和 unique_items_data
+  requests_data <- reactiveVal(dbGetQuery(con, "SELECT * FROM requests"))
+  unique_items_data <- reactiveVal(dbGetQuery(con, "SELECT * FROM unique_items"))
+  
   # ReactiveVal 存储 item_type_data 数据
   item_type_data <- reactiveVal()
   
@@ -692,9 +696,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 缓存请求数据
-  requests_data <- reactiveVal(data.frame())
-  
   # 定期检查数据库更新
   poll_requests <- reactivePoll(
     intervalMillis = poll_interval,
@@ -957,12 +958,6 @@ server <- function(input, output, session) {
     
     current_requests <- requests_data()
     current_items <- unique_items_data()
-    
-    # 检查数据是否有效
-    if (is.null(current_requests) || is.null(current_items) || 
-        nrow(current_requests) == 0 || nrow(current_items) == 0) {
-      return()
-    }
     
     dbWithTransaction(con, {
       # 遍历所有请求
