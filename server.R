@@ -757,7 +757,7 @@ server <- function(input, output, session) {
             })
           )
         }
-      }, priority = -1)  # 降低优先级，避免不必要刷新
+      })
       
       # 仅在首次加载时渲染卡片
       lapply(filtered_requests$RequestID, function(request_id) {
