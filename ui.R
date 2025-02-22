@@ -733,11 +733,7 @@ ui <- navbarPage(
         tabsetPanel(
           id = "filter_tabs",  # 主标签页 ID
           type = "pills",
-          tabPanel(
-            title = "物品筛选",
-            itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745",
-                         status_choices = c("全部" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
-          ),
+          
           tabPanel(
             title = "订单筛选",
             div(
@@ -767,13 +763,18 @@ ui <- navbarPage(
                                       choices = c("全部" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
                                       selected = "", width = "100%"))
               ),
-
+              
               fluidRow(
                 column(4, actionButton("delete_order_btn", "删除", class = "btn-danger", style = "width: 100%;")),
                 column(4, actionButton("reset_filter_btn", "清空", class = "btn-info", style = "width: 100%;")),
                 column(4, actionButton("refresh_orders", "刷新", class = "btn-secondary", style = "width: 100%;"))
               )
             )
+          ),
+          tabPanel(
+            title = "物品筛选",
+            itemFilterUI(id = "sold_filter", border_color = "#28A745", text_color = "#28A745",
+                         status_choices = c("全部" = "", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
           )
         ),
         
@@ -891,6 +892,21 @@ ui <- navbarPage(
           type = "pills",
           
           tabPanel(
+            title = "订单管理",
+            div(
+              class = "card",
+              style = "height: 460px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+              orderTableUI("orders_table_module")
+            ),
+            div(
+              class = "card",
+              style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
+              uiOutput("associated_items_title"),  # 动态标题
+              uiOutput("order_items_cards")  # 动态显示订单内物品卡片
+            )
+          ),
+          
+          tabPanel(
             title = "物品售出",
             fluidRow(
               # 货架部分
@@ -911,7 +927,7 @@ ui <- navbarPage(
                            )),
                            style = "color: #007BFF; font-weight: bold;"
                          ),
-                      
+                         
                          # 使用 Unicode 显示箭头
                          div(
                            style = "display: flex;",  # 使用 Flex 布局让内容在同一行显示
@@ -1049,24 +1065,10 @@ ui <- navbarPage(
             ),
             
             tags$hr(style = "margin: 5px 0; border: 1px solid #ddd;"),  # 添加分隔线
-
+            
             div(
               id = "item_table_container_sold",
               uniqueItemsTableUI("unique_items_table_sold")
-            )
-          ),
-          tabPanel(
-            title = "订单管理",
-            div(
-              class = "card",
-              style = "height: 460px; padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-              orderTableUI("orders_table_module")
-            ),
-            div(
-              class = "card",
-              style = "padding: 5px; border: 1px solid #ccc; border-radius: 8px;", # 自动调整高度
-              uiOutput("associated_items_title"),  # 动态标题
-              uiOutput("order_items_cards")  # 动态显示订单内物品卡片
             )
           )
         )
