@@ -854,135 +854,123 @@ server <- function(input, output, session) {
   }
   
   bind_buttons <- function(request_id, requests_data, input, output, session, con) {
-    # 加急按钮
-    observeEvent(input[[paste0("mark_urgent_", request_id)]], {
-      dbExecute(con, "UPDATE requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "紧急", RequestStatus))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 安排按钮
-    observeEvent(input[[paste0("provider_arranged_", request_id)]], {
-      dbExecute(con, "UPDATE requests SET RequestType = '安排' WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 完成按钮
-    observeEvent(input[[paste0("done_paid_", request_id)]], {
-      dbExecute(con, "UPDATE requests SET RequestType = '完成', RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "完成", RequestType),
-                                              RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 撤回（从安排到采购）
-    observeEvent(input[[paste0("provider_arranged_cancel_", request_id)]], {
-      dbExecute(con, "UPDATE requests SET RequestType = '采购' WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "采购", RequestType))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 撤回（从完成到安排）
-    observeEvent(input[[paste0("done_paid_cancel_", request_id)]], {
-      dbExecute(con, "UPDATE requests SET RequestType = '安排', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType),
-                                              RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 完成任务（出库或新品）
-    observeEvent(input[[paste0("complete_task_", request_id)]], {
-      dbExecute(con, "UPDATE requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 删除按钮
-    observeEvent(input[[paste0("delete_request_", request_id)]], {
-      dbExecute(con, "DELETE FROM requests WHERE RequestID = ?", params = list(request_id))
-      current_data <- requests_data()
-      updated_data <- current_data %>% filter(RequestID != request_id)
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE, once = TRUE)
-    
-    # 提交留言
-    observeEvent(input[[paste0("submit_remark_", request_id)]], {
-      remark <- input[[paste0("remark_input_", request_id)]]
-      req(remark != "")
+    # 检查是否已绑定，避免重复
+    if (!exists(paste0("bound_", request_id), envir = session$env)) {
+      # 加急按钮
+      observeEvent(input[[paste0("mark_urgent_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "紧急", RequestStatus))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)  # 移除 once = TRUE
       
-      current_data <- requests_data()
-      new_remark <- format_remark(remark, system_type)
+      # 安排按钮
+      observeEvent(input[[paste0("provider_arranged_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestType = '安排' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
       
-      # 获取当前行，避免重复操作整个数据集
-      current_row <- current_data %>% filter(RequestID == request_id)
-      if (nrow(current_row) == 0) {
-        showNotification("请求不存在", type = "error")
-        return()
-      }
+      # 完成按钮
+      observeEvent(input[[paste0("done_paid_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestType = '完成', RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "完成", RequestType),
+                                                RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
       
-      # 更新函数：封装数据库和内存更新
-      update_request <- function(field, value) {
-        tryCatch({
-          dbExecute(con, sprintf("UPDATE requests SET %s = ? WHERE RequestID = ?", field), params = list(value, request_id))
-          updated_data <- current_data %>% mutate(!!sym(field) := ifelse(RequestID == request_id, value, !!sym(field)))
-          requests_data(updated_data)
-          update_single_request(request_id, requests_data, output)
-          TRUE
-        }, error = function(e) {
-          showNotification(paste("更新失败:", e$message), type = "error")
-          FALSE
-        })
-      }
+      # 撤回（从安排到采购）
+      observeEvent(input[[paste0("provider_arranged_cancel_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestType = '采购' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "采购", RequestType))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
       
-      # 解析 Quantity=X
-      quantity_match <- regmatches(remark, regexec("^Quantity=(\\d+)$", remark))
-      if (length(quantity_match[[1]]) > 1) {
-        new_quantity <- as.integer(quantity_match[[1]][2])
-        if (!is.na(new_quantity) && new_quantity > 0) {
-          if (update_request("Quantity", new_quantity)) {
+      # 撤回（从完成到安排）
+      observeEvent(input[[paste0("done_paid_cancel_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestType = '安排', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType),
+                                                RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
+      
+      # 完成任务（出库或新品）
+      observeEvent(input[[paste0("complete_task_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
+      
+      # 删除按钮
+      observeEvent(input[[paste0("delete_request_", request_id)]], {
+        dbExecute(con, "DELETE FROM requests WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% filter(RequestID != request_id)
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
+      
+      # 提交留言
+      observeEvent(input[[paste0("submit_remark_", request_id)]], {
+        remark <- input[[paste0("remark_input_", request_id)]]
+        req(remark != "")
+        
+        current_data <- requests_data()
+        new_remark <- format_remark(remark, system_type)
+        
+        # 解析 Quantity=X
+        quantity_match <- regmatches(remark, regexec("^Quantity=(\\d+)$", remark))
+        if (length(quantity_match[[1]]) > 1) {
+          new_quantity <- as.integer(quantity_match[[1]][2])
+          if (!is.na(new_quantity) && new_quantity > 0) {
+            dbExecute(con, "UPDATE requests SET Quantity = ? WHERE RequestID = ?", params = list(new_quantity, request_id))
+            updated_data <- current_data %>% mutate(Quantity = ifelse(RequestID == request_id, new_quantity, Quantity))
+            requests_data(updated_data)
+            update_single_request(request_id, requests_data, output)
             showNotification(paste("请求数量已更新为", new_quantity, "！"), type = "message")
             updateTextInput(session, paste0("remark_input_", request_id), value = "")
+          } else {
+            showNotification("无效的数量输入，请使用 'Quantity=X' 格式，X 为正整数。", type = "error")
           }
-        } else {
-          showNotification("无效的数量输入，请使用 'Quantity=X' 格式，X 为正整数。", type = "error")
-        }
-      }
-      # 解析 Maker=XXX
-      else if (length(maker_match <- regmatches(remark, regexec("^Maker=(.+)$", remark))[[1]]) > 1) {
-        new_maker <- trimws(maker_match[2])
-        if (nchar(new_maker) > 0) {
-          if (update_request("Maker", new_maker)) {
+        } else if (length(maker_match <- regmatches(remark, regexec("^Maker=(.+)$", remark))[[1]]) > 1) {
+          new_maker <- trimws(maker_match[2])
+          if (nchar(new_maker) > 0) {
+            dbExecute(con, "UPDATE requests SET Maker = ? WHERE RequestID = ?", params = list(new_maker, request_id))
+            updated_data <- current_data %>% mutate(Maker = ifelse(RequestID == request_id, new_maker, Maker))
+            requests_data(updated_data)
+            update_single_request(request_id, requests_data, output)
             showNotification(paste("供应商已更新为", new_maker, "！"), type = "message")
             updateTextInput(session, paste0("remark_input_", request_id), value = "")
+          } else {
+            showNotification("无效的供应商输入，请使用 'Maker=XXX' 格式。", type = "error")
           }
         } else {
-          showNotification("无效的供应商输入，请使用 'Maker=XXX' 格式。", type = "error")
-        }
-      }
-      # 普通留言
-      else {
-        current_remarks <- current_row %>% pull(Remarks)
-        updated_remarks <- ifelse(is.na(current_remarks) || current_remarks == "", new_remark, paste(new_remark, current_remarks, sep = ";"))
-        
-        if (update_request("Remarks", updated_remarks)) {
+          current_row <- current_data %>% filter(RequestID == request_id)
+          current_remarks <- current_row %>% pull(Remarks)
+          updated_remarks <- ifelse(is.na(current_remarks) || current_remarks == "", new_remark, paste(new_remark, current_remarks, sep = ";"))
+          
+          dbExecute(con, "UPDATE requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
+          updated_data <- current_data %>% mutate(Remarks = ifelse(RequestID == request_id, updated_remarks, Remarks))
+          requests_data(updated_data)
+          update_single_request(request_id, requests_data, output)
           updateTextInput(session, paste0("remark_input_", request_id), value = "")
         }
-      }
-    }, ignoreInit = TRUE, once = TRUE)
+      }, ignoreInit = TRUE)
+      
+      # 标记已绑定
+      assign(paste0("bound_", request_id), TRUE, envir = session$env)
+    }
   }
   
   renderRemarks <- function(request_id, requests) {
