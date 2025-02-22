@@ -841,7 +841,7 @@ server <- function(input, output, session) {
                 actionButton(paste0("done_paid_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;"),
                 actionButton(paste0("stock_in_", request_id), "入库", class = "btn-success", style = "flex-grow: 1; height: 45px;")
               )
-            } else if (item$RequestType == "新品")) {
+            } else if (item$RequestType == "新品") {
               actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
             },
             actionButton(paste0("delete_request_", request_id), "删除", class = "btn-secondary", style = "flex-grow: 1; height: 45px;")
