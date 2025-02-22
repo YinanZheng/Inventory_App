@@ -848,7 +848,7 @@ server <- function(input, output, session) {
       }
     }, error = function(e) {
       # 捕获错误并打印详细信息
-      showNotification(e, type = "error")
+      showNotification(paste("错误：", e$message), type = "error")  
     })
   })
   
@@ -953,7 +953,7 @@ server <- function(input, output, session) {
   
   # 自动转换 RequestType
   observe({
-    invalidateLater(5000, session)
+    invalidateLater(10000, session)
     
     current_requests <- requests_data()
     current_items <- unique_items_data()
