@@ -2265,7 +2265,7 @@ server <- function(input, output, session) {
             "更新订单",
             icon = icon("edit"),
             class = "btn-success",
-            style = "font-size: 16px; min-width: 130px; height: 42px;"
+            style = "font-size: 16px; width: 100%; height: 42px;"
           )
         })
       } else if (main_order_exists) {
