@@ -1135,6 +1135,7 @@ server <- function(input, output, session) {
         updateTextInput(session, "search_sku", value = "")
         updateTextInput(session, "search_name", value = "")
         updateNumericInput(session, "request_quantity", value = 1)
+        updateTextAreaInput(session, "request_remark", value = "")
         
         showNotification("请求已成功创建", type = "message")
       } else if (nrow(filtered_data) > 1) {
@@ -1184,6 +1185,7 @@ server <- function(input, output, session) {
     # 清空输入字段
     updateTextInput(session, "custom_description", value = "")
     updateNumericInput(session, "custom_quantity", value = 1)
+    updateTextAreaInput(session, "custom_remark", value = "")
     image_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
   })
