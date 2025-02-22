@@ -978,6 +978,7 @@ server <- function(input, output, session) {
     })
   })
   
+  outputOptions(output, "colab_inventory_status_chart", suspendWhenHidden = FALSE)
   
   
   
