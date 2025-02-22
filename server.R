@@ -940,14 +940,14 @@ server <- function(input, output, session) {
   observeEvent(input$hover_sku, {
     req(input$hover_sku)
     
-    showNotification(input$hover_sku)
+    # showNotification(input$hover_sku)
     
     output$colab_inventory_status_chart <- renderPlotly({
       tryCatch({
         data <- unique_items_data()
         
         inventory_status_data <- data %>%
-          filter(SKU == input$hover_sku) %>%
+          filter(SKU == isolate(input$hover_sku)) %>%
           group_by(Status) %>%
           summarise(Count = n(), .groups = "drop")
         
