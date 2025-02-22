@@ -714,7 +714,7 @@ server <- function(input, output, session) {
     refresh_board_incremental(requests, output)
   }, priority = 10)
   
-  # 在 requests_data 首次加载时绑定所有按钮
+  # 初始化时绑定所有按钮
   observeEvent(requests_data(), {
     requests <- requests_data()
     lapply(requests$RequestID, function(request_id) {
@@ -853,9 +853,13 @@ server <- function(input, output, session) {
     output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id, requests)
   }
   
+  # 定义一个 reactiveVal 跟踪已绑定的 RequestID
+  bound_requests <- reactiveVal(character())
+  
   bind_buttons <- function(request_id, requests_data, input, output, session, con) {
-    # 检查是否已绑定，避免重复
-    if (!exists(paste0("bound_", request_id), envir = session$env)) {
+    # 检查是否已绑定
+    current_bound <- bound_requests()
+    if (!request_id %in% current_bound) {
       # 加急按钮
       observeEvent(input[[paste0("mark_urgent_", request_id)]], {
         dbExecute(con, "UPDATE requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
@@ -968,8 +972,8 @@ server <- function(input, output, session) {
         }
       }, ignoreInit = TRUE)
       
-      # 标记已绑定
-      assign(paste0("bound_", request_id), TRUE, envir = session$env)
+      # 更新已绑定列表
+      bound_requests(unique(c(current_bound, request_id)))
     }
   }
   
