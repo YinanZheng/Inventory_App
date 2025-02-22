@@ -795,12 +795,16 @@ server <- function(input, output, session) {
               src = ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))),
               style = "width: 100%; max-height: 120px; object-fit: contain; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); border-radius: 5px; margin-bottom: 5px; cursor: pointer;",
               onclick = sprintf("Shiny.setInputValue('view_request_image', '%s')", 
-                                ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))))
+                                ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath)))),
+              onmouseover = sprintf("showInventoryStatus(event, '%s')", item$SKU),
+              onmouseout = "hideInventoryStatus()"
             ),
             tags$div(
               style = "width: 100%; text-align: center; font-size: 12px; color: #333;",
               tags$p(tags$b(item$ItemDescription), style = "margin: 0;"),
-              tags$p(item$SKU, style = "margin: 0;")
+              tags$p(item$SKU, style = "margin: 0;"),
+              tags$p(tags$b("供应商:"), tags$span(item$Maker, style = "color: blue; font-weight: bold;"), style = "margin: 0;"),
+              tags$p(tags$b("请求数量:"), tags$span(item$Quantity, style = "color: red; font-weight: bold;"), style = "margin: 0;")
             )
           ),
           tags$div(
@@ -818,9 +822,7 @@ server <- function(input, output, session) {
           ),
           tags$div(
             style = "width: 100%; display: flex; gap: 5px; margin-top: 5px;",
-            # 状态按钮逻辑，根据 RequestType 动态生成
             actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "flex-grow: 1; height: 45px;"),
-            
             if (item$RequestType == "采购") {
               actionButton(paste0("provider_arranged_", request_id), "安排", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
             } else if (item$RequestType == "安排") {
@@ -833,7 +835,6 @@ server <- function(input, output, session) {
             } else if (item$RequestType %in% c("出库", "新品")) {
               actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
             },
-            
             actionButton(paste0("delete_request_", request_id), "删除", class = "btn-secondary", style = "flex-grow: 1; height: 45px;")
           )
         )
