@@ -958,7 +958,11 @@ server <- function(input, output, session) {
     current_requests <- requests_data()
     current_items <- unique_items_data()
     
-    if (is.null(current_requests) || is.null(current_items)) return()
+    # 检查数据是否有效
+    if (is.null(current_requests) || is.null(current_items) || 
+        nrow(current_requests) == 0 || nrow(current_items) == 0) {
+      return()
+    }
     
     dbWithTransaction(con, {
       # 遍历所有请求
