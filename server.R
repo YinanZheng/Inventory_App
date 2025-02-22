@@ -937,46 +937,44 @@ server <- function(input, output, session) {
   })
   
   # 鼠标悬停请求图片显示库存分布
-  observeEvent(input$hover_sku, {
-    req(input$hover_sku)
+  output$colab_inventory_status_chart <- renderPlotly({
+    req(input$hover_sku)  # ✅ 确保 hover_sku 变化时执行
     
-    output$colab_inventory_status_chart <- renderPlotly({
-      tryCatch({
-        data <- unique_items_data()
-        
-        inventory_status_data <- data %>%
-          filter(SKU == isolate(input$hover_sku)) %>%
-          group_by(Status) %>%
-          summarise(Count = n(), .groups = "drop")
-        
-        if (nrow(inventory_status_data) == 0) {
-          return(NULL)
-        }
-
-        # 确保所有状态都存在，并填充 0
-        inventory_status_data <- data.frame(Status = status_levels) %>%
-          left_join(inventory_status_data, by = "Status") %>%
-          mutate(Count = replace_na(Count, 0))
-        
-        # 过滤掉数量为 0 的状态
-        inventory_status_data <- inventory_status_data %>% filter(Count > 0)
-        
-        # 重新匹配颜色：只取 **inventory_status_data$Status** 里有的颜色
-        matched_colors <- status_colors[match(inventory_status_data$Status, status_levels)]
-        
-        plot_ly(
-          data = inventory_status_data,
-          labels = ~Status,
-          values = ~Count,
-          type = "pie",
-          textinfo = "label+value",
-          marker = list(colors = matched_colors)
-        ) %>%
-          layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
-      }, error = function(e) {
-        showNotification("库存状态图表生成错误", type = "error")
+    tryCatch({
+      data <- unique_items_data()
+      
+      inventory_status_data <- data %>%
+        filter(SKU == isolate(input$hover_sku)) %>%
+        group_by(Status) %>%
+        summarise(Count = n(), .groups = "drop")
+      
+      if (nrow(inventory_status_data) == 0) {
         return(NULL)
-      })
+      }
+      
+      # 确保所有状态都存在，并填充 0
+      inventory_status_data <- data.frame(Status = status_levels) %>%
+        left_join(inventory_status_data, by = "Status") %>%
+        mutate(Count = replace_na(Count, 0))
+      
+      # 过滤掉数量为 0 的状态
+      inventory_status_data <- inventory_status_data %>% filter(Count > 0)
+      
+      # 重新匹配颜色：只取 **inventory_status_data$Status** 里有的颜色
+      matched_colors <- status_colors[match(inventory_status_data$Status, status_levels)]
+      
+      plot_ly(
+        data = inventory_status_data,
+        labels = ~Status,
+        values = ~Count,
+        type = "pie",
+        textinfo = "label+value",
+        marker = list(colors = matched_colors)
+      ) %>%
+        layout(showlegend = FALSE, margin = list(l = 5, r = 5, t = 5, b = 5))
+    }, error = function(e) {
+      showNotification("库存状态图表生成错误", type = "error")
+      return(NULL)
     })
   })
   
