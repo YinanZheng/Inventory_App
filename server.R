@@ -938,7 +938,7 @@ server <- function(input, output, session) {
   
   # 鼠标悬停请求图片显示库存分布
   output$colab_inventory_status_chart <- renderPlotly({
-    req(input$hover_sku)  # ✅ 确保 hover_sku 变化时执行
+    req(input$hover_sku, input$hover_sku != "New-Request")  # 直接跳过 "New-Request"
     
     tryCatch({
       data <- unique_items_data()
