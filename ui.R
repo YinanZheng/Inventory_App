@@ -867,7 +867,7 @@ ui <- navbarPage(
             
             div(
               style = "display: flex; justify-content: center;",  # 只剩注册按钮，居中显示
-              uiOutput("register_order_button_ui")
+              uiOutput("register_order_button_ui", style = "width: 100%;")
             ),
             
             div(
