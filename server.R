@@ -838,8 +838,8 @@ server <- function(input, output, session) {
               )
             } else if (item$RequestType == "完成") {
               tagList(
-                actionButton(paste0("done_paid_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;"),
-                actionButton(paste0("stock_in_", request_id), "入库", class = "btn-success", style = "flex-grow: 1; height: 45px;")
+                actionButton(paste0("stock_in_", request_id), "入库", class = "btn-success", style = "flex-grow: 1; height: 45px;"),
+                actionButton(paste0("done_paid_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;")
               )
             } else if (item$RequestType == "新品") {
               actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
@@ -880,7 +880,7 @@ server <- function(input, output, session) {
       
       # 完成按钮
       observeEvent(input[[paste0("done_paid_", request_id)]], {
-        dbExecute(con, "UPDATE requests SET RequestType = '完成', RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+        dbExecute(con, "UPDATE requests SET RequestType = '完成' WHERE RequestID = ?", params = list(request_id))
         current_data <- requests_data()
         updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "完成", RequestType))
         requests_data(updated_data)
@@ -898,17 +898,16 @@ server <- function(input, output, session) {
       
       # 撤回（从完成到安排）
       observeEvent(input[[paste0("done_paid_cancel_", request_id)]], {
-        dbExecute(con, "UPDATE requests SET RequestType = '安排', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
+        dbExecute(con, "UPDATE requests SET RequestType = '安排' WHERE RequestID = ?", params = list(request_id))
         current_data <- requests_data()
-        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType),
-                                                RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
+        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType))
         requests_data(updated_data)
         update_single_request(request_id, requests_data, output)
       }, ignoreInit = TRUE)
       
       # 入库按钮（从完成到出库）
       observeEvent(input[[paste0("stock_in_", request_id)]], {
-        dbExecute(con, "UPDATE requests SET RequestType = '出库', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
+        dbExecute(con, "UPDATE requests SET RequestType = '出库', RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
         current_data <- requests_data()
         updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "出库", RequestType),
                                                 RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
