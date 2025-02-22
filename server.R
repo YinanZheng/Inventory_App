@@ -714,13 +714,13 @@ server <- function(input, output, session) {
     refresh_board_incremental(requests, output)
   }, priority = 10)
   
-  # 初始化时绑定所有已有 requests 的按钮
+  # 初始化时一次性绑定所有按钮
   observe({
     requests <- requests_data()
     lapply(requests$RequestID, function(request_id) {
       bind_buttons(request_id, requests_data, input, output, session, con)
     })
-  })
+  }, once = TRUE)  # 只执行一次
   
   # 增量渲染任务板
   refresh_board_incremental <- function(requests, output) {
@@ -732,11 +732,9 @@ server <- function(input, output, session) {
       "出库" = "outbound_request_board"
     )
     
-    # 只渲染有数据的面板
     lapply(names(request_types), function(req_type) {
       output_id <- request_types[[req_type]]
-      filtered_requests <- requests %>% filter(RequestType == req_type) %>% 
-        arrange(factor(RequestStatus, levels = c("紧急", "待处理", "已完成")), Maker, CreatedAt)
+      filtered_requests <- requests %>% filter(RequestType == req_type) %>% sort_requests()
       
       output[[output_id]] <- renderUI({
         if (nrow(filtered_requests) == 0) {
@@ -745,15 +743,17 @@ server <- function(input, output, session) {
           div(
             style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); row-gap: 15px; column-gap: 15px; padding: 5px;",
             lapply(filtered_requests$RequestID, function(request_id) {
-              uiOutput(paste0("request_card_", request_id))  # 为每个 request 创建独立输出槽
+              uiOutput(paste0("request_card_", request_id))
             })
           )
         }
-      })
+      }, priority = -1)  # 降低优先级，避免不必要刷新
       
-      # 为每个 request 生成独立卡片
+      # 仅在首次加载时渲染卡片
       lapply(filtered_requests$RequestID, function(request_id) {
-        render_single_request(request_id, filtered_requests, output)
+        if (is.null(output[[paste0("request_card_", request_id)]])) {
+          render_single_request(request_id, filtered_requests, output)
+        }
       })
     })
   }
@@ -853,7 +853,7 @@ server <- function(input, output, session) {
       updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "紧急", RequestStatus))
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 安排按钮
     observeEvent(input[[paste0("provider_arranged_", request_id)]], {
@@ -862,7 +862,7 @@ server <- function(input, output, session) {
       updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType))
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 完成按钮
     observeEvent(input[[paste0("done_paid_", request_id)]], {
@@ -872,7 +872,7 @@ server <- function(input, output, session) {
                                               RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 撤回（从安排到采购）
     observeEvent(input[[paste0("provider_arranged_cancel_", request_id)]], {
@@ -881,7 +881,7 @@ server <- function(input, output, session) {
       updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "采购", RequestType))
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 撤回（从完成到安排）
     observeEvent(input[[paste0("done_paid_cancel_", request_id)]], {
@@ -891,7 +891,7 @@ server <- function(input, output, session) {
                                               RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 完成任务（出库或新品）
     observeEvent(input[[paste0("complete_task_", request_id)]], {
@@ -900,7 +900,7 @@ server <- function(input, output, session) {
       updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 删除按钮
     observeEvent(input[[paste0("delete_request_", request_id)]], {
@@ -909,26 +909,104 @@ server <- function(input, output, session) {
       updated_data <- current_data %>% filter(RequestID != request_id)
       requests_data(updated_data)
       update_single_request(request_id, requests_data, output)
-    }, ignoreInit = TRUE)
+    }, ignoreInit = TRUE, once = TRUE)
     
     # 提交留言
     observeEvent(input[[paste0("submit_remark_", request_id)]], {
       remark <- input[[paste0("remark_input_", request_id)]]
       req(remark != "")
-      new_remark <- format_remark(remark, system_type)
-      current_data <- requests_data()
-      current_remarks <- current_data %>% filter(RequestID == request_id) %>% pull(Remarks)
-      updated_remarks <- ifelse(is.na(current_remarks) || current_remarks == "", new_remark, paste(new_remark, current_remarks, sep = ";"))
       
-      dbExecute(con, "UPDATE requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
-      updated_data <- current_data %>% mutate(Remarks = ifelse(RequestID == request_id, updated_remarks, Remarks))
-      requests_data(updated_data)
-      update_single_request(request_id, requests_data, output)
-      updateTextInput(session, paste0("remark_input_", request_id), value = "")
-    }, ignoreInit = TRUE)
+      current_data <- requests_data()
+      new_remark <- format_remark(remark, system_type)
+      
+      # 获取当前行，避免重复操作整个数据集
+      current_row <- current_data %>% filter(RequestID == request_id)
+      if (nrow(current_row) == 0) {
+        showNotification("请求不存在", type = "error")
+        return()
+      }
+      
+      # 更新函数：封装数据库和内存更新
+      update_request <- function(field, value) {
+        tryCatch({
+          dbExecute(con, sprintf("UPDATE requests SET %s = ? WHERE RequestID = ?", field), params = list(value, request_id))
+          updated_data <- current_data %>% mutate(!!sym(field) := ifelse(RequestID == request_id, value, !!sym(field)))
+          requests_data(updated_data)
+          update_single_request(request_id, requests_data, output)
+          TRUE
+        }, error = function(e) {
+          showNotification(paste("更新失败:", e$message), type = "error")
+          FALSE
+        })
+      }
+      
+      # 解析 Quantity=X
+      quantity_match <- regmatches(remark, regexec("^Quantity=(\\d+)$", remark))
+      if (length(quantity_match[[1]]) > 1) {
+        new_quantity <- as.integer(quantity_match[[1]][2])
+        if (!is.na(new_quantity) && new_quantity > 0) {
+          if (update_request("Quantity", new_quantity)) {
+            showNotification(paste("请求数量已更新为", new_quantity, "！"), type = "message")
+            updateTextInput(session, paste0("remark_input_", request_id), value = "")
+          }
+        } else {
+          showNotification("无效的数量输入，请使用 'Quantity=X' 格式，X 为正整数。", type = "error")
+        }
+      }
+      # 解析 Maker=XXX
+      else if (length(maker_match <- regmatches(remark, regexec("^Maker=(.+)$", remark))[[1]]) > 1) {
+        new_maker <- trimws(maker_match[2])
+        if (nchar(new_maker) > 0) {
+          if (update_request("Maker", new_maker)) {
+            showNotification(paste("供应商已更新为", new_maker, "！"), type = "message")
+            updateTextInput(session, paste0("remark_input_", request_id), value = "")
+          }
+        } else {
+          showNotification("无效的供应商输入，请使用 'Maker=XXX' 格式。", type = "error")
+        }
+      }
+      # 普通留言
+      else {
+        current_remarks <- current_row %>% pull(Remarks)
+        updated_remarks <- ifelse(is.na(current_remarks) || current_remarks == "", new_remark, paste(new_remark, current_remarks, sep = ";"))
+        
+        if (update_request("Remarks", updated_remarks)) {
+          updateTextInput(session, paste0("remark_input_", request_id), value = "")
+        }
+      }
+    }, ignoreInit = TRUE, once = TRUE)
   }
   
-  
+  renderRemarks <- function(request_id, requests) {
+    current_remarks <- requests %>% filter(RequestID == request_id) %>% pull(Remarks)
+    
+    if (is.null(current_remarks) || is.na(current_remarks) || current_remarks == "") {
+      remarks <- list()
+    } else {
+      remarks <- unlist(strsplit(trimws(current_remarks), ";"))
+    }
+    
+    # 使用 reactiveVal 缓存渲染结果
+    renderUI({
+      if (length(remarks) > 0) {
+        tags$div(
+          lapply(remarks, function(h) {
+            split_remarks <- strsplit(h, ": ", fixed = TRUE)[[1]]
+            remark_time <- ifelse(length(split_remarks) > 1, split_remarks[1], "")
+            remark_text <- ifelse(length(split_remarks) > 1, split_remarks[2], split_remarks[1])
+            
+            tags$div(
+              style = "margin-bottom: 8px;",
+              tags$p(remark_time, style = "font-size: 10px; color: grey; text-align: right; margin: 0;"),
+              tags$p(remark_text, style = "font-size: 12px; color: black; text-align: left; margin: 0;")
+            )
+          })
+        )
+      } else {
+        tags$p("暂无留言", style = "font-size: 12px; color: grey;")
+      }
+    })
+  }
   
   
   
@@ -1053,7 +1131,7 @@ server <- function(input, output, session) {
                   params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, 
                                 input$request_quantity, format_remark(input$request_remark, system_type), request_type))
         
-        bind_buttons(request_id, requests_data(), input, output, session, con)
+        bind_buttons(request_id, requests_data, input, output, session, con)
         
         updateTextInput(session, "search_sku", value = "")
         updateTextInput(session, "search_name", value = "")
@@ -1102,7 +1180,7 @@ server <- function(input, output, session) {
              VALUES (?, ?, '待定', ?, ?, ?, '待处理', ?, '新品')", 
               params = list(request_id, "New-Request", custom_image_path, custom_description, custom_quantity, format_remark(input$custom_remark, system_type)))
     
-    bind_buttons(request_id, requests_data(), input, output, session, con) #绑定按钮逻辑
+    bind_buttons(request_id, requests_data, input, output, session, con)  
     
     # 清空输入字段
     updateTextInput(session, "custom_description", value = "")
