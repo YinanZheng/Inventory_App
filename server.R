@@ -940,8 +940,6 @@ server <- function(input, output, session) {
   output$colab_inventory_status_chart <- renderPlotly({
     req(input$hover_sku, input$hover_sku != "New-Request")  # 直接跳过 "New-Request"
     
-    showNotification(input$hover_sku)
-    
     tryCatch({
       data <- unique_items_data()
       

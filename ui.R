@@ -196,18 +196,21 @@ ui <- navbarPage(
       function showInventoryStatus(event, sku) {
         clearTimeout(inventoryStatusTimeout);
       
-        // 立即更新 Shiny 服务器端变量
+        // 更新 Shiny 变量，确保服务器端能接收到
         Shiny.setInputValue('hover_sku', sku, {priority: 'event'});
       
         inventoryStatusTimeout = setTimeout(function () {
           var popup = document.getElementById('inventory-status-popup');
-          popup.style.display = 'block';
       
-          // 设置位置
-          popup.style.position = 'absolute';
-          popup.style.left = (event.pageX + 20) + 'px';
-          popup.style.top = (event.pageY + 20) + 'px';
-        }, 1000);  // 1 秒延迟
+          if (sku === 'New-Request') {
+            popup.style.display = 'none';
+          } else {
+            popup.style.display = 'block';
+            popup.style.position = 'absolute';
+            popup.style.left = (event.pageX + 20) + 'px';
+            popup.style.top = (event.pageY + 20) + 'px';
+          }
+        }, 1000);  // 1秒后执行
       }
       
       function hideInventoryStatus() {
