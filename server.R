@@ -2433,9 +2433,9 @@ server <- function(input, output, session) {
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
-    # delay(100, {
-    #   updateTabsetPanel(session, "sold_tabs", selected = "物品售出")
-    # })
+    delay(100, {
+      updateTabsetPanel(session, "sold_tabs", selected = "物品售出")
+    })
 
     delay(500, {
       selected_order_id(NULL)
