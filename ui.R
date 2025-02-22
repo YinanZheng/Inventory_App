@@ -785,7 +785,18 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 5px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           
-          tags$h4("订单登记与更新", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+          # 标题行，包含“清空订单”按钮
+          div(
+            style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;",
+            tags$h4("订单登记与更新", style = "color: #007BFF; font-weight: bold; margin: 0;"),
+            actionButton(
+              "clear_order_btn",
+              "清空订单",
+              icon = icon("eraser"),
+              class = "btn-warning",
+              style = "font-size: 16px; height: 42px; padding: 0 15px;"  # 调整按钮样式以适应标题行
+            )
+          ),
           
           fluidRow(
             column(7, textInput("order_id", NULL, placeholder = "订单号", width = "100%")),
@@ -855,15 +866,8 @@ ui <- navbarPage(
             style = "margin-top: 10px; display: flex; flex-direction: column; gap: 5px;",  # 增加垂直间距
             
             div(
-              style = "display: flex; justify-content: space-between;",
-              uiOutput("register_order_button_ui"),
-              actionButton(
-                "clear_order_btn",
-                "清空订单",
-                icon = icon("eraser"),
-                class = "btn-warning",
-                style = "font-size: 16px; width: 48%; height: 42px;"
-              )
+              style = "display: flex; justify-content: center;",  # 只剩注册按钮，居中显示
+              uiOutput("register_order_button_ui")
             ),
             
             div(
