@@ -722,6 +722,16 @@ server <- function(input, output, session) {
     })
   }, ignoreInit = FALSE, once = TRUE)
   
+  # 定义排序函数
+  sort_requests <- function(df) {
+    df %>%
+      arrange(
+        factor(RequestStatus, levels = c("紧急", "待处理", "已完成")),
+        Maker,
+        CreatedAt
+      )
+  }
+  
   # 增量渲染任务板
   refresh_board_incremental <- function(requests, output) {
     request_types <- list(
