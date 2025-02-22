@@ -794,7 +794,6 @@ server <- function(input, output, session) {
         class = "note-card",
         style = sprintf("width: 300px; background-color: %s; border: 2px solid %s; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 10px; display: flex; flex-direction: column;",
                         card_colors$bg, card_colors$border),
-        # 图片和信息
         div(
           style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
           tags$div(
@@ -820,7 +819,6 @@ server <- function(input, output, session) {
             uiOutput(paste0("remarks_", request_id))
           )
         ),
-        # 留言输入和按钮
         tags$div(
           style = "width: 100%; display: flex; flex-direction: column; margin-top: 5px;",
           tags$div(
@@ -839,7 +837,10 @@ server <- function(input, output, session) {
                 actionButton(paste0("provider_arranged_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;")
               )
             } else if (item$RequestType == "完成") {
-              actionButton(paste0("done_paid_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;")
+              tagList(
+                actionButton(paste0("done_paid_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;"),
+                actionButton(paste0("stock_in_", request_id), "入库", class = "btn-success", style = "flex-grow: 1; height: 45px;")
+              )
             } else if (item$RequestType %in% c("出库", "新品")) {
               actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
             },
@@ -849,7 +850,6 @@ server <- function(input, output, session) {
       )
     })
     
-    # 渲染留言
     output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id, requests)
   }
   
@@ -902,6 +902,16 @@ server <- function(input, output, session) {
         dbExecute(con, "UPDATE requests SET RequestType = '安排', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
         current_data <- requests_data()
         updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType),
+                                                RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
+        requests_data(updated_data)
+        update_single_request(request_id, requests_data, output)
+      }, ignoreInit = TRUE)
+      
+      # 入库按钮（从完成到出库）
+      observeEvent(input[[paste0("stock_in_", request_id)]], {
+        dbExecute(con, "UPDATE requests SET RequestType = '出库', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
+        current_data <- requests_data()
+        updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "出库", RequestType),
                                                 RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
         requests_data(updated_data)
         update_single_request(request_id, requests_data, output)
