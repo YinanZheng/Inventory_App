@@ -1109,15 +1109,6 @@ server <- function(input, output, session) {
     search_sku <- trimws(input$search_sku)
     search_name <- trimws(input$search_name)
     
-    # 根据当前页面的类型确定 RequestType
-    current_tab <- input$collaboration_tabs
-    request_type <- switch(
-      current_tab,
-      "采购请求" = "采购",
-      "出库请求" = "出库",
-      return()  # 不匹配任何已知分页时，直接退出
-    )
-    
     # 检索数据并插入到数据库
     filtered_data <- unique_items_data() %>%
       filter(
@@ -1136,9 +1127,9 @@ server <- function(input, output, session) {
 
         dbExecute(con, 
                   "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
-         VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, ?)", 
+         VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, '采购')", 
                   params = list(request_id, filtered_data$SKU, filtered_data$Maker, item_image_path, item_description, 
-                                input$request_quantity, format_remark(input$request_remark, system_type), request_type))
+                                input$request_quantity, format_remark(input$request_remark, system_type)))
         
         bind_buttons(request_id, requests_data, input, output, session, con)
         
@@ -1196,23 +1187,6 @@ server <- function(input, output, session) {
     updateNumericInput(session, "custom_quantity", value = 1)
     image_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
-  })
-  
-  # 出库标签页要禁用新物品请求
-  observeEvent(input$collaboration_tabs, {
-    current_tab <- input$collaboration_tabs
-    
-    if (current_tab == "出库请求") {
-      # 禁用与新商品请求相关的控件
-      disable("custom_description")
-      disable("custom_quantity")
-      disable("submit_custom_request")
-    } else if (current_tab == "采购请求") {
-      # 启用与新商品请求相关的控件
-      enable("custom_description")
-      enable("custom_quantity")
-      enable("submit_custom_request")
-    }
   })
   
   # 点击请求图片看大图
