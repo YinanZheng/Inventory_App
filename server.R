@@ -693,42 +693,247 @@ server <- function(input, output, session) {
   # 缓存请求数据
   requests_data <- reactiveVal(data.frame())
   
-  # 定期检查采购请求数据库的最新数据
+  # 定期检查数据库更新
   poll_requests <- reactivePoll(
     intervalMillis = poll_interval,
     session = session,
     checkFunc = function() {
-      # 查询最新更新时间
       last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
-      if (is.null(last_updated)) {
-        Sys.time()  # 如果无数据，返回当前时间
-      } else {
-        last_updated
-      }
+      if (is.null(last_updated)) Sys.time() else last_updated
     },
     valueFunc = function() {
-      result <- dbGetQuery(con, "SELECT * FROM requests")
-      if (nrow(result) == 0) { data.frame() } else { result }
+      dbGetQuery(con, "SELECT * FROM requests")
     }
   )
   
-  # 加载数据
+  # 初次加载数据
   observeEvent(poll_requests(), {
     requests <- poll_requests()
     requests_data(requests)
-  })
+    # 仅在数据变化时初始化渲染
+    refresh_board_incremental(requests, output)
+  }, priority = 10)
   
+  # 初始化时绑定所有已有 requests 的按钮
   observe({
     requests <- requests_data()
-    
-    refresh_board(requests, output)
-    
-    # 渲染留言内容并绑定按钮事件
     lapply(requests$RequestID, function(request_id) {
-      output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id, requests)
-      bind_buttons(request_id, requests, input, output, session, con)  # 按 RequestID 动态绑定按钮
+      bind_buttons(request_id, requests_data, input, output, session, con)
     })
   })
+  
+  # 增量渲染任务板
+  refresh_board_incremental <- function(requests, output) {
+    request_types <- list(
+      "新品" = "new_product_board",
+      "采购" = "purchase_request_board",
+      "安排" = "provider_arranged_board",
+      "完成" = "done_paid_board",
+      "出库" = "outbound_request_board"
+    )
+    
+    # 只渲染有数据的面板
+    lapply(names(request_types), function(req_type) {
+      output_id <- request_types[[req_type]]
+      filtered_requests <- requests %>% filter(RequestType == req_type) %>% 
+        arrange(factor(RequestStatus, levels = c("紧急", "待处理", "已完成")), Maker, CreatedAt)
+      
+      output[[output_id]] <- renderUI({
+        if (nrow(filtered_requests) == 0) {
+          div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项"))
+        } else {
+          div(
+            style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); row-gap: 15px; column-gap: 15px; padding: 5px;",
+            lapply(filtered_requests$RequestID, function(request_id) {
+              uiOutput(paste0("request_card_", request_id))  # 为每个 request 创建独立输出槽
+            })
+          )
+        }
+      })
+      
+      # 为每个 request 生成独立卡片
+      lapply(filtered_requests$RequestID, function(request_id) {
+        render_single_request(request_id, filtered_requests, output)
+      })
+    })
+  }
+  
+  # 更新单个 request 数据并重新渲染
+  update_single_request <- function(request_id, requests_data, output) {
+    current_data <- requests_data()
+    updated_row <- current_data %>% filter(RequestID == request_id)
+    if (nrow(updated_row) > 0) {
+      render_single_request(request_id, current_data, output)
+    } else {
+      output[[paste0("request_card_", request_id)]] <- renderUI(NULL)  # 删除时移除卡片
+    }
+  }
+  
+  render_single_request <- function(request_id, requests, output) {
+    item <- requests %>% filter(RequestID == request_id)
+    if (nrow(item) == 0) return()
+    
+    output[[paste0("request_card_", request_id)]] <- renderUI({
+      card_colors <- switch(
+        item$RequestStatus,
+        "紧急" = list(bg = "#ffcdd2", border = "#e57373"),
+        "待处理" = list(bg = "#fff9c4", border = "#ffd54f"),
+        "已完成" = list(bg = "#c8e6c9", border = "#81c784"),
+        list(bg = "#f0f0f0", border = "#bdbdbd")
+      )
+      
+      div(
+        class = "note-card",
+        style = sprintf("width: 300px; background-color: %s; border: 2px solid %s; border-radius: 10px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); padding: 10px; display: flex; flex-direction: column;",
+                        card_colors$bg, card_colors$border),
+        # 图片和信息
+        div(
+          style = "display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;",
+          tags$div(
+            style = "width: 42%; display: flex; flex-direction: column; align-items: center;",
+            tags$img(
+              src = ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))),
+              style = "width: 100%; max-height: 120px; object-fit: contain; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); border-radius: 5px; margin-bottom: 5px; cursor: pointer;",
+              onclick = sprintf("Shiny.setInputValue('view_request_image', '%s')", 
+                                ifelse(is.na(item$ItemImagePath), placeholder_150px_path, paste0(host_url, "/images/", basename(item$ItemImagePath))))
+            ),
+            tags$div(
+              style = "width: 100%; text-align: center; font-size: 12px; color: #333;",
+              tags$p(tags$b(item$ItemDescription), style = "margin: 0;"),
+              tags$p(item$SKU, style = "margin: 0;")
+            )
+          ),
+          tags$div(
+            style = "width: 54%; height: 194px; border: 1px solid #ddd; padding: 5px; background-color: #fff; overflow-y: auto; border-radius: 5px;",
+            uiOutput(paste0("remarks_", request_id))
+          )
+        ),
+        # 留言输入和按钮
+        tags$div(
+          style = "width: 100%; display: flex; flex-direction: column; margin-top: 5px;",
+          tags$div(
+            style = "width: 100%; display: flex; justify-content: space-between;",
+            textInput(paste0("remark_input_", request_id), NULL, placeholder = "输入留言", width = "72%"),
+            actionButton(paste0("submit_remark_", request_id), "提交", class = "btn-success", style = "width: 25%; height: 45px;")
+          ),
+          tags$div(
+            style = "width: 100%; display: flex; gap: 5px; margin-top: 5px;",
+            # 状态按钮逻辑，根据 RequestType 动态生成
+            actionButton(paste0("mark_urgent_", request_id), "加急", class = "btn-danger", style = "flex-grow: 1; height: 45px;"),
+            
+            if (item$RequestType == "采购") {
+              actionButton(paste0("provider_arranged_", request_id), "安排", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
+            } else if (item$RequestType == "安排") {
+              tagList(
+                actionButton(paste0("done_paid_", request_id), "完成", class = "btn-primary", style = "flex-grow: 1; height: 45px;"),
+                actionButton(paste0("provider_arranged_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;")
+              )
+            } else if (item$RequestType == "完成") {
+              actionButton(paste0("done_paid_cancel_", request_id), "撤回", class = "btn-warning", style = "flex-grow: 1; height: 45px;")
+            } else if (item$RequestType %in% c("出库", "新品")) {
+              actionButton(paste0("complete_task_", request_id), "完成", class = "btn-primary", style = "flex-grow: 1; height: 45px;")
+            },
+            
+            actionButton(paste0("delete_request_", request_id), "删除", class = "btn-secondary", style = "flex-grow: 1; height: 45px;")
+          )
+        )
+      )
+    })
+    
+    # 渲染留言
+    output[[paste0("remarks_", request_id)]] <- renderRemarks(request_id, requests)
+  }
+  
+  bind_buttons <- function(request_id, requests_data, input, output, session, con) {
+    # 加急按钮
+    observeEvent(input[[paste0("mark_urgent_", request_id)]], {
+      dbExecute(con, "UPDATE requests SET RequestStatus = '紧急' WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "紧急", RequestStatus))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 安排按钮
+    observeEvent(input[[paste0("provider_arranged_", request_id)]], {
+      dbExecute(con, "UPDATE requests SET RequestType = '安排' WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 完成按钮
+    observeEvent(input[[paste0("done_paid_", request_id)]], {
+      dbExecute(con, "UPDATE requests SET RequestType = '完成', RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "完成", RequestType),
+                                              RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 撤回（从安排到采购）
+    observeEvent(input[[paste0("provider_arranged_cancel_", request_id)]], {
+      dbExecute(con, "UPDATE requests SET RequestType = '采购' WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "采购", RequestType))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 撤回（从完成到安排）
+    observeEvent(input[[paste0("done_paid_cancel_", request_id)]], {
+      dbExecute(con, "UPDATE requests SET RequestType = '安排', RequestStatus = '待处理' WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% mutate(RequestType = ifelse(RequestID == request_id, "安排", RequestType),
+                                              RequestStatus = ifelse(RequestID == request_id, "待处理", RequestStatus))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 完成任务（出库或新品）
+    observeEvent(input[[paste0("complete_task_", request_id)]], {
+      dbExecute(con, "UPDATE requests SET RequestStatus = '已完成' WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% mutate(RequestStatus = ifelse(RequestID == request_id, "已完成", RequestStatus))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 删除按钮
+    observeEvent(input[[paste0("delete_request_", request_id)]], {
+      dbExecute(con, "DELETE FROM requests WHERE RequestID = ?", params = list(request_id))
+      current_data <- requests_data()
+      updated_data <- current_data %>% filter(RequestID != request_id)
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+    }, ignoreInit = TRUE)
+    
+    # 提交留言
+    observeEvent(input[[paste0("submit_remark_", request_id)]], {
+      remark <- input[[paste0("remark_input_", request_id)]]
+      req(remark != "")
+      new_remark <- format_remark(remark, system_type)
+      current_data <- requests_data()
+      current_remarks <- current_data %>% filter(RequestID == request_id) %>% pull(Remarks)
+      updated_remarks <- ifelse(is.na(current_remarks) || current_remarks == "", new_remark, paste(new_remark, current_remarks, sep = ";"))
+      
+      dbExecute(con, "UPDATE requests SET Remarks = ? WHERE RequestID = ?", params = list(updated_remarks, request_id))
+      updated_data <- current_data %>% mutate(Remarks = ifelse(RequestID == request_id, updated_remarks, Remarks))
+      requests_data(updated_data)
+      update_single_request(request_id, requests_data, output)
+      updateTextInput(session, paste0("remark_input_", request_id), value = "")
+    }, ignoreInit = TRUE)
+  }
+  
+  
+  
+  
+  
+  
+  
+  
   
   # SKU 和物品名输入互斥逻辑
   observeEvent(input$search_sku, {
