@@ -714,13 +714,13 @@ server <- function(input, output, session) {
     refresh_board_incremental(requests, output)
   }, priority = 10)
   
-  # 初始化时一次性绑定所有按钮
-  observe({
+  # 在 requests_data 首次加载时绑定所有按钮
+  observeEvent(requests_data(), {
     requests <- requests_data()
     lapply(requests$RequestID, function(request_id) {
       bind_buttons(request_id, requests_data, input, output, session, con)
     })
-  }, once = TRUE)  # 只执行一次
+  }, ignoreInit = FALSE, once = TRUE)
   
   # 增量渲染任务板
   refresh_board_incremental <- function(requests, output) {
