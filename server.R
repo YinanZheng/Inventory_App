@@ -700,7 +700,7 @@ server <- function(input, output, session) {
     intervalMillis = poll_interval,
     session = session,
     checkFunc = function() {
-      last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
+      last_updated <- dbGetQuery(con, "SELECT last_updated FROM update_log WHERE table_name = 'requests'")$last_updated[1]
       if (is.null(last_updated)) Sys.time() else last_updated
     },
     valueFunc = function() {
@@ -949,6 +949,64 @@ server <- function(input, output, session) {
   })
   
   outputOptions(output, "colab_inventory_status_chart", suspendWhenHidden = FALSE)
+  
+  # 自动转换 RequestType
+  observe({
+    # 每 5 秒检查一次
+    invalidateLater(5000, session)
+    
+    current_requests <- requests_data()
+    current_items <- unique_items_data()
+    
+    if (is.null(current_requests) || is.null(current_items)) return()
+    
+    dbWithTransaction(con, {
+      # 遍历所有请求
+      for (i in seq_len(nrow(current_requests))) {
+        req <- current_requests[i, ]
+        req_sku <- req$SKU
+        req_qty <- req$Quantity
+        req_type <- req$RequestType
+        req_id <- req$RequestID
+        
+        # 如果 SKU 为空，跳过
+        if (is.null(req_sku) || is.na(req_sku)) next
+        
+        # 计算 unique_items 中对应状态的数量
+        items_count <- current_items %>%
+          filter(SKU == req_sku) %>%
+          group_by(Status) %>%
+          summarise(count = n(), .groups = "drop")
+        
+        # 状态转换逻辑
+        if (req_type == "安排") {
+          procure_count <- items_count$count[items_count$Status == "采购"] %||% 0
+          if (procure_count >= req_qty) {
+            dbExecute(con, 
+                      "UPDATE requests SET RequestType = '完成', UpdatedAt = NOW() WHERE RequestID = ?",
+                      params = list(req_id))
+            message("Request ", req_id, " updated to '完成'")
+          }
+        } else if (req_type == "完成") {
+          domestic_count <- items_count$count[items_count$Status == "国内入库"] %||% 0
+          if (domestic_count >= req_qty) {
+            dbExecute(con, 
+                      "UPDATE requests SET RequestType = '出库', UpdatedAt = NOW() WHERE RequestID = ?",
+                      params = list(req_id))
+            message("Request ", req_id, " updated to '出库'")
+          }
+        } else if (req_type == "出库") {
+          transit_count <- items_count$count[items_count$Status == "国内出库"] %||% 0
+          if (transit_count >= req_qty) {
+            dbExecute(con, 
+                      "DELETE FROM requests WHERE RequestID = ?",
+                      params = list(req_id))
+            message("Request ", req_id, " deleted")
+          }
+        }
+      }
+    })
+  })
   
   
   
