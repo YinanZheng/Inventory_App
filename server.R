@@ -759,11 +759,9 @@ server <- function(input, output, session) {
         }
       })
       
-      # 仅在首次加载时渲染卡片
+      # 直接渲染所有卡片，不检查是否已存在
       lapply(filtered_requests$RequestID, function(request_id) {
-        if (is.null(output[[paste0("request_card_", request_id)]])) {
-          render_single_request(request_id, filtered_requests, output)
-        }
+        render_single_request(request_id, filtered_requests, output)
       })
     })
   }
