@@ -1871,19 +1871,37 @@ server <- function(input, output, session) {
       req(selected_rows, "请在表格中选择至少一项以生成条形码")
       skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
       
-      # 调用 export_barcode_pdf 生成 PDF
-      pdf_path <- export_barcode_pdf(
-        sku = skus,
-        page_width = page_width,
-        page_height = page_height,
-        unit = size_unit
-      )
+      # 使用临时文件确保生成和下载同步
+      temp_pdf <- tempfile(fileext = ".pdf")
       
-      # 将生成的 PDF 复制到 Shiny 的下载路径
-      file.copy(pdf_path, file, overwrite = TRUE)
-      
-      # 可选：显示成功通知
-      showNotification("条形码 PDF 已生成并下载！", type = "message")
+      tryCatch({
+        # 调用 export_barcode_pdf 生成 PDF 到临时文件
+        pdf_path <- export_barcode_pdf(
+          sku = skus,
+          page_width = page_width,
+          page_height = page_height,
+          unit = size_unit
+        )
+        
+        # 复制生成的 PDF 到临时文件
+        file.copy(pdf_path, temp_pdf, overwrite = TRUE)
+        
+        # 确保临时文件存在
+        if (!file.exists(temp_pdf)) stop("生成的 PDF 文件不可用")
+        
+        # 将临时文件复制到 Shiny 的下载路径
+        file.copy(temp_pdf, file, overwrite = TRUE)
+        
+        # 显示成功通知
+        showNotification("条形码 PDF 已生成并下载！", type = "message")
+        
+        # 清理临时文件
+        unlink(c(pdf_path, temp_pdf))
+      }, error = function(e) {
+        showNotification(paste("生成或下载条形码失败：", e$message), type = "error")
+        unlink(c(pdf_path, temp_pdf))  # 清理失败时的临时文件
+        stop(e)
+      })
     }
   )
   
