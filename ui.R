@@ -426,7 +426,7 @@ ui <- navbarPage(
         
         fluidRow(
           column(10, 
-                 selectizeInput("new_maker", "供应商:", choices = NULL, width = "100%",
+                 selectizeInput("new_maker", "供应商", choices = NULL, width = "100%",
                                 options = list(placeholder = '输入名称(拼音)', maxOptions = 500))
           ),
           column(2, 
@@ -451,15 +451,15 @@ ui <- navbarPage(
           ),
           column(12, dateInput(
             inputId = "purchase_date",
-            label = "采购日期:",
+            label = "采购日期",
             value = Sys.Date(),  # 默认日期为今天
             width = "100%"
           ))
         ),
         
         fluidRow(
-          column(4, numericInput("new_quantity", "数量:", value = 0, min = 0, step = 1)),
-          column(4, numericInput("new_product_cost", "单价:", value = 0, min = 0)),
+          column(4, numericInput("new_quantity", "数量", value = 0, min = 0, step = 1)),
+          column(4, numericInput("new_product_cost", "单价", value = 0, min = 0)),
           column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
         ),
         
