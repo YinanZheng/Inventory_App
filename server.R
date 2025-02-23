@@ -1820,9 +1820,9 @@ server <- function(input, output, session) {
       skus <- selected_items$SKU
 
       tryCatch({
-        temp_pdf <- tempfile(fileext = ".pdf")
+        temp_base <- tempfile()
         
-        pdf_path <- export_barcode_pdf(
+        temp_pdf <- export_barcode_pdf(
           sku = skus,
           page_width = page_width,
           page_height = page_height,
