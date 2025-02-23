@@ -422,8 +422,8 @@ ui <- navbarPage(
         class = "sticky-sidebar",  # sticky 侧边栏
         itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE, use_status = FALSE),
         
-        actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-danger", 
-                     style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; mrgin-top: 15px; margin-bottom: 15px;"),
+        actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-info", 
+                     style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 15px; margin-bottom: 15px;"),
         
         fluidRow(
           column(10, 
