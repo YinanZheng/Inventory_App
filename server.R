@@ -1513,6 +1513,8 @@ server <- function(input, output, session) {
     tryCatch({
       # 清空输入控件
       update_maker_choices(session, "new_maker", maker_list())
+      updateSelectizeInput(session, "type_module-new_major_type", selected = "")
+      updateSelectizeInput(session, "type_module-new_minor_type", selected = "")
       updateTextInput(session, "purchase-item_name", value = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
