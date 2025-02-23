@@ -1100,13 +1100,7 @@ server <- function(input, output, session) {
       all_items <- rbind(all_items, extracted)
     }
     
-    # 去除重复的物品-供应商组合
-    all_items <- unique(all_items)
-    
-    # 移除空字符串
-    all_items <- all_items[all_items$Item != "", ]
-    
-    all_items <- all_items %>% arrange(Supplier, Item)
+    all_items <- unique(all_items[all_items$Item != "", ]) %>% arrange(Supplier, Item)
     
     # 获取当前库存商品名称
     existing_items <- unique(inventory()$ItemName)
