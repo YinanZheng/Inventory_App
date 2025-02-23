@@ -1106,6 +1106,8 @@ server <- function(input, output, session) {
     # 移除空字符串
     all_items <- all_items[all_items$Item != "", ]
     
+    all_items <- all_items %>% arrange(Supplier, Item)
+    
     # 获取当前库存商品名称
     existing_items <- unique(inventory()$ItemName)
     
