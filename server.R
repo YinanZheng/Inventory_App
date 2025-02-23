@@ -1827,7 +1827,7 @@ server <- function(input, output, session) {
           page_width = page_width,
           page_height = page_height,
           unit = size_unit,
-          output_file = temp_pdf
+          output_file = temp_base
         )
         
         # 将临时文件复制到 Shiny 的下载路径
