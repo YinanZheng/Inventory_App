@@ -621,9 +621,9 @@ ui <- navbarPage(
                    #   actionButton("export_select_btn", "生成条形码", icon = icon("barcode"), class = "btn-info"),
                    #   downloadButton("download_select_pdf", "下载条形码", class = "btn-primary")
                    # )
+                   downloadButton("download_barcode_pdf", "生成并下载条形码 PDF", class = "btn-info")
                  )
           ),
-          column(12,  downloadButton("download_barcode_pdf", "生成并下载条形码 PDF", class = "btn-info"))
         )
       ),
       
