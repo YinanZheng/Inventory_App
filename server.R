@@ -2220,7 +2220,7 @@ server <- function(input, output, session) {
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
         
         # 提取分号后的用户留言部分
-        user_notes <- if (grepl(";", existing_order$OrderNotes[1])) {
+        user_notes <- if (grepl("；", existing_order$OrderNotes[1])) {
           sub(".*；", "", existing_order$OrderNotes[1])
         } else {
           existing_order$OrderNotes[1] %||% ""  # 如果没有分号，保留全部内容或空字符串
