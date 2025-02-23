@@ -424,10 +424,13 @@ ui <- navbarPage(
         
         tags$hr(),
         
+        actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-danger", 
+                     style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-bottom: 15px;"),
+        
         fluidRow(
           column(10, 
-                 selectizeInput("new_maker", "供应商", choices = NULL, width = "100%",
-                                options = list(placeholder = '输入名称(拼音)', maxOptions = 500))
+                 selectizeInput("new_maker", NULL, choices = NULL, width = "100%",
+                                options = list(placeholder = '供应商名称(拼音)', maxOptions = 500))
           ),
           column(2, 
                  div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
@@ -440,7 +443,7 @@ ui <- navbarPage(
         typeModuleUI("type_module"),
         
         fluidRow(
-          column(12, autocompleteInputUI("purchase", label = "商品名：", placeholder = "请输入商品名...")),
+          column(12, autocompleteInputUI("purchase", NULL, placeholder = "请输入商品名...")),
           column(12,
                  h5("预订单物品备忘（点击自动填写）", style = "color: #17a2b8;"),
                  div(
@@ -464,13 +467,10 @@ ui <- navbarPage(
         ),
         
         fluidRow(
-          column(12,textInput("new_sku", "SKU(自动生成):", value = "", width = "100%"))
+          column(12, textInput("new_sku", NULL, placeholder = "SKU(自动生成)", value = "", width = "100%"))
         ),
         
-        imageModuleUI("image_purchase"),
-        
-        actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-danger", 
-                     style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 26px;")
+        imageModuleUI("image_purchase")
       ),
       
       div(
