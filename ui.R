@@ -615,13 +615,8 @@ ui <- navbarPage(
                      style = "margin-bottom: 10px; padding-bottom: 8px;",
                      tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 5px;"),
                    ),
-                   
-                   # tags$div(
-                   #   style = "display: flex; justify-content: space-between; align-items: center;",
-                   #   actionButton("export_select_btn", "生成条形码", icon = icon("barcode"), class = "btn-info"),
-                   #   downloadButton("download_select_pdf", "下载条形码", class = "btn-primary")
-                   # )
-                   downloadButton("download_barcode_pdf", "生成并下载条形码 PDF", class = "btn-info")
+
+                   downloadButton("download_barcode_pdf", "生成并下载条形码 PDF", class = "btn-info", style = "width: 100%;")
                  )
           ),
         )

@@ -1805,104 +1805,34 @@ server <- function(input, output, session) {
       updateTextInput(session, "defective_notes", value = "") # 清空备注
     }
   })
-  
-  # # PDF下载按钮默认禁用
-  # session$onFlushed(function() {
-  #   disable("download_select_pdf")
-  # })
-  # 
-  # # 生成选中商品条形码 PDF
-  # observeEvent(input$export_select_btn, {
-  #   # 获取选中行
-  #   selected_rows <- unique_items_table_inbound_selected_row()  # 从 DT 表选中行
-  #   if (is.null(selected_rows) || length(selected_rows) == 0) {
-  #     showNotification("请先选中至少一个商品！", type = "error")
-  #     return()
-  #   }
-  # 
-  #   # 获取选中物品的数据
-  #   selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
-  #   if (nrow(selected_items) == 0) {
-  #     showNotification("选中数据无效，请重新选择！", type = "error")
-  #     return()
-  #   }
-  # 
-  #   skus <- selected_items$SKU
-  # 
-  #   # 调用现有函数生成条形码 PDF
-  #   tryCatch({
-  #     pdf_file <- export_barcode_pdf(
-  #       sku = skus,
-  #       page_width = page_width,  # 全局变量
-  #       page_height = page_height,
-  #       unit = size_unit
-  #     )
-  #     barcode_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-  # 
-  #     showNotification("选中商品条形码已生成！", type = "message")
-  #     enable("download_select_pdf")  # 启用下载按钮
-  #   }, error = function(e) {
-  #     showNotification(paste("生成条形码失败：", e$message), type = "error")
-  #     disable("download_select_pdf")  # 禁用下载按钮
-  #   })
-  # })
-  # 
-  # # 下载选中商品条形码 PDF
-  # output$download_select_pdf <- downloadHandler(
-  #   filename = function() {
-  #     basename(barcode_pdf_file_path())  # 生成文件名
-  #   },
-  #   content = function(file) {
-  #     file.copy(barcode_pdf_file_path(), file, overwrite = TRUE)
-  #     disable("download_select_pdf")  # 禁用下载按钮
-  #     barcode_pdf_file_path(NULL)  # 清空路径
-  #   }
-  # )
-  
+
+  # 生成并下载条形码 PDF
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
       selected_rows <- unique_items_table_inbound_selected_row()
-      req(selected_rows)
       selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
       skus <- selected_items$SKU
       if (length(unique(skus)) > 1) "multiple_barcodes.pdf" else paste0(unique(skus), "_barcode.pdf")
     },
     content = function(file) {
       selected_rows <- unique_items_table_inbound_selected_row()
-      req(selected_rows)
       selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
       skus <- selected_items$SKU
-      
-      # 使用临时文件确保生成和下载同步
-      temp_pdf <- tempfile(fileext = ".pdf")
-      
+
       tryCatch({
-        # 调用 export_barcode_pdf 生成 PDF 到临时文件
+        # 直接调用 export_barcode_pdf，生成文件到 Shiny 的下载路径
         pdf_path <- export_barcode_pdf(
           sku = skus,
           page_width = page_width,
           page_height = page_height,
-          unit = size_unit
+          unit = size_unit,
+          output_file = file
         )
-        
-        # 复制生成的 PDF 到临时文件
-        file.copy(pdf_path, temp_pdf, overwrite = TRUE)
-        
-        # 确保临时文件存在
-        if (!file.exists(temp_pdf)) stop("生成的 PDF 文件不可用")
-        
-        # 将临时文件复制到 Shiny 的下载路径
-        file.copy(temp_pdf, file, overwrite = TRUE)
-        
+
         # 显示成功通知
         showNotification("条形码 PDF 已生成并下载！", type = "message")
-        
-        # 清理临时文件
-        unlink(c(pdf_path, temp_pdf))
       }, error = function(e) {
         showNotification(paste("生成或下载条形码失败：", e$message), type = "error")
-        unlink(c(pdf_path, temp_pdf))  # 清理失败时的临时文件
-        stop(e)
       })
     }
   )
