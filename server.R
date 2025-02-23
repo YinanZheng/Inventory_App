@@ -1819,16 +1819,16 @@ server <- function(input, output, session) {
   #     showNotification("请先选中至少一个商品！", type = "error")
   #     return()
   #   }
-  #   
+  # 
   #   # 获取选中物品的数据
   #   selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
   #   if (nrow(selected_items) == 0) {
   #     showNotification("选中数据无效，请重新选择！", type = "error")
   #     return()
   #   }
-  #   
+  # 
   #   skus <- selected_items$SKU
-  #   
+  # 
   #   # 调用现有函数生成条形码 PDF
   #   tryCatch({
   #     pdf_file <- export_barcode_pdf(
@@ -1838,7 +1838,7 @@ server <- function(input, output, session) {
   #       unit = size_unit
   #     )
   #     barcode_pdf_file_path(pdf_file)  # 保存生成的 PDF 路径
-  #     
+  # 
   #     showNotification("选中商品条形码已生成！", type = "message")
   #     enable("download_select_pdf")  # 启用下载按钮
   #   }, error = function(e) {
@@ -1862,22 +1862,32 @@ server <- function(input, output, session) {
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
       selected_rows <- unique_items_table_inbound_selected_row()
-      req(selected_rows, "请在表格中选择至少一项")
+      req(selected_rows, "请在表格中选择至少一项以生成条形码")
       skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
       if (length(unique(skus)) > 1) "multiple_barcodes.pdf" else paste0(unique(skus), "_barcode.pdf")
     },
     content = function(file) {
       selected_rows <- unique_items_table_inbound_selected_row()
-      req(selected_rows)
+      req(selected_rows, "请在表格中选择至少一项以生成条形码")
       skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
       
       # 调用 export_barcode_pdf 生成 PDF
-      pdf_path <- export_barcode_pdf(skus, page_width = page_width, page_height = page_height, unit = size_unit)
+      pdf_path <- export_barcode_pdf(
+        sku = skus,
+        page_width = page_width,
+        page_height = page_height,
+        unit = size_unit
+      )
       
       # 将生成的 PDF 复制到 Shiny 的下载路径
-      file.copy(pdf_path, file)
+      file.copy(pdf_path, file, overwrite = TRUE)
+      
+      # 可选：显示成功通知
+      showNotification("条形码 PDF 已生成并下载！", type = "message")
     }
   )
+  
+  
   
   ################################################################
   ##                                                            ##
