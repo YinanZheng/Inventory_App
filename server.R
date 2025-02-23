@@ -1820,19 +1820,27 @@ server <- function(input, output, session) {
       skus <- selected_items$SKU
 
       tryCatch({
-        # 直接调用 export_barcode_pdf，生成文件到 Shiny 的下载路径
+        temp_pdf <- tempfile(fileext = ".pdf")
+        
         pdf_path <- export_barcode_pdf(
           sku = skus,
           page_width = page_width,
           page_height = page_height,
           unit = size_unit,
-          output_file = file
+          output_file = temp_pdf
         )
-
+        
+        # 将临时文件复制到 Shiny 的下载路径
+        file.copy(temp_pdf, file, overwrite = TRUE)
+        
         # 显示成功通知
         showNotification("条形码 PDF 已生成并下载！", type = "message")
+        
+        # 清理临时文件
+        unlink(temp_pdf)
       }, error = function(e) {
         showNotification(paste("生成或下载条形码失败：", e$message), type = "error")
+        unlink(temp_pdf)  # 清理失败时的临时文件
       })
     }
   )
