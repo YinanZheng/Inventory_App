@@ -1862,14 +1862,16 @@ server <- function(input, output, session) {
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
       selected_rows <- unique_items_table_inbound_selected_row()
-      req(selected_rows, "请在表格中选择至少一项以生成条形码")
-      skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
+      req(selected_rows)
+      selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
+      skus <- selected_items$SKU
       if (length(unique(skus)) > 1) "multiple_barcodes.pdf" else paste0(unique(skus), "_barcode.pdf")
     },
     content = function(file) {
       selected_rows <- unique_items_table_inbound_selected_row()
-      req(selected_rows, "请在表格中选择至少一项以生成条形码")
-      skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
+      req(selected_rows)
+      selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
+      skus <- selected_items$SKU
       
       # 使用临时文件确保生成和下载同步
       temp_pdf <- tempfile(fileext = ".pdf")
