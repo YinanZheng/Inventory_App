@@ -1861,15 +1861,15 @@ server <- function(input, output, session) {
   
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
-      selected_rows <- input$inbound_table_rows_selected
+      selected_rows <- unique_items_table_inbound_selected_row()
       req(selected_rows, "请在表格中选择至少一项")
-      skus <- inbound_data()[selected_rows, "SKU"]
+      skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
       if (length(unique(skus)) > 1) "multiple_barcodes.pdf" else paste0(unique(skus), "_barcode.pdf")
     },
     content = function(file) {
-      selected_rows <- input$inbound_table_rows_selected
+      selected_rows <- unique_items_table_inbound_selected_row()
       req(selected_rows)
-      skus <- inbound_data()[selected_rows, "SKU"]
+      skus <- filtered_unique_items_data_inbound()[selected_rows, "SKU"]
       
       # 调用 export_barcode_pdf 生成 PDF
       pdf_path <- export_barcode_pdf(skus, page_width = page_width, page_height = page_height, unit = size_unit)
