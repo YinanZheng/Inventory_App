@@ -1861,25 +1861,21 @@ server <- function(input, output, session) {
   
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
-      selected_row <- input$inbound_table_rows_selected
-      req(selected_row, "请在表格中选择一项以生成条形码")
-      sku <- inbound_data()[selected_row, "SKU"]
-      paste0("barcode_", sku, ".pdf")
+      selected_rows <- input$inbound_table_rows_selected
+      req(selected_rows, "请在表格中选择至少一项")
+      skus <- inbound_data()[selected_rows, "SKU"]
+      if (length(unique(skus)) > 1) "multiple_barcodes.pdf" else paste0(unique(skus), "_barcode.pdf")
     },
     content = function(file) {
-      selected_row <- input$inbound_table_rows_selected
-      req(selected_row, "请在表格中选择一项以生成条形码")
+      selected_rows <- input$inbound_table_rows_selected
+      req(selected_rows)
+      skus <- inbound_data()[selected_rows, "SKU"]
       
-      sku <- inbound_data()[selected_row, "SKU"]
-      if (is.na(sku) || sku == "") {
-        stop("选中的项目缺少 SKU，无法生成条形码")
-      }
+      # 调用 export_barcode_pdf 生成 PDF
+      pdf_path <- export_barcode_pdf(skus, page_width = page_width, page_height = page_height, unit = size_unit)
       
-      # 生成条形码并保存为 PDF
-      barcode_image <- barcode::code128(sku)
-      pdf(file, width = 4, height = 1.5)  # 设置 PDF 尺寸（单位：英寸）
-      plot(barcode_image)
-      dev.off()
+      # 将生成的 PDF 复制到 Shiny 的下载路径
+      file.copy(pdf_path, file)
     }
   )
   
