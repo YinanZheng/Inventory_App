@@ -2218,7 +2218,16 @@ server <- function(input, output, session) {
         updateNumericInput(session, "transaction_amount", value = existing_order$TransactionAmount[1])
         updateTextInput(session, "customer_name", value = existing_order$CustomerName[1])
         updateTextInput(session, "tracking_number", value = existing_order$UsTrackingNumber[1])
-        updateTextAreaInput(session, "order_notes", value = existing_order$OrderNotes[1])
+        
+        # 提取分号后的用户留言部分
+        user_notes <- if (grepl(";", existing_order$OrderNotes[1])) {
+          sub(".*；", "", existing_order$OrderNotes[1])
+        } else {
+          existing_order$OrderNotes[1] %||% ""  # 如果没有分号，保留全部内容或空字符串
+        }
+        
+        # 更新 TextAreaInput，只填充用户留言
+        updateTextAreaInput(session, "order_notes", value = user_notes)
         
         # **检查 LabelStatus**
         if (existing_order$LabelStatus[1] != "无") {
