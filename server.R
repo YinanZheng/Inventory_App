@@ -755,7 +755,7 @@ server <- function(input, output, session) {
     updateSelectizeInput(
       session,
       "selected_supplier",
-      selected = NULL
+      selected = "全部供应商"
     )
   }, priority = 0)  # 较低优先级，避免干扰选项更新
   
