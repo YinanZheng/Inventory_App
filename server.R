@@ -1219,6 +1219,8 @@ server <- function(input, output, session) {
     delay(50, {
       req(input$selected_new_supplier)  # 确保 `selected_new_supplier` 存在
       updateSelectizeInput(session, "new_maker", selected = input$selected_new_supplier)
+      updateSelectizeInput(session, "type_module-new_major_type", selected = "")
+      updateSelectizeInput(session, "type_module-new_minor_type", selected = "")
     })
   })
   
