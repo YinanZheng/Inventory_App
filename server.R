@@ -741,23 +741,21 @@ server <- function(input, output, session) {
     updateSelectizeInput(session, "selected_supplier", selected = "全部供应商")  # 重置为无选择
   })
   
-  # # 定期检查数据库更新
-  # poll_requests <- reactivePoll(
-  #   intervalMillis = poll_interval,
-  #   session = session,
-  #   checkFunc = function() {
-  #     last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
-  #     if (is.null(last_updated)) Sys.time() else last_updated
-  #   },
-  #   valueFunc = function() {
-  #     dbGetQuery(con, "SELECT * FROM requests")
-  #   }
-  # )
+  # 定期检查数据库更新
+  poll_requests <- reactivePoll(
+    intervalMillis = 100000000,
+    session = session,
+    checkFunc = function() {
+      last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
+      if (is.null(last_updated)) Sys.time() else last_updated
+    },
+    valueFunc = function() {
+      dbGetQuery(con, "SELECT * FROM requests")
+    }
+  )
   
   observeEvent(poll_requests(), {
-    # requests <- poll_requests()
-    
-    requests <- dbGetQuery(con, "SELECT * FROM requests")
+    requests <- poll_requests()
     requests_data(requests)
     # 确保 input$selected_supplier 已定义
     req(input$selected_supplier)
