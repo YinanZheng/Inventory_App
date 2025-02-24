@@ -5633,18 +5633,17 @@ server <- function(input, output, session) {
                      paste0(host_url, "/images/", basename(ItemImagePath)))
       )
     
-    # 第二步：按 Maker 分组，计算汇总数据（不包括国际运输费）
+    # 第二步：按 Maker 分组，计算汇总数据
     summary_data <- items %>%
       group_by(Maker) %>%
       summarise(
         TotalItemCost = sum(ProductCost, na.rm = TRUE),
         TotalDomesticShipping = sum(DomesticShippingCost, na.rm = TRUE),
-        TotalExpense = TotalItemCost + TotalDomesticShipping,  # 只包含采购成本和国内运费
+        TotalExpense = TotalItemCost + TotalDomesticShipping,
         TotalQuantity = n(),  # 总采购数量（所有记录数）
         Items = list(
-          item_details %>% 
-            filter(Maker == cur_group()$Maker) %>% 
-            select(ItemName, SKU, Quantity, src)
+          item_details[item_details$Maker == first(Maker), 
+                       c("ItemName", "SKU", "Quantity", "src"), drop = FALSE]
         )
       ) %>%
       ungroup()
