@@ -759,11 +759,6 @@ server <- function(input, output, session) {
     )
   }, priority = 0)  # 较低优先级，避免干扰选项更新
   
-  # 监听重置按钮点击并重置筛选
-  observeEvent(input$reset_supplier, {
-    updateSelectizeInput(session, "selected_supplier", selected = "全部供应商")  # 重置为无选择
-  })
-  
   # 定期检查数据库更新
   poll_requests <- reactivePoll(
     intervalMillis = 100000000,
