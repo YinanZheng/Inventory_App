@@ -696,7 +696,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  selected_supplier_state <- reactiveVal("全部供应商")
+  selected_supplier_state <- reactiveVal(NULL)  # 初始为空
   
   # 监听用户选择变化并更新状态
   observeEvent(input$selected_supplier, {
@@ -730,8 +730,8 @@ server <- function(input, output, session) {
     # 获取当前保存的选择状态
     current_selection <- selected_supplier_state()
     
-    # 如果当前选择不在新列表中，且不是空值，重置为 NULL
-    if (!is.null(current_selection) && !current_selection %in% c("全部供应商", suppliers)) {
+    # 只在选择有效且在新列表中不存在时重置为 NULL
+    if (!is.null(current_selection) && nzchar(current_selection) && !current_selection %in% c("全部供应商", suppliers)) {
       current_selection <- NULL
       selected_supplier_state(NULL)  # 更新状态为 NULL
     }
@@ -740,14 +740,14 @@ server <- function(input, output, session) {
       inputId = "selected_supplier",
       label = NULL,
       choices = c("全部供应商", suppliers),
-      selected = current_selection,  # 可能为 NULL
+      selected = current_selection,  # 允许 NULL
       options = list(
         placeholder = "筛选供应商...",
         searchField = "value",
         maxOptions = 1000,
-        create = TRUE,  # 允许用户输入自定义值
-        persist = TRUE,
-        allowEmptyOption = TRUE  # 允许清空选择
+        create = TRUE,          # 允许用户输入自定义值
+        persist = FALSE,        # 避免 selectize 自动恢复值
+        allowEmptyOption = TRUE # 允许清空选择
       )
     )
   })
