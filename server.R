@@ -5695,17 +5695,17 @@ server <- function(input, output, session) {
           style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
           div(
             style = "display: flex; align-items: center; gap: 15px;",  # Maker 和总开销金额靠左
-            h4(maker, style = "margin: 0; color: #007BFF;"),
+            h4(maker, style = "margin: 0; color: #007BFF; font-weight: bold;"),
             p(
-              paste("总开销金额: $", round(total_expense, 2)),
-              style = "font-size: 18px; font-weight: bold; color: #FF4500; margin: 0;"  # 突出总开销金额
+              paste("（总开销: ￥", round(total_expense, 2), "）"),
+              style = "font-size: 18px; color: #FF4500; margin: 0;"  # 突出总开销金额
             )
           ),
           div(
-            style = "text-align: right;",  # 其他信息靠右对齐
-            p(paste("总采购数量:", total_quantity), style = "font-size: 14px; margin: 2px 0; color: #333;"),
-            p(paste("总采购成本: $", round(total_item_cost, 2)), style = "font-size: 14px; margin: 2px 0; color: #333;"),
-            p(paste("总国内运费: $", round(total_domestic_shipping, 2)), style = "font-size: 14px; margin: 2px 0; color: #333;")
+            style = "display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;",  # 靠右但文字左对齐
+            p(paste("采购数:", total_quantity), style = "font-size: 14px; margin: 2px 0; color: #333; text-align: left;"),
+            p(paste("总成本: ￥", round(total_item_cost, 2)), style = "font-size: 14px; margin: 2px 0; color: #333; text-align: left;"),
+            p(paste("总运费: ￥", round(total_domestic_shipping, 2)), style = "font-size: 14px; margin: 2px 0; color: #333; text-align: left;")
           )
         ),
         # 物品详情
