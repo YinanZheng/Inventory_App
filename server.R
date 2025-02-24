@@ -1868,21 +1868,11 @@ server <- function(input, output, session) {
   # reactive 计算待入库数量
   pending_purchase_count <- reactive({
     selected_rows <- unique_items_table_inbound_selected_row()
-    if (length(selected_rows) == 0) return(0)  # 如果没有选择，返回0
+    if (length(selected_rows) == 0) return(0)  # 无选择时返回0
     
-    all_items <- filtered_unique_items_data_inbound()
-    
-    selected_item <- all_items[selected_rows, ]
-    sku <- selected_item$SKU
-    purchase_date <- selected_item$PurchaseTime
-    
-    purchase_count <- nrow(all_items[
-      all_items$PurchaseTime == purchase_date & 
-        all_items$Status == "采购" & 
-        all_items$SKU == sku, 
-    ])
-    
-    return(max(1, purchase_count))  # 至少返回1
+    selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
+    selected_item <- selected_items[1, ]  # 取第一个选中项
+    return(max(1, selected_item$ItemCount))  # 直接使用ItemCount，至少为1
   })
     
   output$pending_count_display <- renderUI({
@@ -1896,19 +1886,18 @@ server <- function(input, output, session) {
   # 生成并下载条形码 PDF
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
-      selected_rows <- unique_items_table_inbound_selected_row()
-      selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
-      skus <- selected_items$SKU
-      if (length(unique(skus)) > 1) "multiple_barcodes.pdf" else paste0(unique(skus), "_barcode.pdf")
+      selected_row <- unique_items_table_inbound_selected_row()
+      selected_item <- filtered_unique_items_data_inbound()[selected_row, ]
+      sku <- selected_item$SKU
+      paste0(sku, "_barcode.pdf")
     },
     content = function(file) {
-      selected_rows <- unique_items_table_inbound_selected_row()
-      selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
-      skus <- selected_items$SKU
+      selected_row <- unique_items_table_inbound_selected_row()
+      selected_item <- filtered_unique_items_data_inbound()[selected_row, ]
+      sku <- selected_item$SKU
 
       # 使用 reactive 计算的待入库数量
-      purchase_count <- pending_purchase_count()
-      skus_to_print <- rep(sku, times = purchase_count)
+      skus_to_print <- rep(sku, times = pending_purchase_count())
       
       tryCatch({
         temp_base <- tempfile()
