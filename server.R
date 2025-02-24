@@ -761,7 +761,7 @@ server <- function(input, output, session) {
   
   # 定期检查数据库更新
   poll_requests <- reactivePoll(
-    intervalMillis = 100000000,
+    intervalMillis = 20000,
     session = session,
     checkFunc = function() {
       last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
@@ -772,8 +772,11 @@ server <- function(input, output, session) {
     }
   )
   
-  observeEvent(poll_requests(), {
-    requests <- poll_requests()
+  # 使用 debounce 限制轮询频率
+  poll_requests_debounced <- debounce(poll_requests, millis = 20000)
+  
+  observeEvent(poll_requests_debounced(), {
+    requests <- poll_requests_debounced()
     requests_data(requests)
     # 确保 input$selected_supplier 已定义
     req(input$selected_supplier)
@@ -922,6 +925,8 @@ server <- function(input, output, session) {
       } else {
         showNotification("未找到匹配的物品，请检查搜索条件", type = "error")
       }
+      # 手动刷新
+      refresh_board_incremental(dbGetQuery(con, "SELECT * FROM requests"), output, input)
     }, error = function(e) {
       # 捕获错误并打印详细信息
       showNotification(e, type = "error")
@@ -967,6 +972,8 @@ server <- function(input, output, session) {
     updateTextAreaInput(session, "custom_remark", value = "")
     image_requests$reset()
     showNotification("自定义请求已成功提交", type = "message")
+    # 手动刷新
+    refresh_board_incremental(dbGetQuery(con, "SELECT * FROM requests"), output, input)
   })
   
   # 点击请求图片看大图
