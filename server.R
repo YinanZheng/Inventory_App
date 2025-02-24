@@ -5771,7 +5771,7 @@ server <- function(input, output, session) {
       start = default_start,
       end = default_end
     )
-    utput$purchase_summary_by_maker_ui <- renderUI({ NULL })
+    output$purchase_summary_by_maker_ui <- renderUI({ NULL })
   })
   
   # 开销核对动态UI
