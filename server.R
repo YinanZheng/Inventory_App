@@ -5620,23 +5620,32 @@ server <- function(input, output, session) {
     req(filtered_items())
     items <- filtered_items()
     
-    # 按 Supplier 分组并计算汇总数据
+    # 第一步：按 Maker 和 ItemName 分组，计算每件物品的采购数量
+    item_details <- items %>%
+      group_by(Maker, ItemName, SKU, ItemImagePath) %>%
+      summarise(
+        Quantity = n(),  # 每件物品的采购数量
+        .groups = 'drop'
+      ) %>%
+      mutate(
+        src = ifelse(is.na(ItemImagePath), 
+                     placeholder_150px_path, 
+                     paste0(host_url, "/images/", basename(ItemImagePath)))
+      )
+    
+    # 第二步：按 Maker 分组，计算汇总数据（不包括国际运输费）
     summary_data <- items %>%
       group_by(Maker) %>%
       summarise(
         TotalItemCost = sum(ProductCost, na.rm = TRUE),
         TotalDomesticShipping = sum(DomesticShippingCost, na.rm = TRUE),
-        TotalIntlShipping = sum(IntlShippingCost, na.rm = TRUE),
-        TotalExpense = TotalItemCost + TotalDomesticShipping + TotalIntlShipping,
-        Items = list(tibble(
-          ItemName = ItemName,
-          Quantity = Quantity,
-          SKU = SKU,
-          ItemImagePath = ItemImagePath,
-          src = ifelse(is.na(ItemImagePath), 
-                       placeholder_150px_path, 
-                       paste0(host_url, "/images/", basename(ItemImagePath)))
-        ))
+        TotalExpense = TotalItemCost + TotalDomesticShipping,  # 只包含采购成本和国内运费
+        TotalQuantity = n(),  # 总采购数量（所有记录数）
+        Items = list(
+          item_details %>% 
+            filter(Maker == cur_group()$Maker) %>% 
+            select(ItemName, SKU, Quantity, src)
+        )
       ) %>%
       ungroup()
     
@@ -5644,62 +5653,64 @@ server <- function(input, output, session) {
   })
   
   # 采购物品汇总 UI
-  output$purchase_summary_by_maker_ui <- renderUI({
+  output$supplier_summary_ui <- renderUI({
     summary_data <- supplier_summary()
     
-    # 为每个制造商生成卡片
+    # 为每个 Maker 生成卡片
     cards <- lapply(1:nrow(summary_data), function(i) {
       maker <- summary_data$Maker[i]
       total_item_cost <- summary_data$TotalItemCost[i]
       total_domestic_shipping <- summary_data$TotalDomesticShipping[i]
-      total_intl_shipping <- summary_data$TotalIntlShipping[i]
       total_expense <- summary_data$TotalExpense[i]
+      total_quantity <- summary_data$TotalQuantity[i]
       items <- summary_data$Items[[i]]
       
-      # 生成物品图片和详情的展示区域
-      item_images <- lapply(1:nrow(items), function(j) {
+      # 生成物品详情展示区域
+      item_displays <- lapply(1:nrow(items), function(j) {
         item_name <- items$ItemName[j]
-        quantity <- items$Quantity[j]
         sku <- items$SKU[j]
-        src <- items$src[j]  # 使用物品的图片路径
+        quantity <- items$Quantity[j]
+        src <- items$src[j]
         
-        # 单个物品的展示：图片、名称、数量和 SKU
+        # 单个物品的展示
         div(
-          style = "display: inline-block; margin-right: 10px; text-align: center;",
-          img(src = src, width = "100px", height = "100px"),
-          p(strong(item_name)),
-          p(paste("数量:", quantity)),
-          p(paste("SKU:", sku))
+          style = "display: inline-block; margin-right: 15px; text-align: center; width: 150px;",
+          img(src = src, width = "100px", height = "100px", style = "border-radius: 5px;"),
+          p(strong(item_name), style = "font-size: 14px; margin: 5px 0;"),
+          p(paste("SKU:", sku), style = "font-size: 12px; color: #555;"),
+          p(paste("数量:", quantity), style = "font-size: 12px; color: #555;")
         )
       })
       
       # 卡片布局
       div(
         class = "card",
-        style = "margin-bottom: 20px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-        h4(maker),  # 显示制造商名称
+        style = "margin-bottom: 20px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); background-color: #fff;",
+        # Maker 名称和总采购数量
         div(
-          style = "overflow-x: auto; white-space: nowrap; padding: 10px 0;",
-          do.call(tagList, item_images)
+          style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
+          h4(maker, style = "margin: 0; color: #007BFF;"),
+          p(paste("总采购数量:", total_quantity), style = "font-size: 16px; font-weight: bold;")
         ),
-        hr(),
+        # 物品详情
         div(
-          style = "display: flex; justify-content: space-between; font-size: 14px;",
+          style = "overflow-x: auto; white-space: nowrap; padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;",
+          do.call(tagList, item_displays)
+        ),
+        # 财务数据
+        div(
+          style = "display: flex; justify-content: space-between; font-size: 14px; margin-top: 10px;",
           div(
-            p(strong("总采购成本:")),
-            p(paste("$", round(total_item_cost, 2)))
+            p(strong("总采购成本:"), style = "margin: 0;"),
+            p(paste("$", round(total_item_cost, 2)), style = "margin: 0;")
           ),
           div(
-            p(strong("总国内运费:")),
-            p(paste("$", round(total_domestic_shipping, 2)))
+            p(strong("总国内运费:"), style = "margin: 0;"),
+            p(paste("$", round(total_domestic_shipping, 2)), style = "margin: 0;")
           ),
           div(
-            p(strong("总国际运费:")),
-            p(paste("$", round(total_intl_shipping, 2)))
-          ),
-          div(
-            p(strong("总开销金额:")),
-            p(paste("$", round(total_expense, 2)))
+            p(strong("总开销金额:"), style = "margin: 0;"),
+            p(paste("$", round(total_expense, 2)), style = "margin: 0; font-weight: bold;")
           )
         )
       )
