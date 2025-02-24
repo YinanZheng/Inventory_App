@@ -842,6 +842,7 @@ server <- function(input, output, session) {
               style = "margin-bottom: 15px; padding: 10px; border-bottom: 1px solid #ccc;",
               tags$img(src = img_path, height = "150px", style = "display: block; margin: auto;"),
               tags$h5(item$ItemName, style = "text-align: center; margin-top: 10px;"),
+              tags$h5(item$Maker, style = "text-align: center; margin-top: 10px;"),
               tags$h5(item$SKU, style = "text-align: center; margin-top: 10px;"),
               div(
                 style = "text-align: center; font-size: 12px;",
