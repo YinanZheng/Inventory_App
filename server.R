@@ -5615,16 +5615,98 @@ server <- function(input, output, session) {
       arrange(PurchaseTime) # 按采购时间升序排列
   })
   
-  # 渲染筛选
-  callModule(uniqueItemsTableServer, "expense_details_table",
-             column_mapping = c(common_columns, list(
-               DomesticShippingCost = "国内运费",
-               IntlShippingCost = "国际运费",
-               PurchaseTime = "采购时间",
-               PurchaseCheck = "核对"
-             )),
-             data = filtered_items
-  )
+  # 采购物品汇总数据
+  supplier_summary <- reactive({
+    req(filtered_items())
+    items <- filtered_items()
+    
+    # 按 Supplier 分组并计算汇总数据
+    summary_data <- items %>%
+      group_by(Maker) %>%
+      summarise(
+        TotalItemCost = sum(ProductCost, na.rm = TRUE),
+        TotalDomesticShipping = sum(DomesticShippingCost, na.rm = TRUE),
+        TotalIntlShipping = sum(IntlShippingCost, na.rm = TRUE),
+        TotalExpense = TotalItemCost + TotalDomesticShipping + TotalIntlShipping,
+        Items = list(tibble(
+          ItemName = ItemName,
+          Quantity = Quantity,
+          SKU = SKU,
+          ItemImagePath = ItemImagePath,
+          src = ifelse(is.na(ItemImagePath), 
+                       placeholder_150px_path, 
+                       paste0(host_url, "/images/", basename(ItemImagePath)))
+        ))
+      ) %>%
+      ungroup()
+    
+    return(summary_data)
+  })
+  
+  # 采购物品汇总 UI
+  output$purchase_summary_by_maker_ui <- renderUI({
+    summary_data <- supplier_summary()
+    
+    # 为每个制造商生成卡片
+    cards <- lapply(1:nrow(summary_data), function(i) {
+      maker <- summary_data$Maker[i]
+      total_item_cost <- summary_data$TotalItemCost[i]
+      total_domestic_shipping <- summary_data$TotalDomesticShipping[i]
+      total_intl_shipping <- summary_data$TotalIntlShipping[i]
+      total_expense <- summary_data$TotalExpense[i]
+      items <- summary_data$Items[[i]]
+      
+      # 生成物品图片和详情的展示区域
+      item_images <- lapply(1:nrow(items), function(j) {
+        item_name <- items$ItemName[j]
+        quantity <- items$Quantity[j]
+        sku <- items$SKU[j]
+        src <- items$src[j]  # 使用物品的图片路径
+        
+        # 单个物品的展示：图片、名称、数量和 SKU
+        div(
+          style = "display: inline-block; margin-right: 10px; text-align: center;",
+          img(src = src, width = "100px", height = "100px"),
+          p(strong(item_name)),
+          p(paste("数量:", quantity)),
+          p(paste("SKU:", sku))
+        )
+      })
+      
+      # 卡片布局
+      div(
+        class = "card",
+        style = "margin-bottom: 20px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+        h4(maker),  # 显示制造商名称
+        div(
+          style = "overflow-x: auto; white-space: nowrap; padding: 10px 0;",
+          do.call(tagList, item_images)
+        ),
+        hr(),
+        div(
+          style = "display: flex; justify-content: space-between; font-size: 14px;",
+          div(
+            p(strong("总采购成本:")),
+            p(paste("$", round(total_item_cost, 2)))
+          ),
+          div(
+            p(strong("总国内运费:")),
+            p(paste("$", round(total_domestic_shipping, 2)))
+          ),
+          div(
+            p(strong("总国际运费:")),
+            p(paste("$", round(total_intl_shipping, 2)))
+          ),
+          div(
+            p(strong("总开销金额:")),
+            p(paste("$", round(total_expense, 2)))
+          )
+        )
+      )
+    })
+    
+    do.call(tagList, cards)
+  })
   
   # 总开销分布饼图
   output$pie_chart <- renderPlotly({

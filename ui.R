@@ -1724,7 +1724,7 @@ ui <- navbarPage(
                     column(3, plotlyOutput("pie_chart", height = "350px"))  # 20% 宽度饼图
                   ),
                   uiOutput("confirm_expense_check_ui"),
-                  uniqueItemsTableUI("expense_details_table") # 物品详情表
+                  uiOutput("purchase_summary_by_maker_ui") # 采购汇总表
                 )
               )
             )
