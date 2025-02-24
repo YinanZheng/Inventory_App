@@ -2426,11 +2426,7 @@ server <- function(input, output, session) {
   
   # 清空订单信息按钮
   observeEvent(input$clear_order_btn, {
-    # delay(100, {
-    #   updateTabsetPanel(session, "sold_tabs", selected = "物品售出")
-    # })
-    # 
-    delay(500, {
+    delay(100, {
       selected_order_id(NULL)
       associated_items(NULL)
       
@@ -2441,7 +2437,7 @@ server <- function(input, output, session) {
       updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
       
       # 清空订单关联物品表
-      output$associated_items_title <- renderDT({ NULL }) # 清空标题
+      output$associated_items_title <- renderUI({ NULL }) # 清空标题
       renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
       
       shinyjs::reset("orderForm")  # 假设 orderForm 是表单的 div ID
@@ -3076,6 +3072,15 @@ server <- function(input, output, session) {
     
     # 动态更新标题
     output$associated_items_title <- renderUI({
+      req(selected_order_id())  # 仅在有选中订单时渲染
+      selected_row <- selected_order_row()
+      req(selected_row)
+      
+      selected_order <- filtered_orders()[selected_row, ]
+      order_id <- selected_order$OrderID
+      customer_name <- selected_order$CustomerName
+      order_status <- selected_order$OrderStatus
+      
       # 获取相关物品和状态
       items <- associated_items() 
       
