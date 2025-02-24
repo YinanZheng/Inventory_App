@@ -696,6 +696,13 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  selected_supplier_state <- reactiveVal("全部供应商")
+  
+  # 监听用户选择变化并更新状态
+  observeEvent(input$selected_supplier, {
+    selected_supplier_state(input$selected_supplier)
+  }, ignoreNULL = FALSE)  # 允许 NULL 值触发更新
+  
   # 渲染供应商筛选器
   output$supplier_filter <- renderUI({
     current_value <- input$collaboration_tabs
@@ -720,24 +727,27 @@ server <- function(input, output, session) {
     current_requests <- requests_data() %>% filter(RequestType == request_type)
     suppliers <- unique(current_requests$Maker)
     
-    # 获取当前的供应商选择（如果存在）
-    current_selection <- input$selected_supplier
-    # 如果当前选择不在新的供应商列表中，重置为“全部供应商”
+    # 获取当前保存的选择状态
+    current_selection <- selected_supplier_state()
+    
+    # 如果当前选择不在新列表中，且不是空值，重置为 NULL
     if (!is.null(current_selection) && !current_selection %in% c("全部供应商", suppliers)) {
-      current_selection <- "全部供应商"
+      current_selection <- NULL
+      selected_supplier_state(NULL)  # 更新状态为 NULL
     }
     
     selectizeInput(
       inputId = "selected_supplier",
       label = NULL,
       choices = c("全部供应商", suppliers),
-      selected = if (is.null(current_selection)) "全部供应商" else current_selection,
+      selected = current_selection,  # 可能为 NULL
       options = list(
         placeholder = "筛选供应商...",
         searchField = "value",
         maxOptions = 1000,
-        create = TRUE,
-        persist = TRUE
+        create = TRUE,  # 允许用户输入自定义值
+        persist = TRUE,
+        allowEmptyOption = TRUE  # 允许清空选择
       )
     )
   })
