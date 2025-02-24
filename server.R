@@ -730,7 +730,7 @@ server <- function(input, output, session) {
         placeholder = "筛选供应商...",
         searchField = "value",
         maxOptions = 1000,
-        create = FALSE,
+        create = TRUE,
         persist = TRUE
       )
     )
