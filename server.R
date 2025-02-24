@@ -5689,7 +5689,7 @@ server <- function(input, output, session) {
       
       div(
         class = "card",
-        style = "margin-bottom: 20px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); background-color: #fff;",
+        style = "margin-top: 10px; margin-bottom: 10px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); background-color: #fff;",
         # Maker 和总开销金额靠左，其他信息靠右
         div(
           style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
