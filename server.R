@@ -711,7 +711,6 @@ server <- function(input, output, session) {
     
     # 获取对应的 RequestType
     request_type <- tab_value_to_request_type[[current_value]]
-    
     if (is.null(request_type)) {
       request_type <- "采购"  # 默认值
     }
@@ -721,11 +720,18 @@ server <- function(input, output, session) {
     current_requests <- requests_data() %>% filter(RequestType == request_type)
     suppliers <- unique(current_requests$Maker)
     
+    # 获取当前的供应商选择（如果存在）
+    current_selection <- input$selected_supplier
+    # 如果当前选择不在新的供应商列表中，重置为“全部供应商”
+    if (!is.null(current_selection) && !current_selection %in% c("全部供应商", suppliers)) {
+      current_selection <- "全部供应商"
+    }
+    
     selectizeInput(
       inputId = "selected_supplier",
       label = NULL,
       choices = c("全部供应商", suppliers),
-      selected = "全部供应商",
+      selected = if (is.null(current_selection)) "全部供应商" else current_selection,
       options = list(
         placeholder = "筛选供应商...",
         searchField = "value",
