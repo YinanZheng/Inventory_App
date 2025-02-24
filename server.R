@@ -734,7 +734,7 @@ server <- function(input, output, session) {
     suppliers <- unique(current_requests$Maker)
     
     # 获取当前选择
-    current_selection <- input$selected_supplier
+    current_selection <- isolate(input$selected_supplier)
     
     # 更新选项，但避免不必要的重新选择
     updateSelectizeInput(
