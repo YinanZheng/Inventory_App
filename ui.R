@@ -751,10 +751,10 @@ ui <- navbarPage(
                 column(12, dateRangeInput("filter_order_date", "订单创建时间", start = Sys.Date() - 90, end = Sys.Date() + 1, format = "yyyy-mm-dd", width = "100%"))
               ),
               fluidRow(
-                column(6, selectInput("filter_platform", "电商平台", choices = c("所有平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
+                column(6, selectInput("filter_platform", NULL, choices = c("电商平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
                                       selected = "", width = "100%")),
-                column(6, selectInput("filter_order_status", "订单状态", 
-                                      choices = c("", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
+                column(6, selectInput("filter_order_status", NULL, 
+                                      choices = c("订单状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
                                       selected = "", width = "100%"))
               ),
               
