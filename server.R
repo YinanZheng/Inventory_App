@@ -755,6 +755,7 @@ server <- function(input, output, session) {
   # 监听重置按钮点击并重置筛选
   observeEvent(input$reset_supplier, {
     updateSelectizeInput(session, "selected_supplier", selected = NULL)  # 重置为无选择
+    selected_supplier_state(NULL)
   })
   
   # 定期检查数据库更新
