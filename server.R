@@ -696,7 +696,7 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 渲染初始供应商筛选器
+  # 渲染初始供应商筛选器（只定义一次）
   output$supplier_filter <- renderUI({
     selectizeInput(
       inputId = "selected_supplier",
@@ -707,13 +707,13 @@ server <- function(input, output, session) {
         placeholder = "筛选供应商...",
         searchField = "value",
         maxOptions = 1000,
-        create = TRUE,          # 允许输入自定义值
-        allowEmptyOption = TRUE # 允许清空
+        create = TRUE,
+        allowEmptyOption = TRUE
       )
     )
   })
   
-  # 监听 requests_data() 并动态更新筛选器
+  # 动态更新筛选器选项
   observe({
     current_value <- input$collaboration_tabs
     
@@ -726,21 +726,17 @@ server <- function(input, output, session) {
       "new_product" = "新品"
     )
     
-    # 获取对应的 RequestType
-    request_type <- tab_value_to_request_type[[current_value]]
-    if (is.null(request_type)) {
-      request_type <- "采购"  # 默认值
-    }
+    request_type <- tab_value_to_request_type[[current_value]] %||% "采购"  # 默认值
     
     req(requests_data())
     
     current_requests <- requests_data() %>% filter(RequestType == request_type)
     suppliers <- unique(current_requests$Maker)
     
-    # 获取当前用户选择
+    # 获取当前选择
     current_selection <- input$selected_supplier
     
-    # 更新选择器选项，但保留当前选择（如果有效）
+    # 更新选项，但避免不必要的重新选择
     updateSelectizeInput(
       session,
       inputId = "selected_supplier",
@@ -748,15 +744,22 @@ server <- function(input, output, session) {
       selected = if (is.null(current_selection) || !current_selection %in% c("全部供应商", suppliers)) NULL else current_selection,
       options = list(
         placeholder = "筛选供应商...",
-        searchField = "value",
-        maxOptions = 1000,
         create = TRUE,
         allowEmptyOption = TRUE
       )
     )
-  })
+  }, priority = 10)  # 提高优先级，确保先于其他观察者执行
   
-  # 可选：监听选择变化以触发其他逻辑
+  # 重置按钮逻辑
+  observeEvent(input$reset_supplier, {
+    updateSelectizeInput(
+      session,
+      "selected_supplier",
+      selected = NULL
+    )
+  }, priority = 0)  # 较低优先级，避免干扰选项更新
+  
+  # 可选：监听选择变化以触发筛选逻辑
   observe({
     selected <- input$selected_supplier
     if (is.null(selected) || selected == "全部供应商") {
