@@ -759,19 +759,9 @@ server <- function(input, output, session) {
     )
   }, priority = 0)  # 较低优先级，避免干扰选项更新
   
-  # 可选：监听选择变化以触发筛选逻辑
-  observe({
-    selected <- input$selected_supplier
-    if (is.null(selected) || selected == "全部供应商") {
-      message("显示所有供应商的数据")
-    } else {
-      message("筛选供应商: ", selected)
-    }
-  })
-  
   # 监听重置按钮点击并重置筛选
   observeEvent(input$reset_supplier, {
-    updateSelectizeInput(session, "selected_supplier", selected = NULL)  # 重置为无选择
+    updateSelectizeInput(session, "selected_supplier", selected = "全部供应商")  # 重置为无选择
   })
   
   # 定期检查数据库更新
