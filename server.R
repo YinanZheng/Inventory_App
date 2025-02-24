@@ -5653,6 +5653,10 @@ server <- function(input, output, session) {
   
   # 采购物品汇总 UI
   output$purchase_summary_by_maker_ui <- renderUI({
+    if (!show_summary()) {
+      return(NULL)  # 如果不显示，返回 NULL
+    }
+    
     summary_data <- supplier_summary()
     
     # 为每个 Maker 生成卡片
@@ -5759,6 +5763,8 @@ server <- function(input, output, session) {
       )
   })
   
+  show_summary <- reactiveVal(TRUE)
+  
   # 重置时间范围
   observeEvent(input$reset_time_range, {
     # 重置时间范围到默认值（最近30天）
@@ -5771,7 +5777,8 @@ server <- function(input, output, session) {
       start = default_start,
       end = default_end
     )
-    output$purchase_summary_by_maker_ui <- renderUI({ NULL })
+    # 设置为不显示
+    show_summary(FALSE)
   })
   
   # 开销核对动态UI
