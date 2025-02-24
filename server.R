@@ -696,15 +696,25 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  selected_supplier_state <- reactiveVal(NULL)  # 初始为空
-  
-  # 监听用户选择变化并更新状态
-  observeEvent(input$selected_supplier, {
-    selected_supplier_state(input$selected_supplier)
-  }, ignoreNULL = FALSE)  # 允许 NULL 值触发更新
-  
-  # 渲染供应商筛选器
+  # 渲染初始供应商筛选器
   output$supplier_filter <- renderUI({
+    selectizeInput(
+      inputId = "selected_supplier",
+      label = NULL,
+      choices = NULL,  # 初始为空，动态更新
+      selected = NULL, # 初始无选择
+      options = list(
+        placeholder = "筛选供应商...",
+        searchField = "value",
+        maxOptions = 1000,
+        create = TRUE,          # 允许输入自定义值
+        allowEmptyOption = TRUE # 允许清空
+      )
+    )
+  })
+  
+  # 监听 requests_data() 并动态更新筛选器
+  observe({
     current_value <- input$collaboration_tabs
     
     # 映射 tab value 到 RequestType
@@ -727,35 +737,38 @@ server <- function(input, output, session) {
     current_requests <- requests_data() %>% filter(RequestType == request_type)
     suppliers <- unique(current_requests$Maker)
     
-    # 获取当前保存的选择状态
-    current_selection <- selected_supplier_state()
+    # 获取当前用户选择
+    current_selection <- input$selected_supplier
     
-    # 只在选择有效且在新列表中不存在时重置为 NULL
-    if (!is.null(current_selection) && nzchar(current_selection) && !current_selection %in% c("全部供应商", suppliers)) {
-      current_selection <- NULL
-      selected_supplier_state(NULL)  # 更新状态为 NULL
-    }
-    
-    selectizeInput(
+    # 更新选择器选项，但保留当前选择（如果有效）
+    updateSelectizeInput(
+      session,
       inputId = "selected_supplier",
-      label = NULL,
       choices = c("全部供应商", suppliers),
-      selected = current_selection,  # 允许 NULL
+      selected = if (is.null(current_selection) || !current_selection %in% c("全部供应商", suppliers)) NULL else current_selection,
       options = list(
         placeholder = "筛选供应商...",
         searchField = "value",
         maxOptions = 1000,
-        create = TRUE,          # 允许用户输入自定义值
-        persist = FALSE,        # 避免 selectize 自动恢复值
-        allowEmptyOption = TRUE # 允许清空选择
+        create = TRUE,
+        allowEmptyOption = TRUE
       )
     )
+  })
+  
+  # 可选：监听选择变化以触发其他逻辑
+  observe({
+    selected <- input$selected_supplier
+    if (is.null(selected) || selected == "全部供应商") {
+      message("显示所有供应商的数据")
+    } else {
+      message("筛选供应商: ", selected)
+    }
   })
   
   # 监听重置按钮点击并重置筛选
   observeEvent(input$reset_supplier, {
     updateSelectizeInput(session, "selected_supplier", selected = NULL)  # 重置为无选择
-    selected_supplier_state(NULL)
   })
   
   # 定期检查数据库更新
