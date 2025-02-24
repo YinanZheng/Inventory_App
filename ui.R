@@ -63,8 +63,8 @@ ui <- navbarPage(
         border-radius: 10px;
       }
       
-      /* 强制显示滚动条，小于1370px时 */
-      @media (max-width: 1370px) {
+      /* 强制显示滚动条并隐藏标题 */
+      @media (max-width: 1470px) {
         .navbar-nav {
           overflow-x: scroll !important;
         }
@@ -81,7 +81,7 @@ ui <- navbarPage(
       }
       
       /* 小屏幕调整字体和间距 */
-      @media (max-width: 850px) {
+      @media (max-width: 950px) {
         .navbar-nav > li > a {
           font-size: 12px !important;
           padding: 6px 8px !important;
