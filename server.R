@@ -863,7 +863,7 @@ server <- function(input, output, session) {
     if (nrow(result) > 0) {
       output$item_preview <- renderUI({
         div(
-          style = "max-height: 300px; overflow-y: auto; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;",
+          style = "max-height: 320px; overflow-y: auto; padding: 10px; border: 1px solid #e0e0e0; border-radius: 8px; background-color: #f9f9f9;",
           lapply(1:nrow(result), function(i) {
             item <- result[i, ]
             img_path <- ifelse(
