@@ -1865,6 +1865,34 @@ server <- function(input, output, session) {
     }
   })
 
+  # reactive 计算待入库数量
+  pending_purchase_count <- reactive({
+    selected_rows <- unique_items_table_inbound_selected_row()
+    if (length(selected_rows) == 0) return(0)  # 如果没有选择，返回0
+    
+    selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
+    selected_item <- selected_items[1, ]  # 假设一次只选一个
+    sku <- selected_item$SKU
+    purchase_date <- selected_item$purchase_date
+    
+    all_items <- filtered_unique_items_data_inbound()
+    purchase_count <- nrow(all_items[
+      all_items$purchase_date == purchase_date & 
+        all_items$status == "采购" & 
+        all_items$SKU == sku, 
+    ])
+    
+    return(max(1, purchase_count))  # 至少返回1
+  })
+    
+  output$pending_count_display <- renderUI({
+    count <- pending_purchase_count()
+    tags$p(
+      paste("当前选中商品待入库数量:", count),
+      style = "color: #666; font-size: 14px;"
+    )
+  })
+  
   # 生成并下载条形码 PDF
   output$download_barcode_pdf <- downloadHandler(
     filename = function() {
@@ -1878,11 +1906,15 @@ server <- function(input, output, session) {
       selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
       skus <- selected_items$SKU
 
+      # 使用 reactive 计算的待入库数量
+      purchase_count <- pending_purchase_count()
+      skus_to_print <- rep(sku, times = purchase_count)
+      
       tryCatch({
         temp_base <- tempfile()
         
         temp_pdf <- export_barcode_pdf(
-          sku = skus,
+          sku = skus_to_print,
           page_width = page_width,
           page_height = page_height,
           unit = size_unit,
@@ -1892,8 +1924,10 @@ server <- function(input, output, session) {
         # 将临时文件复制到 Shiny 的下载路径
         file.copy(temp_pdf, file, overwrite = TRUE)
         
-        # 显示成功通知
-        showNotification("条形码 PDF 已生成并下载！", type = "message")
+        showNotification(
+          paste("条形码 PDF 已生成并下载！共", length(skus_to_print), "个条形码"),
+          type = "message"
+        )
         
         # 清理临时文件
         unlink(temp_pdf)

@@ -634,6 +634,7 @@ ui <- navbarPage(
                    div(
                      style = "margin-bottom: 10px; padding-bottom: 8px;",
                      tags$h4("条形码下载", style = "color: #007BFF; font-weight: bold; margin-bottom: 5px;"),
+                     uiOutput("pending_count_display")
                    ),
 
                    downloadButton("download_barcode_pdf", "生成并下载条形码 PDF", class = "btn-info", style = "width: 100%;")
