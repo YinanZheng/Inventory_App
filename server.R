@@ -1870,15 +1870,15 @@ server <- function(input, output, session) {
     selected_rows <- unique_items_table_inbound_selected_row()
     if (length(selected_rows) == 0) return(0)  # 如果没有选择，返回0
     
-    selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
-    selected_item <- selected_items[1, ]  # 假设一次只选一个
-    sku <- selected_item$SKU
-    purchase_date <- selected_item$purchase_date
-    
     all_items <- filtered_unique_items_data_inbound()
+    
+    selected_item <- all_items[selected_rows, ]
+    sku <- selected_item$SKU
+    purchase_date <- selected_item$PurchaseTime
+    
     purchase_count <- nrow(all_items[
-      all_items$purchase_date == purchase_date & 
-        all_items$status == "采购" & 
+      all_items$PurchaseTime == purchase_date & 
+        all_items$Status == "采购" & 
         all_items$SKU == sku, 
     ])
     
