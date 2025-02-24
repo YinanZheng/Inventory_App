@@ -373,6 +373,21 @@ ui <- navbarPage(
       div(
         class = "main-panel",
         
+        div(
+          style = "display: flex; align-items: flex-end; gap: 5px; margin: 0; padding: 0; max-width: 300px;",  # 底部对齐
+          div(
+            style = "max-width: 250px;",
+            uiOutput("supplier_filter")
+          ),
+          actionButton(
+            inputId = "reset_supplier",
+            label = NULL,
+            icon = icon("refresh"),
+            class = "btn-info btn-sm",
+            style = "margin-bottom: 14px; height: 34px;"
+          )
+        ),
+        
         # 采购流程 tabset
         tabsetPanel(
           id = "collaboration_tabs",
@@ -380,10 +395,12 @@ ui <- navbarPage(
           
           # 采购流程链
           tabPanel(
+            value = "purchase",
             title = "采购请求",
             uiOutput("purchase_request_board")
           ),
           tabPanel(
+            value = "arranged",
             title = div(
               tags$span(class = "arrow-icon", icon("arrow-right")),
               "已安排",
@@ -391,6 +408,7 @@ ui <- navbarPage(
             uiOutput("provider_arranged_board")
           ),
           tabPanel(
+            value = "completed",
             title = div(
               tags$span(class = "arrow-icon", icon("arrow-right")),
               "已完成",
@@ -398,6 +416,7 @@ ui <- navbarPage(
             uiOutput("done_paid_board")
           ),
           tabPanel(
+            value = "outbound",
             title = div(
               tags$span(class = "arrow-icon", icon("arrow-right")),
               "待出库",
@@ -406,6 +425,7 @@ ui <- navbarPage(
           ),
           
           tabPanel(
+            value = "new_product",
             title = "新品请求",
             uiOutput("new_product_board")
           )

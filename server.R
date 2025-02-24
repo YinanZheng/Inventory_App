@@ -696,12 +696,57 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  # 渲染供应商筛选器
+  output$supplier_filter <- renderUI({
+    current_value <- input$collaboration_tabs
+    
+    # 映射 tab value 到 RequestType
+    tab_value_to_request_type <- list(
+      "purchase" = "采购",
+      "arranged" = "安排",
+      "completed" = "完成",
+      "outbound" = "出库",
+      "new_product" = "新品"
+    )
+    
+    # 获取对应的 RequestType
+    request_type <- tab_value_to_request_type[[current_value]]
+    
+    if (is.null(request_type)) {
+      request_type <- "采购"  # 默认值
+    }
+    
+    req(requests_data())
+    
+    current_requests <- requests_data() %>% filter(RequestType == request_type)
+    suppliers <- unique(current_requests$Maker)
+    
+    selectizeInput(
+      inputId = "selected_supplier",
+      label = NULL,
+      choices = c("全部供应商", suppliers),
+      selected = "全部供应商",
+      options = list(
+        placeholder = "筛选供应商...",
+        searchField = "value",
+        maxOptions = 1000,
+        create = FALSE,
+        persist = TRUE
+      )
+    )
+  })
+  
+  # 监听重置按钮点击并重置筛选
+  observeEvent(input$reset_supplier, {
+    updateSelectizeInput(session, "selected_supplier", selected = "全部供应商")  # 重置为无选择
+  })
+  
   # 定期检查数据库更新
   poll_requests <- reactivePoll(
     intervalMillis = poll_interval,
     session = session,
     checkFunc = function() {
-      last_updated <- dbGetQuery(con, "SELECT last_updated FROM update_log WHERE table_name = 'requests'")$last_updated[1]
+      last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
       if (is.null(last_updated)) Sys.time() else last_updated
     },
     valueFunc = function() {
@@ -709,12 +754,12 @@ server <- function(input, output, session) {
     }
   )
   
-  # 初次加载数据
   observeEvent(poll_requests(), {
     requests <- poll_requests()
     requests_data(requests)
-    # 仅在数据变化时初始化渲染
-    refresh_board_incremental(requests, output)
+    # 确保 input$selected_supplier 已定义
+    req(input$selected_supplier)
+    refresh_board_incremental(requests, output, input)
   }, priority = 10)
   
   # 初始化时绑定所有按钮
@@ -724,7 +769,19 @@ server <- function(input, output, session) {
       bind_buttons(request_id, requests_data, input, output, session, con)
     })
   }, ignoreInit = FALSE, once = TRUE)
-
+  
+  # 使用 observe 监听 requests_data() 和 input$selected_supplier
+  observe({
+    # 确保 requests_data() 和 input$selected_supplier 都已准备好
+    req(requests_data(), input$selected_supplier)
+    
+    # 获取请求数据
+    requests <- requests_data()
+    
+    # 刷新任务板
+    refresh_board_incremental(requests, output, input)
+  })
+  
   # SKU 和物品名输入互斥逻辑
   observeEvent(input$search_sku, {
     # 如果 SKU 搜索框有值，则清空物品名称搜索框
@@ -826,7 +883,7 @@ server <- function(input, output, session) {
         
         item_image_path <- ifelse(is.na(filtered_data$ItemImagePath[1]), placeholder_150px_path, filtered_data$ItemImagePath[1])
         item_description <- ifelse(is.na(filtered_data$ItemName[1]), "未知", filtered_data$ItemName[1])
-
+        
         dbExecute(con, 
                   "INSERT INTO requests (RequestID, SKU, Maker, ItemImagePath, ItemDescription, Quantity, RequestStatus, Remarks, RequestType) 
          VALUES (?, ?, ?, ?, ?, ?, '待处理', ?, '采购')", 
@@ -848,7 +905,7 @@ server <- function(input, output, session) {
       }
     }, error = function(e) {
       # 捕获错误并打印详细信息
-      showNotification(paste("错误：", e$message), type = "error")  
+      showNotification(e, type = "error")
     })
   })
   
