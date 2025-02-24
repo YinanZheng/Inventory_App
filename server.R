@@ -1381,39 +1381,35 @@ server <- function(input, output, session) {
       
       added_items_df <- added_items()
       
-      # Retrieve total package shipping cost from the UI
-      total_shipping_cost <- input$new_shipping_cost
-      if (is.null(total_shipping_cost) || total_shipping_cost <= 0) {
-        total_shipping_cost <- 0  # Default to 0 if invalid
+      dbBegin(con)
+      
+      # 批量插入库存记录
+      inventory_success <- add_new_inventory_records_batch(con, added_items_df)
+      if (isFALSE(inventory_success)) {
+        dbRollback(con)
+        showNotification("库存登记失败，请检查输入数据！", type = "error")
+        return()
       }
       
-      unit_shipping_cost <- total_shipping_cost / sum(added_items_df$Quantity)
-      
-      for (i in 1:nrow(added_items_df)) {
-        add_new_inventory_record(
-          con = con,
-          sku = added_items_df$SKU[i],
-          maker = added_items_df$Maker[i],
-          major_type = added_items_df$MajorType[i],
-          minor_type = added_items_df$MinorType[i],
-          item_name = added_items_df$ItemName[i],
-          quantity = 0, # 采购初始库存为 0 
-          image_path = added_items_df$ItemImagePath[i]
-        )
-      }
-      
-      # 更新数据并触发 UI 刷新
+      # 更新 UI
       inventory_refresh_trigger(!inventory_refresh_trigger())
       
-      # 同时添加信息到 unique_items 表中
+      # 准备 unique_items 数据
       purchase_date <- format(as.Date(input$purchase_date), "%Y-%m-%d")
+      
+      # 计算运费
+      total_shipping_cost <- input$new_shipping_cost
+      if (is.null(total_shipping_cost) || total_shipping_cost <= 0) {
+        total_shipping_cost <- 0
+      }
+      total_quantity <- sum(added_items_df$Quantity)
+      unit_shipping_cost <- if (total_quantity > 0) total_shipping_cost / total_quantity else 0
       
       batch_data <- do.call(rbind, lapply(1:nrow(added_items_df), function(i) {
         sku <- added_items_df$SKU[i]
         quantity <- added_items_df$Quantity[i]
         product_cost <- added_items_df$ProductCost[i]
         
-        # Create rows for each quantity
         t(replicate(quantity, c(
           uuid::UUIDgenerate(),
           as.character(sku),
@@ -1425,40 +1421,39 @@ server <- function(input, output, session) {
         )))
       }))
       
-      # Validate data
       if (is.null(batch_data) || nrow(batch_data) == 0) {
+        dbRollback(con)
         showNotification("采购数据无效，请检查输入！", type = "error")
         return()
       }
       
-      # Convert to data frame
+      # 转换为数据框并命名列
       batch_data <- as.data.frame(batch_data, stringsAsFactors = FALSE)
+      colnames(batch_data) <- c("UniqueID", "SKU", "ProductCost", "DomesticShippingCost", 
+                                "Status", "Defect", "PurchaseTime")
       
-      # Insert into database
-      dbBegin(con)
+      # 批量插入 unique_items
       tryCatch({
-        for (i in 1:nrow(batch_data)) {
-          dbExecute(con, "INSERT INTO unique_items (UniqueID, SKU, ProductCost, DomesticShippingCost, Status, Defect, PurchaseTime) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                    unname(as.vector(batch_data[i, ])))
-        }
+        dbWriteTable(con, "unique_items", batch_data, append = TRUE, row.names = FALSE)
         dbCommit(con)
         showNotification("所有采购货物已成功登记！", type = "message")
       }, error = function(e) {
         dbRollback(con)
         showNotification(paste("采购登记失败:", e$message), type = "error")
+        return()
       })
       
-      # Clear added items and reset input fields
-      updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
-      updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
-      updateNumericInput(session, "new_shipping_cost", value = 0)  # 恢复运费默认值
+      # 重置输入字段
+      updateNumericInput(session, "new_quantity", value = 0)
+      updateNumericInput(session, "new_product_cost", value = 0)
+      updateNumericInput(session, "new_shipping_cost", value = 0)
       updateTextInput(session, "purchase-item_name", value = "")
-      image_purchase$reset() # 重置图片
-      
-      added_items(create_empty_inventory()) #清空添加表
+      image_purchase$reset()
+      added_items(create_empty_inventory())
       
     }, error = function(e) {
-      showNotification(paste("发生错误:", e$message), type = "error")
+      dbRollback(con)  # 确保外层错误也能回滚
+      showNotification(paste("采购登记发生错误:", e$message), type = "error")
     })
   })
   
