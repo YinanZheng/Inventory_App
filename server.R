@@ -5660,7 +5660,6 @@ server <- function(input, output, session) {
     
     summary_data <- supplier_summary()
     
-    # 为每个 Maker 生成卡片
     cards <- lapply(1:nrow(summary_data), function(i) {
       maker <- summary_data$Maker[i]
       total_item_cost <- summary_data$TotalItemCost[i]
@@ -5669,53 +5668,47 @@ server <- function(input, output, session) {
       total_quantity <- summary_data$TotalQuantity[i]
       items <- summary_data$Items[[i]]
       
-      # 生成物品详情展示区域
-      item_displays <- lapply(1:nrow(items), function(j) {
-        item_name <- items$ItemName[j]
-        sku <- items$SKU[j]
-        quantity <- items$Quantity[j]
-        src <- items$src[j]
-        
-        # 单个物品的展示
-        div(
-          style = "display: inline-block; margin-right: 15px; text-align: center; width: 150px;",
-          img(src = src, width = "100px", height = "100px", style = "border-radius: 5px;"),
-          p(strong(item_name), style = "font-size: 14px; margin: 5px 0;"),
-          p(paste("SKU:", sku), style = "font-size: 12px; color: #555;"),
-          p(paste("数量:", quantity), style = "font-size: 12px; color: #555;")
-        )
-      })
+      item_displays <- if (nrow(items) == 0) {
+        p("暂无物品详情", style = "text-align: center; color: #888;")
+      } else {
+        lapply(1:nrow(items), function(j) {
+          item_name <- items$ItemName[j]
+          sku <- items$SKU[j]
+          quantity <- items$Quantity[j]
+          src <- items$src[j]
+          
+          div(
+            style = "display: inline-block; margin-right: 15px; text-align: center; width: 150px;",
+            img(src = src, width = "100px", height = "100px", style = "border-radius: 5px;"),
+            p(strong(item_name), style = "font-size: 14px; margin: 5px 0;"),
+            p(paste("SKU:", sku), style = "font-size: 12px; color: #555;"),
+            p(paste("数量:", quantity), style = "font-size: 12px; color: #555;")
+          )
+        })
+      }
       
-      # 卡片布局
       div(
         class = "card",
         style = "margin-bottom: 20px; padding: 15px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); background-color: #fff;",
-        # Maker 名称和总采购数量
+        # Maker 和总信息布局
         div(
           style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
           h4(maker, style = "margin: 0; color: #007BFF;"),
-          p(paste("总采购数量:", total_quantity), style = "font-size: 16px; font-weight: bold;")
+          div(
+            style = "display: flex; align-items: center; gap: 20px;",  # 使用 gap 控制间距
+            p(paste("总采购数量:", total_quantity), style = "font-size: 16px; font-weight: bold; margin: 0;"),
+            p(
+              paste("总开销金额: $", round(total_expense, 2), 
+                    " (总采购成本: $", round(total_item_cost, 2), 
+                    " + 总国内运费: $", round(total_domestic_shipping, 2), ")"),
+              style = "font-size: 16px; font-weight: bold; margin: 0;"
+            )
+          )
         ),
         # 物品详情
         div(
           style = "overflow-x: auto; white-space: nowrap; padding: 10px 0; border-top: 1px solid #eee; border-bottom: 1px solid #eee;",
-          do.call(tagList, item_displays)
-        ),
-        # 财务数据
-        div(
-          style = "display: flex; justify-content: space-between; font-size: 14px; margin-top: 10px;",
-          div(
-            p(strong("总采购成本:"), style = "margin: 0;"),
-            p(paste("$", round(total_item_cost, 2)), style = "margin: 0;")
-          ),
-          div(
-            p(strong("总国内运费:"), style = "margin: 0;"),
-            p(paste("$", round(total_domestic_shipping, 2)), style = "margin: 0;")
-          ),
-          div(
-            p(strong("总开销金额:"), style = "margin: 0;"),
-            p(paste("$", round(total_expense, 2)), style = "margin: 0; font-weight: bold;")
-          )
+          do.call(tagList, list(item_displays))
         )
       )
     })
