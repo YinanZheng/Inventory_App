@@ -818,7 +818,7 @@ server <- function(input, output, session) {
         (SKU == search_sku & search_sku != "") |  # SKU 精准匹配
           (grepl(search_name, ItemName, ignore.case = TRUE) & search_name != "")  # 名称模糊匹配
       ) %>%
-      group_by(SKU, ItemName, ItemImagePath) %>%
+      group_by(SKU, ItemName, Maker, ItemImagePath) %>%
       summarise(
         DomesticStock = sum(Status == "国内入库", na.rm = TRUE),  # 国内库存
         InTransitStock = sum(Status == "国内出库", na.rm = TRUE),  # 在途库存
