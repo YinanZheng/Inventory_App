@@ -1501,9 +1501,16 @@ server <- function(input, output, session) {
   
   # 显示总采购开销（含运费）
   output$total_cost <- renderText({
-    total <- sum(added_items()$Quantity * added_items()$ProductCost) + input$new_shipping_cost
-    paste0("请核实本次采购总金额: ¥", format(total, big.mark = ",", scientific = FALSE),
-           "（其中包含运费: ¥", input$new_shipping_cost, ")")
+    added_items_df <- added_items()
+    total_quantity <- sum(added_items_df$Quantity)
+    shipping_cost <- if (is.null(input$new_shipping_cost) || input$new_shipping_cost < 0) 0 else input$new_shipping_cost
+    total_cost <- sum(added_items_df$Quantity * added_items_df$ProductCost) + shipping_cost
+    
+    paste0(
+      "本次采购总金额: ¥", format(total_cost, big.mark = ",", scientific = FALSE),
+      "（其中包含运费: ¥", format(shipping_cost, big.mark = ",", scientific = FALSE),
+      "，物品总数: ", total_quantity, "件）"
+    )
   })
   
   # 监听删除按钮点击事件，弹出确认框
