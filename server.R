@@ -3378,7 +3378,7 @@ server <- function(input, output, session) {
       updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
       
       # 清空关联物品表
-      output$associated_items_title <- renderDT({ NULL }) # 清空标题
+      output$associated_items_title <- renderUI({ NULL }) # 清空标题
       renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
     }, error = function(e) {
       showNotification(paste("删除订单时发生错误：", e$message), type = "error")
