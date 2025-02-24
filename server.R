@@ -1864,24 +1864,6 @@ server <- function(input, output, session) {
       updateTextInput(session, "defective_notes", value = "") # 清空备注
     }
   })
-
-  # reactive 计算待入库数量
-  pending_purchase_count <- reactive({
-    selected_rows <- unique_items_table_inbound_selected_row()
-    if (length(selected_rows) == 0) return(0)  # 无选择时返回0
-    
-    selected_items <- filtered_unique_items_data_inbound()[selected_rows, ]
-    selected_item <- selected_items[1, ]  # 取第一个选中项
-    return(max(1, selected_item$ItemCount))  # 直接使用ItemCount，至少为1
-  })
-    
-  output$pending_count_display <- renderUI({
-    count <- pending_purchase_count()
-    tags$p(
-      paste("当前选中商品待入库数量:", count),
-      style = "color: #666; font-size: 14px;"
-    )
-  })
   
   # 生成并下载条形码 PDF
   output$download_barcode_pdf <- downloadHandler(
@@ -1897,7 +1879,7 @@ server <- function(input, output, session) {
       sku <- selected_item$SKU
 
       # 使用 reactive 计算的待入库数量
-      skus_to_print <- rep(sku, times = pending_purchase_count())
+      skus_to_print <- rep(sku, times = selected_item$ItemCount)
       
       tryCatch({
         temp_base <- tempfile()
