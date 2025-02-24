@@ -5653,7 +5653,7 @@ server <- function(input, output, session) {
   })
   
   # 采购物品汇总 UI
-  output$supplier_summary_ui <- renderUI({
+  output$purchase_summary_by_maker_ui <- renderUI({
     summary_data <- supplier_summary()
     
     # 为每个 Maker 生成卡片
