@@ -5601,6 +5601,7 @@ server <- function(input, output, session) {
       )
       
       selected_range(range)
+      show_summary(TRUE)
     }
   })
 
