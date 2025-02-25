@@ -1735,6 +1735,8 @@ server <- function(input, output, session) {
         } 
       } else {
         runjs("playErrorSound()")  # 播放失败音效
+        updateTextInput(session, "inbound_sku", value = "")
+        runjs("document.getElementById('inbound_sku').focus();")
         return()
       }
       
