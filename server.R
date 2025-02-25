@@ -1639,6 +1639,11 @@ server <- function(input, output, session) {
   # 创建全局变量存储 预订单的 order_id 和 unique_id
   preorder_info <- reactiveValues(order_id = NULL, item_name = NULL, unique_id = NULL)
   
+  # SKU 清除
+  observeEvent(input$inbound_sku_icon_right, {
+    updateTextInput(session, "inbound_sku", value = "")
+  })
+  
   # 监听 SKU 输入
   observeEvent(input$inbound_sku, {
     req(input$inbound_sku)
