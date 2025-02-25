@@ -1640,7 +1640,7 @@ server <- function(input, output, session) {
   preorder_info <- reactiveValues(order_id = NULL, item_name = NULL, unique_id = NULL)
   
   # SKU 清除
-  observeEvent(input$inbound_sku_icon_right, {
+  observeEvent(input$clear_inbound_sku, {
     updateTextInput(session, "inbound_sku", value = "")
   })
   

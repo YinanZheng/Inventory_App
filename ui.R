@@ -558,12 +558,17 @@ ui <- navbarPage(
               # SKU 输入框
               div(
                 style = "margin-bottom: 15px;",
-                textInputIcon(
-                  inputId = "inbound_sku",
-                  label = NULL,
+                textInput(
+                  "inbound_sku", 
+                  label = NULL, 
                   placeholder = "请扫描或输入SKU",
-                  width = "100%",
-                  icon = list(right = tags$a(icon("times"), style = "cursor: pointer;"))  # 确保图标可点击
+                  width = "100%"
+                ),
+                actionButton(
+                  "clear_inbound_sku", 
+                  label = "", 
+                  icon = icon("times"),
+                  style = "padding: 5px 10px; font-size: 14px; border: 1px solid #ccc; border-radius: 4px; background-color: #f8f8f8;"
                 ),
                 checkboxInput(
                   "auto_inbound",  # 勾选框的 inputId
