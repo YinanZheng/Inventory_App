@@ -558,11 +558,13 @@ ui <- navbarPage(
               # SKU 输入框
               div(
                 style = "margin-bottom: 15px;",
-                textInput(
-                  "inbound_sku", 
-                  label = NULL, 
+                textInputIcon(
+                  inputId = "inbound_sku",
+                  label = NULL,
                   placeholder = "请扫描或输入SKU",
-                  width = "100%"
+                  width = "100%",
+                  icon = list(right = icon("times")),  # 在右侧添加清除按钮
+                  clear = TRUE  # 启用清除功能
                 ),
                 checkboxInput(
                   "auto_inbound",  # 勾选框的 inputId
