@@ -1805,6 +1805,7 @@ server <- function(input, output, session) {
     inbound_quantity <- as.integer(input$inbound_quantity)
     if (is.na(inbound_quantity) || inbound_quantity <= 0) {
       showNotification("入库数量必须是一个正整数！", type = "error")
+      runjs("playErrorSound()")  # 播放失败音效
       return()
     }
     
@@ -1824,12 +1825,6 @@ server <- function(input, output, session) {
         input, output, session
       )
       
-      # 如果未找到对应的 UniqueID，停止后续操作
-      if (is.null(result)) {
-        showNotification(paste0("此SKU第 ", i, " 件物品不存在，已中止入库！"), type = "error")
-        break
-      }
-      
       # 检查是否启用了瑕疵品选项
       defective_item <- input$defective_item
       defect_notes <- trimws(input$defective_notes)
@@ -1841,7 +1836,7 @@ server <- function(input, output, session) {
             unique_id = unique_ID,
             note_content = defect_notes,
             status_label = "瑕疵",
-            refresh_trigger = NULL
+            refresh_trigger = unique_items_data_refresh_trigger
           )
           showNotification("瑕疵品备注已成功添加！", type = "message")
         }, error = function(e) {
@@ -1855,6 +1850,7 @@ server <- function(input, output, session) {
     # 重置输入
     updateTextInput(session, "inbound_sku", value = "")
     updateNumericInput(session, "inbound_quantity", value = 1)
+    
     runjs("document.getElementById('inbound_sku').focus();")
   })
   
