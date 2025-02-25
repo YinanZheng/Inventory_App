@@ -569,9 +569,8 @@ ui <- navbarPage(
                   actionButton(
                     "clear_inbound_sku", 
                     label = "", 
-                    icon = icon("times"), 
-                    style = "padding: 0 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 0 4px 4px 0; background-color: #f8f8f8; height: 34px;"
-                  )
+                    icon = icon("xmark"), 
+                    style = "padding: 0 5px; font-size: 14px; border: 1px solid #ccc; border-radius: 0 4px 4px 0; background-color: #f8f8f8; height: 34px; line-height: 34px;"  # 确保高度和垂直对齐                  )
                 ),
                 checkboxInput(
                   "auto_inbound",  # 勾选框的 inputId
