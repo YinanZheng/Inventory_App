@@ -563,7 +563,7 @@ ui <- navbarPage(
                   label = NULL,
                   placeholder = "请扫描或输入SKU",
                   width = "100%",
-                  icon = list(right = icon("times"))  # 右侧添加清除图标
+                  icon = list(right = tags$a(icon("times"), style = "cursor: pointer;"))  # 确保图标可点击
                 ),
                 checkboxInput(
                   "auto_inbound",  # 勾选框的 inputId
