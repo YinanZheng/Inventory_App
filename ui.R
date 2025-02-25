@@ -570,7 +570,7 @@ ui <- navbarPage(
                     "clear_inbound_sku", 
                     label = "", 
                     icon = icon("xmark", style = "color: #FF0000;"), 
-                    style = "margin-bottom:14px; font-size: 14px; background-color: #ffffff; height: 45px; min-width: 34px;")
+                    style = "padding: 0 10px; border: none; margin-bottom:14px; font-size: 14px; background-color: #ffffff; height: 45px; min-width: 34px;")
                 ),
                 checkboxInput(
                   "auto_inbound",  # 勾选框的 inputId
