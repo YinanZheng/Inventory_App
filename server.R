@@ -3225,7 +3225,7 @@ server <- function(input, output, session) {
           style = "color: #007BFF; font-weight: bold; margin: 0;"
         ),
         
-        # 右侧按钮（仅在订单状态为“预定”时显示）
+        # 右侧按钮
         div(
           style = "display: flex; gap: 10px;",
           actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-warning", 
