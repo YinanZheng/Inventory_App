@@ -5050,8 +5050,9 @@ server <- function(input, output, session) {
         tags$h4("供应商筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
         selectInput(
           inputId = "purchase_check_filter_maker",
-          label = "按供应商筛选",
-          choices = NULL, 
+          label = NULL,
+          choices = NULL,
+          placeholder = "选择供应商...",
           selected = "",
           width = "100%"
         )
@@ -5679,6 +5680,14 @@ server <- function(input, output, session) {
       
       selected_range(range)
       show_summary(TRUE)
+      
+      # 更新 selectInput 的 choices
+      updateSelectInput(
+        session,
+        inputId = "purchase_check_filter_maker",
+        choices = c("", unique(supplier_summary()$Maker)),
+        selected = ""
+      )
     }
   })
 
