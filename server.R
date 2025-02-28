@@ -6020,9 +6020,9 @@ server <- function(input, output, session) {
     # 先去重
     filtered_data <- history_data %>%
       arrange(UniqueID, change_time) %>%
-      group_by(UniqueID, previous_status) %>%
-      slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
-      ungroup() %>%
+      # group_by(UniqueID, previous_status) %>%
+      # slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
+      # ungroup() %>%
       # 应用过滤规则
       group_by(UniqueID) %>%
       mutate(
