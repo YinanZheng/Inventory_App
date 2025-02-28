@@ -467,10 +467,7 @@ ui <- navbarPage(
                  # 添加搜索输入框
                  div(
                    style = "margin-bottom: 10px;",
-                   textInput("search_filter", 
-                             NULL, 
-                             value = "",
-                             placeholder = "搜索物品名或供应商...")
+                   textInput("search_filter", NULL, value = "", placeholder = "搜索物品名或供应商...", width = "100%")
                  ),
                  div(
                    style = "border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f5f5f5; max-height: 150px; 
