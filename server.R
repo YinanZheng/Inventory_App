@@ -6017,26 +6017,47 @@ server <- function(input, output, session) {
     # 获取物品状态历史数据
     history_data <- dbGetQuery(con, "SELECT * FROM item_status_history")
     
+    # filtered_data <- history_data %>%
+    #   # 标记含有重复状态的 UniqueID
+    #   left_join(
+    #     history_data %>%
+    #       group_by(UniqueID, previous_status) %>%
+    #       filter(n() > 1) %>%  # 找到重复状态的 UniqueID
+    #       summarise(
+    #         first_occurrence = if (n() > 0) min(change_time, na.rm = TRUE) else NA,  # 如果数据为空返回 NA
+    #         last_occurrence = if (n() > 0) max(change_time, na.rm = TRUE) else NA,  # 如果数据为空返回 NA
+    #         .groups = "drop"
+    #       ) %>%
+    #       distinct(UniqueID, first_occurrence, last_occurrence),  # 保留 UniqueID 的时间范围
+    #     by = "UniqueID"
+    #   ) %>%
+    #   # 删除重复状态的中间记录
+    #   filter(
+    #     is.na(first_occurrence) | !(change_time >= first_occurrence & change_time < last_occurrence)
+    #   ) %>%
+    #   # 按 UniqueID 和 change_time 排序
+    #   arrange(UniqueID, change_time)
+    
     filtered_data <- history_data %>%
-      # 标记含有重复状态的 UniqueID
-      left_join(
-        history_data %>%
-          group_by(UniqueID, previous_status) %>%
-          filter(n() > 1) %>%  # 找到重复状态的 UniqueID
-          summarise(
-            first_occurrence = if (n() > 0) min(change_time, na.rm = TRUE) else NA,  # 如果数据为空返回 NA
-            last_occurrence = if (n() > 0) max(change_time, na.rm = TRUE) else NA,  # 如果数据为空返回 NA
-            .groups = "drop"
-          ) %>%
-          distinct(UniqueID, first_occurrence, last_occurrence),  # 保留 UniqueID 的时间范围
-        by = "UniqueID"
+      arrange(UniqueID, change_time) %>%  # 按时间排序
+      group_by(UniqueID, previous_status) %>%  # 按物品和前一状态分组
+      slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%  # 保留最早的timestamp
+      ungroup() %>%
+      group_by(UniqueID) %>%  # 按物品分组
+      mutate(
+        # 标记要删除的国内出库：当它后面紧跟着国内售出
+        to_remove = case_when(
+          previous_status == "国内出库" & 
+            lead(previous_status) == "国内售出" ~ TRUE,
+          # 标记要删除的国内售出：当它后面紧跟着国内出库
+          previous_status == "国内售出" & 
+            lead(previous_status) == "国内出库" ~ TRUE,
+          TRUE ~ FALSE
+        )
       ) %>%
-      # 删除重复状态的中间记录
-      filter(
-        is.na(first_occurrence) | !(change_time >= first_occurrence & change_time < last_occurrence)
-      ) %>%
-      # 按 UniqueID 和 change_time 排序
-      arrange(UniqueID, change_time)
+      filter(!to_remove) %>%  # 过滤掉标记为删除的记录
+      select(-to_remove) %>%  # 删除临时列
+      ungroup()
     
     # 确保状态流转顺序正确
     links <- filtered_data %>%
