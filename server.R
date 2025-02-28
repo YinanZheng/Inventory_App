@@ -5685,8 +5685,8 @@ server <- function(input, output, session) {
         lapply(1:nrow(items), function(j) {
           item_name <- items$ItemName[j]
           sku <- items$SKU[j]
-          itemcost <- item$ProductCost[j]
-          shipcost <- item$DomesticShippingCost[j]
+          itemcost <- items$ProductCost[j]
+          shipcost <- items$DomesticShippingCost[j]
           quantity <- items$Quantity[j]
           src <- items$src[j]
           
