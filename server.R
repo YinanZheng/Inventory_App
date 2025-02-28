@@ -5014,7 +5014,7 @@ server <- function(input, output, session) {
   }, ignoreInit = TRUE)  # 忽略初始值
   
   # 动态渲染 sticky-sidebar
-  output$dynamic_sticky_sidebar <- renderUI({
+  output$query_dynamic_sticky_sidebar <- renderUI({
     current_tab <- input$query_tabs
     
     if (current_tab == "商品状态") {
@@ -5279,7 +5279,7 @@ server <- function(input, output, session) {
   
   # 根据SKU产生图表
   observe({
-    sku <- trimws(input$query_sku)
+    sku <- trimws(as.character(input$query_sku %||% ""))
     
     if (sku == "") {
       output$query_item_info <- renderUI({ div() })

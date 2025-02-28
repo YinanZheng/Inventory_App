@@ -1612,7 +1612,7 @@ ui <- navbarPage(
       class = "layout-container",  # Flexbox 容器
       div(
         class = "sticky-sidebar",  # sticky 侧边栏
-        uiOutput("dynamic_sticky_sidebar"),  # 动态渲染侧边栏内容
+        uiOutput("query_dynamic_sticky_sidebar"),  # 动态渲染侧边栏内容
       ),
       
       div(
