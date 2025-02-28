@@ -1185,11 +1185,21 @@ server <- function(input, output, session) {
     
     all_items <- unique(all_items[all_items$Item != "", ]) %>% arrange(Supplier, Item)
     
+    # 创建完整的显示字符串
+    all_items$DisplayText <- paste0(all_items$Item, "（", all_items$Supplier, "）")
+    
+    # 根据搜索框输入进行动态筛选
+    if (!is.null(input$search_filter) && input$search_filter != "") {
+      search_term <- tolower(input$search_filter)
+      all_items <- all_items %>% 
+        filter(grepl(search_term, tolower(DisplayText)))
+    }
+    
     # 获取当前库存商品名称
     existing_items <- unique(inventory()$ItemName)
     
     if (nrow(all_items) == 0) {
-      div("当前没有预订单物品")
+      div("没有匹配的预订单物品")
     } else {
       # 创建物品列表，判断是否存在于库存
       item_list <- lapply(seq_len(nrow(all_items)), function(i) {
@@ -1204,15 +1214,13 @@ server <- function(input, output, session) {
           tags$span("新", class = "status-badge status-new")
         }
         
-        # 根据物品类型设置不同的 `onclick` 逻辑
+        # 根据物品类型设置不同的 onclick 逻辑
         if (is_existing) {
-          # “现”物品：填充到 purchase_filter-name
           onclick_script <- sprintf(
             "Shiny.setInputValue('selected_existing_item', '%s', {priority: 'event'});", 
             item
           )
         } else {
-          # “新”物品：填充到 new_maker 和 purchase-item_name
           onclick_script <- sprintf(
             "Shiny.setInputValue('selected_new_item', '%s', {priority: 'event'}); Shiny.setInputValue('selected_new_supplier', '%s', {priority: 'event'});", 
             item, supplier
@@ -1224,7 +1232,7 @@ server <- function(input, output, session) {
           inputId = paste0("preorder_item_", i), 
           label = div(
             style = "padding: 5px 0; border-bottom: 1px solid #eee; display: flex; align-items: center; cursor: pointer;",
-            tags$span(paste0(item, "（", supplier, "）"), style = "flex-grow: 1;"),
+            tags$span(all_items$DisplayText[i], style = "flex-grow: 1;"),
             status_label
           ),
           onclick = onclick_script
