@@ -6113,6 +6113,9 @@ server <- function(input, output, session) {
       NodeID = "name",
       fontSize = 14,
       nodeWidth = 40,
+      nodePadding = 20,  # 增加节点间距
+      iterations = 0,    # 按数据顺序排列
+      sunkRight = FALSE,
       colourScale = color_js
     )
   })
