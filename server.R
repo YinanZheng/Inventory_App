@@ -5634,7 +5634,7 @@ server <- function(input, output, session) {
     
     # 第一步：按 Maker 和 ItemName 分组，计算每件物品的采购数量
     item_details <- items %>%
-      group_by(Maker, ItemName, SKU, ItemImagePath) %>%
+      group_by(Maker, ItemName, SKU, ItemImagePath, ProductCost, DomesticShippingCost) %>%
       summarise(
         Quantity = n(),  # 每件物品的采购数量
         .groups = 'drop'
@@ -5685,6 +5685,8 @@ server <- function(input, output, session) {
         lapply(1:nrow(items), function(j) {
           item_name <- items$ItemName[j]
           sku <- items$SKU[j]
+          itemcost <- item$ProductCost[j]
+          shipcost <- item$DomesticShippingCost[j]
           quantity <- items$Quantity[j]
           src <- items$src[j]
           
@@ -5692,7 +5694,8 @@ server <- function(input, output, session) {
             style = "display: inline-block; margin-right: 15px; text-align: center; width: 150px;",
             img(src = src, width = "100px", height = "100px", style = "border-radius: 5px;"),
             p(strong(item_name), style = "font-size: 14px; margin: 5px 0;"),
-            p(paste("SKU:", sku), style = "font-size: 12px; color: #555;"),
+            p(sku, style = "font-size: 12px; color: #555;"),
+            p(paste("单价(运费):", itemcost, "(", shipcost, ")"), style = "font-size: 12px; color: #555;"),
             p(paste("数量:", quantity), style = "font-size: 12px; color: #555;")
           )
         })
