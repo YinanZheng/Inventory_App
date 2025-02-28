@@ -5655,7 +5655,7 @@ server <- function(input, output, session) {
         TotalQuantity = n(),  # 总采购数量（所有记录数）
         Items = list(
           item_details[item_details$Maker == first(Maker), 
-                       c("ItemName", "SKU", "Quantity", "src"), drop = FALSE]
+                       c("ItemName", "SKU", "Quantity", "ProductCost", "DomesticShippingCost", "src"), drop = FALSE]
         )
       ) %>%
       ungroup()
