@@ -6040,9 +6040,6 @@ server <- function(input, output, session) {
     
     filtered_data <- history_data %>%
       arrange(UniqueID, change_time) %>%
-      # group_by(UniqueID, previous_status) %>%
-      # slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
-      # ungroup() %>%
       group_by(UniqueID) %>%
       mutate(
         to_remove = FALSE,
@@ -6052,11 +6049,17 @@ server <- function(input, output, session) {
         to_remove = ifelse(previous_status == "国内入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("国内出库", "国内售出"), TRUE, to_remove),
         to_remove = ifelse(previous_status == "国内售出" & !is.na(lead(previous_status)) & lead(previous_status) != "美国发货", TRUE, to_remove),
         to_remove = ifelse(previous_status == "国内出库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国入库", "美国调货"), TRUE, to_remove),
-        to_remove = ifelse(previous_status == "美国入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国调货", "美国发货"), TRUE, to_remove)
+        to_remove = ifelse(previous_status == "美国入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国调货", "美国发货"), TRUE, to_remove),
+        to_remove = ifelse(previous_status == "美国调货" & !is.na(lead(previous_status)) & lead(previous_status) != "美国发货", TRUE, to_remove)
       ) %>%
       filter(!to_remove) %>%
       select(-to_remove) %>%
       ungroup()
+    
+    filtered_data <- filtered_data %>%
+    group_by(UniqueID, previous_status) %>%
+    slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
+    ungroup()
     
     # 确保状态流转顺序正确
     links <- filtered_data %>%
