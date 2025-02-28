@@ -474,7 +474,7 @@ ui <- navbarPage(
                      style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
                  ),
                  div(
-                   style = "border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f5f5f5; max-height: 150px; 
+                   style = "border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f5f5f5; max-height: 200px; 
                    overflow-y: auto; margin-bottom: 15px;",
                    uiOutput("preorder_items_memo")
                  )
