@@ -106,6 +106,7 @@ ui <- navbarPage(
       
       .sticky-sidebar {
         position: sticky; /* 保持固定 */
+        top: 70px; /* 顶部距离 */
         z-index: 900;
         flex: 0 0 auto; /* 固定宽度并防止被压缩 */
         width: 380px; /* 默认宽度 */
@@ -122,7 +123,7 @@ ui <- navbarPage(
       
       .main-panel {
         flex-grow: 1;
-        overflow: hidden; /* 禁止滚动条 */
+        overflow: auto; /* 禁止滚动条 */
         padding: 20px;
         padding-top: 0px;
         background-color: #ffffff;
