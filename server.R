@@ -6039,32 +6039,23 @@ server <- function(input, output, session) {
     #   arrange(UniqueID, change_time)
     
     filtered_data <- history_data %>%
-      arrange(UniqueID, change_time) %>%  # 按时间排序
-      group_by(UniqueID, previous_status) %>%  # 按物品和前一状态分组
-      slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%  # 保留最早的timestamp
+      arrange(UniqueID, change_time) %>%
+      group_by(UniqueID, previous_status) %>%
+      slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
       ungroup() %>%
-      group_by(UniqueID) %>%  # 按物品分组
+      group_by(UniqueID) %>%
       mutate(
-        to_remove = case_when(
-          # 国内出库后紧跟国内售出，删除国内出库
-          previous_status == "国内出库" & lead(previous_status) == "国内售出" ~ TRUE,
-          # 国内售出后紧跟国内出库，删除国内售出
-          previous_status == "国内售出" & lead(previous_status) == "国内出库" ~ TRUE,
-          # 采购 --> 国内入库
-          previous_status == "采购" & !is.na(lead(previous_status)) & lead(previous_status) != "国内入库" ~ TRUE,
-          # 国内入库 --> 国内出库/国内售出
-          previous_status == "国内入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("国内出库", "国内售出") ~ TRUE,
-          # 国内售出 --> 美国发货
-          previous_status == "国内售出" & !is.na(lead(previous_status)) & lead(previous_status) != "美国发货" ~ TRUE,
-          # 国内出库 --> 美国入库/美国调货
-          previous_status == "国内出库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国入库", "美国调货") ~ TRUE,
-          # 美国入库 --> 美国调货/美国发货
-          previous_status == "美国入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国调货", "美国发货") ~ TRUE,
-          TRUE ~ FALSE
-        )
+        to_remove = FALSE,
+        to_remove = ifelse(previous_status == "国内出库" & lead(previous_status) == "国内售出", TRUE, to_remove),
+        to_remove = ifelse(previous_status == "国内售出" & lead(previous_status) == "国内出库", TRUE, to_remove),
+        to_remove = ifelse(previous_status == "采购" & !is.na(lead(previous_status)) & lead(previous_status) != "国内入库", TRUE, to_remove),
+        to_remove = ifelse(previous_status == "国内入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("国内出库", "国内售出"), TRUE, to_remove),
+        to_remove = ifelse(previous_status == "国内售出" & !is.na(lead(previous_status)) & lead(previous_status) != "美国发货", TRUE, to_remove),
+        to_remove = ifelse(previous_status == "国内出库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国入库", "美国调货"), TRUE, to_remove),
+        to_remove = ifelse(previous_status == "美国入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("美国调货", "美国发货"), TRUE, to_remove)
       ) %>%
-      filter(!to_remove) %>%  # 过滤掉标记为删除的记录
-      select(-to_remove) %>%  # 删除临时列
+      filter(!to_remove) %>%
+      select(-to_remove) %>%
       ungroup()
     
     # 确保状态流转顺序正确
