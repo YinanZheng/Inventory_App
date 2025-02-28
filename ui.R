@@ -464,10 +464,14 @@ ui <- navbarPage(
           column(12, autocompleteInputUI("purchase", NULL, placeholder = "请输入商品名...")),
           column(12,
                  h5("预订单物品备忘（点击自动填写）", style = "color: #17a2b8;"),
-                 # 添加搜索输入框
                  div(
-                   style = "margin-bottom: 10px;",
-                   textInput("search_filter", NULL, value = "", placeholder = "搜索物品名或供应商...", width = "100%")
+                   style = "display: flex; align-items: center; gap: 0px;",
+                   textInput("preorder_item_search_filter", NULL, value = "", placeholder = "搜索物品名或供应商...", width = "100%"),
+                   actionButton(
+                     "clear_preorder_search_box", 
+                     label = "", 
+                     icon = icon("xmark", style = "color: #D32F2F;"), 
+                     style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
                  ),
                  div(
                    style = "border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f5f5f5; max-height: 150px; 

@@ -1189,8 +1189,8 @@ server <- function(input, output, session) {
     all_items$DisplayText <- paste0(all_items$Item, "（", all_items$Supplier, "）")
     
     # 根据搜索框输入进行动态筛选
-    if (!is.null(input$search_filter) && input$search_filter != "") {
-      search_term <- tolower(input$search_filter)
+    if (!is.null(input$preorder_item_search_filter) && input$preorder_item_search_filter != "") {
+      search_term <- tolower(input$preorder_item_search_filter)
       all_items <- all_items %>% 
         filter(grepl(search_term, tolower(DisplayText)))
     }
@@ -1510,6 +1510,11 @@ server <- function(input, output, session) {
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
       updateNumericInput(session, "new_shipping_cost", value = 0)
     }
+  })
+  
+  # 预定单物品搜索框清除
+  observeEvent(input$clear_preorder_search_box, {
+    updateTextInput(session, "preorder_item_search_filter", value = "")
   })
   
   # 监听采购页选中added_items_table 用来更改添加数据
