@@ -5695,7 +5695,7 @@ server <- function(input, output, session) {
             img(src = src, width = "100px", height = "100px", style = "border-radius: 5px;"),
             p(strong(item_name), style = "font-size: 14px; margin: 5px 0;"),
             p(sku, style = "font-size: 12px; color: #555;"),
-            p(paste("单价(运费):", itemcost, "(", shipcost, ")"), style = "font-size: 12px; color: #555;"),
+            p(paste("单价(运费):", itemcost, "(", sprintf("%.2f", shipcost), ")"), style = "font-size: 12px; color: #555;"),
             p(paste("数量:", quantity), style = "font-size: 12px; color: #555;")
           )
         })
