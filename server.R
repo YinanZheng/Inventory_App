@@ -6017,29 +6017,13 @@ server <- function(input, output, session) {
     # 获取物品状态历史数据
     history_data <- dbGetQuery(con, "SELECT * FROM item_status_history")
     
-    # filtered_data <- history_data %>%
-    #   # 标记含有重复状态的 UniqueID
-    #   left_join(
-    #     history_data %>%
-    #       group_by(UniqueID, previous_status) %>%
-    #       filter(n() > 1) %>%  # 找到重复状态的 UniqueID
-    #       summarise(
-    #         first_occurrence = if (n() > 0) min(change_time, na.rm = TRUE) else NA,  # 如果数据为空返回 NA
-    #         last_occurrence = if (n() > 0) max(change_time, na.rm = TRUE) else NA,  # 如果数据为空返回 NA
-    #         .groups = "drop"
-    #       ) %>%
-    #       distinct(UniqueID, first_occurrence, last_occurrence),  # 保留 UniqueID 的时间范围
-    #     by = "UniqueID"
-    #   ) %>%
-    #   # 删除重复状态的中间记录
-    #   filter(
-    #     is.na(first_occurrence) | !(change_time >= first_occurrence & change_time < last_occurrence)
-    #   ) %>%
-    #   # 按 UniqueID 和 change_time 排序
-    #   arrange(UniqueID, change_time)
-    
+    # 先去重
     filtered_data <- history_data %>%
       arrange(UniqueID, change_time) %>%
+      group_by(UniqueID, previous_status) %>%
+      slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
+      ungroup() %>%
+      # 应用过滤规则
       group_by(UniqueID) %>%
       mutate(
         to_remove = FALSE,
@@ -6056,40 +6040,46 @@ server <- function(input, output, session) {
       select(-to_remove) %>%
       ungroup()
     
-    filtered_data <- filtered_data %>%
-    group_by(UniqueID, previous_status) %>%
-    slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
-    ungroup()
+    # 调试：检查不符合规则的流转
+    debug_flow <- filtered_data %>%
+      group_by(UniqueID) %>%
+      mutate(next_status = lead(previous_status)) %>%
+      filter(previous_status == "国内入库" & next_status %in% c("美国入库", "美国调货"))
+    print(debug_flow)  # 如果有输出，说明过滤仍有问题
     
     # 确保状态流转顺序正确
     links <- filtered_data %>%
       group_by(UniqueID) %>%
-      arrange(previous_status_timestamp, .by_group = TRUE) %>%
-      mutate(next_status = lead(previous_status)) %>%  # 获取下一个状态
-      filter(!is.na(next_status)) %>%  # 过滤掉没有后续状态的记录
+      arrange(change_time, .by_group = TRUE) %>%
+      mutate(next_status = lead(previous_status)) %>%
+      filter(!is.na(next_status)) %>%
       ungroup() %>%
       group_by(source = previous_status, target = next_status) %>%
-      summarise(value = n(), .groups = "drop")  # 汇总每对状态的流转次数
+      summarise(value = n(), .groups = "drop")
     
     links <- as.data.frame(links)
     
     # 定义状态颜色映射
-    status_colors <- c("采购" = "lightgray",
-                       "国内入库" = "#c7e89b",
-                       "国内售出" = "#9ca695",
-                       "国内出库" = "#46a80d",
-                       "美国入库" = "#6f52ff",
-                       "美国调货" = "#529aff",
-                       "美国发货" = "#faf0d4",
-                       "交易完毕" = "#f4c7fc")
+    status_colors <- c(
+      "采购" = "lightgray",
+      "国内入库" = "#c7e89b",
+      "国内售出" = "#9ca695",
+      "国内出库" = "#46a80d",
+      "美国入库" = "#6f52ff",
+      "美国调货" = "#529aff",
+      "美国发货" = "#faf0d4",
+      "交易完毕" = "#f4c7fc"
+    )
     
     # 定义节点
     nodes <- data.frame(name = unique(c(links$source, links$target)))
     
     # 映射 source 和 target 到节点索引
     links <- links %>%
-      mutate(source = match(source, nodes$name) - 1,
-             target = match(target, nodes$name) - 1)
+      mutate(
+        source = match(source, nodes$name) - 1,
+        target = match(target, nodes$name) - 1
+      )
     
     # 校验 links 和 nodes 是否有效
     if (nrow(links) == 0 || nrow(nodes) == 0) {
@@ -6098,10 +6088,11 @@ server <- function(input, output, session) {
     }
     
     # 生成颜色映射 JS 代码
-    color_js <- sprintf("d3.scaleOrdinal().domain(%s).range(%s)",
-                        jsonlite::toJSON(names(status_colors), auto_unbox = TRUE),
-                        jsonlite::toJSON(status_colors, auto_unbox = TRUE))
-    
+    color_js <- sprintf(
+      "d3.scaleOrdinal().domain(%s).range(%s)",
+      jsonlite::toJSON(names(status_colors), auto_unbox = TRUE),
+      jsonlite::toJSON(status_colors, auto_unbox = TRUE)
+    )
     
     # 渲染桑基图
     sankeyNetwork(
@@ -6115,7 +6106,6 @@ server <- function(input, output, session) {
       nodeWidth = 40,
       nodePadding = 20,  # 增加节点间距
       iterations = 0,    # 按数据顺序排列
-      sunkRight = FALSE,
       colourScale = color_js
     )
   })
