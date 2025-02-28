@@ -6040,13 +6040,6 @@ server <- function(input, output, session) {
       select(-to_remove) %>%
       ungroup()
     
-    # 调试：检查不符合规则的流转
-    debug_flow <- filtered_data %>%
-      group_by(UniqueID) %>%
-      mutate(next_status = lead(previous_status)) %>%
-      filter(previous_status == "国内入库" & next_status %in% c("美国入库", "美国调货"))
-    print(debug_flow)  # 如果有输出，说明过滤仍有问题
-    
     # 确保状态流转顺序正确
     links <- filtered_data %>%
       group_by(UniqueID) %>%
@@ -6105,7 +6098,7 @@ server <- function(input, output, session) {
       fontSize = 14,
       nodeWidth = 40,
       nodePadding = 20,  # 增加节点间距
-      iterations = 0,    # 按数据顺序排列
+      iterations = 10,
       colourScale = color_js
     )
   })
