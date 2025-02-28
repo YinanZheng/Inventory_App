@@ -101,7 +101,7 @@ ui <- navbarPage(
         flex-direction: row;
         height: 100%;
         width: 100%;
-        overflow: hidden; /* 禁止滚动条 */
+        overflow: visible; /* 禁止滚动条 */
       }
       
       .sticky-sidebar {
