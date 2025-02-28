@@ -5051,9 +5051,8 @@ server <- function(input, output, session) {
         selectInput(
           inputId = "purchase_check_filter_maker",
           label = NULL,
-          choices = NULL,
-          placeholder = "选择供应商...",
-          selected = "",
+          choices = c("所有制造商" = "all"),  # 初始默认选项          
+          selected = "all",
           width = "100%"
         )
       )
@@ -5685,8 +5684,8 @@ server <- function(input, output, session) {
       updateSelectInput(
         session,
         inputId = "purchase_check_filter_maker",
-        choices = c("", unique(supplier_summary()$Maker)),
-        selected = ""
+        choices = c("所有供应商" = "all", unique(supplier_summary()$Maker)),
+        selected = "all"
       )
     }
   })
