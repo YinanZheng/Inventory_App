@@ -6052,7 +6052,11 @@ server <- function(input, output, session) {
           previous_status == "国内售出" & lead(previous_status) == "国内出库" ~ TRUE,
           # 采购后必须是国内入库，否则删除采购
           previous_status == "采购" & lead(previous_status) != "国内入库" ~ TRUE,
-          # 国内售出后必须是美国发货，否则删除国内售出
+          # 国内入库后只能是国内出库或国内售出
+          previous_status == "国内入库" & 
+            !lead(previous_status) %in% c("国内出库", "国内售出") & 
+            !is.na(lead(previous_status)) ~ TRUE,
+          # 国内售出后必须是美国发货
           previous_status == "国内售出" & lead(previous_status) != "美国发货" ~ TRUE,
           TRUE ~ FALSE
         )
