@@ -6098,7 +6098,7 @@ server <- function(input, output, session) {
       fontSize = 14,
       nodeWidth = 40,
       nodePadding = 20,  # 增加节点间距
-      iterations = 10,
+      iterations = 5,
       colourScale = color_js
     )
   })
