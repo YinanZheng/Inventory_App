@@ -6027,8 +6027,6 @@ server <- function(input, output, session) {
       group_by(UniqueID) %>%
       mutate(
         to_remove = FALSE,
-        to_remove = ifelse(previous_status == "国内出库" & lead(previous_status) == "国内售出", TRUE, to_remove),
-        to_remove = ifelse(previous_status == "国内售出" & lead(previous_status) == "国内出库", TRUE, to_remove),
         to_remove = ifelse(previous_status == "采购" & !is.na(lead(previous_status)) & lead(previous_status) != "国内入库", TRUE, to_remove),
         to_remove = ifelse(previous_status == "国内入库" & !is.na(lead(previous_status)) & !lead(previous_status) %in% c("国内出库", "国内售出"), TRUE, to_remove),
         to_remove = ifelse(previous_status == "国内售出" & !is.na(lead(previous_status)) & lead(previous_status) != "美国发货", TRUE, to_remove),
