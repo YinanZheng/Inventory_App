@@ -6017,7 +6017,6 @@ server <- function(input, output, session) {
     # 获取物品状态历史数据
     history_data <- dbGetQuery(con, "SELECT * FROM item_status_history")
     
-    # 先去重
     filtered_data <- history_data %>%
       arrange(UniqueID, change_time) %>%
       # group_by(UniqueID, previous_status) %>%
@@ -6036,7 +6035,10 @@ server <- function(input, output, session) {
       ) %>%
       filter(!to_remove) %>%
       select(-to_remove) %>%
-      ungroup()
+      ungroup() %>%
+      group_by(UniqueID, previous_status) %>%
+      slice_min(previous_status_timestamp, n = 1, with_ties = FALSE) %>%
+      ungroup() %>%
     
     # 确保状态流转顺序正确
     links <- filtered_data %>%
