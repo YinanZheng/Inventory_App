@@ -1989,6 +1989,11 @@ server <- function(input, output, session) {
     )
   })
   
+  # SKU 清除
+  observeEvent(input$clear_outbound_sku, {
+    updateTextInput(session, "outbound_sku", value = "")
+  })
+  
   # 自动出库逻辑
   observeEvent(input$outbound_sku, {
     req(input$auto_outbound)  # 仅在自动出库勾选时触发

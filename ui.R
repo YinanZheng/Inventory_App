@@ -693,7 +693,17 @@ ui <- navbarPage(
           class = "card",
           style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
           tags$h4("出库操作", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("outbound_sku", NULL, placeholder = "请扫描条形码操作，并核对物品", width = "100%"),
+          
+          div(
+            style = "display: flex; align-items: center; gap: 0px;",
+            textInput("outbound_sku", NULL, placeholder = "请扫描条形码操作，并核对物品", width = "100%"),
+            actionButton(
+              "clear_outbound_sku", 
+              label = "", 
+              icon = icon("xmark", style = "color: #D32F2F;"), 
+              style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
+          ),
+
           checkboxInput(
             "auto_outbound",  # 勾选框的 inputId
             label = "自动出库", 
