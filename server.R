@@ -5045,17 +5045,15 @@ server <- function(input, output, session) {
     } else if (current_tab == "采购开销") {
       # 采购开销页面的 sticky-sidebar 内容
       div(
-        div(
-          class = "card",
-          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-          tags$h4("供应商筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          selectInput(
-            inputId = "purchase_check_filter_maker",
-            label = "按供应商筛选",
-            choices = c("所有供应商" = "", unique(filtered_items()$Maker)),  # 动态填充制造商列表
-            selected = "all",
-            width = "100%"
-          )
+        class = "card",
+        style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+        tags$h4("供应商筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
+        selectInput(
+          inputId = "purchase_check_filter_maker",
+          label = "按供应商筛选",
+          choices = NULL, 
+          selected = "",
+          width = "100%"
         )
       )
     } else if (current_tab == "库存总览") {
