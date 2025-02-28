@@ -5051,7 +5051,7 @@ server <- function(input, output, session) {
         selectInput(
           inputId = "purchase_check_filter_maker",
           label = NULL,
-          choices = c("所有制造商" = "all"),  # 初始默认选项          
+          choices = c("所有供应商" = "all"),  # 初始默认选项          
           selected = "all",
           width = "100%"
         )
@@ -5744,6 +5744,11 @@ server <- function(input, output, session) {
     }
     
     summary_data <- supplier_summary()
+    
+    # 根据 purchase_check_filter_maker 筛选
+    if (!is.null(input$purchase_check_filter_maker) && input$purchase_check_filter_maker != "all") {
+      summary_data <- summary_data %>% filter(Maker == input$purchase_check_filter_maker)
+    }
     
     cards <- lapply(1:nrow(summary_data), function(i) {
       maker <- summary_data$Maker[i]
