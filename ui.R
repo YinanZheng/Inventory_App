@@ -101,7 +101,7 @@ ui <- navbarPage(
         flex-direction: row;
         height: 100%;
         width: 100%;
-        overflow: visible; /* 禁止滚动条 */
+        overflow: visible;
       }
       
       .sticky-sidebar {
@@ -123,7 +123,7 @@ ui <- navbarPage(
       
       .main-panel {
         flex-grow: 1;
-        overflow: auto; /* 禁止滚动条 */
+        overflow: auto;
         padding: 20px;
         padding-top: 0px;
         background-color: #ffffff;
