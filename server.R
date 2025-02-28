@@ -6045,13 +6045,15 @@ server <- function(input, output, session) {
       ungroup() %>%
       group_by(UniqueID) %>%  # 按物品分组
       mutate(
-        # 标记要删除的国内出库：当它后面紧跟着国内售出
         to_remove = case_when(
-          previous_status == "国内出库" & 
-            lead(previous_status) == "国内售出" ~ TRUE,
-          # 标记要删除的国内售出：当它后面紧跟着国内出库
-          previous_status == "国内售出" & 
-            lead(previous_status) == "国内出库" ~ TRUE,
+          # 国内出库后紧跟国内售出，删除国内出库
+          previous_status == "国内出库" & lead(previous_status) == "国内售出" ~ TRUE,
+          # 国内售出后紧跟国内出库，删除国内售出
+          previous_status == "国内售出" & lead(previous_status) == "国内出库" ~ TRUE,
+          # 采购后必须是国内入库，否则删除采购
+          previous_status == "采购" & lead(previous_status) != "国内入库" ~ TRUE,
+          # 国内售出后必须是美国发货，否则删除国内售出
+          previous_status == "国内售出" & lead(previous_status) != "美国发货" ~ TRUE,
           TRUE ~ FALSE
         )
       ) %>%
