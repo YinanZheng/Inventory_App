@@ -697,6 +697,26 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
+  observe({
+    shinyjs::runjs(sprintf("
+    console.log('Setting up IntersectionObserver for %s');
+    const loadMoreElement = document.getElementById('load_more_%s');
+    if (!loadMoreElement) {
+      console.log('Load more element not found: load_more_%s');
+      return;
+    }
+    const observer = new IntersectionObserver((entries) => {
+      console.log('IntersectionObserver triggered for %s');
+      if (entries[0].isIntersecting) {
+        console.log('Load more triggered for %s');
+        Shiny.setInputValue('load_more_%s', true, {priority: 'event'});
+        observer.disconnect();
+      }
+    }, { threshold: 0.1 });
+    observer.observe(loadMoreElement);
+  ", req_type, req_type, req_type, req_type, req_type, req_type))
+  })
+  
   # 渲染初始供应商筛选器（只定义一次）
   output$supplier_filter <- renderUI({
     selectizeInput(
