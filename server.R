@@ -22,8 +22,8 @@ server <- function(input, output, session) {
   con <- db_connection()
   
   # 初始化 requests_data 和 unique_items_data
-  requests_data <- reactiveVal(dbGetQuery(con, "SELECT * FROM requests"))
-  unique_items_data <- reactiveVal(dbGetQuery(con, "SELECT * FROM unique_items"))
+  requests_data <- reactiveVal(NULL)  
+  unique_items_data <- reactiveVal(NULL)
   
   # ReactiveVal 存储 item_type_data 数据
   item_type_data <- reactiveVal()
@@ -760,37 +760,45 @@ server <- function(input, output, session) {
     )
   }, priority = 0)  # 较低优先级，避免干扰选项更新
   
-  # 定期检查数据库更新
+  # 使用时间戳增量查询
   poll_requests <- reactivePoll(
-    intervalMillis = 20000,
+    intervalMillis = 10000,  # 缩短到10秒，提升响应速度
     session = session,
     checkFunc = function() {
-      last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
-      if (is.null(last_updated)) Sys.time() else last_updated
+      dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1] %||% Sys.time()
     },
     valueFunc = function() {
-      dbGetQuery(con, "SELECT * FROM requests")
+      # 只查询最近更新的记录，假设有 UpdatedAt 字段
+      last_check <- isolate(poll_requests()$UpdatedAt %||% "1970-01-01 00:00:00")
+      dbGetQuery(con, "SELECT * FROM requests WHERE UpdatedAt > ? LIMIT 1000", params = list(last_check))
     }
   )
   
   # 使用 debounce 限制轮询频率
-  poll_requests_debounced <- debounce(poll_requests, millis = 20000)
+  poll_requests_debounced <- debounce(poll_requests, millis = 10000)
   
   observeEvent(poll_requests_debounced(), {
-    requests <- poll_requests_debounced()
-    requests_data(requests)
-    # 确保 input$selected_supplier 已定义
-    req(input$selected_supplier)
-    refresh_board_incremental(requests, output, input)
+    new_data <- poll_requests_debounced()
+    current_data <- requests_data()
+    if (!is.null(new_data) && nrow(new_data) > 0) {
+      if (is.null(current_data)) {
+        requests_data(new_data)
+      } else {
+        # 合并增量数据，避免全量覆盖
+        updated_data <- bind_rows(
+          current_data %>% filter(!RequestID %in% new_data$RequestID),
+          new_data
+        ) %>% sort_requests()
+        requests_data(updated_data)
+      }
+    }
   }, priority = 10)
   
-  # 初始化时绑定所有按钮
+  # 在页面初始化时绑定
   observeEvent(requests_data(), {
     requests <- requests_data()
-    lapply(requests$RequestID, function(request_id) {
-      bind_buttons(request_id, requests_data, input, output, session, con)
-    })
-  }, ignoreInit = FALSE, once = TRUE)
+    bind_buttons(requests$RequestID, requests_data, input, output, session, con)
+  }, once = TRUE)
   
   # 使用 observe 监听 requests_data() 和 input$selected_supplier
   observe({
