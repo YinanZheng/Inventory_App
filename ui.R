@@ -177,20 +177,16 @@ ui <- navbarPage(
         background-color: #FFA500; /* 橙色 */
       }
       
-      .lazy-load-card {
-        min-height: 200px; /* 占位高度 */
-        opacity: 0;
-        transition: opacity 0.3s;
-      }
-      .lazy-load-card.loaded {
-        opacity: 1 !important; /* 确保不被覆盖 */
-      }
-      .load-more-trigger {
-        visibility: hidden;
-      }
       .note-card {
         display: flex !important;
         opacity: 1 !important;
+      }
+      .pagination-controls {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-top: 20px;
+        justify-content: center;
       }
     ")),
       
