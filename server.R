@@ -784,25 +784,43 @@ server <- function(input, output, session) {
     refresh_board_incremental(requests, output, input)
   }, priority = 10)
   
-  # 初始化时绑定所有按钮
+  # 定义全局 bound_requests
+  bound_requests <- reactiveVal(character())
+  
+  # 初始化和动态绑定
   observeEvent(requests_data(), {
     requests <- requests_data()
-    lapply(requests$RequestID, function(request_id) {
+    new_requests <- setdiff(requests$RequestID, bound_requests())
+    
+    lapply(new_requests, function(request_id) {
       bind_buttons(request_id, requests_data, input, output, session, con)
+      bound_requests(c(bound_requests(), request_id))
     })
-  }, ignoreInit = FALSE, once = TRUE)
+  }, ignoreInit = FALSE)
   
-  # 使用 observe 监听 requests_data() 和 input$selected_supplier
-  observe({
-    # 确保 requests_data() 和 input$selected_supplier 都已准备好
-    req(requests_data(), input$selected_supplier)
-    
-    # 获取请求数据
+  # 使用 reactive 缓存过滤后的数据
+  filtered_requests <- reactive({
+    req(requests_data(), input$selected_supplier, input$collaboration_tabs)
     requests <- requests_data()
+    current_tab <- input$collaboration_tabs
+    request_type <- switch(current_tab,
+                           "purchase" = "采购",
+                           "arranged" = "安排",
+                           "completed" = "完成",
+                           "outbound" = "出库",
+                           "new_product" = "新品",
+                           "采购")
     
-    # 刷新任务板
-    refresh_board_incremental(requests, output, input)
+    requests %>%
+      filter(RequestType == request_type) %>%
+      { if (input$selected_supplier == "全部供应商") . else filter(., Maker == input$selected_supplier) } %>%
+      sort_requests()
   })
+  
+  observe({
+    req(filtered_requests())
+    refresh_board_incremental(filtered_requests(), output, input)
+  }, priority = 5)
   
   # SKU 和物品名输入互斥逻辑
   observeEvent(input$search_sku, {
