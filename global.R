@@ -49,7 +49,7 @@ status_levels <<- c("采购", "国内入库", "国内售出", "国内出库", "�
 status_colors <<- c("#D3D3D3", "#C7E89B", "#9CA695", "#46A80D", "#6F52FF", "#529AFF", "#FAF0D4", "#F4C7FC")
 
 # 协作页面映射关系
-request_types <- list(
+request_types <<- list(
   "新品" = "new_product_board",
   "采购" = "purchase_request_board",
   "安排" = "provider_arranged_board",
