@@ -99,7 +99,7 @@ ui <- navbarPage(
       .layout-container {
         display: flex;
         flex-direction: row;
-        height: 100%;
+        height: 100vh;
         width: 100%;
         overflow: visible;
       }
@@ -123,7 +123,8 @@ ui <- navbarPage(
       
       .main-panel {
         flex-grow: 1;
-        overflow: auto;
+        overflow-y: auto;
+        height: calc(100vh - 70px);
         padding: 20px;
         padding-top: 0px;
         background-color: #ffffff;
@@ -385,7 +386,7 @@ ui <- navbarPage(
       # 右侧主要面板
       div(
         class = "main-panel",
-        
+
         div(
           style = "display: flex; align-items: flex-end; gap: 5px; margin: 0; padding: 0; max-width: 300px;",  # 底部对齐
           div(
