@@ -22,7 +22,7 @@ server <- function(input, output, session) {
   con <- db_connection()
   
   # 初始化 requests_data 和 unique_items_data
-  requests_data <- reactiveVal(NULL)  
+  requests_data <- reactiveVal(NULL)
   unique_items_data <- reactiveVal(NULL)
   
   # ReactiveVal 存储 item_type_data 数据
@@ -697,14 +697,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 使用 reactiveVal 缓存已渲染的输出
-  rendered_boards <- reactiveVal(list())
-  # 缓存卡片和备注
-  card_cache <- reactiveVal(list())
-  
-  # 用于跟踪上次检查时间，避免递归
-  last_check_time <- reactiveVal("1970-01-01 00:00:00")
-  
   # 渲染初始供应商筛选器（只定义一次）
   output$supplier_filter <- renderUI({
     selectizeInput(
@@ -768,72 +760,47 @@ server <- function(input, output, session) {
     )
   }, priority = 0)  # 较低优先级，避免干扰选项更新
   
-  # 数据轮询
+  # 定期检查数据库更新
   poll_requests <- reactivePoll(
-    intervalMillis = 10000,
+    intervalMillis = 20000,
     session = session,
     checkFunc = function() {
-      result <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
-      message("checkFunc: last_updated = ", result %||% "NULL")
-      result %||% Sys.time()
+      last_updated <- dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1]
+      if (is.null(last_updated)) Sys.time() else last_updated
     },
     valueFunc = function() {
-      last_check <- last_check_time()
-      message("valueFunc: last_check = ", last_check)
-      result <- dbGetQuery(con, "SELECT * FROM requests WHERE UpdatedAt > ? LIMIT 1000", params = list(last_check))
-      if (!is.data.frame(result)) {
-        message("valueFunc: result is not a data frame, returning empty data frame")
-        return(data.frame(RequestID = character(), RequestStatus = character(), RequestType = character(), Maker = character(), stringsAsFactors = FALSE))
-      }
-      if (nrow(result) == 0) {
-        message("valueFunc: result has 0 rows")
-      } else {
-        message("valueFunc: returning ", nrow(result), " rows")
-        last_check_time(max(result$UpdatedAt))  # 更新最后检查时间
-      }
-      result
+      dbGetQuery(con, "SELECT * FROM requests")
     }
   )
   
-  requests_data <- reactiveVal(data.frame(RequestID = character(), RequestStatus = character(), RequestType = character(), Maker = character(), stringsAsFactors = FALSE))
+  # 使用 debounce 限制轮询频率
+  poll_requests_debounced <- debounce(poll_requests, millis = 20000)
   
-  observeEvent(poll_requests(), {
-    new_data <- poll_requests()
-    current_data <- requests_data()
-    message("observeEvent poll_requests: new_data rows = ", nrow(new_data) %||% "NULL", ", current_data rows = ", nrow(current_data) %||% "NULL")
-    
-    if (is.data.frame(new_data)) {
-      if (!is.data.frame(current_data) || nrow(current_data) == 0) {
-        message("Setting new_data as initial requests_data")
-        requests_data(new_data)
-      } else if (nrow(new_data) > 0) {
-        message("Merging new_data into current_data")
-        updated_data <- bind_rows(
-          current_data %>% filter(!RequestID %in% new_data$RequestID),
-          new_data
-        ) %>% sort_requests()
-        requests_data(updated_data)
-      }
-    } else {
-      message("No valid new_data to update requests_data")
-    }
+  observeEvent(poll_requests_debounced(), {
+    requests <- poll_requests_debounced()
+    requests_data(requests)
+    # 确保 input$selected_supplier 已定义
+    req(input$selected_supplier)
+    refresh_board_incremental(requests, output, input)
   }, priority = 10)
   
-  # 初始化绑定
+  # 初始化时绑定所有按钮
   observeEvent(requests_data(), {
     requests <- requests_data()
-    message("observeEvent requests_data: requests rows = ", nrow(requests) %||% "NULL")
-    if (is.data.frame(requests) && nrow(requests) > 0) {
-      bind_buttons(requests$RequestID, requests_data, input, output, session, con)
-    }
-    refresh_board_incremental(requests, output, input)
-  }, once = TRUE)
+    lapply(requests$RequestID, function(request_id) {
+      bind_buttons(request_id, requests_data, input, output, session, con)
+    })
+  }, ignoreInit = FALSE, once = TRUE)
   
-  # 监听数据和筛选变化
+  # 使用 observe 监听 requests_data() 和 input$selected_supplier
   observe({
+    # 确保 requests_data() 和 input$selected_supplier 都已准备好
     req(requests_data(), input$selected_supplier)
+    
+    # 获取请求数据
     requests <- requests_data()
-    message("observe: requests rows = ", nrow(requests) %||% "NULL")
+    
+    # 刷新任务板
     refresh_board_incremental(requests, output, input)
   })
   
