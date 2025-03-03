@@ -697,71 +697,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 增量渲染任务板
-  refresh_board_incremental <- function(requests, output, input) {
-    current_tab <- input$collaboration_tabs %||% "purchase"  # 默认选项卡
-    # 映射 tab 到 RequestType
-    current_tab <- input$collaboration_tabs
-    tab_to_request_type <- list(
-      "purchase" = "采购",
-      "arranged" = "安排",
-      "completed" = "完成",
-      "outbound" = "出库",
-      "new_product" = "新品"
-    )
-    request_type <- tab_to_request_type[[current_tab]] %||% "采购"
-    
-    # 预处理数据：一次性过滤和排序
-    filtered_requests <- requests %>%
-      filter(RequestType == request_type) %>%
-      { if (input$selected_supplier == "全部供应商") . else filter(., Maker == input$selected_supplier) } %>%
-      sort_requests()
-    
-    # 映射 RequestType 到 output ID
-    request_types <- list(
-      "新品" = "new_product_board",
-      "采购" = "purchase_request_board",
-      "安排" = "provider_arranged_board",
-      "完成" = "done_paid_board",
-      "出库" = "outbound_request_board"
-    )
-    output_id <- request_types[[request_type]]
-    
-    # 渲染当前选项卡的 UI
-    output[[output_id]] <- renderUI({
-      if (nrow(filtered_requests) == 0) {
-        div(style = "text-align: center; color: grey; margin-top: 20px;", tags$p("当前没有待处理事项"))
-      } else {
-        # 按 Maker 分组
-        grouped_requests <- split(filtered_requests, filtered_requests$Maker)
-        div(
-          style = "display: flex; flex-direction: column; gap: 15px; padding: 5px",
-          lapply(names(grouped_requests), function(supplier) {
-            requests_group <- grouped_requests[[supplier]]
-            div(
-              style = "border-bottom: 1px solid #ccc; padding-bottom: 10px",
-              tags$h4(supplier, style = "margin-bottom: 10px"),
-              div(
-                style = "display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); row-gap: 15px; column-gap: 15px",
-                lapply(requests_group$RequestID, function(request_id) {
-                  uiOutput(paste0("request_card_", request_id))
-                })
-              )
-            )
-          })
-        )
-      }
-    })
-    
-    # 渲染所有卡片（延迟加载详细信息）
-    if (nrow(filtered_requests) > 0) {
-      lapply(filtered_requests$RequestID, function(request_id) {
-        render_single_request(request_id, filtered_requests, output)
-      })
-    }
-  }
-  
-  
   # 渲染初始供应商筛选器（只定义一次）
   output$supplier_filter <- renderUI({
     selectizeInput(
@@ -849,43 +784,25 @@ server <- function(input, output, session) {
     refresh_board_incremental(requests, output, input)
   }, priority = 10)
   
-  # 定义全局 bound_requests
-  bound_requests <- reactiveVal(character())
-  
-  # 初始化和动态绑定
+  # 初始化时绑定所有按钮
   observeEvent(requests_data(), {
     requests <- requests_data()
-    new_requests <- setdiff(requests$RequestID, bound_requests())
-    
-    lapply(new_requests, function(request_id) {
+    lapply(requests$RequestID, function(request_id) {
       bind_buttons(request_id, requests_data, input, output, session, con)
-      bound_requests(c(bound_requests(), request_id))
     })
-  }, ignoreInit = FALSE)
+  }, ignoreInit = FALSE, once = TRUE)
   
-  # 使用 reactive 缓存过滤后的数据
-  filtered_requests <- reactive({
-    req(requests_data(), input$selected_supplier, input$collaboration_tabs)
-    requests <- requests_data()
-    current_tab <- input$collaboration_tabs
-    request_type <- switch(current_tab,
-                           "purchase" = "采购",
-                           "arranged" = "安排",
-                           "completed" = "完成",
-                           "outbound" = "出库",
-                           "new_product" = "新品",
-                           "采购")
-    
-    requests %>%
-      filter(RequestType == request_type) %>%
-      { if (input$selected_supplier == "全部供应商") . else filter(., Maker == input$selected_supplier) } %>%
-      sort_requests()
-  })
-  
+  # 使用 observe 监听 requests_data() 和 input$selected_supplier
   observe({
-    req(filtered_requests())
-    refresh_board_incremental(filtered_requests(), output, input)
-  }, priority = 5)
+    # 确保 requests_data() 和 input$selected_supplier 都已准备好
+    req(requests_data(), input$selected_supplier)
+    
+    # 获取请求数据
+    requests <- requests_data()
+    
+    # 刷新任务板
+    refresh_board_incremental(requests, output, input)
+  })
   
   # SKU 和物品名输入互斥逻辑
   observeEvent(input$search_sku, {
