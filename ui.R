@@ -100,13 +100,12 @@ ui <- navbarPage(
         margin: 0;
         padding: 0;
         height: 100%;
-        overflow: hidden;
+        overflow: auto;
       }
       .layout-container {
         display: flex;
         flex-direction: row;
         width: 100%;
-        min-height: 100vh;
       }
       .sticky-sidebar {
         position: sticky;
