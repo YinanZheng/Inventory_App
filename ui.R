@@ -96,39 +96,42 @@ ui <- navbarPage(
       /* --------------------------------------------------------- */
 
       /* Flexbox 容器 */
+      html, body {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+      }
       .layout-container {
         display: flex;
         flex-direction: row;
-        height: 100vh;
         width: 100%;
-        overflow: visible;
+        min-height: 100vh;
       }
-      
       .sticky-sidebar {
-        position: sticky; /* 保持固定 */
-        top: 70px; /* 顶部距离 */
+        position: sticky;
+        top: 70px;
         z-index: 900;
-        flex: 0 0 auto; /* 固定宽度并防止被压缩 */
-        width: 380px; /* 默认宽度 */
-        min-width: 280px; /* 最小宽度 */
-        max-width: 580px; /* 最大宽度 */
-        height: calc(100vh - 70px); /* 自动计算高度 */
-        overflow-y: auto; /* 滚动支持 */
+        flex: 0 0 auto;
+        width: 380px;
+        min-width: 280px;
+        max-width: 580px;
+        height: calc(100vh - 70px);
+        overflow-y: auto;
         border-right: 1px solid #e0e0e0;
         border-radius: 8px;
         padding: 20px;
         background-color: #f9f9f9;
-        transition: width 0.2s ease; /* 增加平滑过渡效果 */
+        transition: width 0.2s ease;
       }
-      
       .main-panel {
         flex-grow: 1;
         overflow-y: auto;
-        height: calc(100vh - 70px);
+        min-height: calc(100vh - 70px);
         padding: 20px;
         padding-top: 0px;
         background-color: #ffffff;
-        transition: width 0.2s ease; /* 增加平滑过渡效果 */
+        transition: width 0.2s ease;
       }
       
       .resizable-divider {
@@ -188,6 +191,10 @@ ui <- navbarPage(
       }
       .load-more-trigger {
         visibility: hidden;
+      }
+      .note-card {
+        display: flex !important;
+        opacity: 1 !important;
       }
     ")),
       
