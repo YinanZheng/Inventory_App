@@ -183,7 +183,7 @@ ui <- navbarPage(
         transition: opacity 0.3s;
       }
       .lazy-load-card.loaded {
-        opacity: 1;
+        opacity: 1 !important; /* 确保不被覆盖 */
       }
       .load-more-trigger {
         visibility: hidden;
