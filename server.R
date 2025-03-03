@@ -794,21 +794,17 @@ server <- function(input, output, session) {
     }
   }, priority = 10)
   
-  # 在页面初始化时绑定
+  # 初始化绑定
   observeEvent(requests_data(), {
     requests <- requests_data()
     bind_buttons(requests$RequestID, requests_data, input, output, session, con)
+    refresh_board_incremental(requests, output, input)
   }, once = TRUE)
   
-  # 使用 observe 监听 requests_data() 和 input$selected_supplier
+  # 监听数据和筛选变化
   observe({
-    # 确保 requests_data() 和 input$selected_supplier 都已准备好
     req(requests_data(), input$selected_supplier)
-    
-    # 获取请求数据
     requests <- requests_data()
-    
-    # 刷新任务板
     refresh_board_incremental(requests, output, input)
   })
   
