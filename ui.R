@@ -176,6 +176,18 @@ ui <- navbarPage(
       .status-new {
         background-color: #FFA500; /* 橙色 */
       }
+      
+      .lazy-load-card {
+        min-height: 200px; /* 占位高度 */
+        opacity: 0;
+        transition: opacity 0.3s;
+      }
+      .lazy-load-card.loaded {
+        opacity: 1;
+      }
+      .load-more-trigger {
+        visibility: hidden;
+      }
     ")),
       
       tags$script(HTML("
