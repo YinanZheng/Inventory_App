@@ -762,15 +762,18 @@ server <- function(input, output, session) {
   
   # 使用时间戳增量查询
   poll_requests <- reactivePoll(
-    intervalMillis = 10000,  # 缩短到10秒，提升响应速度
+    intervalMillis = 10000,
     session = session,
     checkFunc = function() {
       dbGetQuery(con, "SELECT MAX(UpdatedAt) AS last_updated FROM requests")$last_updated[1] %||% Sys.time()
     },
     valueFunc = function() {
-      # 只查询最近更新的记录，假设有 UpdatedAt 字段
       last_check <- isolate(poll_requests()$UpdatedAt %||% "1970-01-01 00:00:00")
-      dbGetQuery(con, "SELECT * FROM requests WHERE UpdatedAt > ? LIMIT 1000", params = list(last_check))
+      result <- dbGetQuery(con, "SELECT * FROM requests WHERE UpdatedAt > ? LIMIT 1000", params = list(last_check))
+      if (!is.data.frame(result) || nrow(result) == 0) {
+        return(data.frame())  # 返回空数据框而不是 NULL
+      }
+      result
     }
   )
   
