@@ -1543,8 +1543,8 @@ server <- function(input, output, session) {
     
     paste0(
       "本次采购总金额: ¥", format(total_cost, big.mark = ",", scientific = FALSE),
-      "（其中包含运费: ¥", format(shipping_cost, big.mark = ",", scientific = FALSE),
-      "，物品总数: ", total_quantity, "件）"
+      "（包含运费: ¥", format(shipping_cost, big.mark = ",", scientific = FALSE),
+      "，物品数: ", total_quantity, "件）"
     )
   })
   
