@@ -1194,7 +1194,7 @@ server <- function(input, output, session) {
                     
                     fluidRow(
                       column(4, actionButton("delete_order_btn", "删除", class = "btn-danger", style = "width: 100%;")),
-                      column(4, actionButton("reset_filter_btn", "清空", class = "btn-info", style = "width: 100%;")),
+                      column(4, actionButton("reset_filter_btn", "重置", class = "btn-info", style = "width: 100%;")),
                       column(4, actionButton("refresh_orders", "刷新", class = "btn-secondary", style = "width: 100%;"))
                     )
                   )
@@ -6217,14 +6217,9 @@ server <- function(input, output, session) {
     })
   })
   
-  # order id筛选清除
-  observeEvent(input$clear_filter_order_id, {
-    updateTextInput(session, "filter_order_id", value = "")
-  })
-  
-  # tracking id筛选清除
-  observeEvent(input$clear_filter_tracking_id, {
-    updateTextInput(session, "filter_tracking_id", value = "")
+  # order信息筛选清除
+  observeEvent(input$clear_filter_combined, {
+    updateTextInput(session, "filter_combined", value = "")
   })
   
   
