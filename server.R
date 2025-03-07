@@ -3244,6 +3244,10 @@ server <- function(input, output, session) {
           style = "display: flex; gap: 10px;",
           actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-warning", 
                        style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
+          if (order_status != "取消") {
+            actionButton("cancel_order", label = "取消订单", class = "btn-info", 
+                         style = "font-size: 14px; padding: 5px 10px;")
+          },
           if (order_status == "预定") {
             actionButton("complete_preorder", label = "已完成预定", class = "btn-success", 
                          style = "font-size: 14px; padding: 5px 10px;")
