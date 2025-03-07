@@ -27,19 +27,6 @@ credentials <- data.frame(
   stringsAsFactors = FALSE
 )
 
-getShinyUser <- function() {
-  session <- shiny::getDefaultReactiveDomain()
-  role <- session$userData$role
-  # 添加延迟检查，确保认证完成
-  if (is.null(role) || role == "") {
-    Sys.sleep(1)  # 短暂延迟
-    role <- session$userData$role
-    if (is.null(role) || role == "") "admin" else role
-  } else {
-    role
-  }
-}
-
 # Source shared module R file
 files <- list.files("/srv/shiny-server/erp-module", pattern = "\\.R$", full.names = TRUE)
 lapply(files, function(f) {
