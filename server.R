@@ -3555,7 +3555,16 @@ server <- function(input, output, session) {
     })
   })
   
-
+  # order id筛选清除
+  observeEvent(input$clear_filter_order_id, {
+    updateTextInput(session, "filter_order_id", value = "")
+  })
+  
+  # tracking id筛选清除
+  observeEvent(input$clear_filter_tracking_id, {
+    updateTextInput(session, "filter_tracking_id", value = "")
+  })
+  
   
   
   ##################################################################################################
@@ -3799,7 +3808,7 @@ server <- function(input, output, session) {
     # 关闭确认框
     removeModal()
   })
-  
+
   
   
   ################################################################
