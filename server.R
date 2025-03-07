@@ -3162,9 +3162,11 @@ server <- function(input, output, session) {
   
   # 监听订单选择事件
   observeEvent(selected_order_row(), {
+    # 获取选中行
     selected_row <- selected_order_row()
+    req(selected_row)  # 确保有选中行
     
-    # 如果用户选择了订单，获取选中的订单数据
+    # 获取选中的订单数据
     selected_order <- filtered_orders()[selected_row, ]
     order_id <- selected_order$OrderID
     customer_name <- selected_order$CustomerName
@@ -3174,103 +3176,96 @@ server <- function(input, output, session) {
     # 存储当前选中的订单ID
     selected_order_id(order_id)
     
+    # 设置运单 PDF 文件路径
     label_pdf_file_path(file.path("/var/uploads/shiplabels", paste0(us_tracking_number, ".pdf")))
- 
+    
     # 填充左侧订单信息栏
     updateTextInput(session, "order_id", value = order_id)
     
-    # 动态更新标题
+    # 更新关联物品数据（在 renderUI 之前）
+    associated_items(unique_items_data() %>% filter(OrderID == order_id))
+    
+    # 动态更新标题和按钮
     output$associated_items_title <- renderUI({
-      req(selected_order_id())  # 仅在有选中订单时渲染
+      req(selected_order_id())
       selected_row <- selected_order_row()
       req(selected_row)
       
+      # 获取订单数据
       selected_order <- filtered_orders()[selected_row, ]
       order_id <- selected_order$OrderID
       customer_name <- selected_order$CustomerName
       order_status <- selected_order$OrderStatus
       
-      # 获取相关物品和状态
-      items <- associated_items() 
+      # 获取相关物品
+      items <- associated_items()
+      has_items <- !is.null(items) && is.data.frame(items) && nrow(items) > 0
       
-      # 如果 items 为空，显示默认标题
-      if (is.null(items) || nrow(items) == 0) {
-        return(div(
-          style = "display: flex; align-items: center; justify-content: space-between;",
-          tags$h4(
-            sprintf("#%s - %s 的订单物品（无相关物品）", order_id, customer_name),
-            style = "color: #007BFF; font-weight: bold; margin: 0;"
-          ),
-          div(
-            style = "display: flex; gap: 10px;",
-            actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-info", 
-                         style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
-            if (order_status %in% c("备货", "预定", "调货")) {
-              actionButton("cancel_order", label = "取消订单", class = "btn btn-warning", 
-                           style = "font-size: 14px; padding: 5px 10px;")
-            },
-            if (selected_order$LabelStatus != "无") {
-              downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                             style = "height: 34px; font-size: 14px; padding: 5px 10px;")
-            }
-          )
-        ))
-      }
-      
-      # 检查是否所有物品状态为“美国发货”
-      all_us_shipping <- all(items$Status == "美国发货")
-      
-      # 如果所有物品都是美国发货，找到最晚的发货时间
-      latest_shipping_time <- if (all_us_shipping) {
-        max(items$UsShippingTime, na.rm = TRUE)  # 获取最晚的发货时间
+      # 计算标题后缀（发货时间）
+      shipping_suffix <- ""
+      if (has_items) {
+        all_us_shipping <- all(items$Status == "美国发货", na.rm = TRUE)
+        if (all_us_shipping && "UsShippingTime" %in% names(items)) {
+          latest_shipping_time <- max(items$UsShippingTime, na.rm = TRUE)
+          if (!is.infinite(latest_shipping_time)) {
+            shipping_suffix <- sprintf("（发货日期：%s）", latest_shipping_time)
+          }
+        }
       } else {
-        NULL
+        shipping_suffix <- "（无相关物品）"
       }
       
+      # 统一按钮区域
+      button_div <- div(
+        style = "display: flex; gap: 10px;",
+        actionButton(
+          "regen_order_image", 
+          label = "重新生成订单拼图", 
+          class = "btn btn-info", 
+          style = "height: 34px; font-size: 14px; padding: 5px 10px;"
+        ),
+        if (order_status == "预定") {
+          actionButton(
+            "complete_preorder", 
+            label = "已完成预定", 
+            class = "btn-success", 
+            style = "font-size: 14px; padding: 5px 10px;"
+          )
+        },
+        if (order_status %in% c("备货", "预定", "调货")) {
+          actionButton(
+            "cancel_order", 
+            label = "取消订单", 
+            class = "btn btn-warning", 
+            style = "font-size: 14px; padding: 5px 10px;"
+          )
+        },
+        if (selected_order$LabelStatus != "无") {
+          downloadButton(
+            "download_pdf_manage", 
+            label = "下载运单", 
+            class = "btn btn-primary", 
+            style = "height: 34px; font-size: 14px; padding: 5px 10px;"
+          )
+        }
+      )
+      
+      # 返回 UI
       div(
         style = "display: flex; align-items: center; justify-content: space-between;",
-        
-        # 左侧标题
         tags$h4(
-          sprintf("#%s - %s 的订单物品%s",
-                  order_id,
-                  customer_name,
-                  if (!is.null(latest_shipping_time)) {
-                    sprintf("（发货日期：%s）", latest_shipping_time)
-                  } else {
-                    ""
-                  }),
+          sprintf("#%s - %s 的订单物品%s", order_id, customer_name, shipping_suffix),
           style = "color: #007BFF; font-weight: bold; margin: 0;"
         ),
-        
-        # 右侧按钮
-        div(
-          style = "display: flex; gap: 10px;",
-          actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-info", 
-                       style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
-          if (order_status == "预定") {
-            actionButton("complete_preorder", label = "已完成预定", class = "btn-success", 
-                         style = "font-size: 14px; padding: 5px 10px;")
-          },
-          if (order_status %in% c("备货", "预定", "调货")) {
-            actionButton("cancel_order", label = "取消订单", class = "btn btn-warning", 
-                         style = "font-size: 14px; padding: 5px 10px;")
-          },
-          if (selected_order$LabelStatus != "无") {
-            downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
-                           style = "height: 34px; font-size: 14px; padding: 5px 10px;")
-          }
-        )
+        button_div
       )
     })
-    
-    # 更新关联物品数据
-    associated_items <- associated_items(unique_items_data() %>% filter(OrderID == order_id))
     
     # 重置图片上传模块
     image_sold$reset()
   })
   
+  # 重新生成订单拼图按钮
   observeEvent(input$regen_order_image, {
     req(selected_order_id())
     success <- update_order_montage(selected_order_id(), con, unique_items_data())
