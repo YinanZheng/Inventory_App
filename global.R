@@ -27,6 +27,16 @@ credentials <- data.frame(
   stringsAsFactors = FALSE
 )
 
+getShinyUser <- function(request) {
+  # 从 request 中获取 session
+  session <- shiny::getDefaultReactiveDomain()
+  # 返回用户信息，假设已在 server 中设置
+  list(
+    user = session$userData$user %||% "unknown",
+    role = session$userData$role %||% "admin"  # 默认角色为 admin
+  )
+}
+
 # Source shared module R file
 files <- list.files("/srv/shiny-server/erp-module", pattern = "\\.R$", full.names = TRUE)
 lapply(files, function(f) {
