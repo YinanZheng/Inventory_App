@@ -8,10 +8,17 @@ server <- function(input, output, session) {
     check_credentials = check_credentials(credentials)
   )
   
+  # 获取 admin 状态
+  user_admin <- reactive({
+    # 如果 admin 列存在，直接使用；否则默认为 FALSE
+    admin_status <- res_auth$user_info$admin
+    if (is.null(admin_status)) FALSE else admin_status
+  })
+  
   # 动态渲染选项卡
   output$dynamic_tabs <- renderUI({
-    if (user_role() == "parttime") {
-      # 兼职用户只显示采购页面
+    if (!user_admin()) {
+      # 普通用户显示页面
       tagList(
         tabPanel(
           "采购", icon = icon("shopping-cart"),
@@ -120,7 +127,7 @@ server <- function(input, output, session) {
           )
         ), # end of 采购登记 tab
       )
-    } else if (user_role() == "admin") {
+    } else {
       # 管理员显示所有选项卡（原有完整 UI）
       tagList(
         tabPanel(
