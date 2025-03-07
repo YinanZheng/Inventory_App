@@ -83,24 +83,21 @@ server <- function(input, output, session) {
         
         tabPanel(
           "物品管理", icon = icon("list-check"),
-          div(class = "layout-container",  # Flexbox 容器
-              div(class = "sticky-sidebar",  # sticky 侧边栏
-                  itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE)
-              ),
-              div(class = "resizable-divider"),
-              div(class = "main-panel",
-                  tags$hr(), # 分隔线
+          div(class = "layout-container",
+              div(class = "sticky-sidebar",
+                  itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
+                  tags$hr(),
                   tabsetPanel(id = "manage_tabs", type = "pills",
                               tabPanel("更新图片", icon = icon("image"),
-                                       div(class = "card shadow-sm", style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-                                           tags$p("请点选一行（一种商品）进行图片更新。", style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+                                       div(class = "card shadow-sm", style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;",
+                                           tags$p("请点选一行（一种商品）进行图片更新。", style = "font-size: 14px; color: #6c757d; margin-bottom: 5px;"),
                                            imageModuleUI("image_manage", label = "更新商品图片"),
                                            actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")
                                        )
                               ),
                               tabPanel("更新信息", icon = icon("edit"),
-                                       div(class = "card shadow-sm", style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-                                           tags$p("请点选一行或多行进行信息更新。", style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+                                       div(class = "card shadow-sm", style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;",
+                                           tags$p("请点选一行或多行进行信息更新。", style = "font-size: 14px; color: #6c757d; margin-bottom: 5px;"),
                                            fluidRow(
                                              column(12, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
                                              column(12, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%")),
@@ -113,13 +110,18 @@ server <- function(input, output, session) {
                                        )
                               ),
                               tabPanel("删除", icon = icon("trash"),
-                                       div(class = "card shadow-sm", style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
-                                           tags$p("请点选一行或多行物品，支持批量删除。", style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+                                       div(class = "card shadow-sm", style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;",
+                                           tags$p("请点选一行或多行物品，支持批量删除。", style = "font-size: 14px; color: #6c757d; margin-bottom: 5px;"),
                                            actionButton("confirm_delete_btn", "确认删除", icon = icon("check"), class = "btn-primary", style = "font-size: 16px; width: 100%; height: 42px;")
                                        )
                               )
-                  ),
-                  div(id = "item_table_container_manage", uniqueItemsTableUI("unique_items_table_manage"))
+                  )
+              ),
+              div(class = "resizable-divider"),
+              div(class = "main-panel",
+                  div(id = "item_table_container_manage",
+                      uniqueItemsTableUI("unique_items_table_manage")
+                  )
               )
           )
         ), # end of 物品管理 tab
@@ -214,264 +216,122 @@ server <- function(input, output, session) {
         ), # End of 账务管理
         
         tabPanel(
-          "查询", icon = icon("search"), 
-          div(
-            class = "layout-container",  # Flexbox 容器
-            div(
-              class = "sticky-sidebar",  # sticky 侧边栏
-              uiOutput("query_dynamic_sticky_sidebar"),  # 动态渲染侧边栏内容
-            ),
-            
-            div(
-              class = "resizable-divider",
-            ),
-            
-            div(
-              class = "main-panel",
-              # 使用 tabsetPanel 来组织分页
-              tabsetPanel(
-                id = "query_tabs",
-                type = "pills",
-                tabPanel(
-                  "商品状态",
-                  fluidRow(
-                    column(
-                      5,
-                      div(
-                        class = "card",
-                        style = "height: 373px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("商品信息", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
-                        uiOutput("query_item_info") # 动态渲染物品信息
-                      )
-                    ),
-                    
-                    column(
-                      4,
-                      div(
-                        class = "card",
-                        style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("库存状态", style = "color: #28a745; font-weight: bold; padding-left: 10px;"),
-                        plotlyOutput("inventory_status_chart", height = "320px") # 使用 plotlyOutput
-                      )
-                    ),
-                    
-                    column(
-                      3,
-                      div(
-                        class = "card",
-                        style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("瑕疵情况", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
-                        plotlyOutput("defect_status_chart", height = "320px") # 使用 plotlyOutput
-                      )
-                    )
-                  ),
-                  
-                  div(
-                    style = "display: flex; flex-direction: column;",
-                    div(
-                      style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",  # 表格自适应高度
-                      
-                      div(
-                        id = "context-menu",
-                        style = "display: none; position: absolute; background: white; border: 1px solid #ccc; box-shadow: 0px 4px 6px rgba(0,0,0,0.2); padding: 5px; border-radius: 5px; z-index: 1000;",
-                        actionButton("query_purchase_request", "采购请求", class = "btn btn-primary btn-sm", style = "width: 100%; margin-bottom: 5px;"),
-                        uiOutput("query_outbound_request_btn")  # 动态生成出库请求按钮                
-                      ),
-                      
-                      div(
-                        id = "inventory_table_container_query",
-                        DTOutput("filtered_inventory_table_query")
-                      )
-                    )
+          "查询", icon = icon("search"),
+          div(class = "layout-container",
+              div(class = "sticky-sidebar",
+                  uiOutput("query_dynamic_sticky_sidebar")
+              ),
+              div(class = "resizable-divider"),
+              div(class = "main-panel",
+                  tabsetPanel(id = "query_tabs", type = "pills",
+                              tabPanel("商品状态",
+                                       fluidRow(
+                                         column(5,
+                                                div(class = "card", style = "height: 373px; margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("商品信息", style = "color: #007BFF; font-weight: bold; padding-left: 10px;"),
+                                                    uiOutput("query_item_info")
+                                                )
+                                         ),
+                                         column(4,
+                                                div(class = "card", style = "margin-bottom: 5px; padding: 5px; border: 1px solid #28a745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("库存状态", style = "color: #28a745; font-weight: bold; padding-left: 10px;"),
+                                                    plotlyOutput("inventory_status_chart", height = "320px")
+                                                )
+                                         ),
+                                         column(3,
+                                                div(class = "card", style = "margin-bottom: 5px; padding: 5px; border: 1px solid #dc3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("瑕疵情况", style = "color: #dc3545; font-weight: bold; padding-left: 10px"),
+                                                    plotlyOutput("defect_status_chart", height = "320px")
+                                                )
+                                         )
+                                       ),
+                                       div(style = "display: flex; flex-direction: column;",
+                                           div(style = "flex-grow: 1; overflow-y: auto; padding-top: 10px;",
+                                               div(id = "context-menu", style = "display: none; position: absolute; background: white; border: 1px solid #ccc; box-shadow: 0px 4px 6px rgba(0,0,0,0.2); padding: 5px; border-radius: 5px; z-index: 1000;",
+                                                   actionButton("query_purchase_request", "采购请求", class = "btn btn-primary btn-sm", style = "width: 100%; margin-bottom: 5px;"),
+                                                   uiOutput("query_outbound_request_btn")
+                                               ),
+                                               div(id = "inventory_table_container_query",
+                                                   DTOutput("filtered_inventory_table_query")
+                                               )
+                                           )
+                                       )
+                              ),
+                              tabPanel("采购开销",
+                                       fluidRow(
+                                         column(12,
+                                                div(class = "card", style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    fluidRow(
+                                                      column(3, dateRangeInput("time_range", label = "选择采购时间范围", start = Sys.Date() - 30, end = Sys.Date() + 1)),
+                                                      column(3, radioButtons("precision", label = "选择统计精度", choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"), selected = "天", inline = TRUE)),
+                                                      column(5, radioButtons("expense_type", label = "选择显示内容", choices = c("成本+国内运费" = "cost_domestic", "成本" = "cost", "国内运费" = "domestic_shipping", "国际运费" = "intl_shipping", "总开销" = "total"), selected = "cost_domestic", inline = TRUE)),
+                                                      column(1, actionButton("reset_time_range", label = "", icon = icon("redo"), class = "btn-warning", style = "height: 50px; font-size: 14px;"))
+                                                    ),
+                                                    fluidRow(
+                                                      column(9, plotlyOutput("expense_chart", height = "350px")),
+                                                      column(3, plotlyOutput("pie_chart", height = "350px"))
+                                                    ),
+                                                    uiOutput("confirm_expense_check_ui"),
+                                                    uiOutput("purchase_summary_by_maker_ui")
+                                                )
+                                         )
+                                       )
+                              ),
+                              tabPanel("库存总览",
+                                       fluidRow(
+                                         column(3,
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("国内库存", style = "color: #007BFF; font-weight: bold; text-align: center;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h3(textOutput("domestic_total_count"), style = "color: #007BFF; font-weight: bold;"), tags$p("物品总数")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("domestic_total_value"), style = "color: #007BFF;"), tags$p("货物价值")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("domestic_shipping_cost"), style = "color: #007BFF;"), tags$p("运输成本"))
+                                                )
+                                         ),
+                                         column(3,
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("国际物流", style = "color: #28A745; font-weight: bold; text-align: center;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h3(textOutput("logistics_total_count"), style = "color: #28A745; font-weight: bold;"), tags$p("物品总数")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("logistics_total_value"), style = "color: #28A745;"), tags$p("货物价值")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("logistics_shipping_cost"), style = "color: #28A745;"), tags$p("运输成本"))
+                                                )
+                                         ),
+                                         column(3,
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #6F42C1; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("美国库存", style = "color: #6F42C1; font-weight: bold; text-align: center;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h3(textOutput("us_total_count"), style = "color: #6F42C1; font-weight: bold;"), tags$p("物品总数")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("us_total_value"), style = "color: #6F42C1;"), tags$p("货物价值")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("us_shipping_cost"), style = "color: #6F42C1;"), tags$p("运输成本"))
+                                                )
+                                         ),
+                                         column(3,
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #FF5733; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("商品售出", style = "color: #FF5733; font-weight: bold; text-align: center;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h3(textOutput("sold_total_count_with_shipping"), style = "color: #FF5733; font-weight: bold;"), tags$p("物品总数（已送达）")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("sold_total_value"), style = "color: #FF5733;"), tags$p("货物价值")),
+                                                    tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
+                                                    div(style = "text-align: center; margin-top: 10px;", tags$h4(textOutput("sold_shipping_cost"), style = "color: #FF5733;"), tags$p("运输成本"))
+                                                )
+                                         )
+                                       ),
+                                       tags$hr(style = "margin: 10px 0; border: 1px solid #ddd;"),
+                                       fluidRow(
+                                         column(12,
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                    tags$h4("库存状态流转桑基图", style = "color: #007BFF; font-weight: bold; text-align: center;"),
+                                                    sankeyNetworkOutput("status_sankey", height = "345px")
+                                                )
+                                         )
+                                       )
+                              )
                   )
-                ), # end of 商品状态
-                
-                tabPanel(
-                  "采购开销",
-                  fluidRow(
-                    column(
-                      12,
-                      div(
-                        class = "card",
-                        style = "margin-bottom: 5px; padding: 5px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        
-                        # 选择器行
-                        fluidRow(
-                          column(3,                   
-                                 dateRangeInput(
-                                   "time_range",
-                                   label = "选择采购时间范围",
-                                   start = Sys.Date() - 30, # 默认最近30天
-                                   end = Sys.Date() + 1
-                                 )),
-                          column(3,
-                                 radioButtons(
-                                   "precision",
-                                   label = "选择统计精度",
-                                   choices = c("天" = "天", "周" = "周", "月" = "月", "年" = "年"),
-                                   selected = "天",
-                                   inline = TRUE # 使选项横向排列
-                                 )),
-                          column(5,
-                                 radioButtons(
-                                   "expense_type",
-                                   label = "选择显示内容",
-                                   choices = c("成本+国内运费" = "cost_domestic", "成本" = "cost", "国内运费" = "domestic_shipping", "国际运费" = "intl_shipping", "总开销" = "total"),
-                                   selected = "cost_domestic",
-                                   inline = TRUE # 使选项横向排列
-                                 )),
-                          column(1,
-                                 actionButton(
-                                   "reset_time_range",
-                                   label = "",
-                                   icon = icon("redo"), # 添加一个重置图标
-                                   class = "btn-warning", # 设置按钮样式
-                                   style = "height: 50px; font-size: 14px;" # 设置样式
-                                 ))
-                        ),
-                        
-                        # 图表行：柱状图 + 饼图
-                        fluidRow(
-                          column(9, plotlyOutput("expense_chart", height = "350px")), # 80% 宽度柱状图
-                          column(3, plotlyOutput("pie_chart", height = "350px"))  # 20% 宽度饼图
-                        ),
-                        uiOutput("confirm_expense_check_ui"),
-                        uiOutput("purchase_summary_by_maker_ui") # 采购汇总表
-                      )
-                    )
-                  )
-                ), # end of 开销汇总tab
-                
-                
-                tabPanel(
-                  "库存总览",
-                  fluidRow(
-                    # 国内库存卡片
-                    column(
-                      3,
-                      div(
-                        class = "card",
-                        style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("国内库存", style = "color: #007BFF; font-weight: bold; text-align: center;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h3(textOutput("domestic_total_count"), style = "color: #007BFF; font-weight: bold;"),
-                          tags$p("物品总数")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("domestic_total_value"), style = "color: #007BFF;"),
-                          tags$p("货物价值")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("domestic_shipping_cost"), style = "color: #007BFF;"),
-                          tags$p("运输成本")
-                        )
-                      )
-                    ),
-                    # 国际物流卡片
-                    column(
-                      3,
-                      div(
-                        class = "card",
-                        style = "padding: 20px; border: 1px solid #28A745; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("国际物流", style = "color: #28A745; font-weight: bold; text-align: center;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h3(textOutput("logistics_total_count"), style = "color: #28A745; font-weight: bold;"),
-                          tags$p("物品总数")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("logistics_total_value"), style = "color: #28A745;"),
-                          tags$p("货物价值")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("logistics_shipping_cost"), style = "color: #28A745;"),
-                          tags$p("运输成本")
-                        )
-                      )
-                    ),
-                    # 美国库存卡片
-                    column(
-                      3,
-                      div(
-                        class = "card",
-                        style = "padding: 20px; border: 1px solid #6F42C1; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("美国库存", style = "color: #6F42C1; font-weight: bold; text-align: center;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h3(textOutput("us_total_count"), style = "color: #6F42C1; font-weight: bold;"),
-                          tags$p("物品总数")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("us_total_value"), style = "color: #6F42C1;"),
-                          tags$p("货物价值")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("us_shipping_cost"), style = "color: #6F42C1;"),
-                          tags$p("运输成本")
-                        )
-                      )
-                    ),
-                    # 商品售出卡片
-                    column(
-                      3,
-                      div(
-                        class = "card",
-                        style = "padding: 20px; border: 1px solid #FF5733; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("商品售出", style = "color: #FF5733; font-weight: bold; text-align: center;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h3(
-                            textOutput("sold_total_count_with_shipping"),
-                            style = "color: #FF5733; font-weight: bold;"
-                          ),
-                          tags$p("物品总数（已送达）")
-                        )
-                        ,
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("sold_total_value"), style = "color: #FF5733;"),
-                          tags$p("货物价值")
-                        ),
-                        tags$hr(style = "border: none; height: 1px; background-color: #ddd; margin: 15px 0;"),
-                        div(
-                          style = "text-align: center; margin-top: 10px;",
-                          tags$h4(textOutput("sold_shipping_cost"), style = "color: #FF5733;"),
-                          tags$p("运输成本")
-                        )
-                      )
-                    )
-                  ),
-                  
-                  tags$hr(style = "margin: 10px 0; border: 1px solid #ddd;"),
-                  
-                  fluidRow(
-                    column(
-                      12,
-                      div(
-                        class = "card",
-                        style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-                        tags$h4("库存状态流转桑基图", style = "color: #007BFF; font-weight: bold; text-align: center;"),
-                        sankeyNetworkOutput("status_sankey", height = "345px")
-                      )
-                    )
-                  )
-                ) # end of 库存汇总tab
-              ) #end of tabsetPanel
-            )
+              )
           )
         ) # end of 查询 tab
       )
