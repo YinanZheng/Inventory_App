@@ -359,7 +359,7 @@ ui <- shinymanager::secure_app(
         if (is.null(user_role)) user_role <- "admin"  # 默认角色为 admin，防止未登录时出错
         
         if (user_role == "employee") {
-          tagList(
+          list(
             tabPanel(
               "采购", icon = icon("shopping-cart"),
               div(
@@ -468,7 +468,7 @@ ui <- shinymanager::secure_app(
             ) # end of 采购登记 tab
           )
         } else {
-          tagList(
+          list(
             tabPanel(
               "协作", icon = icon("users"),
               div(
