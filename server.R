@@ -122,7 +122,93 @@ server <- function(input, output, session) {
               )
             )
           )
-        ) # end of 采购登记 tab
+        ), # end of 采购登记 tab
+        
+        
+        tabPanel(
+          "物品管理", icon = icon("list-check"),
+          div(
+            class = "layout-container",  # Flexbox 容器
+            div(
+              class = "sticky-sidebar",  # sticky 侧边栏
+              itemFilterUI(id = "manage_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = TRUE),
+              
+              tags$hr(), # 分隔线
+              
+              # 添加 TabsetPanel 组织不同功能
+              tabsetPanel(
+                id = "manage_tabs",
+                type = "pills",
+                tabPanel(
+                  "更新图片", icon = icon("image"),  # 图标
+                  div(
+                    class = "card shadow-sm", # 添加卡片样式
+                    style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+                    # 添加说明
+                    tags$p("请点选一行（一种商品）进行图片更新。", 
+                           style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+                    
+                    imageModuleUI("image_manage", label = "更新商品图片"),
+                    actionButton("update_image_btn", "更新图片", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")
+                  )
+                ),
+                tabPanel(
+                  "更新信息", icon = icon("edit"),  # 图标
+                  div(
+                    class = "card shadow-sm", # 添加卡片样式
+                    style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+                    
+                    # 添加说明
+                    tags$p("请点选一行或多行进行信息更新。", 
+                           style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+                    
+                    fluidRow(
+                      column(12, numericInput("update_product_cost", "修改单价", value = NULL, min = 0, width = "100%")),
+                      column(12, numericInput("update_shipping_cost", "修改国内运费", value = NULL, min = 0, width = "100%")),
+                      column(12, dateInput("update_purchase_date", "修改采购日期", value = Sys.Date(), width = "100%"))
+                    ),
+                    fluidRow(
+                      column(6, actionButton("update_info_btn", "更新信息", icon = icon("pen"), style = "background-color: #006400; color: white; width: 100%;")),
+                      column(6, actionButton("clear_info_btn", "清空", icon = icon("eraser"), style = "background-color: #8B0000; color: white; width: 100%;"))
+                    )
+                  )
+                ),
+                tabPanel(
+                  "删除", icon = icon("trash"),  # 图标
+                  div(
+                    class = "card shadow-sm", # 添加卡片样式
+                    style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 20px; background-color: #f9f9f9;",
+                    
+                    # 添加说明
+                    tags$p("请点选一行或多行物品，支持批量删除。", 
+                           style = "font-size: 14px; color: #6c757d; margin-bottom: 10px;"),
+                    
+                    actionButton(
+                      "confirm_delete_btn",
+                      "确认删除",
+                      icon = icon("check"),
+                      class = "btn-primary",
+                      style = "font-size: 16px; width: 100%; height: 42px;"
+                    )
+                  )
+                )
+              )
+            ),
+            
+            div(
+              class = "resizable-divider",
+            ),
+            
+            div(
+              class = "main-panel",
+              
+              div(
+                id = "item_table_container_manage",
+                uniqueItemsTableUI("unique_items_table_manage")
+              )
+            )
+          )
+        ) # end of 物品管理 tab
       )
     } else {
       list(
