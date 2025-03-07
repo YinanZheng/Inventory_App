@@ -3205,7 +3205,7 @@ server <- function(input, output, session) {
             style = "display: flex; gap: 10px;",
             actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-info", 
                          style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
-            if (order_status != "取消") {
+            if (order_status %in% c("备货", "预定", "调货")) {
               actionButton("cancel_order", label = "取消订单", class = "btn btn-warning", 
                            style = "font-size: 14px; padding: 5px 10px;")
             },
@@ -3252,7 +3252,7 @@ server <- function(input, output, session) {
             actionButton("complete_preorder", label = "已完成预定", class = "btn-success", 
                          style = "font-size: 14px; padding: 5px 10px;")
           },
-          if (order_status != "取消") {
+          if (order_status %in% c("备货", "预定", "调货")) {
             actionButton("cancel_order", label = "取消订单", class = "btn btn-warning", 
                          style = "font-size: 14px; padding: 5px 10px;")
           },
