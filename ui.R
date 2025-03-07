@@ -9,5 +9,19 @@ ui <- shinymanager::secure_app(
     tags$p("© 2025 GoldenBean LLC", style = "text-align: center; color: #999;")
   ),
   
-  ui = uiOutput("dynamic_ui")
+  ui = tagList(
+    useShinyjs(),  # 启用 shinyjs
+    # 加载动画独立放在顶层
+    tags$div(
+      id = "loading-screen",
+      style = "position: fixed; width: 100%; height: 100%; background: white; 
+               z-index: 9999; display: flex; flex-direction: column; 
+               justify-content: center; align-items: center; text-align: center;",
+      tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
+               style = "width: 80px; height: 80px;"),
+      tags$p("系统加载中，请稍后...", 
+             style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
+    ),
+    uiOutput("dynamic_ui")  # 主 UI
+  )
 )

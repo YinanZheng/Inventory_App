@@ -17,7 +17,6 @@ library(baRcodeR)
 library(plotly)
 library(networkD3)
 library(openxlsx)
-library(future)
 
 # 用户管理
 credentials <- data.frame(

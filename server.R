@@ -1894,22 +1894,6 @@ server <- function(input, output, session) {
             style = "position: fixed; top: 8px; right: 20px; z-index: 9999;"
           ),
           
-          # 加载动画界面
-          tags$div(
-            id = "loading-screen",
-            style = "position: fixed; width: 100%; height: 100%; background: white; 
-           z-index: 9999; display: flex; flex-direction: column; 
-           justify-content: center; align-items: center; text-align: center;",
-            
-            # 旋转的毛线球 GIF
-            tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
-                     style = "width: 80px; height: 80px;"),
-            
-            # 加载提示文字
-            tags$p("系统加载中，请稍后...", 
-                   style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
-          ),
-          
           # 库存状态浮动框 （协作页）
           tags$div(
             id = "inventory-status-popup",
@@ -2224,20 +2208,12 @@ server <- function(input, output, session) {
     ))
   })
   
+  # 在 UI 渲染完成后隐藏加载动画
+  observeEvent(output$dynamic_ui, {
+    hide("loading-screen")  # 使用 shinyjs 隐藏
+  }, once = TRUE)  # 仅执行一次
+  
   source("global.R", local = TRUE)
-  
-  ##############################################################################
-  
-  # 显示加载动画
-  plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
-  show("loading-screen")  # 显示加载界面
-  
-  future({
-    return(TRUE)  # 任务完成
-  }) %>% 
-    promises::then(function(result) {
-      runjs("$('#loading-screen').fadeOut(1000);")  # 1秒淡出加载界面
-    })
   
   ##############################################################################
   
