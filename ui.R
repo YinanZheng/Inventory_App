@@ -2006,6 +2006,7 @@ ui <- secure_app(
   ),
   
   credentials = credentials,
+  
   on_login = function(user_info) {
     session$userData$role <- user_info$role  # 存储角色
   },
@@ -2014,60 +2015,59 @@ ui <- secure_app(
     tagList(
       tags$head(
         tags$style(HTML("
-          body {
-            background: linear-gradient(135deg, #6e8efb, #a777e3);  /* 渐变背景，从蓝色到紫色 */
-            font-family: 'Arial', sans-serif;  /* 使用 Arial 字体 */
-            height: 100vh;  /* 占满整个视口高度 */
-            display: flex;  /* 使用 flexbox 居中 */
-            align-items: center;  /* 垂直居中 */
-            justify-content: center;  /* 水平居中 */
-            margin: 0;  /* 移除默认边距 */
-          }
-          .login-container {
-            width: 400px;  /* 登录框宽度 */
-            padding: 40px;  /* 内边距 */
-            background: white;  /* 白色背景 */
-            border-radius: 15px;  /* 圆角 */
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);  /* 阴影效果 */
-          }
-          .login-title {
-            text-align: center;  /* 标题居中 */
-            color: #333;  /* 深灰色文字 */
-            margin-bottom: 30px;  /* 下边距 */
-            font-size: 28px;  /* 字体大小 */
-            font-weight: bold;  /* 加粗 */
-          }
-          .form-control {
-            width: 100%;  /* 输入框宽度占满容器 */
-            padding: 12px;  /* 内边距 */
-            margin-bottom: 20px;  /* 下边距 */
-            border: 1px solid #ddd;  /* 浅灰色边框 */
-            border-radius: 5px;  /* 圆角 */
-            font-size: 16px;  /* 字体大小 */
-            box-sizing: border-box;  /* 边框计算在内 */
-          }
-          .btn-login {
-            width: 100%;  /* 按钮宽度占满容器 */
-            padding: 12px;  /* 内边距 */
-            background: #007bff;  /* 蓝色背景 */
-            color: white;  /* 白色文字 */
-            border: none;  /* 无边框 */
-            border-radius: 5px;  /* 圆角 */
-            font-size: 16px;  /* 字体大小 */
-            cursor: pointer;  /* 手形光标 */
-            transition: background 0.3s;  /* 背景色过渡动画 */
-          }
-          .btn-login:hover {
-            background: #0056b3;  /* 悬停时变深蓝色 */
-          }
-        "))
+        body {
+          background: linear-gradient(135deg, #6e8efb, #a777e3);
+          font-family: 'Arial', sans-serif;
+          height: 100vh;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin: 0;
+        }
+        .login-container {
+          width: 400px;
+          padding: 40px;
+          background: white;
+          border-radius: 15px;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+        .login-title {
+          text-align: center;
+          color: #333;
+          margin-bottom: 30px;
+          font-size: 28px;
+          font-weight: bold;
+        }
+        .form-control {
+          width: 100%;
+          padding: 12px;
+          margin-bottom: 20px;
+          border: 1px solid #ddd;
+          border-radius: 5px;
+          font-size: 16px;
+          box-sizing: border-box;
+        }
+        .btn-primary {  /* shinymanager 默认按钮类 */
+          width: 100%;
+          padding: 12px;
+          background: #007bff;
+          color: white;
+          border: none;
+          border-radius: 5px;
+          font-size: 16px;
+          cursor: pointer;
+          transition: background 0.3s;
+        }
+        .btn-primary:hover {
+          background: #0056b3;
+        }
+      "))
       ),
-      
       div(class = "login-container",
-          h3("ERP 系统登录"),
-          textInput("user", "用户名"),
-          passwordInput("password", "密码"),
-          actionButton("login", "登录")
+          h3("ERP 系统登录", class = "login-title"),
+          textInput("shinymanager_userName", "用户名", "", class = "form-control"),
+          passwordInput("shinymanager_password", "密码", "", class = "form-control")
+          # 不需要手动添加 actionButton，shinymanager 会自动添加
       )
     )
   }
