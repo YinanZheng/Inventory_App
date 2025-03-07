@@ -4553,6 +4553,9 @@ server <- function(input, output, session) {
   
   # 分页切换更新
   observe({
+    # 确保 input$transaction_tabs 存在
+    req(input$transaction_tabs)
+    
     if (input$transaction_tabs == "账户余额总览") {
       updateAccountOverview(output, con)
     }
@@ -4566,10 +4569,10 @@ server <- function(input, output, session) {
     )
     
     if (!is.null(account_type)) {
-      refreshTransactionTable(account_type, cache_env, transaction_table_hash, output, con)  # 优化后的表格刷新
+      refreshTransactionTable(account_type, cache_env, transaction_table_hash, output, con)
       resetToCreateMode(is_update_mode, selected_TransactionID, selected_TransactionImagePath, session)
-      resetTransactionForm(session, image_transactions) # 重置输入框
-      resetTransferForm(session, image_transfer) # 重置输入框
+      resetTransactionForm(session, image_transactions)
+      resetTransferForm(session, image_transfer)
     }
   })
   
