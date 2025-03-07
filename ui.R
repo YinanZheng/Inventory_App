@@ -10,7 +10,7 @@ ui <- shinymanager::secure_app(
   ),
   
   ui = function(request) {
-    user_role <- getShinyUser(request)$role
+    user_role <- getShinyUser()
     
     tabs <- if (user_role == "employee") {
       list(
