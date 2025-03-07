@@ -1,6 +1,8 @@
 # Define server logic
 server <- function(input, output, session) {
   
+  source("global.R", local = TRUE)
+  
   # shinymanager 认证逻辑
   res_auth <- shinymanager::secure_server(
     check_credentials = shinymanager::check_credentials(credentials) # 使用 global.R 中定义的 credentials
@@ -2449,8 +2451,6 @@ server <- function(input, output, session) {
       tabs  # 展开 tabPanel 集合
     ))
   })
-  
-  source("global.R", local = TRUE)
   
   ##############################################################################
   
