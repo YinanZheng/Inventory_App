@@ -716,6 +716,8 @@ server <- function(input, output, session) {
   
   # 动态更新筛选器选项
   observe({
+    # 确保 input$collaboration_tabs 存在
+    req(input$collaboration_tabs)
     current_value <- input$collaboration_tabs
     
     # 映射 tab value 到 RequestType
@@ -727,7 +729,12 @@ server <- function(input, output, session) {
       "new_product" = "新品"
     )
     
-    request_type <- tab_value_to_request_type[[current_value]] %||% "采购"  # 默认值
+    # 检查 current_value 是否有效，若无效则使用默认值
+    request_type <- if (current_value %in% names(tab_value_to_request_type)) {
+      tab_value_to_request_type[[current_value]] %||% "采购"
+    } else {
+      "采购"
+    }
     
     req(requests_data())
     
