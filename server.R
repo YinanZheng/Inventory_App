@@ -3200,7 +3200,7 @@ server <- function(input, output, session) {
           }
         }
       } else {
-        shipping_suffix <- "（无相关物品）"
+        shipping_suffix <- "（无）"
       }
       
       # 统一按钮区域
