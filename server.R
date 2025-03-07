@@ -3306,7 +3306,7 @@ server <- function(input, output, session) {
     # 在 R 中拼接备注内容
     new_notes <- paste(existing_notes, sprintf("【预定完成 %s】", format(Sys.Date(), "%Y-%m-%d")))
     
-    update_order_status(order_id, "备货", updated_notes = new_notes, refresh_trigger = orders_refresh_trigger, con)
+    update_order_status(order_id, new_status = "备货", updated_notes = new_notes, refresh_trigger = orders_refresh_trigger, con = con)
   })
   
   # 取消订单按钮
@@ -3354,7 +3354,7 @@ server <- function(input, output, session) {
       }
       
       # 更新订单状态为"取消"
-      update_order_status(order_id, "取消", refresh_trigger = orders_refresh_trigger, con)
+      update_order_status(order_id, new_status = "取消", refresh_trigger = orders_refresh_trigger, con = con)
       
       # 通知用户操作结果
       message <- if (nrow(associated_items) > 0) {
@@ -3377,7 +3377,6 @@ server <- function(input, output, session) {
       showNotification(paste("取消订单时发生错误：", e$message), type = "error")
     })
   })
-  
   
   # 渲染物品信息卡片  
   observe({
