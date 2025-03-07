@@ -21,9 +21,9 @@ library(future)
 
 # 用户管理
 credentials <- data.frame(
-  user = c("guest", "admin"),          # 用户名
-  password = c("guest", "admin"),    # 密码
-  role = c("parttime", "admin"),          # 角色
+  user = c("employee", "admin"),          # 用户名
+  password = c("emp123", "admin123"),     # 密码
+  role = c("employee", "admin"),          # 角色
   stringsAsFactors = FALSE
 )
 
