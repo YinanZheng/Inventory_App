@@ -794,8 +794,37 @@ ui <- navbarPage(
               class = "card",
               style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
               tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
-              textInput("filter_order_id", NULL, placeholder = "订单号", width = "100%"),
-              textInput("filter_tracking_id", NULL, placeholder = "运单号", width = "100%"),
+              
+              div(
+                style = "display: flex; align-items: center; gap: 0px;",
+                textInput(
+                  "filter_order_id", 
+                  label = NULL, 
+                  placeholder = "订单号", 
+                  width = "100%"
+                ),
+                actionButton(
+                  "clear_filter_order_id", 
+                  label = "", 
+                  icon = icon("xmark", style = "color: #D32F2F;"), 
+                  style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
+              ),
+              
+              div(
+                style = "display: flex; align-items: center; gap: 0px;",
+                textInput(
+                  "filter_tracking_id", 
+                  label = NULL, 
+                  placeholder = "运单号", 
+                  width = "100%"
+                ),
+                actionButton(
+                  "clear_filter_tracking_id", 
+                  label = "", 
+                  icon = icon("xmark", style = "color: #D32F2F;"), 
+                  style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
+              ),
+              
               fluidRow(
                 column(6, textInput("filter_customer_name", NULL, placeholder = "顾客姓名", width = "100%")),
                 column(6, textInput("filter_customer_netname", NULL, placeholder = "顾客网名", width = "100%"))
