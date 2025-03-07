@@ -6,14 +6,25 @@ server <- function(input, output, session) {
     check_credentials = shinymanager::check_credentials(credentials) # 使用 global.R 中定义的 credentials
   )
   
-  observe({
+  # 定义一个 reactive 值来跟踪认证状态
+  auth_status <- reactive({
     user_info <- reactiveValuesToList(res_auth)
-    session$userData$user <- user_info$user
-    session$userData$role <- user_info$role
-    runjs("$('#loading-screen').css('display', 'flex');")
+    list(user = user_info$user, role = user_info$role)
+  })
+  
+  observe({
+    user_info <- auth_status()
+    if (!is.null(user_info$user)) {  # 确保认证完成
+      session$userData$user <- user_info$user
+      session$userData$role <- user_info$role
+      cat("Authenticated user:", user_info$user, "Role:", user_info$role, "\n")
+      runjs("$('#loading-screen').css('display', 'flex');")  # 显示加载动画
+    }
   })
   
   output$dynamic_ui <- renderUI({
+    user_info <- auth_status()
+    req(user_info$user)  # 确保认证完成后再渲染
     user_role <- session$userData$role %||% "admin"      
     tabs <- if (user_role == "employee") {
       list(
@@ -1905,6 +1916,8 @@ server <- function(input, output, session) {
             tags$link(rel = "icon", type = "image/x-icon", href = "https://www.goldenbeanllc.com/icons/favicon-96x96.png"),
             
             tags$style(HTML("
+            #loading-screen { transition: opacity 1s ease-out; }
+
             /* 强制导航栏支持水平滚动 */
             .navbar-nav {
               display: flex !important;
@@ -2209,9 +2222,11 @@ server <- function(input, output, session) {
   })
   
   # 在 UI 渲染完成后隐藏加载动画
-  observeEvent(output$dynamic_ui, {
-    hide("loading-screen")  # 使用 shinyjs 隐藏
-  }, once = TRUE)  # 仅执行一次
+  observe({
+    if (!is.null(output$dynamic_ui)) {  # 检查 output 是否已定义
+      hide("loading-screen")  # 隐藏加载动画
+    }
+  }, priority = -1)  # 降低优先级，确保 renderUI 先完成
   
   source("global.R", local = TRUE)
   
