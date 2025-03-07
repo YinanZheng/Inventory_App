@@ -12,23 +12,11 @@ server <- function(input, output, session) {
     list(user = user_info$user, role = user_info$role)
   })
   
-  # 初始化时确保加载页面显示
-  observe({
-    shinyjs::show("loading_page")
-    shinyjs::hide("main_ui")
-  })
-  
-  # 监听认证状态
   observe({
     user_info <- auth_status()
-    if (!is.null(user_info$user)) {  # 认证完成后
+    if (!is.null(user_info$user)) {  # 确保认证完成
       session$userData$user <- user_info$user
       session$userData$role <- user_info$role
-      cat("Authenticated user:", user_info$user, "Role:", user_info$role, "\n")
-      
-      # 认证成功后保持加载页面，直到 dynamic_ui 渲染完成
-      shinyjs::show("loading_page")
-      shinyjs::hide("main_ui")
     }
   })
   
@@ -2230,12 +2218,6 @@ server <- function(input, output, session) {
       tabs  # 展开 tabPanel 集合
     ))
   })
-  
-  # 当 dynamic_ui 渲染完成后，隐藏加载页面并显示主界面
-  observeEvent(output$dynamic_ui, {
-    shinyjs::hide("loading_page")
-    shinyjs::show("main_ui")
-  }, once = FALSE)
   
   source("global.R", local = TRUE)
   
