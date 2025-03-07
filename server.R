@@ -18,7 +18,6 @@ server <- function(input, output, session) {
       session$userData$user <- user_info$user
       session$userData$role <- user_info$role
       cat("Authenticated user:", user_info$user, "Role:", user_info$role, "\n")
-      runjs("$('#loading-screen').css('display', 'flex');")  # 显示加载动画
     }
   })
   
@@ -2220,13 +2219,6 @@ server <- function(input, output, session) {
       tabs  # 展开 tabPanel 集合
     ))
   })
-  
-  # 在 UI 渲染完成后隐藏加载动画
-  observe({
-    if (!is.null(output$dynamic_ui)) {  # 检查 output 是否已定义
-      hide("loading-screen")  # 隐藏加载动画
-    }
-  }, priority = -1)  # 降低优先级，确保 renderUI 先完成
   
   source("global.R", local = TRUE)
   
