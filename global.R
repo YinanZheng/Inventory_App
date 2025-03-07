@@ -30,7 +30,14 @@ credentials <- data.frame(
 getShinyUser <- function() {
   session <- shiny::getDefaultReactiveDomain()
   role <- session$userData$role
-  if (is.null(role) || role == "") "admin" else role  # 明确默认值逻辑
+  # 添加延迟检查，确保认证完成
+  if (is.null(role) || role == "") {
+    Sys.sleep(1)  # 短暂延迟
+    role <- session$userData$role
+    if (is.null(role) || role == "") "admin" else role
+  } else {
+    role
+  }
 }
 
 # Source shared module R file
