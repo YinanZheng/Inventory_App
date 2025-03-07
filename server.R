@@ -3205,6 +3205,10 @@ server <- function(input, output, session) {
             style = "display: flex; gap: 10px;",
             actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-warning", 
                          style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
+            if (order_status != "取消") {
+              actionButton("cancel_order", label = "取消订单", class = "btn-info", 
+                           style = "font-size: 14px; padding: 5px 10px;")
+            },
             if (selected_order$LabelStatus != "无") {
               downloadButton("download_pdf_manage", label = "下载运单", class = "btn btn-primary", 
                              style = "height: 34px; font-size: 14px; padding: 5px 10px;")
