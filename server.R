@@ -10,7 +10,7 @@ server <- function(input, output, session) {
     user_info <- reactiveValuesToList(res_auth)
     session$userData$user <- user_info$user
     session$userData$role <- user_info$role
-    message(paste("Authenticated user:", user_info$user, "Role:", user_info$role))  # 调试输出
+    runjs("$('#loading-screen').css('display', 'flex');")
   })
   
   output$dynamic_ui <- renderUI({

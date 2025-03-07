@@ -11,11 +11,11 @@ ui <- shinymanager::secure_app(
   
   ui = tagList(
     useShinyjs(),  # 启用 shinyjs
-    # 加载动画独立放在顶层
+    # 加载动画初始隐藏
     tags$div(
       id = "loading-screen",
       style = "position: fixed; width: 100%; height: 100%; background: white; 
-               z-index: 9999; display: flex; flex-direction: column; 
+               z-index: 9999; display: none; flex-direction: column; 
                justify-content: center; align-items: center; text-align: center;",
       tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
                style = "width: 80px; height: 80px;"),
