@@ -1163,47 +1163,24 @@ server <- function(input, output, session) {
                     style = "margin-bottom: 5px; padding: 15px; border: 1px solid #28A745; border-radius: 8px;",
                     tags$h4("订单筛选", style = "color: #28A745; font-weight: bold;"),
                     
+                    # Single combined search input
                     div(
                       style = "display: flex; align-items: center; gap: 0px;",
                       textInput(
-                        "filter_order_id", 
+                        "filter_combined", 
                         label = NULL, 
-                        placeholder = "订单号", 
+                        placeholder = "搜索订单信息", 
                         width = "100%"
                       ),
                       actionButton(
-                        "clear_filter_order_id", 
+                        "clear_filter_combined", 
                         label = "", 
                         icon = icon("xmark", style = "color: #D32F2F;"), 
-                        style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
+                        style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;"
+                      )
                     ),
                     
-                    div(
-                      style = "display: flex; align-items: center; gap: 0px;",
-                      textInput(
-                        "filter_tracking_id", 
-                        label = NULL, 
-                        placeholder = "运单号", 
-                        width = "100%"
-                      ),
-                      actionButton(
-                        "clear_filter_tracking_id", 
-                        label = "", 
-                        icon = icon("xmark", style = "color: #D32F2F;"), 
-                        style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
-                    ),
-                    
-                    fluidRow(
-                      column(6, textInput("filter_customer_name", NULL, placeholder = "顾客姓名", width = "100%")),
-                      column(6, textInput("filter_customer_netname", NULL, placeholder = "顾客网名", width = "100%"))
-                    ),
-                    fluidRow(
-                      column(6, textInput("filter_sku", NULL, placeholder = "SKU", width = "100%")),
-                      column(6, autocompleteInputUI("sold", NULL, placeholder = "商品名"))
-                    ),
-                    fluidRow(
-                      column(12, textInput("filter_order_notes", NULL, placeholder = "订单备注", width = "100%")),
-                    ),
+                    # Remaining filters (platform, status, date range, and buttons)
                     fluidRow(
                       column(6, selectInput("filter_platform", NULL, choices = c("电商平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
                                             selected = "", width = "100%")),
@@ -3037,82 +3014,66 @@ server <- function(input, output, session) {
     data
   })
   
-  # 售出-订单管理分页过滤
-  debounced_item_name <- debounce(
-    reactive({ trimws(input[["sold-item_name"]]) }),  # 确保输入值是去除空格的
-    millis = 300  # 设置防抖时间为 300 毫秒（可根据需要调整）
+  # Define debounced input for the combined search field
+  debounced_filter_combined <- debounce(
+    reactive({ trimws(input$filter_combined) }),  # Trim whitespace from input
+    millis = 500  # Set debounce delay to 500 milliseconds
   )
   
   filtered_orders <- reactive({
-    req(orders())  # 确保订单数据存在
+    req(orders())  # Ensure order data exists
     
-    data <- orders()  # 获取所有订单数据
+    data <- orders()  # Get all order data
     
-    # 根据订单号筛选
-    if (!is.null(input$filter_order_id) && input$filter_order_id != "") {
-      data <- data %>% filter(grepl(trimws(input$filter_order_id), OrderID, ignore.case = TRUE))
+    # Combined filter logic with debouncing
+    search_term <- debounced_filter_combined()
+    if (!is.null(search_term) && length(search_term) > 0 && nzchar(search_term)) {
+      # Filter across multiple fields using OR logic
+      data <- data %>% filter(
+        grepl(search_term, OrderID, ignore.case = TRUE) |
+          grepl(search_term, UsTrackingNumber, ignore.case = TRUE) |
+          grepl(search_term, CustomerName, ignore.case = TRUE) |
+          grepl(search_term, CustomerNetName, ignore.case = TRUE) |
+          grepl(search_term, OrderNotes, ignore.case = TRUE)
+      )
+      
+      # Handle SKU and ItemName filtering using unique_items_data
+      req(unique_items_data())
+      sku_or_item_orders <- unique_items_data() %>%
+        filter(
+          grepl(search_term, SKU, ignore.case = TRUE) |
+            grepl(search_term, ItemName, ignore.case = TRUE)
+        ) %>%
+        pull(OrderID) %>%
+        unique()
+      
+      # Combine orders matching SKU or ItemName
+      data <- data %>% filter(OrderID %in% sku_or_item_orders | 
+                                grepl(search_term, OrderID, ignore.case = TRUE) |
+                                grepl(search_term, UsTrackingNumber, ignore.case = TRUE) |
+                                grepl(search_term, CustomerName, ignore.case = TRUE) |
+                                grepl(search_term, CustomerNetName, ignore.case = TRUE) |
+                                grepl(search_term, OrderNotes, ignore.case = TRUE))
     }
     
-    # 根据运单号筛选，处理前缀多余情况
-    if (!is.null(input$filter_tracking_id) && input$filter_tracking_id != "") {
-      data <- match_tracking_number(data, "UsTrackingNumber", input$filter_tracking_id)
-    }
-
-    # 根据顾客姓名筛选
-    if (!is.null(input$filter_customer_name) && input$filter_customer_name != "") {
-      data <- data %>% filter(grepl(trimws(input$filter_customer_name), CustomerName, ignore.case = TRUE))
-    }
-    
-    # 根据顾客网名筛选
-    if (!is.null(input$filter_customer_netname) && input$filter_customer_netname != "") {
-      data <- data %>% filter(grepl(trimws(input$filter_customer_netname), CustomerNetName, ignore.case = TRUE))
-    }
-    
-    # 根据电商平台筛选
+    # Filter by platform
     if (!is.null(input$filter_platform) && input$filter_platform != "") {
       data <- data %>% filter(Platform == input$filter_platform)
     }
     
-    # 根据订单状态筛选
+    # Filter by order status
     if (!is.null(input$filter_order_status) && input$filter_order_status != "") {
       data <- data %>% filter(OrderStatus == input$filter_order_status)
     }
     
-    # 根据 SKU 或商品名筛选
-    req(unique_items_data())  # 确保 unique_items_data 数据存在
-    
-    # 筛选包含所输入 SKU 或商品名的订单
-    if (!is.null(input$filter_sku) && input$filter_sku != "") {
-      sku_orders <- unique_items_data() %>%
-        filter(SKU == trimws(input$filter_sku)) %>%
-        pull(OrderID) %>%  # 提取与 SKU 相关的订单号
-        unique()
-      
-      data <- data %>% filter(OrderID %in% sku_orders)
-    }
-    
-    item_name <- debounced_item_name()
-    if (!is.null(item_name) && length(item_name) > 0 && nzchar(item_name)) {
-      item_orders <- unique_items_data() %>%
-        filter(grepl(debounced_item_name(), ItemName, ignore.case = TRUE)) %>%
-        pull(OrderID) %>%  # 提取与商品名相关的订单号
-        unique()
-      data <- data %>% filter(OrderID %in% item_orders)
-    }
-    
-    # 根据创建时间筛选
+    # Filter by creation date
     if (!is.null(input$filter_order_date) && !is.null(input$filter_order_date[[1]]) && !is.null(input$filter_order_date[[2]])) {
       start_date <- input$filter_order_date[[1]]
       end_date <- input$filter_order_date[[2]]
       data <- data %>% filter(created_at >= start_date & created_at <= end_date)
     }
     
-    # 根据订单备注筛选
-    if (!is.null(input$filter_order_notes) && input$filter_order_notes != "") {
-      data <- data %>% filter(grepl(input$filter_order_notes, OrderNotes, ignore.case = TRUE))
-    }
-    
-    # 按录入时间倒序排列
+    # Sort by creation date in descending order
     data <- data %>% arrange(desc(created_at))
     
     data
@@ -6145,15 +6106,13 @@ server <- function(input, output, session) {
   observeEvent(input$reset_filter_btn, {
     tryCatch({
       # 重置所有输入框和选择框
-      updateTextInput(session, "filter_order_id", value = "")
-      updateTextInput(session, "filter_tracking_id", value = "")
-      updateTextInput(session, "filter_customer_name", value = "")
-      updateTextInput(session, "filter_customer_netname", value = "")
-      updateSelectInput(session, "filter_platform", selected = "")
-      updateSelectInput(session, "filter_order_status", selected = "")
-      updateTextInput(session, "filter_sku", value = "")
-      updateTextInput(session, "sold-item_name", value = "")
-
+      updateTextInput(session, "filter_combined", value = "")  # 重置合并的搜索框
+      updateSelectInput(session, "filter_platform", selected = "")  # 重置电商平台选择
+      updateSelectInput(session, "filter_order_status", selected = "")  # 重置订单状态选择
+      updateDateRangeInput(session, "filter_order_date", 
+                           start = Sys.Date() - 90, 
+                           end = Sys.Date() + 1)  # 重置日期范围到默认值
+      
       # 显示成功通知
       showNotification("筛选条件已清空！", type = "message")
     }, error = function(e) {
