@@ -6,6 +6,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(shinythemes)
 library(shiny.fluent)
+library(shinymanager)
 
 library(DBI)
 library(RMariaDB)
@@ -17,6 +18,14 @@ library(plotly)
 library(networkD3)
 library(openxlsx)
 library(future)
+
+# 用户管理
+credentials <- data.frame(
+  user = c("guest", "admin"),          # 用户名
+  password = c("guest", "admin"),    # 密码
+  role = c("parttime", "admin"),          # 角色
+  stringsAsFactors = FALSE
+)
 
 # Source shared module R file
 files <- list.files("/srv/shiny-server/erp-module", pattern = "\\.R$", full.names = TRUE)
