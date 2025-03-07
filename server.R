@@ -6,6 +6,13 @@ server <- function(input, output, session) {
     check_credentials = shinymanager::check_credentials(credentials) # 使用 global.R 中定义的 credentials
   )
   
+  observe({
+    user_info <- reactiveValuesToList(res_auth)
+    session$userData$user <- user_info$user
+    session$userData$role <- user_info$role
+    message(paste("Authenticated user:", user_info$user, "Role:", user_info$role))  # 调试输出
+  })
+  
   source("global.R", local = TRUE)
   
   ##############################################################################
