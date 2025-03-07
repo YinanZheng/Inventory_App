@@ -3203,10 +3203,10 @@ server <- function(input, output, session) {
           ),
           div(
             style = "display: flex; gap: 10px;",
-            actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-warning", 
+            actionButton("regen_order_image", label = "重新生成订单拼图", class = "btn btn-info", 
                          style = "height: 34px; font-size: 14px; padding: 5px 10px;"),
             if (order_status != "取消") {
-              actionButton("cancel_order", label = "取消订单", class = "btn-info", 
+              actionButton("cancel_order", label = "取消订单", class = "btn btn-warning", 
                            style = "font-size: 14px; padding: 5px 10px;")
             },
             if (selected_order$LabelStatus != "无") {
@@ -3291,6 +3291,7 @@ server <- function(input, output, session) {
     }
   )
   
+  # 完成预定订单按钮
   observeEvent(input$complete_preorder, {
     req(selected_order_row())
     
@@ -3312,6 +3313,76 @@ server <- function(input, output, session) {
     
     update_order_status(order_id, "备货", updated_notes = new_notes, refresh_trigger = orders_refresh_trigger, con)
   })
+  
+  # 取消订单按钮
+  observeEvent(input$cancel_order, {
+    req(selected_order_row())  # 确保用户选择了一行订单
+    selected_row <- selected_order_row()
+    
+    # 获取选中的订单数据
+    selected_order <- filtered_orders()[selected_row, ]
+    order_id <- selected_order$OrderID
+    
+    tryCatch({
+      # 获取与订单关联的物品
+      associated_items <- unique_items_data() %>% filter(OrderID == order_id)
+      
+      if (nrow(associated_items) > 0) {
+        # 遍历关联物品进行逆向操作
+        lapply(1:nrow(associated_items), function(i) {
+          item <- associated_items[i, ]
+          
+          # 查询物品的原始状态
+          original_state <- dbGetQuery(con, paste0(
+            "SELECT * FROM item_status_history WHERE UniqueID = '", item$UniqueID, "' ORDER BY change_time DESC LIMIT 1"
+          ))
+          
+          if (nrow(original_state) > 0) {
+            # 恢复物品状态
+            update_status(
+              con = con,
+              unique_id = item$UniqueID,
+              new_status = original_state$previous_status,
+              clear_status_timestamp = item$Status
+            )
+            
+            # 清空物品的 OrderID
+            update_order_id(
+              con = con,
+              unique_id = item$UniqueID,
+              order_id = NULL  # 清空订单号
+            )
+          } else {
+            showNotification(paste0("物品 ", item$UniqueID, " 无状态历史记录，无法恢复。"), type = "error")
+          }
+        })
+      }
+      
+      # 更新订单状态为"取消"
+      update_order_status(order_id, "取消", refresh_trigger = orders_refresh_trigger, con)
+      
+      # 通知用户操作结果
+      message <- if (nrow(associated_items) > 0) {
+        paste("订单", order_id, "已取消，订单内物品已返回库存！")
+      } else {
+        paste("订单", order_id, "已取消，没有关联的物品需要处理！")
+      }
+      showNotification(message, type = "message")
+      
+      # 重置输入
+      reset_order_form(session, image_sold)
+      
+      # 重置库存商品名列表
+      updateSelectizeInput(session, "preorder_item_name_db", choices = c("", inventory()$ItemName), selected = NULL, server = TRUE)
+      
+      # 清空关联物品表
+      output$associated_items_title <- renderUI({ NULL }) # 清空标题
+      renderOrderItems(output, "order_items_cards", data.frame(), con)  # 清空物品卡片
+    }, error = function(e) {
+      showNotification(paste("取消订单时发生错误：", e$message), type = "error")
+    })
+  })
+  
   
   # 渲染物品信息卡片  
   observe({
