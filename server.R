@@ -1105,7 +1105,6 @@ server <- function(input, output, session) {
   combined_inputs <- reactive({
     list(
       major_type = input[["type_module-new_major_type"]],
-      minor_type = input[["type_module-new_minor_type"]],
       new_name = input[["purchase-item_name"]],
       new_maker = input$new_maker
     )
@@ -1132,7 +1131,6 @@ server <- function(input, output, session) {
     sku <- generate_sku(
       item_type_data = item_type_data(),
       major_type = inputs$major_type,
-      minor_type = inputs$minor_type,
       item_name = input[["purchase-item_name"]],
       maker = inputs$new_maker
     )
@@ -1250,7 +1248,6 @@ server <- function(input, output, session) {
       req(input$selected_new_supplier)  # 确保 `selected_new_supplier` 存在
       updateSelectizeInput(session, "new_maker", selected = input$selected_new_supplier)
       updateSelectizeInput(session, "type_module-new_major_type", selected = "")
-      updateSelectizeInput(session, "type_module-new_minor_type", selected = "")
     })
   })
   
@@ -1276,7 +1273,6 @@ server <- function(input, output, session) {
       ItemImagePath = "商品图",
       Maker = "供应商",
       MajorType = "大类",
-      MinorType = "小类",
       Quantity = "入库数量",
       ProductCost = "采购单价"
     )
@@ -1347,7 +1343,6 @@ server <- function(input, output, session) {
       existing_items[sku_index, "SKU"] <- input$new_sku
       existing_items[sku_index, "Maker"] <- input$new_maker
       existing_items[sku_index, "MajorType"] <- input[["type_module-new_major_type"]]
-      existing_items[sku_index, "MinorType"] <- input[["type_module-new_minor_type"]]
       existing_items[sku_index, "ItemName"] <- input[["purchase-item_name"]]
       existing_items[sku_index, "Quantity"] <- input$new_quantity
       existing_items[sku_index, "ProductCost"] <- round(input$new_product_cost, 2)
@@ -1362,7 +1357,7 @@ server <- function(input, output, session) {
         SKU = input$new_sku,
         Maker = input$new_maker,
         MajorType = input[["type_module-new_major_type"]],
-        MinorType = input[["type_module-new_minor_type"]],
+        MinorType = "",
         ItemName = input[["purchase-item_name"]],
         Quantity = input$new_quantity,
         ProductCost = round(input$new_product_cost, 2),
@@ -1498,9 +1493,6 @@ server <- function(input, output, session) {
       # Update input fields in the sidebar
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
-      delay(100, {  # 延迟 100 毫秒
-        updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
-      })
       updateTextInput(session, "purchase-item_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = 0)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost) 
@@ -1525,9 +1517,6 @@ server <- function(input, output, session) {
       # 更新侧边栏的输入字段
       updateSelectInput(session, "new_maker", selected = selected_data$Maker)
       updateSelectInput(session, "type_module-new_major_type", selected = selected_data$MajorType)
-      delay(100, {  # 延迟 100 毫秒
-        updateSelectInput(session, "type_module-new_minor_type", selected = selected_data$MinorType)
-      })
       updateTextInput(session, "purchase-item_name", value = selected_data$ItemName)
       updateNumericInput(session, "new_quantity", value = selected_data$Quantity)
       updateNumericInput(session, "new_product_cost", value = selected_data$ProductCost)
@@ -1606,7 +1595,6 @@ server <- function(input, output, session) {
       # 清空输入控件
       update_maker_choices(session, "new_maker", maker_list())
       updateSelectizeInput(session, "type_module-new_major_type", selected = "")
-      updateSelectizeInput(session, "type_module-new_minor_type", selected = "")
       updateTextInput(session, "purchase-item_name", value = "")
       updateNumericInput(session, "new_quantity", value = 0)  # 恢复数量默认值
       updateNumericInput(session, "new_product_cost", value = 0)  # 恢复单价默认值
