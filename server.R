@@ -6,45 +6,24 @@ server <- function(input, output, session) {
     check_credentials = shinymanager::check_credentials(credentials) # 使用 global.R 中定义的 credentials
   )
   
-  # 认证状态
+  # 定义一个 reactive 值来跟踪认证状态
   auth_status <- reactive({
     user_info <- reactiveValuesToList(res_auth)
-    cat("Auth status checked: ", !is.null(user_info$user), "\n")
     list(user = user_info$user, role = user_info$role)
   })
   
-  # 输出认证状态
-  output$authenticated <- reactive({
-    status <- !is.null(auth_status()$user)
-    cat("Authenticated output: ", status, "\n")
-    status
-  })
-  outputOptions(output, "authenticated", suspendWhenHidden = FALSE)
-  
-  # 认证状态 UI
-  output$auth_status_ui <- renderUI({
-    if (is.null(auth_status()$user)) {
-      cat("Rendering pre-auth UI\n")
-      div(
-        style = "text-align: center; padding: 50px;",
-        tags$h3("请登录以访问系统", style = "color: #007BFF; font-weight: bold;"),
-        tags$p("等待用户认证...", style = "color: #666;")
-      )
-    } else {
-      cat("User authenticated, hiding pre-auth UI\n")
-      NULL
+  observe({
+    user_info <- auth_status()
+    if (!is.null(user_info$user)) {  # 确保认证完成
+      session$userData$user <- user_info$user
+      session$userData$role <- user_info$role
     }
   })
   
-  output$dynamic_ui_async <- renderUI({
+  output$dynamic_ui <- renderUI({
     user_info <- auth_status()
     req(user_info$user)  # 确保认证完成后再渲染
-    cat("Starting async UI rendering for user: ", user_info$user, "\n")
-    
-    future({
-    user_role <- session$userData$role %||% "admin"   
-    cat("User role in future: ", user_role, "\n")
-    
+    user_role <- session$userData$role %||% "admin"      
     tabs <- if (user_role == "employee") {
       list(
         tabPanel(
@@ -2706,32 +2685,6 @@ server <- function(input, output, session) {
       ),
       tabs  # 展开 tabPanel 集合
     ))
-    }) %...>% {
-      result <- .
-      cat("Async UI rendering completed\n")
-      result
-    } %...!% {
-      error <- .
-      cat("Error in async UI rendering: ", error$message, "\n")
-      div(
-        style = "text-align: center; color: red;",
-        h4("UI 加载失败，请联系管理员"),
-        p(error$message)
-      )
-    }
-    # 异步任务完成前的占位 UI
-    div(
-      style = "text-align: center; padding: 50px;",
-      h4("正在加载 ERP 系统界面，请稍候...", style = "color: #007BFF;")
-    )
-  })
-  
-  observe({
-    user_info <- auth_status()
-    if (!is.null(user_info$user)) {
-      session$userData$user <- user_info$user
-      session$userData$role <- user_info$role
-    }
   })
   
   source("global.R", local = TRUE)
