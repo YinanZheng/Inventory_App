@@ -840,7 +840,7 @@ ui <- navbarPage(
                 column(6, selectInput("filter_platform", NULL, choices = c("电商平台" = "", "Etsy", "Shopify", "TikTok", "其他"),
                                       selected = "", width = "100%")),
                 column(6, selectInput("filter_order_status", NULL, 
-                                      choices = c("订单状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达"),
+                                      choices = c("订单状态" = "", "备货", "预定", "调货", "装箱", "发出", "在途", "送达", "取消"),
                                       selected = "", width = "100%"))
               ),
               fluidRow(
