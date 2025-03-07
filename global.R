@@ -23,8 +23,7 @@ library(future)
 credentials <- data.frame(
   user = c("guest", "admin"),          # 用户名
   password = c("guest", "admin"),    # 密码
-  role = c("parttime", "admin"),          # 角色
-  stringsAsFactors = FALSE
+  admin = c(FALSE, TRUE)
 )
 
 # Source shared module R file
