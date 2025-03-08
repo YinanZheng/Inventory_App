@@ -2316,7 +2316,7 @@ server <- function(input, output, session) {
   
   # 监听“现”物品的点击事件，填充到 `purchase_filter-name`
   observeEvent(input$selected_existing_item, {
-    req(input$selected_existing_item)
+    req(input$selected_existing_item, makers_items_map())    
     showNotification(input$selected_existing_item)
     updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)
   })
