@@ -16,6 +16,12 @@ server <- function(input, output, session) {
   
   observe({
     user_info <- auth_status()
+    message("--- Debugging Authentication ---")
+    message(paste("User:", user_info$user))
+    message(paste("Role:", user_info$role))
+    message(paste("Session Token:", session$token))
+    message("Cookies sent by server:")
+    message(session$request$HTTP_COOKIE)
     if (!is.null(user_info$user)) {  # 确保认证完成
       session$userData$user <- user_info$user
       session$userData$role <- user_info$role
