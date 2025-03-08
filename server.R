@@ -2322,9 +2322,9 @@ server <- function(input, output, session) {
       showNotification(paste("Supplier:", input$selected_existing_supplier))
       showNotification(paste("Item:", input$selected_existing_item))
       
-      updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier, server = TRUE)
+      updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier)
       shinyjs::delay(100, {
-        updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item, server = TRUE)
+        updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)
       })
     })
   })
