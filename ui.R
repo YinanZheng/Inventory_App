@@ -8,6 +8,6 @@ ui <- shinymanager::secure_app(
   tags_bottom = tags$div(
     tags$p("© 2025 GoldenBean LLC", style = "text-align: center; color: #999;")
   ),
-  
+  session = list(expire = 30),  # cookie 有效期设置为 30 天
   ui = uiOutput("dynamic_ui")
 )

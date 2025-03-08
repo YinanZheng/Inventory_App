@@ -369,108 +369,54 @@ server <- function(input, output, session) {
         
         tabPanel(
           "采购", icon = icon("shopping-cart"),
-          div(
-            class = "layout-container",  # Flexbox 容器
-            div(
-              class = "sticky-sidebar",  # sticky 侧边栏
-              itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE, use_status = FALSE),
-              
-              actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-info", 
-                           style = "font-size: 14px; width: 100%; height: 45px; padding: 0px; margin-top: 15px; margin-bottom: 15px;"),
-              
-              fluidRow(
-                column(10, 
-                       selectizeInput("new_maker", NULL, choices = NULL, width = "100%",
-                                      options = list(placeholder = '供应商名称(拼音)', maxOptions = 500))
-                ),
-                column(2, 
-                       div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
-                           actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
-                                        style = "font-size: 14px; width: 100%; height: 34px; padding: 0px; margin-top: 0px;")
-                       )
-                )
+          div(class = "layout-container",  # Flexbox 容器
+              div(class = "sticky-sidebar",  # sticky 侧边栏
+                  itemFilterUI(id = "purchase_filter", border_color = "#28A745", text_color = "#28A745", use_purchase_date = FALSE, use_status = FALSE),
+                  actionButton("reset_btn", "重置采购登记", icon = icon("snowplow"), class = "btn-info", 
+                               style = "font-size: 14px; width: 100%; height: 45px; padding: 0; margin: 15px 0;"),
+                  fluidRow(
+                    column(10, selectizeInput("new_maker", NULL, choices = NULL, width = "100%", 
+                                              options = list(placeholder = '供应商名称(拼音)', maxOptions = 500))),
+                    column(2, div(style = "display: flex; justify-content: flex-start; align-items: center; height: 100%;", 
+                                  actionButton("add_supplier_btn", label = NULL, icon = icon("plus"), 
+                                               style = "font-size: 14px; width: 100%; height: 34px; padding: 0; margin: 0;")))
+                  ),
+                  typeModuleUI("type_module"),
+                  fluidRow(
+                    column(12, autocompleteInputUI("purchase", NULL, placeholder = "请输入商品名...")),
+                    column(12, h5("预订单物品备忘（点击自动填写）", style = "color: #17a2b8;"),
+                           div(style = "display: flex; align-items: center; gap: 0;",
+                               textInput("preorder_item_search_filter", NULL, value = "", placeholder = "搜索物品名或供应商...", width = "100%"),
+                               actionButton("clear_preorder_search_box", label = "", icon = icon("xmark", style = "color: #D32F2F;"), 
+                                            style = "padding: 0 5px; border: none; margin-bottom: 14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")),
+                           div(style = "border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f5f5f5; max-height: 200px; overflow-y: auto; margin-bottom: 15px;",
+                               uiOutput("preorder_items_memo")),
+                           dateInput(inputId = "purchase_date", label = "采购日期", value = Sys.Date(), width = "100%"))
+                  ),
+                  fluidRow(
+                    column(4, numericInput("new_quantity", "数量", value = 0, min = 0, step = 1)),
+                    column(4, numericInput("new_product_cost", "单价", value = 0, min = 0)),
+                    column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
+                  ),
+                  fluidRow(column(12, textInput("new_sku", NULL, placeholder = "SKU(自动生成)", value = "", width = "100%"))),
+                  imageModuleUI("image_purchase")
               ),
-              
-              typeModuleUI("type_module"),
-              
-              fluidRow(
-                column(12, autocompleteInputUI("purchase", NULL, placeholder = "请输入商品名...")),
-                column(12,
-                       h5("预订单物品备忘（点击自动填写）", style = "color: #17a2b8;"),
-                       div(
-                         style = "display: flex; align-items: center; gap: 0px;",
-                         textInput("preorder_item_search_filter", NULL, value = "", placeholder = "搜索物品名或供应商...", width = "100%"),
-                         actionButton(
-                           "clear_preorder_search_box", 
-                           label = "", 
-                           icon = icon("xmark", style = "color: #D32F2F;"), 
-                           style = "padding: 0 5px; border: none; margin-bottom:14px; font-size: 18px; background-color: #F5F5F5; height: 45px; min-width: 34px;")
-                       ),
-                       div(
-                         style = "border: 1px solid #ddd; padding: 10px; border-radius: 5px; background-color: #f5f5f5; max-height: 200px; 
-                   overflow-y: auto; margin-bottom: 15px;",
-                         uiOutput("preorder_items_memo")
-                       )
-                ),
-                column(12, dateInput(
-                  inputId = "purchase_date",
-                  label = "采购日期",
-                  value = Sys.Date(),  # 默认日期为今天
-                  width = "100%"
-                ))
-              ),
-              
-              fluidRow(
-                column(4, numericInput("new_quantity", "数量", value = 0, min = 0, step = 1)),
-                column(4, numericInput("new_product_cost", "单价", value = 0, min = 0)),
-                column(4, numericInput("new_shipping_cost", "运费", value = 0, min = 0))
-              ),
-              
-              fluidRow(
-                column(12, textInput("new_sku", NULL, placeholder = "SKU(自动生成)", value = "", width = "100%"))
-              ),
-              
-              imageModuleUI("image_purchase")
-            ),
-            
-            div(
-              class = "resizable-divider",
-            ),
-            
-            div(
-              class = "main-panel",
-              style = "display: flex; flex-direction: column; height: 100%;", # 主面板填充剩余空间
-              div(
-                style = "flex-shrink: 0;", # 防止标题区域被压缩
-                div(
-                  tags$span(icon("shopping-cart"), style = "margin-right: 5px;"),  # 使用 span 包裹图标
-                  "采购箱", 
-                  style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;"
-                )
-              ),
-              
-              div(
-                style = "flex-shrink: 0; padding-bottom: 20px;", # 确保表格区域高度固定
-                column(12, DTOutput("added_items_table"))
-              ),
-              
-              div(
-                style = "flex-shrink: 0; padding: 20px 13px;",  # 固定按钮区域的高度
-                fluidRow(
-                  column(2, style = "text-align: left;", uiOutput("add_update_button_ui")),            
-                  column(2, div(style = "text-align: right;",actionButton("confirm_btn", "确认登记", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))),
-                  column(2, actionButton("delete_btn", "删除选中", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
-                  column(6, div(textOutput("total_cost"),style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;"))
-                )
-              ),
-              
-              tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 添加分隔线
-              
-              div(
-                id = "item_table_container_purchase",
-                uniqueItemsTableUI("unique_items_table_purchase")
+              div(class = "resizable-divider"),
+              div(class = "main-panel", style = "display: flex; flex-direction: column; height: 100%;",  # 主面板填充剩余空间
+                  div(style = "flex-shrink: 0;",  # 防止标题区域被压缩
+                      div(tags$span(icon("shopping-cart"), style = "margin-right: 5px;"), "采购箱", 
+                          style = "font-size: 18px; font-weight: bold; color: #333; background-color: #c3d8fa; padding: 10px; text-align: center; border-radius: 4px;")),
+                  div(style = "flex-shrink: 0; padding-bottom: 20px;", column(12, DTOutput("added_items_table"))),  # 表格区域
+                  div(style = "flex-shrink: 0; padding: 20px 13px;",  # 按钮区域
+                      fluidRow(
+                        column(2, style = "text-align: left;", uiOutput("add_update_button_ui")),
+                        column(2, div(style = "text-align: right;", actionButton("confirm_btn", "确认登记", icon = icon("check"), class = "btn-primary", style = "width: 100%;"))),
+                        column(2, actionButton("delete_btn", "删除选中", icon = icon("trash"), class = "btn-danger", style = "width: 100%;")),
+                        column(6, div(textOutput("total_cost"), style = "font-size: 20px; font-weight: bold; color: blue; text-align: center;")))
+                  ),
+                  tags$hr(style = "margin: 20px 0; border: 1px solid #ddd;"),  # 分隔线
+                  div(id = "item_table_container_purchase", uniqueItemsTableUI("unique_items_table_purchase"))
               )
-            )
           )
         ), # end of 采购登记 tab
         
