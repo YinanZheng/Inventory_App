@@ -915,9 +915,9 @@ server <- function(input, output, session) {
                                        tags$hr(style = "margin: 10px 0; border: 1px solid #ddd;"),
                                        fluidRow(
                                          column(12,
-                                                div(class = "card", style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); min-height: 500px;",
                                                     tags$h4("库存状态流转桑基图", style = "color: #007BFF; font-weight: bold; text-align: center;"),
-                                                    sankeyNetworkOutput("status_sankey", height = "345px")
+                                                    sankeyNetworkOutput("status_sankey", height = "450px")
                                                 )
                                          )
                                        )
