@@ -2322,9 +2322,11 @@ server <- function(input, output, session) {
       showNotification(paste("Supplier:", input$selected_existing_supplier))
       showNotification(paste("Item:", input$selected_existing_item))
       
-      updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier)
+      ns <- NS("purchase_filter")
+      updateSelectizeInput(session, ns("maker"), selected = input$selected_existing_supplier, server = TRUE)
       shinyjs::delay(100, {
-        updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)
+        req(input$maker)  # 确保 maker 更新
+        updateSelectizeInput(session, ns("name"), selected = input$selected_existing_item, server = TRUE)
       })
     })
   })
