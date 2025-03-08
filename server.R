@@ -2318,7 +2318,7 @@ server <- function(input, output, session) {
     req(input$selected_existing_item)    
 
     updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier, server = TRUE)
-    shinyjs::delay(100, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)}, server = TRUE)
+    shinyjs::delay(100, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item, server = TRUE)})
   })
   
   # 采购商品图片处理模块
