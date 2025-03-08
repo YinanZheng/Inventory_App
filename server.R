@@ -2313,15 +2313,20 @@ server <- function(input, output, session) {
     })
   })
   
-  # 监听“现”物品的点击事件，填充到 `purchase_filter-name`
+  # 监听“现”物品的点击事件
   observeEvent(input$selected_existing_item, {
-    req(input$selected_existing_item)    
-
-    showNotification(input$selected_existing_supplier)
-    showNotification(input$selected_existing_item)
+    req(input$selected_existing_item)
     
-    updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier, server = TRUE)
-    shinyjs::delay(100, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item, server = TRUE)})
+    shinyjs::delay(50, {
+      req(input$selected_existing_supplier)
+      showNotification(paste("Supplier:", input$selected_existing_supplier))
+      showNotification(paste("Item:", input$selected_existing_item))
+      
+      updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier, server = TRUE)
+      shinyjs::delay(100, {
+        updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item, server = TRUE)
+      })
+    })
   })
   
   # 采购商品图片处理模块
