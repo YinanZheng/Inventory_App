@@ -2317,7 +2317,7 @@ server <- function(input, output, session) {
   observeEvent(input$selected_existing_item, {
     req(input$selected_existing_item, makers_items_map())    
 
-    updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier, server = TRUE)
+    updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier)
     delay(100, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)})
   })
   
