@@ -338,9 +338,9 @@ server <- function(input, output, session) {
                                        tags$hr(style = "margin: 10px 0; border: 1px solid #ddd;"),
                                        fluidRow(
                                          column(12,
-                                                div(class = "card", style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
+                                                div(class = "card", style = "padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1); min-height: 500px; overflow: visible;",
                                                     tags$h4("库存状态流转桑基图", style = "color: #007BFF; font-weight: bold; text-align: center;"),
-                                                    sankeyNetworkOutput("status_sankey", height = "345px")
+                                                    sankeyNetworkOutput("status_sankey", height = "450px")
                                                 )
                                          )
                                        )
@@ -7136,6 +7136,7 @@ server <- function(input, output, session) {
   output$sold_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$sold$shipping) })
   
   # 状态流转桑基图
+  # 状态流转桑基图
   output$status_sankey <- renderSankeyNetwork({
     # 获取物品状态历史数据
     history_data <- dbGetQuery(con, "SELECT * FROM item_status_history")
@@ -7216,9 +7217,10 @@ server <- function(input, output, session) {
       Value = "value",
       NodeID = "name",
       fontSize = 14,
-      nodeWidth = 40,
-      nodePadding = 20,  # 增加节点间距
+      nodeWidth = 20,
+      nodePadding = 30,
       iterations = 5,
+      sinksRight = TRUE,
       colourScale = color_js
     )
   })
