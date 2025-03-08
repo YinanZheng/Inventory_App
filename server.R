@@ -2317,7 +2317,7 @@ server <- function(input, output, session) {
   # 监听“现”物品的点击事件，填充到 `purchase_filter-name`
   observeEvent(input$selected_existing_item, {
     req(input$selected_existing_item)
-    
+    showNotification(input$selected_existing_item)
     updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)
   })
   
@@ -7135,7 +7135,6 @@ server <- function(input, output, session) {
   output$sold_total_value <- renderText({ sprintf("¥%.2f", overview_data()$sold$value) })
   output$sold_shipping_cost <- renderText({ sprintf("¥%.2f", overview_data()$sold$shipping) })
   
-  # 状态流转桑基图
   # 状态流转桑基图
   output$status_sankey <- renderSankeyNetwork({
     # 获取物品状态历史数据
