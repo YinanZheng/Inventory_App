@@ -122,6 +122,14 @@ table_default_options <<- list(
   language = list(search = "搜索：")
 )
 
+# 账户余额卡片
+accounts <<- list(
+  list(name = "买货卡 (139)", outputId = "purchase_balance", gradient = "linear-gradient(135deg, #FFC107, #FF9800)"),
+  list(name = "一般户卡 (541)", outputId = "general_balance", gradient = "linear-gradient(135deg, #6C757D, #495057)"),
+  list(name = "工资卡 (567)", outputId = "salary_balance", gradient = "linear-gradient(135deg, #007BFF, #0056b3)"),
+  list(name = "美元卡 (553)", outputId = "dollar_balance", gradient = "linear-gradient(135deg, #28A745, #1E7E34)")
+)
+
 # 定义瑕疵和修复的状态
 defect_statuses <<- c("瑕疵", "修复", "无瑕")
 

@@ -204,7 +204,18 @@ server <- function(input, output, session) {
                              tags$h3(textOutput("total_balance"), style = "font-size: 40px; margin-top: 0; font-weight: bold; text-shadow: 2px 2px 4px rgba(255, 193, 7, 0.8); color: #FFC107;")
                            ))
                          ),
-                         fluidRow(account_cards) # 使用前面定义的 account_cards
+                         fluidRow(lapply(accounts, function(acc) {
+                           column(3, div(
+                             class = "card shadow-lg",
+                             style = sprintf("background: %s; color: white; padding: 20px; text-align: center; border-radius: 16px; position: relative; overflow: hidden;", acc$gradient),
+                             tags$div(
+                               style = "position: absolute; top: -10px; left: -10px; opacity: 0.3;",
+                               tags$img(src = "https://dummyimage.com/100x100/fff/000.png&text=$", width = "60px", height = "60px")
+                             ),
+                             tags$h4(acc$name, style = "font-weight: bold; margin-bottom: 10px;"),
+                             tags$h3(textOutput(acc$outputId), style = "font-size: 24px; margin-top: 0;")
+                           ))
+                         }))
                 ),
                 tabPanel(title = "买货卡(139)", value = "买货卡", DTOutput("purchase_card_table")),
                 tabPanel(title = "一般户卡(541)", value = "一般户卡", DTOutput("general_card_table")),
