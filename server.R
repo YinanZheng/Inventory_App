@@ -337,107 +337,34 @@ server <- function(input, output, session) {
       )
     } else {
       list(
-        tabPanel(
-          "协作", icon = icon("users"),
-          div(
-            class = "layout-container",
-            
-            # 左侧侧边栏
-            div(
-              class = "sticky-sidebar",
-              div(
-                tags$h4("库存品请求", style = "font-weight: bold; color: #007BFF;"),
-                fluidRow(
-                  column(6, textInput("search_sku", "按SKU搜索", placeholder = "输入SKU", width = "100%")),
-                  column(6, textInput("search_name", "按物品名搜索", placeholder = "输入物品名", width = "100%"))
-                ),
-                div(
-                  style = "margin-bottom: 10px;",
-                  div(
-                    style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;",
-                    tags$h5("物品预览", style = "font-weight: bold; color: #007BFF;"),
-                    uiOutput("item_preview")
-                  )
-                ),
-                numericInput("request_quantity", "请求数量", value = 0, min = 1, width = "100%"),
-                textAreaInput("request_remark", "留言", placeholder = "（选填）", width = "100%", height = "60px"),
-                actionButton("add_request", "创建请求", icon = icon("plus"), class = "btn-success", style = "width: 100%; margin-top: 10px;"),
-                tags$hr(),
-                tags$h4("新商品请求", style = "font-weight: bold; color: #007BFF;"),
-                imageModuleUI("image_requests", label = "请求物品图片上传"),
-                textInput("custom_description", "物品名", placeholder = "输入物品名", width = "100%"),
-                numericInput("custom_quantity", "请求数量", value = 0, min = 1, width = "100%"),
-                textAreaInput("custom_remark", "留言", placeholder = "（选填）", width = "100%", height = "60px"),
-                actionButton("submit_custom_request", "创建请求", icon = icon("plus"), class = "btn-success", style = "width: 100%; margin-top: 10px;")
-              )
-            ),
-            
-            # 可调整的分割线
-            div(class = "resizable-divider"),
-            
-            # 右侧主要面板
-            div(
-              class = "main-panel",
-              
-              div(
-                style = "display: flex; align-items: flex-end; gap: 5px; margin: 0; padding: 0; max-width: 300px;",  # 底部对齐
-                div(
-                  style = "max-width: 250px;",
-                  uiOutput("supplier_filter")
-                ),
-                actionButton(
-                  inputId = "reset_supplier",
-                  label = NULL,
-                  icon = icon("refresh"),
-                  class = "btn-info btn-sm",
-                  style = "margin-bottom: 14px; height: 34px;"
-                )
-              ),
-              
-              # 采购流程 tabset
-              tabsetPanel(
-                id = "collaboration_tabs",
-                type = "pills",
-                
-                # 采购流程链
-                tabPanel(
-                  value = "purchase",
-                  title = "采购请求",
-                  uiOutput("purchase_request_board")
-                ),
-                tabPanel(
-                  value = "arranged",
-                  title = div(
-                    tags$span(class = "arrow-icon", icon("arrow-right")),
-                    "已安排",
-                  ), 
-                  uiOutput("provider_arranged_board")
-                ),
-                tabPanel(
-                  value = "completed",
-                  title = div(
-                    tags$span(class = "arrow-icon", icon("arrow-right")),
-                    "已完成",
-                  ), 
-                  uiOutput("done_paid_board")
-                ),
-                tabPanel(
-                  value = "outbound",
-                  title = div(
-                    tags$span(class = "arrow-icon", icon("arrow-right")),
-                    "待出库",
-                  ), 
-                  uiOutput("outbound_request_board")
-                ),
-                
-                tabPanel(
-                  value = "new_product",
-                  title = "新品请求",
-                  uiOutput("new_product_board")
-                )
-              )
-            )
-          )
+        tabPanel("协作", icon = icon("users"),
+                 div(class = "layout-container",
+                     # 左侧侧边栏
+                     div(class = "sticky-sidebar",
+                         div(
+                           tags$h4("库存品请求", style = "font-weight: bold; color: #007BFF;"),
+                           fluidRow(column(6, textInput("search_sku", "按SKU搜索", placeholder = "输入SKU", width = "100%")), column(6, textInput("search_name", "按物品名搜索", placeholder = "输入物品名", width = "100%"))),
+                           div(style = "margin-bottom: 10px;", div(style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;", tags$h5("物品预览", style = "font-weight: bold; color: #007BFF;"), uiOutput("item_preview"))),
+                           numericInput("request_quantity", "请求数量", value = 0, min = 1, width = "100%"), textAreaInput("request_remark", "留言", placeholder = "（选填）", width = "100%", height = "60px"), actionButton("add_request", "创建请求", icon = icon("plus"), class = "btn-success", style = "width: 100%; margin-top: 10px;"),
+                           tags$hr(),
+                           tags$h4("新商品请求", style = "font-weight: bold; color: #007BFF;"), imageModuleUI("image_requests", label = "请求物品图片上传"), textInput("custom_description", "物品名", placeholder = "输入物品名", width = "100%"), numericInput("custom_quantity", "请求数量", value = 0, min = 1, width = "100%"), textAreaInput("custom_remark", "留言", placeholder = "（选填）", width = "100%", height = "60px"), actionButton("submit_custom_request", "创建请求", icon = icon("plus"), class = "btn-success", style = "width: 100%; margin-top: 10px;")
+                         )
+                     ),
+                     # 可调整的分割线
+                     div(class = "resizable-divider"),
+                     # 右侧主要面板
+                     div(class = "main-panel",
+                         div(style = "display: flex; align-items: flex-end; gap: 5px; margin: 0; padding: 0; max-width: 300px;", div(style = "max-width: 250px;", uiOutput("supplier_filter")), actionButton(inputId = "reset_supplier", label = NULL, icon = icon("refresh"), class = "btn-info btn-sm", style = "margin-bottom: 14px; height: 34px;")),
+                         # 采购流程 tabset
+                         tabsetPanel(id = "collaboration_tabs", type = "pills",
+                                     tabPanel(value = "purchase", title = "采购请求", uiOutput("purchase_request_board")),
+                                     tabPanel(value = "arranged", title = div(tags$span(class = "arrow-icon", icon("arrow-right")), "已安排"), uiOutput("provider_arranged_board")),
+                                     tabPanel(value = "completed", title = div(tags$span(class = "arrow-icon", icon("arrow-right")), "已完成"), uiOutput("done_paid_board")),
+                                     tabPanel(value = "outbound", title = div(tags$span(class = "arrow-icon", icon("arrow-right")), "待出库"), uiOutput("outbound_request_board")),
+                                     tabPanel(value = "new_product", title = "新品请求", uiOutput("new_product_board"))
+                         )
+                     )
+                 )
         ), # End of 协作 tab
         
         tabPanel(
