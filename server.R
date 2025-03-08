@@ -2273,12 +2273,12 @@ server <- function(input, output, session) {
         # 根据物品类型设置不同的 onclick 逻辑
         if (is_existing) {
           onclick_script <- sprintf(
-            "Shiny.setInputValue('selected_existing_item', '%s', {priority: 'event'});", 
-            item
+            "Shiny.setInputValue('selected_existing_item', '%s', {priority: 'event'}); Shiny.setInputValue('selected_existing_supplier', '%s', {priority: 'event'});",
+            item, supplier
           )
         } else {
           onclick_script <- sprintf(
-            "Shiny.setInputValue('selected_new_item', '%s', {priority: 'event'}); Shiny.setInputValue('selected_new_supplier', '%s', {priority: 'event'});", 
+            "Shiny.setInputValue('selected_new_item', '%s', {priority: 'event'}); Shiny.setInputValue('selected_new_supplier', '%s', {priority: 'event'});",
             item, supplier
           )
         }
@@ -2313,12 +2313,12 @@ server <- function(input, output, session) {
     })
   })
   
-  
   # 监听“现”物品的点击事件，填充到 `purchase_filter-name`
   observeEvent(input$selected_existing_item, {
     req(input$selected_existing_item, makers_items_map())    
-    showNotification(input$selected_existing_item)
-    updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)
+
+    updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier)
+    delay(300, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)})
   })
   
   # 采购商品图片处理模块
