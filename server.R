@@ -2306,7 +2306,7 @@ server <- function(input, output, session) {
     
     updateTextInput(session, "purchase-item_name", value = input$selected_new_item)
     
-    delay(50, {
+    delay(100, {
       req(input$selected_new_supplier)  # 确保 `selected_new_supplier` 存在
       updateSelectizeInput(session, "new_maker", selected = input$selected_new_supplier)
       updateSelectizeInput(session, "type_module-new_major_type", selected = "")
@@ -2315,10 +2315,10 @@ server <- function(input, output, session) {
   
   # 监听“现”物品的点击事件，填充到 `purchase_filter-name`
   observeEvent(input$selected_existing_item, {
-    req(input$selected_existing_item, makers_items_map())    
+    req(input$selected_existing_item)    
 
-    updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier)
-    delay(300, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)})
+    updateSelectizeInput(session, "purchase_filter-maker", selected = input$selected_existing_supplier, server = TRUE)
+    shinyjs::delay(100, {updateSelectizeInput(session, "purchase_filter-name", selected = input$selected_existing_item)}, server = TRUE)
   })
   
   # 采购商品图片处理模块
