@@ -5,6 +5,19 @@ server <- function(input, output, session) {
   
   ##############################################################################
   
+  # 显示加载动画
+  plan(multicore)  # 让数据加载异步执行，避免阻塞 UI
+  shinyjs::show("loading-screen")  # 显示加载界面
+  
+  future({
+    return(TRUE)  # 任务完成
+  }) %>% 
+    promises::then(function(result) {
+      shinyjs::runjs("$('#loading-screen').fadeOut(1000);")  # 1秒淡出加载界面
+    })
+  
+  ##############################################################################
+  
   # Database
   con <- db_connection()
   
