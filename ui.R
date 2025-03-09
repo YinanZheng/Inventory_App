@@ -8,12 +8,37 @@ ui <- navbarPage(
   header = tagList(
     useShinyjs(),  # 启用 shinyjs 功能
     
-    # 右上角刷新按钮，触发全局物品表刷新
-    actionButton("refresh_global_items_btn", "", icon=icon("sync"), class="btn-success", style="position:fixed;top:8px;right:20px;z-index:9999;"),
+    # 物品表刷新（联动刷新库存表与订单表）
+    actionButton(
+      "refresh_global_items_btn",
+      "",
+      icon = icon("sync"),
+      class = "btn-success",
+      style = "position: fixed; top: 8px; right: 20px; z-index: 9999;"
+    ),
     
-    # 库存状态浮动窗口（协作页鼠标悬停显示）
-    tags$div(id="inventory-status-popup", style="display:none;position:absolute;z-index:9999;background:white;border:1px solid #ccc;padding:5px;box-shadow:2px 2px 8px rgba(0,0,0,0.2);border-radius:5px;min-width:220px;min-height:220px;",
-             plotlyOutput("colab_inventory_status_chart", width="220px", height="220px")),
+    # 加载动画界面
+    tags$div(
+      id = "loading-screen",
+      style = "position: fixed; width: 100%; height: 100%; background: white; 
+           z-index: 9999; display: flex; flex-direction: column; 
+           justify-content: center; align-items: center; text-align: center;",
+      
+      # 旋转的毛线球 GIF
+      tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
+               style = "width: 80px; height: 80px;"),
+      
+      # 加载提示文字
+      tags$p("系统加载中，请稍后...", 
+             style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
+    ),
+    
+    # 库存状态浮动框 （协作页）
+    tags$div(
+      id = "inventory-status-popup",
+      style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px; min-width: 220px; min-height: 220px;",
+      plotlyOutput("colab_inventory_status_chart", width = "220px", height = "220px")
+    ),
     
     tags$head(
       tags$link(rel="icon", type="image/x-icon", href="https://www.goldenbeanllc.com/icons/favicon-96x96.png"),  # 设置页面图标
