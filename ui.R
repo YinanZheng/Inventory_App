@@ -9,140 +9,120 @@ ui <- navbarPage(
     useShinyjs(),  # 启用 shinyjs 功能
     
     # 物品表刷新（联动刷新库存表与订单表）
-    actionButton(
-      "refresh_global_items_btn",
-      "",
-      icon = icon("sync"),
-      class = "btn-success",
-      style = "position: fixed; top: 8px; right: 20px; z-index: 9999;"
-    ),
+    actionButton("refresh_global_items_btn", "", icon = icon("sync"), class = "btn-success", style = "position: fixed; top: 8px; right: 20px; z-index: 9999;"),
     
     # 加载动画界面
-    tags$div(
-      id = "loading-screen",
-      style = "position: fixed; width: 100%; height: 100%; background: white; 
-           z-index: 9999; display: flex; flex-direction: column; 
-           justify-content: center; align-items: center; text-align: center;",
-      
-      # 旋转的毛线球 GIF
-      tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", 
-               style = "width: 80px; height: 80px;"),
-      
-      # 加载提示文字
-      tags$p("系统加载中，请稍后...", 
-             style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
+    tags$div(id = "loading-screen", style = "position: fixed; width: 100%; height: 100%; background: white; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;",
+             tags$img(src = "https://www.goldenbeanllc.com/icons/spinning_yarn.gif", style = "width: 80px; height: 80px;"),
+             tags$p("系统加载中，请稍后...", style = "font-size: 18px; font-weight: bold; color: #333; margin-top: 10px;")
     ),
     
-    # 库存状态浮动框 （协作页）
-    tags$div(
-      id = "inventory-status-popup",
-      style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px; min-width: 220px; min-height: 220px;",
-      plotlyOutput("colab_inventory_status_chart", width = "220px", height = "220px")
+    # 库存状态浮动框（协作页）
+    tags$div(id = "inventory-status-popup", style = "display: none; position: absolute; z-index: 9999; background: white; border: 1px solid #ccc; padding: 5px; box-shadow: 2px 2px 8px rgba(0,0,0,0.2); border-radius: 5px; min-width: 220px; min-height: 220px;",
+             plotlyOutput("colab_inventory_status_chart", width = "220px", height = "220px")
     ),
     
-    tags$head(
-      tags$link(rel="icon", type="image/x-icon", href="https://www.goldenbeanllc.com/icons/favicon-96x96.png"),  # 设置页面图标
-      
-      # CSS 样式定义
-      tags$style(HTML("
-              #loading-screen{transition:opacity 1s ease-out;}  /* 加载画面淡出动画 */
-              .navbar-nav{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;white-space:nowrap !important;max-width:100% !important;}  /* 导航栏水平滚动 */
-              .navbar-nav::-webkit-scrollbar{height:6px;} .navbar-nav::-webkit-scrollbar-thumb{background:#007BFF;border-radius:10px;}  /* 滚动条样式 */
-              @media (max-width:1470px){.navbar-nav{overflow-x:scroll !important;}.navbar-brand{display:none !important;}}  /* 小屏幕隐藏标题 */
-              @media (max-width:950px){.navbar-nav > li > a{font-size:12px !important;padding:6px 8px !important;}}  /* 小屏幕调整字体 */
-              .navbar{display:block !important;overflow:hidden !important;width:100% !important;}  /* 导航栏宽度限制 */
-              body{padding-top:70px !important;}  /* 顶部留白 */
-              .layout-container{display:flex;flex-direction:row;height:100%;width:100%;overflow:visible;}  /* Flexbox 布局容器 */
-              .sticky-sidebar{position:sticky;top:70px;z-index:900;flex:0 0 auto;width:380px;min-width:280px;max-width:580px;height:calc(100vh - 70px);overflow-y:auto;border-right:1px solid #e0e0e0;border-radius:8px;padding:20px;background-color:#f9f9f9;transition:width 0.2s ease;}  /* 侧边栏样式 */
-              .main-panel{flex-grow:1;overflow:auto;padding:20px;padding-top:0;background-color:#ffffff;transition:width 0.2s ease;}  /* 主面板样式 */
-              .resizable-divider{background-color:#aaa;width:5px;cursor:ew-resize;flex-shrink:0;}  /* 可拖拽分隔条 */
-              table.dataTable thead th{white-space:nowrap;}  /* 数据表头不换行 */
-              div.dataTables_wrapper div.dataTables_filter{text-align:left !important;float:left !important;} div.dataTables_wrapper div.dataTables_filter label{display:inline-flex;align-items:center;gap:5px;}  /* DT 搜索框左对齐 */
-              .arrow-icon{margin-right:10px;}  /* 采购流程箭头 */
-              .status-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:bold;color:white;text-align:center;margin-left:10px;min-width:24px;}  /* 状态徽章样式 */
-              .status-existing{background-color:#28A745;} .status-new{background-color:#FFA500;}  /* 状态颜色 */
-              .note-card{display:flex !important;opacity:1 !important;} .pagination-controls{display:flex;align-items:center;gap:10px;margin-top:20px;justify-content:center;}  /* 其他辅助样式 */
-            ")),
-      
-      # JavaScript 功能实现
-      tags$script(HTML("
-              $(document).ready(function(){  // 页面加载后执行
-                $('#loading-screen').css('transition','opacity 1s ease-out');  // 设置加载画面淡出效果
-                $('#refresh_global_items_btn').on('click',function(){Shiny.setInputValue('refresh_item_table',new Date().getTime(),{priority:'event'});});  // 刷新按钮触发事件
-                $('#transaction_amount').attr('placeholder','成交额（$）');  // 设置成交额输入框占位符
-                $('#filtered_inventory_table_query').on('contextmenu','tr',function(event){  // 库存表右键菜单
-                  event.preventDefault();
-                  var rowIdx=$(this).index();
-                  Shiny.setInputValue('selected_inventory_row',rowIdx+1,{priority:'event'});
-                  $('#context-menu').css({display:'block',left:event.pageX+'px',top:event.pageY+'px'});
+    tags$head(tags$link(rel = "icon", type = "image/x-icon", href = "https://www.goldenbeanllc.com/icons/favicon-96x96.png")),  # 设置页面图标
+    
+    # CSS 样式定义
+    tags$style(HTML("
+            #loading-screen{transition:opacity 1s ease-out;}  /* 加载画面淡出动画 */
+            .navbar-nav{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;white-space:nowrap !important;max-width:100% !important;}  /* 导航栏水平滚动 */
+            .navbar-nav::-webkit-scrollbar{height:6px;} .navbar-nav::-webkit-scrollbar-thumb{background:#007BFF;border-radius:10px;}  /* 滚动条样式 */
+            @media (max-width:1470px){.navbar-nav{overflow-x:scroll !important;}.navbar-brand{display:none !important;}}  /* 小屏幕隐藏标题 */
+            @media (max-width:950px){.navbar-nav > li > a{font-size:12px !important;padding:6px 8px !important;}}  /* 小屏幕调整字体 */
+            .navbar{display:block !important;overflow:hidden !important;width:100% !important;}  /* 导航栏宽度限制 */
+            body{padding-top:70px !important;}  /* 顶部留白 */
+            .layout-container{display:flex;flex-direction:row;height:100%;width:100%;overflow:visible;}  /* Flexbox 布局容器 */
+            .sticky-sidebar{position:sticky;top:70px;z-index:900;flex:0 0 auto;width:380px;min-width:280px;max-width:580px;height:calc(100vh - 70px);overflow-y:auto;border-right:1px solid #e0e0e0;border-radius:8px;padding:20px;background-color:#f9f9f9;transition:width 0.2s ease;}  /* 侧边栏样式 */
+            .main-panel{flex-grow:1;overflow:auto;padding:20px;padding-top:0;background-color:#ffffff;transition:width 0.2s ease;}  /* 主面板样式 */
+            .resizable-divider{background-color:#aaa;width:5px;cursor:ew-resize;flex-shrink:0;}  /* 可拖拽分隔条 */
+            table.dataTable thead th{white-space:nowrap;}  /* 数据表头不换行 */
+            div.dataTables_wrapper div.dataTables_filter{text-align:left !important;float:left !important;} div.dataTables_wrapper div.dataTables_filter label{display:inline-flex;align-items:center;gap:5px;}  /* DT 搜索框左对齐 */
+            .arrow-icon{margin-right:10px;}  /* 采购流程箭头 */
+            .status-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:bold;color:white;text-align:center;margin-left:10px;min-width:24px;}  /* 状态徽章样式 */
+            .status-existing{background-color:#28A745;} .status-new{background-color:#FFA500;}  /* 状态颜色 */
+            .note-card{display:flex !important;opacity:1 !important;} .pagination-controls{display:flex;align-items:center;gap:10px;margin-top:20px;justify-content:center;}  /* 其他辅助样式 */
+          ")),
+    
+    # JavaScript 功能实现
+    tags$script(HTML("
+            $(document).ready(function(){  // 页面加载后执行
+              $('#loading-screen').css('transition','opacity 1s ease-out');  // 设置加载画面淡出效果
+              $('#refresh_global_items_btn').on('click',function(){Shiny.setInputValue('refresh_item_table',new Date().getTime(),{priority:'event'});});  // 刷新按钮触发事件
+              $('#transaction_amount').attr('placeholder','成交额（$）');  // 设置成交额输入框占位符
+              $('#filtered_inventory_table_query').on('contextmenu','tr',function(event){  // 库存表右键菜单
+                event.preventDefault();
+                var rowIdx=$(this).index();
+                Shiny.setInputValue('selected_inventory_row',rowIdx+1,{priority:'event'});
+                $('#context-menu').css({display:'block',left:event.pageX+'px',top:event.pageY+'px'});
+              });
+              $(document).on('click',function(event){if(!$(event.target).closest('#context-menu').length)$('#context-menu').hide();});  // 点击空白处隐藏右键菜单
+            });
+            
+            // 库存状态浮窗显示逻辑
+            let inventoryStatusTimeout;
+            function showInventoryStatus(event,sku){
+              clearTimeout(inventoryStatusTimeout);
+              Shiny.setInputValue('hover_sku',sku,{priority:'event'});
+              inventoryStatusTimeout=setTimeout(function(){
+                var popup=document.getElementById('inventory-status-popup');
+                if(sku==='New-Request')popup.style.display='none';
+                else{popup.style.display='block';popup.style.left=(event.pageX+20)+'px';popup.style.top=(event.pageY+20)+'px';}
+              },1000);
+            }
+            function hideInventoryStatus(){
+              clearTimeout(inventoryStatusTimeout);
+              document.getElementById('inventory-status-popup').style.display='none';
+            }
+            
+            // 粘贴图片功能
+            $(document).on('paste','[id$=\"paste_area\"]',function(event){
+              const items=(event.originalEvent.clipboardData||event.clipboardData).items;
+              for(let i=0;i<items.length;i++){
+                if(items[i].type.indexOf('image')!==-1){
+                  const file=items[i].getAsFile();
+                  const reader=new FileReader();
+                  reader.onload=function(evt){
+                    const inputId=event.currentTarget.id+'_pasted_image';
+                    Shiny.setInputValue(inputId,evt.target.result,{priority:'event'});
+                  };
+                  reader.readAsDataURL(file);
+                  break;
+                }
+              }
+            });
+            
+            // 可拖拽分隔条功能
+            document.addEventListener('DOMContentLoaded',function(){
+              function enableResizing(divider){
+                const sidebar=divider.previousElementSibling;
+                let isResizing=false;
+                divider.addEventListener('mousedown',function(e){isResizing=true;document.body.style.cursor='ew-resize';document.body.style.userSelect='none';});
+                document.addEventListener('mousemove',function(e){
+                  if(!isResizing)return;
+                  const newSidebarWidth=Math.max(200,Math.min(600,e.clientX));
+                  sidebar.style.flex=`0 0 ${newSidebarWidth}px`;
+                  $('.dataTable').DataTable().columns.adjust();
                 });
-                $(document).on('click',function(event){if(!$(event.target).closest('#context-menu').length)$('#context-menu').hide();});  // 点击空白处隐藏右键菜单
-              });
-              
-              // 库存状态浮窗显示逻辑
-              let inventoryStatusTimeout;
-              function showInventoryStatus(event,sku){
-                clearTimeout(inventoryStatusTimeout);
-                Shiny.setInputValue('hover_sku',sku,{priority:'event'});
-                inventoryStatusTimeout=setTimeout(function(){
-                  var popup=document.getElementById('inventory-status-popup');
-                  if(sku==='New-Request')popup.style.display='none';
-                  else{popup.style.display='block';popup.style.left=(event.pageX+20)+'px';popup.style.top=(event.pageY+20)+'px';}
-                },1000);
+                document.addEventListener('mouseup',function(){
+                  if(isResizing){isResizing=false;document.body.style.cursor='';document.body.style.userSelect='';$('.dataTable').DataTable().columns.adjust();}
+                });
               }
-              function hideInventoryStatus(){
-                clearTimeout(inventoryStatusTimeout);
-                document.getElementById('inventory-status-popup').style.display='none';
+              function bindResizableDividers(){
+                document.querySelectorAll('.resizable-divider').forEach(function(divider){
+                  if(!divider.dataset.bound){enableResizing(divider);divider.dataset.bound=true;}
+                });
               }
-              
-              // 粘贴图片功能
-              $(document).on('paste','[id$=\"paste_area\"]',function(event){
-                const items=(event.originalEvent.clipboardData||event.clipboardData).items;
-                for(let i=0;i<items.length;i++){
-                  if(items[i].type.indexOf('image')!==-1){
-                    const file=items[i].getAsFile();
-                    const reader=new FileReader();
-                    reader.onload=function(evt){
-                      const inputId=event.currentTarget.id+'_pasted_image';
-                      Shiny.setInputValue(inputId,evt.target.result,{priority:'event'});
-                    };
-                    reader.readAsDataURL(file);
-                    break;
-                  }
-                }
-              });
-              
-              // 可拖拽分隔条功能
-              document.addEventListener('DOMContentLoaded',function(){
-                function enableResizing(divider){
-                  const sidebar=divider.previousElementSibling;
-                  let isResizing=false;
-                  divider.addEventListener('mousedown',function(e){isResizing=true;document.body.style.cursor='ew-resize';document.body.style.userSelect='none';});
-                  document.addEventListener('mousemove',function(e){
-                    if(!isResizing)return;
-                    const newSidebarWidth=Math.max(200,Math.min(600,e.clientX));
-                    sidebar.style.flex=`0 0 ${newSidebarWidth}px`;
-                    $('.dataTable').DataTable().columns.adjust();
-                  });
-                  document.addEventListener('mouseup',function(){
-                    if(isResizing){isResizing=false;document.body.style.cursor='';document.body.style.userSelect='';$('.dataTable').DataTable().columns.adjust();}
-                  });
-                }
-                function bindResizableDividers(){
-                  document.querySelectorAll('.resizable-divider').forEach(function(divider){
-                    if(!divider.dataset.bound){enableResizing(divider);divider.dataset.bound=true;}
-                  });
-                }
-                bindResizableDividers();
-                $(document).on('shown.bs.tab',function(){bindResizableDividers();$('.dataTable').DataTable().columns.adjust();});
-              });
-              
-              // 音效播放函数
-              function playSound(type){var audio=new Audio('https://www.goldenbeanllc.com/sounds/'+type+'-8bit.mp3');audio.play();}
-              function playSuccessSound(){playSound('success');}  // 成功音效
-              function playErrorSound(){playSound('error');}  // 错误音效
-            "))
-    )
+              bindResizableDividers();
+              $(document).on('shown.bs.tab',function(){bindResizableDividers();$('.dataTable').DataTable().columns.adjust();});
+            });
+            
+            // 音效播放函数
+            function playSound(type){var audio=new Audio('https://www.goldenbeanllc.com/sounds/'+type+'-8bit.mp3');audio.play();}
+            function playSuccessSound(){playSound('success');}  // 成功音效
+            function playErrorSound(){playSound('error');}  // 错误音效
+          "))
   ),
   
   tabPanel("协作", icon = icon("users"),
