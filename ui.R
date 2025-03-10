@@ -602,7 +602,7 @@ ui <- navbarPage(
                   class = "card shadow-sm",
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 15px;",
                   tags$h4("添加新员工", style = "color: #28A745; margin-bottom: 10px;"),
-                  textInput("new_employee_name", "员工姓名:", placeholder = "请输入员工姓名", width = "100%"),
+                  textInput("new_employee_name", NULL, placeholder = "请输入员工姓名", width = "100%"),
                   actionButton("add_employee_btn", "添加员工", icon = icon("plus"), class = "btn-success", style = "width: 100%;")
                 ),
                 # 设置员工薪酬
