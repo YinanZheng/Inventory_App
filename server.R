@@ -2698,10 +2698,10 @@ server <- function(input, output, session) {
       # 查询当前 SKU 的美国入库库存数量
       us_stock_count <- sum(shelf_data$SKU == sku & shelf_data$Status == "美国入库")
       
-      if (status == "美国入库" && us_stock_count <= 1) {
+      if (status == "美国入库" && us_stock_count <= 2) {
         showModal(modalDialog(
           title = "注意",
-          p("此商品在美国库存仅剩一件，请沟通核实后再进行调货"),
+          p("此商品在美国库存紧张，请沟通核实后再进行调货"),
           footer = tagList(
             actionButton("verify_and_proceed", "已核实, 继续调货", class = "btn-primary"),
             modalButton("取消")
@@ -2831,11 +2831,11 @@ server <- function(input, output, session) {
       # 检查是否为 "美国入库" 状态且仅剩一件
       us_stock_count <- sum(all_shelf_items$Status == "美国入库")
       
-      if (any(all_shelf_items$Status == "美国入库") && us_stock_count <= 1) {
+      if (any(all_shelf_items$Status == "美国入库") && us_stock_count <= 2) {
         # 弹出模态框，提醒用户核实后再操作
         showModal(modalDialog(
           title = "注意",
-          p("此商品在美国库存仅剩一件，请沟通核实后再进行调货"),
+          p("此商品在美国库存紧张，请沟通核实后再进行调货"),
           footer = tagList(
             actionButton("verify_and_proceed_auto", "已核实, 继续调货", class = "btn-primary"),
             modalButton("取消")
