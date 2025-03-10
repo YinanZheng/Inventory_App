@@ -5111,7 +5111,7 @@ server <- function(input, output, session) {
     rates <- work_rates() %>% filter(EmployeeName == input$edit_employee_name)
     
     live_rate <- rates %>% filter(WorkType == "直播") %>% pull(HourlyRate)
-    purchase_rate <- rates %>% filter(WorkType == "采购记录") %>% pull(HourlyRate)
+    purchase_rate <- rates %>% filter(WorkType == "采购") %>% pull(HourlyRate)
     
     updateNumericInput(session, "edit_live_rate", value = ifelse(length(live_rate) > 0, live_rate, 0))
     updateNumericInput(session, "edit_purchase_rate", value = ifelse(length(purchase_rate) > 0, purchase_rate, 0))
@@ -5154,7 +5154,7 @@ server <- function(input, output, session) {
                                 "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '直播'",
                                 params = list(employee))$count > 0
       purchase_exists <- dbGetQuery(con, 
-                                    "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '采购记录'",
+                                    "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '采购'",
                                     params = list(employee))$count > 0
       
       if (live_exists) {
@@ -5169,12 +5169,12 @@ server <- function(input, output, session) {
       
       if (purchase_exists) {
         dbExecute(con, 
-                  "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '采购记录'",
+                  "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '采购'",
                   params = list(input$edit_purchase_rate, employee))
       } else {
         dbExecute(con, 
                   "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)",
-                  params = list(employee, "采购记录", input$edit_purchase_rate))
+                  params = list(employee, "采购", input$edit_purchase_rate))
       }
       
       work_rates(dbGetQuery(con, "SELECT EmployeeName, WorkType, HourlyRate FROM employee_work_rates"))
@@ -5251,7 +5251,7 @@ server <- function(input, output, session) {
       summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop")
     
     plot_ly(data = work_summary, x = ~Date, y = ~TotalHours, color = ~WorkType, 
-            type = "bar", colors = c("直播" = "#4CAF50", "采购记录" = "#FF5733")) %>%
+            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733")) %>%
       layout(
         barmode = "stack",
         xaxis = list(title = "日期", tickangle = -45),

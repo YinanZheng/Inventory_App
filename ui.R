@@ -613,7 +613,7 @@ ui <- navbarPage(
                   tags$h4("设置员工薪酬", style = "color: #007BFF; margin-bottom: 10px;"),
                   selectInput("edit_employee_name", "选择员工:", choices = NULL, width = "100%"),
                   numericInput("edit_live_rate", "直播时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
-                  numericInput("edit_purchase_rate", "采购记录时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
+                  numericInput("edit_purchase_rate", "采购时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
                   actionButton("update_employee_btn", "更新薪酬", icon = icon("edit"), class = "btn-primary", 
                                style = "width: 100%; margin-top: 10px;")
                 ),
