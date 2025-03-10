@@ -590,7 +590,6 @@ ui <- navbarPage(
               # 员工考勤分页
               tabPanel(
                 "员工考勤", icon = icon("clock"),
-                tags$h4("员工考勤", style = "font-weight: bold; color: #007BFF; margin-bottom: 15px;"),
                 selectInput("attendance_employee_name", "选择员工:", choices = NULL, width = "100%"),
                 actionButton("generate_attendance_report", "考勤统计报表", icon = icon("file-excel"), 
                              class = "btn-primary", style = "width: 100%; margin-top: 10px;")
@@ -598,12 +597,11 @@ ui <- navbarPage(
               # 员工管理分页
               tabPanel(
                 "员工管理", icon = icon("user"),
-                tags$h4("员工管理", style = "font-weight: bold; color: #007BFF; margin-bottom: 15px;"),
                 # 添加员工（仅姓名）
                 div(
                   class = "card shadow-sm",
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 15px;",
-                  tags$h5("添加新员工", style = "color: #28A745; margin-bottom: 10px;"),
+                  tags$h4("添加新员工", style = "color: #28A745; margin-bottom: 10px;"),
                   textInput("new_employee_name", "员工姓名:", placeholder = "请输入员工姓名", width = "100%"),
                   actionButton("add_employee_btn", "添加员工", icon = icon("plus"), class = "btn-success", style = "width: 100%;")
                 ),
@@ -611,7 +609,7 @@ ui <- navbarPage(
                 div(
                   class = "card shadow-sm",
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;",
-                  tags$h5("设置员工薪酬", style = "color: #007BFF; margin-bottom: 10px;"),
+                  tags$h4("设置员工薪酬", style = "color: #007BFF; margin-bottom: 10px;"),
                   selectInput("edit_employee_name", "选择员工:", choices = NULL, width = "100%"),
                   numericInput("edit_live_rate", "直播时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
                   numericInput("edit_purchase_rate", "采购记录时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
