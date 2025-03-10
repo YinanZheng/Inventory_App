@@ -5268,14 +5268,17 @@ server <- function(input, output, session) {
     req(input$attendance_employee_name, clock_records())
     
     employee <- input$attendance_employee_name
+    
+    # 处理考勤记录
     records <- clock_records() %>%
       filter(EmployeeName == employee) %>%
       mutate(
-        Month = format(ClockInTime, "%Y-%m"),
+        Month = format(ClockInTime, "%Y-%m"), # 按月份分组
         HoursWorked = ifelse(is.na(ClockOutTime), 0, as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))),
         ClockInTime = format(ClockInTime, "%Y-%m-%d %H:%M:%S"),
         ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", format(ClockOutTime, "%Y-%m-%d %H:%M:%S")),
-        TotalPay = ifelse(is.na(TotalPay), "-", sprintf("¥%.2f", TotalPay)) # 金额显示两位小数
+        TotalPay = ifelse(is.na(TotalPay), "-", sprintf("¥%.2f", TotalPay)), # 格式化薪酬
+        SalesAmount = ifelse(is.na(SalesAmount), 0, SalesAmount) # 确保销售额不为 NA
       )
     
     if (nrow(records) == 0) {
@@ -5288,15 +5291,21 @@ server <- function(input, output, session) {
       return()
     }
     
+    # 生成月度汇总
     monthly_summary <- records %>%
       group_by(Month, WorkType) %>%
       summarise(
-        TotalHours = round(sum(HoursWorked, na.rm = TRUE), 2), # 时间保留两位小数
-        TotalPay = round(sum(ifelse(TotalPay == "-", 0, as.numeric(gsub("¥", "", TotalPay))), na.rm = TRUE), 2), # 金额保留两位小数
+        TotalHours = round(sum(HoursWorked, na.rm = TRUE), 2), # 总工时
+        TotalPay = round(sum(ifelse(TotalPay == "-", 0, as.numeric(gsub("¥", "", TotalPay))), na.rm = TRUE), 2), # 总薪酬
+        TotalSales = round(sum(SalesAmount, na.rm = TRUE), 2), # 总销售额
         .groups = "drop"
       ) %>%
-      mutate(TotalPay = sprintf("¥%.2f", TotalPay))
+      mutate(
+        TotalPay = sprintf("¥%.2f", TotalPay), # 格式化总薪酬
+        TotalSales = sprintf("¥%.2f", TotalSales) # 格式化总销售额
+      )
     
+    # 显示模态框
     showModal(modalDialog(
       title = paste(employee, "的考勤统计报表"),
       tags$h5("月度汇总", style = "color: #007BFF; margin-bottom: 10px;"),
@@ -5305,7 +5314,7 @@ server <- function(input, output, session) {
           monthly_summary,
           options = list(dom = 't', paging = FALSE, searching = FALSE),
           rownames = FALSE,
-          colnames = c("月份", "工作类型", "总时长 (小时)", "总薪酬")
+          colnames = c("月份", "工作类型", "总时长 (小时)", "总薪酬", "总销售额") # 添加销售额列
         )
       }),
       easyClose = TRUE,
