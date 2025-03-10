@@ -5314,11 +5314,11 @@ server <- function(input, output, session) {
         "时薪 (¥)" = HourlyRate,
         "总薪酬" = TotalPay,
         "备注" = Remark
-      ) # 移除 RecordID
+      )
     
     datatable(
       all_records,
-      options = list(pageLength = 10, scrollX = TRUE, searching = FALSE), # 移除搜索框
+      options = list(pageLength = 10, scrollX = TRUE, searching = FALSE),
       selection = "single",
       rownames = FALSE
     )
@@ -5335,7 +5335,6 @@ server <- function(input, output, session) {
     updateSelectInput(session, "edit_attendance_work_type", selected = selected_row$WorkType)
     updateTextInput(session, "edit_attendance_clock_in", value = format(selected_row$ClockInTime, "%Y-%m-%d %H:%M:%S"))
     updateTextInput(session, "edit_attendance_clock_out", value = ifelse(is.na(selected_row$ClockOutTime), "", format(selected_row$ClockOutTime, "%Y-%m-%d %H:%M:%S")))
-    updateNumericInput(session, "edit_attendance_total_pay", value = ifelse(is.na(selected_row$TotalPay), 0, round(selected_row$TotalPay, 2)))
     updateTextInput(session, "edit_attendance_remark", value = ifelse(is.na(selected_row$Remark), "", selected_row$Remark))
   })
   
@@ -5347,13 +5346,27 @@ server <- function(input, output, session) {
     work_type <- input$edit_attendance_work_type
     clock_in <- input$edit_attendance_clock_in
     clock_out <- if (input$edit_attendance_clock_out == "") NA else input$edit_attendance_clock_out
-    total_pay <- input$edit_attendance_total_pay
     remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
     
+    # 验证时间格式
     if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
         (!is.na(clock_out) && !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_out))) {
       showNotification("时间格式错误，请使用 YYYY-MM-DD HH:MM:SS！", type = "error")
       return()
+    }
+    
+    # 计算总薪酬
+    total_pay <- NA
+    if (!is.na(clock_out)) {
+      hourly_rate <- work_rates() %>% 
+        filter(EmployeeName == employee, WorkType == work_type) %>% 
+        pull(HourlyRate)
+      if (length(hourly_rate) == 0) {
+        showNotification("该员工此工作类型的薪酬未设置，请先设置！", type = "error")
+        return()
+      }
+      hours_worked <- as.numeric(difftime(clock_out, clock_in, units = "hours"))
+      total_pay <- round(hours_worked * hourly_rate, 2)
     }
     
     dbWithTransaction(con, {
@@ -5370,7 +5383,6 @@ server <- function(input, output, session) {
     
     updateTextInput(session, "edit_attendance_clock_in", value = "")
     updateTextInput(session, "edit_attendance_clock_out", value = "")
-    updateNumericInput(session, "edit_attendance_total_pay", value = 0)
     updateTextInput(session, "edit_attendance_remark", value = "")
     showNotification("考勤记录添加成功！", type = "message")
   })
@@ -5384,13 +5396,26 @@ server <- function(input, output, session) {
     work_type <- input$edit_attendance_work_type
     clock_in <- input$edit_attendance_clock_in
     clock_out <- if (input$edit_attendance_clock_out == "") NA else input$edit_attendance_clock_out
-    total_pay <- input$edit_attendance_total_pay
     remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
     
     if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
         (!is.na(clock_out) && !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_out))) {
       showNotification("时间格式错误，请使用 YYYY-MM-DD HH:MM:SS！", type = "error")
       return()
+    }
+    
+    # 计算总薪酬
+    total_pay <- NA
+    if (!is.na(clock_out)) {
+      hourly_rate <- work_rates() %>% 
+        filter(EmployeeName == employee, WorkType == work_type) %>% 
+        pull(HourlyRate)
+      if (length(hourly_rate) == 0) {
+        showNotification("该员工此工作类型的薪酬未设置，请先设置！", type = "error")
+        return()
+      }
+      hours_worked <- as.numeric(difftime(clock_out, clock_in, units = "hours"))
+      total_pay <- round(hours_worked * hourly_rate, 2)
     }
     
     dbWithTransaction(con, {
@@ -5433,10 +5458,8 @@ server <- function(input, output, session) {
       clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
     })
     
-    # 清空表单
     updateTextInput(session, "edit_attendance_clock_in", value = "")
     updateTextInput(session, "edit_attendance_clock_out", value = "")
-    updateNumericInput(session, "edit_attendance_total_pay", value = 0)
     updateTextInput(session, "edit_attendance_remark", value = "")
     showNotification("考勤记录删除成功！", type = "message")
     removeModal()
