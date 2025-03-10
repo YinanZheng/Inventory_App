@@ -5140,7 +5140,7 @@ server <- function(input, output, session) {
     
     updateTextInput(session, "new_employee_name", value = "")
     showNotification("员工添加成功！请在‘设置员工薪酬’中配置时薪。", type = "message")
-    playSuccessSound()
+    runjs("playSuccessSound()") 
   })
   
   # 设置/更新员工薪酬
@@ -5181,7 +5181,7 @@ server <- function(input, output, session) {
     })
     
     showNotification("员工薪酬设置成功！", type = "message")
-    playSuccessSound()
+    runjs("playSuccessSound()") 
   })
   
   # 删除员工
@@ -5223,7 +5223,7 @@ server <- function(input, output, session) {
     updateNumericInput(session, "edit_purchase_rate", value = 0)
     
     showNotification(paste("员工", employee, "已删除！"), type = "message")
-    playSuccessSound()
+    runjs("playSuccessSound()") 
     removeModal()
   })
   
