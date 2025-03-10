@@ -6664,6 +6664,7 @@ server <- function(input, output, session) {
   
   # Disconnect from the database on app stop
   onStop(function() {
+    rm(list = ls(envir = globalenv()), envir = globalenv())
     dbDisconnect(con)
   })
 }
