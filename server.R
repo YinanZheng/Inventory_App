@@ -5052,6 +5052,275 @@ server <- function(input, output, session) {
   
   ################################################################
   ##                                                            ##
+  ## 员工管理分页                                               ##
+  ##                                                            ##
+  ################################################################
+  
+  # 在 server 函数顶部添加 reactiveVal
+  employees_data <- reactiveVal(NULL)
+  work_rates <- reactiveVal(NULL)
+  clock_records <- reactiveVal(NULL)
+  
+  # 初始化时加载员工数据、工作薪酬和打卡记录
+  observe({
+    tryCatch({
+      employees_data(dbGetQuery(con, "SELECT EmployeeName FROM employees"))
+      work_rates(dbGetQuery(con, "SELECT EmployeeName, WorkType, HourlyRate FROM employee_work_rates"))
+      clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
+    }, error = function(e) {
+      showNotification("初始化员工数据失败，请检查数据库连接！", type = "error")
+    })
+  })
+  
+  # 动态更新员工选择下拉菜单（员工考勤）
+  observe({
+    req(employees_data())
+    updateSelectInput(
+      session,
+      "attendance_employee_name",
+      choices = employees_data()$EmployeeName,
+      selected = NULL
+    )
+  })
+  
+  # 动态更新员工选择下拉菜单（员工管理 - 删除）
+  observe({
+    req(employees_data())
+    updateSelectInput(
+      session,
+      "delete_employee_name",
+      choices = employees_data()$EmployeeName,
+      selected = NULL
+    )
+  })
+  
+  # 动态更新员工选择下拉菜单（员工管理 - 设置薪酬）
+  observe({
+    req(employees_data())
+    updateSelectInput(
+      session,
+      "edit_employee_name",
+      choices = employees_data()$EmployeeName,
+      selected = NULL
+    )
+  })
+  
+  # 动态显示当前员工的薪酬（选择员工后自动填充）
+  observe({
+    req(input$edit_employee_name, work_rates())
+    rates <- work_rates() %>% filter(EmployeeName == input$edit_employee_name)
+    
+    live_rate <- rates %>% filter(WorkType == "直播") %>% pull(HourlyRate)
+    purchase_rate <- rates %>% filter(WorkType == "采购记录") %>% pull(HourlyRate)
+    
+    updateNumericInput(session, "edit_live_rate", value = ifelse(length(live_rate) > 0, live_rate, 0))
+    updateNumericInput(session, "edit_purchase_rate", value = ifelse(length(purchase_rate) > 0, purchase_rate, 0))
+  })
+  
+  # 添加新员工（仅姓名）
+  observeEvent(input$add_employee_btn, {
+    req(input$new_employee_name)
+    
+    new_employee <- trimws(input$new_employee_name)
+    
+    if (new_employee == "") {
+      showNotification("员工姓名不能为空！", type = "error")
+      return()
+    }
+    
+    if (new_employee %in% employees_data()$EmployeeName) {
+      showNotification("该员工已存在！", type = "error")
+      return()
+    }
+    
+    dbWithTransaction(con, {
+      dbExecute(con, "INSERT INTO employees (EmployeeName) VALUES (?)", params = list(new_employee))
+      employees_data(dbGetQuery(con, "SELECT EmployeeName FROM employees"))
+    })
+    
+    updateTextInput(session, "new_employee_name", value = "")
+    showNotification("员工添加成功！请在‘设置员工薪酬’中配置时薪。", type = "message")
+    playSuccessSound()
+  })
+  
+  # 设置/更新员工薪酬
+  observeEvent(input$update_employee_btn, {
+    req(input$edit_employee_name, input$edit_live_rate >= 0, input$edit_purchase_rate >= 0)
+    
+    employee <- input$edit_employee_name
+    
+    dbWithTransaction(con, {
+      live_exists <- dbGetQuery(con, 
+                                "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '直播'",
+                                params = list(employee))$count > 0
+      purchase_exists <- dbGetQuery(con, 
+                                    "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '采购记录'",
+                                    params = list(employee))$count > 0
+      
+      if (live_exists) {
+        dbExecute(con, 
+                  "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '直播'",
+                  params = list(input$edit_live_rate, employee))
+      } else {
+        dbExecute(con, 
+                  "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)",
+                  params = list(employee, "直播", input$edit_live_rate))
+      }
+      
+      if (purchase_exists) {
+        dbExecute(con, 
+                  "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '采购记录'",
+                  params = list(input$edit_purchase_rate, employee))
+      } else {
+        dbExecute(con, 
+                  "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)",
+                  params = list(employee, "采购记录", input$edit_purchase_rate))
+      }
+      
+      work_rates(dbGetQuery(con, "SELECT EmployeeName, WorkType, HourlyRate FROM employee_work_rates"))
+    })
+    
+    showNotification("员工薪酬设置成功！", type = "message")
+    playSuccessSound()
+  })
+  
+  # 删除员工
+  observeEvent(input$delete_employee_btn, {
+    req(input$delete_employee_name)
+    
+    employee <- input$delete_employee_name
+    
+    showModal(modalDialog(
+      title = "确认删除",
+      paste("确定要删除员工", employee, "吗？此操作将删除所有相关记录（薪酬和考勤），且无法撤销！"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_delete", "确认删除", class = "btn-danger")
+      )
+    ))
+  })
+  
+  # 确认删除逻辑
+  observeEvent(input$confirm_delete, {
+    req(input$delete_employee_name)
+    
+    employee <- input$delete_employee_name
+    
+    dbWithTransaction(con, {
+      dbExecute(con, "DELETE FROM clock_records WHERE EmployeeName = ?", params = list(employee))
+      dbExecute(con, "DELETE FROM employee_work_rates WHERE EmployeeName = ?", params = list(employee))
+      dbExecute(con, "DELETE FROM employees WHERE EmployeeName = ?", params = list(employee))
+      
+      employees_data(dbGetQuery(con, "SELECT EmployeeName FROM employees"))
+      work_rates(dbGetQuery(con, "SELECT EmployeeName, WorkType, HourlyRate FROM employee_work_rates"))
+      clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
+    })
+    
+    updateSelectInput(session, "delete_employee_name", selected = NULL)
+    updateSelectInput(session, "edit_employee_name", selected = NULL)
+    updateSelectInput(session, "attendance_employee_name", selected = NULL)
+    updateNumericInput(session, "edit_live_rate", value = 0)
+    updateNumericInput(session, "edit_purchase_rate", value = 0)
+    
+    showNotification(paste("员工", employee, "已删除！"), type = "message")
+    playSuccessSound()
+    removeModal()
+  })
+  
+  # 渲染员工每天工作时长的直方图
+  output$employee_work_hours_plot <- renderPlotly({
+    req(input$attendance_employee_name, clock_records(), input$employee_tabs == "员工考勤")
+    
+    employee <- input$attendance_employee_name
+    records <- clock_records() %>%
+      filter(EmployeeName == employee, !is.na(ClockOutTime)) %>%
+      mutate(
+        Date = as.Date(ClockInTime),
+        HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))
+      )
+    
+    if (nrow(records) == 0) {
+      return(plot_ly() %>%
+               add_text(x = 0.5, y = 0.5, text = "该员工暂无工作记录", textposition = "middle center") %>%
+               layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)))
+    }
+    
+    work_summary <- records %>%
+      group_by(Date, WorkType) %>%
+      summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop")
+    
+    plot_ly(data = work_summary, x = ~Date, y = ~TotalHours, color = ~WorkType, 
+            type = "bar", colors = c("直播" = "#4CAF50", "采购记录" = "#FF5733")) %>%
+      layout(
+        barmode = "stack",
+        xaxis = list(title = "日期", tickangle = -45),
+        yaxis = list(title = "工作时长 (小时)"),
+        title = paste(employee, "的每日工作时长"),
+        legend = list(title = list(text = "工作类型")),
+        margin = list(l = 50, r = 50, t = 50, b = 50)
+      )
+  })
+  
+  # 考勤统计报表（模态框显示）
+  observeEvent(input$generate_attendance_report, {
+    req(input$attendance_employee_name, clock_records())
+    
+    employee <- input$attendance_employee_name
+    records <- clock_records() %>%
+      filter(EmployeeName == employee) %>%
+      mutate(
+        Month = format(ClockInTime, "%Y-%m"),
+        HoursWorked = ifelse(is.na(ClockOutTime), 0, as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))),
+        ClockInTime = format(ClockInTime, "%Y-%m-%d %H:%M:%S"),
+        ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", format(ClockOutTime, "%Y-%m-%d %H:%M:%S")),
+        TotalPay = ifelse(is.na(TotalPay), "-", sprintf("¥%.2f", TotalPay))
+      )
+    
+    if (nrow(records) == 0) {
+      showModal(modalDialog(
+        title = paste(employee, "的考勤统计报表"),
+        tags$p("该员工暂无工作记录。"),
+        easyClose = TRUE,
+        footer = modalButton("关闭")
+      ))
+      return()
+    }
+    
+    monthly_summary <- records %>%
+      group_by(Month, WorkType) %>%
+      summarise(
+        TotalHours = sum(HoursWorked, na.rm = TRUE),
+        TotalPay = sum(ifelse(TotalPay == "-", 0, as.numeric(gsub("¥", "", TotalPay))), na.rm = TRUE),
+        .groups = "drop"
+      ) %>%
+      mutate(TotalPay = sprintf("¥%.2f", TotalPay))
+    
+    showModal(modalDialog(
+      title = paste(employee, "的考勤统计报表"),
+      tags$h5("月度汇总", style = "color: #007BFF; margin-bottom: 10px;"),
+      renderDT({
+        datatable(
+          monthly_summary,
+          options = list(
+            dom = 't',
+            paging = FALSE,
+            searching = FALSE
+          ),
+          rownames = FALSE,
+          colnames = c("月份", "工作类型", "总时长 (小时)", "总薪酬")
+        )
+      }),
+      easyClose = TRUE,
+      size = "m",
+      footer = modalButton("关闭")
+    ))
+  })
+  
+  
+  
+  ################################################################
+  ##                                                            ##
   ## 查询分页                                                   ##
   ##                                                            ##
   ################################################################
