@@ -606,7 +606,7 @@ ui <- navbarPage(
                   selectInput("edit_attendance_work_type", "工作类型:", choices = c("直播", "采购"), width = "100%"),
                   textInput("edit_attendance_clock_in", "上班时间 (YYYY-MM-DD HH:MM:SS):", value = "", width = "100%"),
                   textInput("edit_attendance_clock_out", "下班时间 (YYYY-MM-DD HH:MM:SS):", value = "", placeholder = "留空表示未结束", width = "100%"),
-                  numericInput("edit_attendance_sales_amount", "销售额 (¥):", value = 0, min = 0, step = 0.01, width = "100%"),
+                  numericInput("edit_attendance_sales_amount", "销售额 ($):", value = 0, min = 0, step = 0.01, width = "100%"),
                   textInput("edit_attendance_remark", "备注:", value = "", width = "100%"),
                   actionButton("add_attendance_btn", "添加", icon = icon("plus"), class = "btn-success", 
                                style = "width: 30%; margin-top: 10px; margin-right: 2%;"),

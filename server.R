@@ -5314,7 +5314,7 @@ server <- function(input, output, session) {
           monthly_summary,
           options = list(dom = 't', paging = FALSE, searching = FALSE),
           rownames = FALSE,
-          colnames = c("月份", "工作类型", "总时长 (小时)", "总薪酬", "总销售额") # 添加销售额列
+          colnames = c("月份", "工作类型", "总时长 (小时)", "总薪酬 (¥)", "总销售额 ($)") # 添加销售额列
         )
       }),
       easyClose = TRUE,
@@ -5350,8 +5350,8 @@ server <- function(input, output, session) {
         "下班时间" = ClockOutTime,
         "工作时长 (小时)" = HoursWorked,
         "时薪 (¥)" = HourlyRate,
-        "总薪酬" = TotalPay,
-        "销售额 (¥)" = SalesAmount, # 新增列
+        "总薪酬 (¥)" = TotalPay,
+        "销售额 ($)" = SalesAmount, # 新增列
         "备注" = Remark
       )
     
