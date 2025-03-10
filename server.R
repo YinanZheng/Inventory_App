@@ -984,7 +984,6 @@ server <- function(input, output, session) {
     tryCatch({
       data <- unique_items_data()
       
-      # 筛选符合条件的数据，并排除“交易完毕”
       inventory_status_data <- data %>%
         filter(SKU == isolate(input$hover_sku), Status != "交易完毕") %>%
         group_by(Status) %>%
@@ -994,9 +993,8 @@ server <- function(input, output, session) {
         return(NULL)
       }
       
-      # 确保所有状态都存在，并填充 0，但排除“交易完毕”
-      active_status_levels <- status_levels[status_levels != "交易完毕"]
-      inventory_status_data <- data.frame(Status = active_status_levels) %>%
+      # 确保所有状态都存在，并填充 0
+      inventory_status_data <- data.frame(Status = status_levels[status_levels != "交易完毕"]) %>%
         left_join(inventory_status_data, by = "Status") %>%
         mutate(Count = replace_na(Count, 0))
       
