@@ -53,6 +53,13 @@ server <- function(input, output, session) {
   shelf_items <- reactiveVal(create_empty_shelf_box())
   box_items <- reactiveVal(create_empty_shelf_box())
   
+  # 员工相关
+  employees_data <- reactiveVal(NULL)
+  work_rates <- reactiveVal(NULL)
+  clock_records <- reactiveVal(NULL)
+  selected_record <- reactiveVal(NULL) # 用于存储选中的考勤记录
+  employee_refresh_trigger <- reactiveVal(FALSE) # 添加触发器
+  
   # 创建全局环境变量用于存储缓存数据
   cache_env <- new.env()
   
@@ -662,6 +669,7 @@ server <- function(input, output, session) {
     isolate({
       unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发数据刷新
       orders_refresh_trigger(!orders_refresh_trigger()) # 触发 orders 数据刷新
+      employee_refresh_trigger(!employee_refresh_trigger()) # 出发员工相关数据刷新
       refreshTransactionTable("买货卡", cache_env, transaction_table_hash, output, con)
       refreshTransactionTable("工资卡", cache_env, transaction_table_hash, output, con)
       refreshTransactionTable("美元卡", cache_env, transaction_table_hash, output, con)
@@ -5056,12 +5064,6 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 在 server 函数顶部添加 reactiveVal
-  employees_data <- reactiveVal(NULL)
-  work_rates <- reactiveVal(NULL)
-  clock_records <- reactiveVal(NULL)
-  selected_record <- reactiveVal(NULL) # 用于存储选中的考勤记录
-  
   # 初始化时加载数据
   observe({
     tryCatch({
@@ -5071,6 +5073,14 @@ server <- function(input, output, session) {
     }, error = function(e) {
       showNotification("初始化员工数据失败，请检查数据库连接！", type = "error")
     })
+  })
+  
+  # 响应刷新触发器，更新数据库
+  observe({
+    req(employee_refresh_trigger())
+    employees_data(dbGetQuery(con, "SELECT EmployeeName FROM employees"))
+    work_rates(dbGetQuery(con, "SELECT EmployeeName, WorkType, HourlyRate FROM employee_work_rates"))
+    clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
   })
   
   # 动态更新员工选择下拉菜单（员工考勤）
