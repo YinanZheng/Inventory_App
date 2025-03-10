@@ -347,6 +347,12 @@ server <- function(input, output, session) {
     millis = 500  # Set debounce delay to 500 milliseconds
   )
   
+  # Define debounced input for the combined search field
+  debounced_filter_combined <- debounce(
+    reactive({ trimws(input$filter_combined) }),  # Trim whitespace from input
+    millis = 500  # Set debounce delay to 500 milliseconds
+  )
+  
   filtered_orders <- reactive({
     req(orders())  # Ensure order data exists
     
@@ -355,8 +361,8 @@ server <- function(input, output, session) {
     # Combined filter logic with debouncing
     search_term <- debounced_filter_combined()
     if (!is.null(search_term) && length(search_term) > 0 && nzchar(search_term)) {
-      # Filter across multiple fields using OR logic
-      data <- data %>% filter(
+      # Step 1: Filter main fields directly
+      main_filtered <- data %>% filter(
         grepl(search_term, OrderID, ignore.case = TRUE) |
           grepl(search_term, UsTrackingNumber, ignore.case = TRUE) |
           grepl(search_term, CustomerName, ignore.case = TRUE) |
@@ -364,7 +370,7 @@ server <- function(input, output, session) {
           grepl(search_term, OrderNotes, ignore.case = TRUE)
       )
       
-      # Handle SKU and ItemName filtering using unique_items_data
+      # Step 2: Filter by SKU or ItemName using unique_items_data
       req(unique_items_data())
       sku_or_item_orders <- unique_items_data() %>%
         filter(
@@ -374,13 +380,11 @@ server <- function(input, output, session) {
         pull(OrderID) %>%
         unique()
       
-      # Combine orders matching SKU or ItemName
-      data <- data %>% filter(OrderID %in% sku_or_item_orders | 
-                                grepl(search_term, OrderID, ignore.case = TRUE) |
-                                grepl(search_term, UsTrackingNumber, ignore.case = TRUE) |
-                                grepl(search_term, CustomerName, ignore.case = TRUE) |
-                                grepl(search_term, CustomerNetName, ignore.case = TRUE) |
-                                grepl(search_term, OrderNotes, ignore.case = TRUE))
+      # Step 3: Combine results - orders matching either main fields or SKU/ItemName
+      data <- data %>% filter(
+        OrderID %in% sku_or_item_orders | 
+          OrderID %in% main_filtered$OrderID
+      )
     }
     
     # Filter by platform
