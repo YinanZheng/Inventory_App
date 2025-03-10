@@ -5205,6 +5205,7 @@ server <- function(input, output, session) {
   })
   
   # 渲染员工每天工作时长的直方图
+  # 渲染员工每天工作时长的直方图
   output$employee_work_hours_plot <- renderPlotly({
     req(input$attendance_employee_name, clock_records(), input$employee_tabs == "员工考勤")
     
@@ -5223,20 +5224,30 @@ server <- function(input, output, session) {
                       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)))
     }
     
+    # 按日期汇总所有工作时长，然后按工作类型分配
     work_summary <- records %>%
-      group_by(Date, WorkType) %>%
+      group_by(Date) %>%
       summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop") %>%
-      mutate(TotalHours = round(TotalHours, 2))
+      left_join(
+        records %>% 
+          group_by(Date, WorkType) %>%
+          summarise(HoursByType = sum(HoursWorked, na.rm = TRUE), .groups = "drop"),
+        by = "Date"
+      ) %>%
+      mutate(TotalHours = round(TotalHours, 2), HoursByType = round(HoursByType, 2))
     
-    plot_ly(data = work_summary, x = ~Date, y = ~TotalHours, color = ~WorkType, 
+    plot_ly(data = work_summary, x = ~Date, y = ~HoursByType, color = ~WorkType, 
             type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
-            text = ~paste("时长: ", sprintf("%.2f", TotalHours), "小时"), hoverinfo = "text") %>%
+            text = ~paste("时长: ", sprintf("%.2f", HoursByType), "小时"), hoverinfo = "text") %>%
       layout(
-        barmode = "stack",
+        barmode = "stack", # 堆叠模式，确保同一日期的不同工作类型堆叠
         xaxis = list(
           title = "日期",
           tickangle = -45,
-          tickformat = "%Y-%m-%d" # 强制显示日期格式 YYYY-MM-DD
+          tickformat = "%Y-%m-%d", # 强制显示日期格式
+          tickmode = "array", # 控制刻度显示
+          tickvals = ~Date, # 确保只显示唯一日期
+          ticktext = ~format(Date, "%Y-%m-%d") # 自定义刻度文本
         ),
         yaxis = list(title = "工作时长 (小时)"),
         title = paste(employee, "的每日工作时长"),

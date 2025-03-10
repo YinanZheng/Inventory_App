@@ -602,7 +602,7 @@ ui <- navbarPage(
                   class = "card shadow-sm",
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 15px;",
                   tags$h4("添加新员工", style = "color: #28A745; margin-bottom: 10px;"),
-                  textInput("new_employee_name", "员工姓名:", placeholder = "请输入员工姓名", width = "100%"),
+                  textInput("new_employee_name", NULL, placeholder = "请输入员工姓名", width = "100%"),
                   actionButton("add_employee_btn", "添加员工", icon = icon("plus"), class = "btn-success", 
                                style = "width: 100%; margin-top: 10px;")
                 ),
@@ -610,7 +610,7 @@ ui <- navbarPage(
                   class = "card shadow-sm",
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 15px;",
                   tags$h4("设置员工薪酬", style = "color: #007BFF; margin-bottom: 10px;"),
-                  selectInput("edit_employee_name", "选择员工:", choices = NULL, width = "100%"),
+                  selectInput("edit_employee_name", NULL, choices = NULL, width = "100%"),
                   numericInput("edit_live_rate", "直播时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
                   numericInput("edit_purchase_rate", "采购时薪 (¥/小时):", value = 0, min = 0, step = 0.01, width = "100%"),
                   actionButton("update_employee_btn", "更新薪酬", icon = icon("edit"), class = "btn-primary", 
@@ -620,7 +620,7 @@ ui <- navbarPage(
                   class = "card shadow-sm",
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9;",
                   tags$h4("删除员工", style = "color: #DC3545; margin-bottom: 10px;"),
-                  selectInput("delete_employee_name", "选择员工:", choices = NULL, width = "100%"),
+                  selectInput("delete_employee_name", NULL, choices = NULL, width = "100%"),
                   actionButton("delete_employee_btn", "删除员工", icon = icon("trash"), class = "btn-danger", 
                                style = "width: 100%; margin-top: 10px;")
                 )
