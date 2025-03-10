@@ -5324,9 +5324,15 @@ server <- function(input, output, session) {
     all_records <- clock_records() %>%
       left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>%
       mutate(
-        ClockInTime = format(ClockInTime, "%Y-%m-%d %H:%M:%S"),
-        ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", format(ClockOutTime, "%Y-%m-%d %H:%M:%S")),
-        HoursWorked = ifelse(is.na(ClockOutTime), 0, round(as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")), 2)),
+        ClockInTime = as.character(format(as.POSIXct(ClockInTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), "%Y-%m-%d %H:%M:%S")), # 强制格式化
+        ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", 
+                              as.character(format(as.POSIXct(ClockOutTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"), "%Y-%m-%d %H:%M:%S"))),
+        HoursWorked = ifelse(is.na(ClockOutTime) | is.na(ClockInTime) | !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", ClockInTime) | 
+                               (!is.na(ClockOutTime) & !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", ClockOutTime)),
+                             0, # 如果格式无效，设为 0
+                             round(as.numeric(difftime(as.POSIXct(ClockOutTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+                                                       as.POSIXct(ClockInTime, format = "%Y-%m-%d %H:%M:%S", tz = "UTC"),
+                                                       units = "hours")), 2)),
         HourlyRate = round(ifelse(is.na(HourlyRate), 0, HourlyRate), 2),
         TotalPay = sprintf("¥%.2f", round(ifelse(is.na(TotalPay), 0, TotalPay), 2))
       ) %>%
