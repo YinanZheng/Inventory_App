@@ -985,7 +985,7 @@ server <- function(input, output, session) {
       data <- unique_items_data()
       
       inventory_status_data <- data %>%
-        filter(SKU == isolate(input$hover_sku), Status != "交易完毕") %>%
+        filter(SKU == isolate(input$hover_sku)) %>%
         group_by(Status) %>%
         summarise(Count = n(), .groups = "drop")
       
@@ -994,7 +994,7 @@ server <- function(input, output, session) {
       }
       
       # 确保所有状态都存在，并填充 0
-      inventory_status_data <- data.frame(Status = status_levels[status_levels != "交易完毕"]) %>%
+      inventory_status_data <- data.frame(Status = status_levels) %>%
         left_join(inventory_status_data, by = "Status") %>%
         mutate(Count = replace_na(Count, 0))
       
@@ -5433,25 +5433,23 @@ server <- function(input, output, session) {
             return(NULL)
           }
           
-          # 筛选符合条件的数据，并排除“交易完毕”
+          # 筛选符合条件的数据
           inventory_status_data <- data %>%
-            filter(SKU == trimws(input$query_sku), Status != "交易完毕") %>%
+            filter(SKU == trimws(input$query_sku)) %>%
             group_by(Status) %>%
             summarise(Count = n(), .groups = "drop")
           
           # 确保数据按照固定类别顺序排列，并用 0 填充缺失类别
-          # 先定义 status_levels，确保不包含“交易完毕”
-          active_status_levels <- status_levels[status_levels != "交易完毕"]
           inventory_status_data <- merge(
-            data.frame(Status = active_status_levels),
+            data.frame(Status = status_levels),
             inventory_status_data,
             by = "Status",
             all.x = TRUE
           )
           inventory_status_data$Count[is.na(inventory_status_data$Count)] <- 0
           
-          # 按 active_status_levels 排序，确保颜色对应
-          inventory_status_data <- inventory_status_data[match(active_status_levels, inventory_status_data$Status), ]
+          # 按 status_levels 排序，确保颜色对应
+          inventory_status_data <- inventory_status_data[match(status_levels, inventory_status_data$Status), ]
           
           if (sum(inventory_status_data$Count) == 0) {
             # 如果没有数据，显示占位图
@@ -5467,7 +5465,7 @@ server <- function(input, output, session) {
               hoverinfo = "label+percent+value", # 鼠标悬停显示类别、百分比和数量
               insidetextorientation = "auto", # 自动调整标签方向
               textposition = "inside",       # 标签显示在图形外部
-              marker = list(colors = status_colors[match(active_status_levels, status_levels)]) # 按固定颜色映射，排除“交易完毕”
+              marker = list(colors = status_colors) # 按固定颜色映射
             ) %>%
               layout(
                 showlegend = FALSE, # 隐藏图例
@@ -5477,7 +5475,7 @@ server <- function(input, output, session) {
           }
         }, error = function(e) {
           showNotification(paste("库存状态图表生成错误：", e$message), type = "error")
-          return(NULL) # 直接返回 NULL，避免重复赋值
+          output$inventory_status_chart <- renderPlotly({ NULL })
         })
       })
       
