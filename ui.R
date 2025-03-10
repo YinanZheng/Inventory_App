@@ -29,8 +29,8 @@ ui <- navbarPage(
             #loading-screen{transition:opacity 1s ease-out;}  /* 加载画面淡出动画 */
             .navbar-nav{display:flex !important;flex-wrap:nowrap !important;overflow-x:auto !important;white-space:nowrap !important;max-width:100% !important;}  /* 导航栏水平滚动 */
             .navbar-nav::-webkit-scrollbar{height:6px;} .navbar-nav::-webkit-scrollbar-thumb{background:#007BFF;border-radius:10px;}  /* 滚动条样式 */
-            @media (max-width:1500px){.navbar-nav{overflow-x:scroll !important;}.navbar-brand{display:none !important;}}  /* 小屏幕隐藏标题 */
-            @media (max-width:980px){.navbar-nav > li > a{font-size:12px !important;padding:6px 8px !important;}}  /* 小屏幕调整字体 */
+            @media (max-width:1530px){.navbar-nav{overflow-x:scroll !important;}.navbar-brand{display:none !important;}}  /* 小屏幕隐藏标题 */
+            @media (max-width:1100px){.navbar-nav > li > a{font-size:12px !important;padding:6px 8px !important;}}  /* 小屏幕调整字体 */
             .navbar{display:block !important;overflow:hidden !important;width:100% !important;}  /* 导航栏宽度限制 */
             body{padding-top:70px !important;}  /* 顶部留白 */
             .layout-container{display:flex;flex-direction:row;height:100%;width:100%;overflow:visible;}  /* Flexbox 布局容器 */
