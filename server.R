@@ -5060,8 +5060,9 @@ server <- function(input, output, session) {
   employees_data <- reactiveVal(NULL)
   work_rates <- reactiveVal(NULL)
   clock_records <- reactiveVal(NULL)
+  selected_record <- reactiveVal(NULL) # 用于存储选中的考勤记录
   
-  # 初始化时加载员工数据、工作薪酬和打卡记录
+  # 初始化时加载数据
   observe({
     tryCatch({
       employees_data(dbGetQuery(con, "SELECT EmployeeName FROM employees"))
@@ -5075,34 +5076,25 @@ server <- function(input, output, session) {
   # 动态更新员工选择下拉菜单（员工考勤）
   observe({
     req(employees_data())
-    updateSelectInput(
-      session,
-      "attendance_employee_name",
-      choices = employees_data()$EmployeeName,
-      selected = NULL
-    )
-  })
-  
-  # 动态更新员工选择下拉菜单（员工管理 - 删除）
-  observe({
-    req(employees_data())
-    updateSelectInput(
-      session,
-      "delete_employee_name",
-      choices = employees_data()$EmployeeName,
-      selected = NULL
-    )
+    updateSelectInput(session, "attendance_employee_name", choices = employees_data()$EmployeeName, selected = NULL)
   })
   
   # 动态更新员工选择下拉菜单（员工管理 - 设置薪酬）
   observe({
     req(employees_data())
-    updateSelectInput(
-      session,
-      "edit_employee_name",
-      choices = employees_data()$EmployeeName,
-      selected = NULL
-    )
+    updateSelectInput(session, "edit_employee_name", choices = employees_data()$EmployeeName, selected = NULL)
+  })
+  
+  # 动态更新员工选择下拉菜单（员工管理 - 删除）
+  observe({
+    req(employees_data())
+    updateSelectInput(session, "delete_employee_name", choices = employees_data()$EmployeeName, selected = NULL)
+  })
+  
+  # 动态更新员工选择下拉菜单（考勤编辑）
+  observe({
+    req(employees_data())
+    updateSelectInput(session, "edit_attendance_employee", choices = employees_data()$EmployeeName, selected = NULL)
   })
   
   # 动态显示当前员工的薪酬（选择员工后自动填充）
@@ -5117,7 +5109,7 @@ server <- function(input, output, session) {
     updateNumericInput(session, "edit_purchase_rate", value = ifelse(length(purchase_rate) > 0, purchase_rate, 0))
   })
   
-  # 添加新员工（仅姓名）
+  # 添加新员工
   observeEvent(input$add_employee_btn, {
     req(input$new_employee_name)
     
@@ -5140,7 +5132,6 @@ server <- function(input, output, session) {
     
     updateTextInput(session, "new_employee_name", value = "")
     showNotification("员工添加成功！请在‘设置员工薪酬’中配置时薪。", type = "message")
-    runjs("playSuccessSound()") 
   })
   
   # 设置/更新员工薪酬
@@ -5150,38 +5141,25 @@ server <- function(input, output, session) {
     employee <- input$edit_employee_name
     
     dbWithTransaction(con, {
-      live_exists <- dbGetQuery(con, 
-                                "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '直播'",
-                                params = list(employee))$count > 0
-      purchase_exists <- dbGetQuery(con, 
-                                    "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '采购'",
-                                    params = list(employee))$count > 0
+      live_exists <- dbGetQuery(con, "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '直播'", params = list(employee))$count > 0
+      purchase_exists <- dbGetQuery(con, "SELECT COUNT(*) as count FROM employee_work_rates WHERE EmployeeName = ? AND WorkType = '采购'", params = list(employee))$count > 0
       
       if (live_exists) {
-        dbExecute(con, 
-                  "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '直播'",
-                  params = list(input$edit_live_rate, employee))
+        dbExecute(con, "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '直播'", params = list(input$edit_live_rate, employee))
       } else {
-        dbExecute(con, 
-                  "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)",
-                  params = list(employee, "直播", input$edit_live_rate))
+        dbExecute(con, "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)", params = list(employee, "直播", input$edit_live_rate))
       }
       
       if (purchase_exists) {
-        dbExecute(con, 
-                  "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '采购'",
-                  params = list(input$edit_purchase_rate, employee))
+        dbExecute(con, "UPDATE employee_work_rates SET HourlyRate = ? WHERE EmployeeName = ? AND WorkType = '采购'", params = list(input$edit_purchase_rate, employee))
       } else {
-        dbExecute(con, 
-                  "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)",
-                  params = list(employee, "采购", input$edit_purchase_rate))
+        dbExecute(con, "INSERT INTO employee_work_rates (EmployeeName, WorkType, HourlyRate) VALUES (?, ?, ?)", params = list(employee, "采购", input$edit_purchase_rate))
       }
       
       work_rates(dbGetQuery(con, "SELECT EmployeeName, WorkType, HourlyRate FROM employee_work_rates"))
     })
     
     showNotification("员工薪酬设置成功！", type = "message")
-    runjs("playSuccessSound()") 
   })
   
   # 删除员工
@@ -5200,7 +5178,6 @@ server <- function(input, output, session) {
     ))
   })
   
-  # 确认删除逻辑
   observeEvent(input$confirm_delete, {
     req(input$delete_employee_name)
     
@@ -5219,11 +5196,11 @@ server <- function(input, output, session) {
     updateSelectInput(session, "delete_employee_name", selected = NULL)
     updateSelectInput(session, "edit_employee_name", selected = NULL)
     updateSelectInput(session, "attendance_employee_name", selected = NULL)
+    updateSelectInput(session, "edit_attendance_employee", selected = NULL)
     updateNumericInput(session, "edit_live_rate", value = 0)
     updateNumericInput(session, "edit_purchase_rate", value = 0)
     
     showNotification(paste("员工", employee, "已删除！"), type = "message")
-    runjs("playSuccessSound()") 
     removeModal()
   })
   
@@ -5248,10 +5225,12 @@ server <- function(input, output, session) {
     
     work_summary <- records %>%
       group_by(Date, WorkType) %>%
-      summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop")
+      summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop") %>%
+      mutate(TotalHours = round(TotalHours, 2)) # 保留两位小数
     
     plot_ly(data = work_summary, x = ~Date, y = ~TotalHours, color = ~WorkType, 
-            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733")) %>%
+            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
+            text = ~paste("时长: ", sprintf("%.2f", TotalHours), "小时"), hoverinfo = "text") %>% # 悬停显示两位小数
       layout(
         barmode = "stack",
         xaxis = list(title = "日期", tickangle = -45),
@@ -5274,7 +5253,7 @@ server <- function(input, output, session) {
         HoursWorked = ifelse(is.na(ClockOutTime), 0, as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))),
         ClockInTime = format(ClockInTime, "%Y-%m-%d %H:%M:%S"),
         ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", format(ClockOutTime, "%Y-%m-%d %H:%M:%S")),
-        TotalPay = ifelse(is.na(TotalPay), "-", sprintf("¥%.2f", TotalPay))
+        TotalPay = ifelse(is.na(TotalPay), "-", sprintf("¥%.2f", TotalPay)) # 金额显示两位小数
       )
     
     if (nrow(records) == 0) {
@@ -5290,8 +5269,8 @@ server <- function(input, output, session) {
     monthly_summary <- records %>%
       group_by(Month, WorkType) %>%
       summarise(
-        TotalHours = sum(HoursWorked, na.rm = TRUE),
-        TotalPay = sum(ifelse(TotalPay == "-", 0, as.numeric(gsub("¥", "", TotalPay))), na.rm = TRUE),
+        TotalHours = round(sum(HoursWorked, na.rm = TRUE), 2), # 时间保留两位小数
+        TotalPay = round(sum(ifelse(TotalPay == "-", 0, as.numeric(gsub("¥", "", TotalPay))), na.rm = TRUE), 2), # 金额保留两位小数
         .groups = "drop"
       ) %>%
       mutate(TotalPay = sprintf("¥%.2f", TotalPay))
@@ -5302,11 +5281,7 @@ server <- function(input, output, session) {
       renderDT({
         datatable(
           monthly_summary,
-          options = list(
-            dom = 't',
-            paging = FALSE,
-            searching = FALSE
-          ),
+          options = list(dom = 't', paging = FALSE, searching = FALSE),
           rownames = FALSE,
           colnames = c("月份", "工作类型", "总时长 (小时)", "总薪酬")
         )
@@ -5315,6 +5290,124 @@ server <- function(input, output, session) {
       size = "m",
       footer = modalButton("关闭")
     ))
+  })
+  
+  # 考勤编辑 - 渲染全部考勤记录表格
+  output$attendance_table <- renderDT({
+    req(clock_records(), input$employee_tabs == "考勤编辑")
+    
+    all_records <- clock_records() %>%
+      left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>%
+      mutate(
+        ClockInTime = format(ClockInTime, "%Y-%m-%d %H:%M:%S"),
+        ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", format(ClockOutTime, "%Y-%m-%d %H:%M:%S")),
+        HoursWorked = ifelse(is.na(ClockOutTime), 0, round(as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")), 2)), # 时间保留两位小数
+        HourlyRate = round(ifelse(is.na(HourlyRate), 0, HourlyRate), 2), # 金额保留两位小数
+        TotalPay = sprintf("¥%.2f", round(ifelse(is.na(TotalPay), 0, TotalPay), 2)) # 金额保留两位小数
+      ) %>%
+      select(
+        "记录ID" = RecordID,
+        "员工姓名" = EmployeeName,
+        "工作类型" = WorkType,
+        "上班时间" = ClockInTime,
+        "下班时间" = ClockOutTime,
+        "工作时长 (小时)" = HoursWorked,
+        "时薪 (¥)" = HourlyRate,
+        "总薪酬" = TotalPay,
+        "备注" = Remark
+      )
+    
+    datatable(
+      all_records,
+      options = list(pageLength = 10, scrollX = TRUE, searching = TRUE),
+      selection = "single",
+      rownames = FALSE
+    )
+  })
+  
+  # 点击表格记录后自动填充表单
+  observeEvent(input$attendance_table_rows_selected, {
+    req(input$attendance_table_rows_selected)
+    
+    selected_row <- clock_records()[input$attendance_table_rows_selected, ]
+    selected_record(selected_row)
+    
+    updateSelectInput(session, "edit_attendance_employee", selected = selected_row$EmployeeName)
+    updateSelectInput(session, "edit_attendance_work_type", selected = selected_row$WorkType)
+    updateTextInput(session, "edit_attendance_clock_in", value = format(selected_row$ClockInTime, "%Y-%m-%d %H:%M:%S"))
+    updateTextInput(session, "edit_attendance_clock_out", value = ifelse(is.na(selected_row$ClockOutTime), "", format(selected_row$ClockOutTime, "%Y-%m-%d %H:%M:%S")))
+    updateNumericInput(session, "edit_attendance_total_pay", value = ifelse(is.na(selected_row$TotalPay), 0, round(selected_row$TotalPay, 2)))
+    updateTextInput(session, "edit_attendance_remark", value = ifelse(is.na(selected_row$Remark), "", selected_row$Remark))
+  })
+  
+  # 添加考勤记录
+  observeEvent(input$add_attendance_btn, {
+    req(input$edit_attendance_employee, input$edit_attendance_work_type, input$edit_attendance_clock_in)
+    
+    employee <- input$edit_attendance_employee
+    work_type <- input$edit_attendance_work_type
+    clock_in <- input$edit_attendance_clock_in
+    clock_out <- if (input$edit_attendance_clock_out == "") NA else input$edit_attendance_clock_out
+    total_pay <- input$edit_attendance_total_pay
+    remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
+    
+    # 验证时间格式
+    if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
+        (!is.na(clock_out) && !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_out))) {
+      showNotification("时间格式错误，请使用 YYYY-MM-DD HH:MM:SS！", type = "error")
+      return()
+    }
+    
+    dbWithTransaction(con, {
+      record_id <- uuid::UUIDgenerate()
+      if (is.na(clock_out)) {
+        dbExecute(con, "INSERT INTO clock_records (RecordID, EmployeeName, WorkType, ClockInTime, Remark) VALUES (?, ?, ?, ?, ?)",
+                  params = list(record_id, employee, work_type, clock_in, remark))
+      } else {
+        dbExecute(con, "INSERT INTO clock_records (RecordID, EmployeeName, WorkType, ClockInTime, ClockOutTime, TotalPay, Remark) VALUES (?, ?, ?, ?, ?, ?, ?)",
+                  params = list(record_id, employee, work_type, clock_in, clock_out, total_pay, remark))
+      }
+      clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
+    })
+    
+    # 清空表单
+    updateTextInput(session, "edit_attendance_clock_in", value = "")
+    updateTextInput(session, "edit_attendance_clock_out", value = "")
+    updateNumericInput(session, "edit_attendance_total_pay", value = 0)
+    updateTextInput(session, "edit_attendance_remark", value = "")
+    showNotification("考勤记录添加成功！", type = "message")
+  })
+  
+  # 修改考勤记录
+  observeEvent(input$update_attendance_btn, {
+    req(selected_record(), input$edit_attendance_employee, input$edit_attendance_work_type, input$edit_attendance_clock_in)
+    
+    record <- selected_record()
+    employee <- input$edit_attendance_employee
+    work_type <- input$edit_attendance_work_type
+    clock_in <- input$edit_attendance_clock_in
+    clock_out <- if (input$edit_attendance_clock_out == "") NA else input$edit_attendance_clock_out
+    total_pay <- input$edit_attendance_total_pay
+    remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
+    
+    if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
+        (!is.na(clock_out) && !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_out))) {
+      showNotification("时间格式错误，请使用 YYYY-MM-DD HH:MM:SS！", type = "error")
+      return()
+    }
+    
+    dbWithTransaction(con, {
+      if (is.na(clock_out)) {
+        dbExecute(con, "UPDATE clock_records SET EmployeeName = ?, WorkType = ?, ClockInTime = ?, ClockOutTime = NULL, TotalPay = NULL, Remark = ? WHERE RecordID = ?",
+                  params = list(employee, work_type, clock_in, remark, record$RecordID))
+      } else {
+        dbExecute(con, "UPDATE clock_records SET EmployeeName = ?, WorkType = ?, ClockInTime = ?, ClockOutTime = ?, TotalPay = ?, Remark = ? WHERE RecordID = ?",
+                  params = list(employee, work_type, clock_in, clock_out, total_pay, remark, record$RecordID))
+      }
+      clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
+    })
+    
+    showNotification("考勤记录修改成功！", type = "message")
   })
   
   
