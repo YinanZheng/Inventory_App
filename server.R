@@ -57,7 +57,7 @@ server <- function(input, output, session) {
   employees_data <- reactiveVal(NULL)
   work_rates <- reactiveVal(NULL)
   clock_records <- reactiveVal(NULL)
-  selected_record <- reactiveVal(NULL) # 用于存储选中的考勤记录
+  selected_working_record <- reactiveVal(NULL) # 用于存储选中的考勤记录
   employee_refresh_trigger <- reactiveVal(FALSE) # 添加触发器
   
   # 创建全局环境变量用于存储缓存数据
@@ -5354,7 +5354,7 @@ server <- function(input, output, session) {
     req(input$attendance_table_rows_selected)
     
     selected_row <- clock_records()[input$attendance_table_rows_selected, ]
-    selected_record(selected_row)
+    selected_working_record(selected_row)
     
     updateSelectInput(session, "edit_attendance_employee", selected = selected_row$EmployeeName)
     updateSelectInput(session, "edit_attendance_work_type", selected = selected_row$WorkType)
@@ -5414,9 +5414,9 @@ server <- function(input, output, session) {
   
   # 修改考勤记录
   observeEvent(input$update_attendance_btn, {
-    req(selected_record(), input$edit_attendance_employee, input$edit_attendance_work_type, input$edit_attendance_clock_in)
+    req(selected_working_record(), input$edit_attendance_employee, input$edit_attendance_work_type, input$edit_attendance_clock_in)
     
-    record <- selected_record()
+    record <- selected_working_record()
     employee <- input$edit_attendance_employee
     work_type <- input$edit_attendance_work_type
     clock_in <- input$edit_attendance_clock_in
@@ -5459,9 +5459,9 @@ server <- function(input, output, session) {
   
   # 删除考勤记录
   observeEvent(input$delete_attendance_btn, {
-    req(selected_record())
+    req(selected_working_record())
     
-    record <- selected_record()
+    record <- selected_working_record()
     
     showModal(modalDialog(
       title = "确认删除",
@@ -5474,9 +5474,9 @@ server <- function(input, output, session) {
   })
   
   observeEvent(input$confirm_delete_attendance, {
-    req(selected_record())
+    req(selected_working_record())
     
-    record <- selected_record()
+    record <- selected_working_record()
     
     dbWithTransaction(con, {
       dbExecute(con, "DELETE FROM clock_records WHERE RecordID = ?", params = list(record$RecordID))
