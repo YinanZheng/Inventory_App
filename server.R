@@ -5314,6 +5314,18 @@ server <- function(input, output, session) {
     ))
   })
   
+  # 销售额输入框
+  observe({
+    req(input$edit_attendance_work_type)
+    
+    if (input$edit_attendance_work_type == "直播") {
+      shinyjs::show("edit_attendance_sales_amount") # 显示销售额输入框
+    } else {
+      shinyjs::hide("edit_attendance_sales_amount") # 隐藏销售额输入框
+      updateNumericInput(session, "edit_attendance_sales_amount", value = 0) # 重置销售额为 0
+    }
+  })
+  
   # 考勤编辑 - 渲染全部考勤记录表格
   output$attendance_table <- renderDT({
     req(clock_records(), input$employee_tabs == "考勤编辑")
@@ -5375,6 +5387,7 @@ server <- function(input, output, session) {
     clock_in <- input$edit_attendance_clock_in
     clock_out <- if (input$edit_attendance_clock_out == "") NA else input$edit_attendance_clock_out
     remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
+    sales_amount <- ifelse(work_type == "直播", input$edit_attendance_sales_amount, NA) # 仅直播时填写销售额
     
     # 验证时间格式
     if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
@@ -5400,11 +5413,11 @@ server <- function(input, output, session) {
     dbWithTransaction(con, {
       record_id <- uuid::UUIDgenerate()
       if (is.na(clock_out)) {
-        dbExecute(con, "INSERT INTO clock_records (RecordID, EmployeeName, WorkType, ClockInTime, Remark) VALUES (?, ?, ?, ?, ?)",
-                  params = list(record_id, employee, work_type, clock_in, remark))
+        dbExecute(con, "INSERT INTO clock_records (RecordID, EmployeeName, WorkType, ClockInTime, Remark, SalesAmount) VALUES (?, ?, ?, ?, ?, ?)",
+                  params = list(record_id, employee, work_type, clock_in, remark, sales_amount))
       } else {
-        dbExecute(con, "INSERT INTO clock_records (RecordID, EmployeeName, WorkType, ClockInTime, ClockOutTime, TotalPay, Remark) VALUES (?, ?, ?, ?, ?, ?, ?)",
-                  params = list(record_id, employee, work_type, clock_in, clock_out, total_pay, remark))
+        dbExecute(con, "INSERT INTO clock_records (RecordID, EmployeeName, WorkType, ClockInTime, ClockOutTime, TotalPay, Remark, SalesAmount) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+                  params = list(record_id, employee, work_type, clock_in, clock_out, total_pay, remark, sales_amount))
       }
       clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
     })
@@ -5412,6 +5425,7 @@ server <- function(input, output, session) {
     updateTextInput(session, "edit_attendance_clock_in", value = "")
     updateTextInput(session, "edit_attendance_clock_out", value = "")
     updateTextInput(session, "edit_attendance_remark", value = "")
+    updateNumericInput(session, "edit_attendance_sales_amount", value = 0)
     showNotification("考勤记录添加成功！", type = "message")
   })
   
@@ -5425,6 +5439,7 @@ server <- function(input, output, session) {
     clock_in <- input$edit_attendance_clock_in
     clock_out <- if (input$edit_attendance_clock_out == "") NA else input$edit_attendance_clock_out
     remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
+    sales_amount <- ifelse(work_type == "直播", input$edit_attendance_sales_amount, NA) # 仅直播时更新销售额
     
     if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
         (!is.na(clock_out) && !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_out))) {
@@ -5448,11 +5463,11 @@ server <- function(input, output, session) {
     
     dbWithTransaction(con, {
       if (is.na(clock_out)) {
-        dbExecute(con, "UPDATE clock_records SET EmployeeName = ?, WorkType = ?, ClockInTime = ?, ClockOutTime = NULL, TotalPay = NULL, Remark = ? WHERE RecordID = ?",
-                  params = list(employee, work_type, clock_in, remark, record$RecordID))
+        dbExecute(con, "UPDATE clock_records SET EmployeeName = ?, WorkType = ?, ClockInTime = ?, ClockOutTime = NULL, TotalPay = NULL, Remark = ?, SalesAmount = ? WHERE RecordID = ?",
+                  params = list(employee, work_type, clock_in, remark, sales_amount, record$RecordID))
       } else {
-        dbExecute(con, "UPDATE clock_records SET EmployeeName = ?, WorkType = ?, ClockInTime = ?, ClockOutTime = ?, TotalPay = ?, Remark = ? WHERE RecordID = ?",
-                  params = list(employee, work_type, clock_in, clock_out, total_pay, remark, record$RecordID))
+        dbExecute(con, "UPDATE clock_records SET EmployeeName = ?, WorkType = ?, ClockInTime = ?, ClockOutTime = ?, TotalPay = ?, Remark = ?, SalesAmount = ? WHERE RecordID = ?",
+                  params = list(employee, work_type, clock_in, clock_out, total_pay, remark, sales_amount, record$RecordID))
       }
       clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
     })
