@@ -5314,18 +5314,6 @@ server <- function(input, output, session) {
     ))
   })
   
-  # 销售额输入框
-  observe({
-    req(input$edit_attendance_work_type)
-    
-    if (input$edit_attendance_work_type == "直播") {
-      shinyjs::show("edit_attendance_sales_amount") # 显示销售额输入框
-    } else {
-      shinyjs::hide("edit_attendance_sales_amount") # 隐藏销售额输入框
-      updateNumericInput(session, "edit_attendance_sales_amount", value = 0) # 重置销售额为 0
-    }
-  })
-  
   # 考勤编辑 - 渲染全部考勤记录表格
   output$attendance_table <- renderDT({
     req(clock_records(), input$employee_tabs == "考勤编辑")
@@ -5370,14 +5358,25 @@ server <- function(input, output, session) {
   observeEvent(input$attendance_table_rows_selected, {
     req(input$attendance_table_rows_selected)
     
+    # 获取选中的行
     selected_row <- clock_records()[input$attendance_table_rows_selected, ]
-    selected_working_record(selected_row)
+    selected_working_record(selected_row) # 保存选中的工作记录
     
+    # 更新其他字段
     updateSelectInput(session, "edit_attendance_employee", selected = selected_row$EmployeeName)
     updateSelectInput(session, "edit_attendance_work_type", selected = selected_row$WorkType)
     updateTextInput(session, "edit_attendance_clock_in", value = format(selected_row$ClockInTime, "%Y-%m-%d %H:%M:%S"))
     updateTextInput(session, "edit_attendance_clock_out", value = ifelse(is.na(selected_row$ClockOutTime), "", format(selected_row$ClockOutTime, "%Y-%m-%d %H:%M:%S")))
     updateTextInput(session, "edit_attendance_remark", value = ifelse(is.na(selected_row$Remark), "", selected_row$Remark))
+    
+    # 更新销售额字段，仅当工作类型为“直播”时启用
+    if (selected_row$WorkType == "直播") {
+      shinyjs::show("edit_attendance_sales_amount") # 显示销售额输入框
+      updateNumericInput(session, "edit_attendance_sales_amount", value = ifelse(is.na(selected_row$SalesAmount), 0, selected_row$SalesAmount))
+    } else {
+      shinyjs::hide("edit_attendance_sales_amount") # 隐藏销售额输入框
+      updateNumericInput(session, "edit_attendance_sales_amount", value = 0) # 重置销售额为 0
+    }
   })
   
   # 添加考勤记录
