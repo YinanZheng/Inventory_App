@@ -5212,7 +5212,7 @@ server <- function(input, output, session) {
     records <- clock_records() %>%
       filter(EmployeeName == employee, !is.na(ClockOutTime)) %>%
       mutate(
-        Date = as.Date(ClockInTime),
+        Date = as.Date(ClockInTime), # 确保只取日期
         HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))
       )
     
@@ -5226,14 +5226,18 @@ server <- function(input, output, session) {
     work_summary <- records %>%
       group_by(Date, WorkType) %>%
       summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop") %>%
-      mutate(TotalHours = round(TotalHours, 2)) # 保留两位小数
+      mutate(TotalHours = round(TotalHours, 2))
     
     plot_ly(data = work_summary, x = ~Date, y = ~TotalHours, color = ~WorkType, 
-            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
-            text = ~paste("时长: ", sprintf("%.2f", TotalHours), "小时"), hoverinfo = "text") %>% # 悬停显示两位小数
+            type = "bar", colors = c("直播" = "#4CAF50", "采购记录" = "#FF5733"),
+            text = ~paste("时长: ", sprintf("%.2f", TotalHours), "小时"), hoverinfo = "text") %>%
       layout(
         barmode = "stack",
-        xaxis = list(title = "日期", tickangle = -45),
+        xaxis = list(
+          title = "日期",
+          tickangle = -45,
+          tickformat = "%Y-%m-%d" # 强制显示日期格式 YYYY-MM-DD
+        ),
         yaxis = list(title = "工作时长 (小时)"),
         title = paste(employee, "的每日工作时长"),
         legend = list(title = list(text = "工作类型")),
