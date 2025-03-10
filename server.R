@@ -5229,7 +5229,7 @@ server <- function(input, output, session) {
       mutate(TotalHours = round(TotalHours, 2))
     
     plot_ly(data = work_summary, x = ~Date, y = ~TotalHours, color = ~WorkType, 
-            type = "bar", colors = c("直播" = "#4CAF50", "采购记录" = "#FF5733"),
+            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
             text = ~paste("时长: ", sprintf("%.2f", TotalHours), "小时"), hoverinfo = "text") %>%
       layout(
         barmode = "stack",
