@@ -341,13 +341,7 @@ server <- function(input, output, session) {
     data
   })
   
-  # Define debounced input for the combined search field
-  debounced_filter_combined <- debounce(
-    reactive({ trimws(input$filter_combined) }),  # Trim whitespace from input
-    millis = 500  # Set debounce delay to 500 milliseconds
-  )
-  
-  # Define debounced input for the combined search field
+  # 订单管理页订单过滤 （万能搜素框）
   debounced_filter_combined <- debounce(
     reactive({ trimws(input$filter_combined) }),  # Trim whitespace from input
     millis = 500  # Set debounce delay to 500 milliseconds
