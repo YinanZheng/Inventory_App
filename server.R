@@ -5302,7 +5302,7 @@ server <- function(input, output, session) {
       ) %>%
       mutate(
         TotalPay = sprintf("¥%.2f", TotalPay), # 格式化总薪酬
-        TotalSales = sprintf("¥%.2f", TotalSales) # 格式化总销售额
+        TotalSales = sprintf("$%.2f", TotalSales) # 格式化总销售额
       )
     
     # 显示模态框
@@ -5341,7 +5341,7 @@ server <- function(input, output, session) {
                                                        units = "hours")), 2)),
         HourlyRate = round(ifelse(is.na(HourlyRate), 0, HourlyRate), 2),
         TotalPay = sprintf("¥%.2f", round(ifelse(is.na(TotalPay), 0, TotalPay), 2)),
-        SalesAmount = ifelse(is.na(SalesAmount), "-", sprintf("¥%.2f", round(SalesAmount, 2))) # 格式化销售额
+        SalesAmount = ifelse(is.na(SalesAmount), "-", sprintf("$%.2f", round(SalesAmount, 2))) # 格式化销售额
       ) %>%
       select(
         "员工姓名" = EmployeeName,
