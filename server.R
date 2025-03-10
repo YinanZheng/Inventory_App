@@ -5301,12 +5301,11 @@ server <- function(input, output, session) {
       mutate(
         ClockInTime = format(ClockInTime, "%Y-%m-%d %H:%M:%S"),
         ClockOutTime = ifelse(is.na(ClockOutTime), "未结束", format(ClockOutTime, "%Y-%m-%d %H:%M:%S")),
-        HoursWorked = ifelse(is.na(ClockOutTime), 0, round(as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")), 2)), # 时间保留两位小数
-        HourlyRate = round(ifelse(is.na(HourlyRate), 0, HourlyRate), 2), # 金额保留两位小数
-        TotalPay = sprintf("¥%.2f", round(ifelse(is.na(TotalPay), 0, TotalPay), 2)) # 金额保留两位小数
+        HoursWorked = ifelse(is.na(ClockOutTime), 0, round(as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")), 2)),
+        HourlyRate = round(ifelse(is.na(HourlyRate), 0, HourlyRate), 2),
+        TotalPay = sprintf("¥%.2f", round(ifelse(is.na(TotalPay), 0, TotalPay), 2))
       ) %>%
       select(
-        "记录ID" = RecordID,
         "员工姓名" = EmployeeName,
         "工作类型" = WorkType,
         "上班时间" = ClockInTime,
@@ -5315,11 +5314,11 @@ server <- function(input, output, session) {
         "时薪 (¥)" = HourlyRate,
         "总薪酬" = TotalPay,
         "备注" = Remark
-      )
+      ) # 移除 RecordID
     
     datatable(
       all_records,
-      options = list(pageLength = 10, scrollX = TRUE, searching = TRUE),
+      options = list(pageLength = 10, scrollX = TRUE, searching = FALSE), # 移除搜索框
       selection = "single",
       rownames = FALSE
     )
@@ -5351,7 +5350,6 @@ server <- function(input, output, session) {
     total_pay <- input$edit_attendance_total_pay
     remark <- if (input$edit_attendance_remark == "") NA else input$edit_attendance_remark
     
-    # 验证时间格式
     if (!grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_in) || 
         (!is.na(clock_out) && !grepl("^\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}$", clock_out))) {
       showNotification("时间格式错误，请使用 YYYY-MM-DD HH:MM:SS！", type = "error")
@@ -5370,7 +5368,6 @@ server <- function(input, output, session) {
       clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
     })
     
-    # 清空表单
     updateTextInput(session, "edit_attendance_clock_in", value = "")
     updateTextInput(session, "edit_attendance_clock_out", value = "")
     updateNumericInput(session, "edit_attendance_total_pay", value = 0)
@@ -5408,6 +5405,41 @@ server <- function(input, output, session) {
     })
     
     showNotification("考勤记录修改成功！", type = "message")
+  })
+  
+  # 删除考勤记录
+  observeEvent(input$delete_attendance_btn, {
+    req(selected_record())
+    
+    record <- selected_record()
+    
+    showModal(modalDialog(
+      title = "确认删除",
+      paste("确定要删除员工", record$EmployeeName, "的考勤记录吗？此操作无法撤销！"),
+      footer = tagList(
+        modalButton("取消"),
+        actionButton("confirm_delete_attendance", "确认删除", class = "btn-danger")
+      )
+    ))
+  })
+  
+  observeEvent(input$confirm_delete_attendance, {
+    req(selected_record())
+    
+    record <- selected_record()
+    
+    dbWithTransaction(con, {
+      dbExecute(con, "DELETE FROM clock_records WHERE RecordID = ?", params = list(record$RecordID))
+      clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
+    })
+    
+    # 清空表单
+    updateTextInput(session, "edit_attendance_clock_in", value = "")
+    updateTextInput(session, "edit_attendance_clock_out", value = "")
+    updateNumericInput(session, "edit_attendance_total_pay", value = 0)
+    updateTextInput(session, "edit_attendance_remark", value = "")
+    showNotification("考勤记录删除成功！", type = "message")
+    removeModal()
   })
   
   

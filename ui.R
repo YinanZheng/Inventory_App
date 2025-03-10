@@ -632,15 +632,17 @@ ui <- navbarPage(
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 15px;",
                   tags$h4("添加/修改考勤记录", style = "color: #28A745; margin-bottom: 10px;"),
                   selectInput("edit_attendance_employee", "选择员工:", choices = NULL, width = "100%"),
-                  selectInput("edit_attendance_work_type", "工作类型:", choices = c("直播", "采购"), width = "100%"),
+                  selectInput("edit_attendance_work_type", "工作类型:", choices = c("直播", "采购记录"), width = "100%"),
                   textInput("edit_attendance_clock_in", "上班时间 (YYYY-MM-DD HH:MM:SS):", value = "", width = "100%"),
                   textInput("edit_attendance_clock_out", "下班时间 (YYYY-MM-DD HH:MM:SS):", value = "", placeholder = "留空表示未结束", width = "100%"),
                   numericInput("edit_attendance_total_pay", "总薪酬 (¥):", value = 0, min = 0, step = 0.01, width = "100%"),
                   textInput("edit_attendance_remark", "备注:", value = "", width = "100%"),
-                  actionButton("add_attendance_btn", "添加记录", icon = icon("plus"), class = "btn-success", 
-                               style = "width: 48%; margin-top: 10px; margin-right: 4%;"),
-                  actionButton("update_attendance_btn", "修改记录", icon = icon("edit"), class = "btn-primary", 
-                               style = "width: 48%; margin-top: 10px;")
+                  actionButton("add_attendance_btn", "添加", icon = icon("plus"), class = "btn-success", 
+                               style = "width: 32%; margin-top: 10px; margin-right: 2%;"),
+                  actionButton("update_attendance_btn", "修改", icon = icon("edit"), class = "btn-primary", 
+                               style = "width: 32%; margin-top: 10px; margin-right: 2%;"),
+                  actionButton("delete_attendance_btn", "删除", icon = icon("trash"), class = "btn-danger", 
+                               style = "width: 32%; margin-top: 10px;")
                 )
               )
             )
