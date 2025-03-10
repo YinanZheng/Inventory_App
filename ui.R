@@ -590,6 +590,7 @@ ui <- navbarPage(
               # 员工考勤分页
               tabPanel(
                 "员工考勤", icon = icon("clock"),
+                tags$hr(),
                 selectInput("attendance_employee_name", "选择员工:", choices = NULL, width = "100%"),
                 actionButton("generate_attendance_report", "考勤汇总月表", icon = icon("table"), 
                              class = "btn-primary", style = "width: 100%; margin-top: 10px;")
@@ -632,7 +633,7 @@ ui <- navbarPage(
                   style = "border: 1px solid #e0e0e0; border-radius: 8px; padding: 10px; background-color: #f9f9f9; margin-bottom: 15px;",
                   tags$h4("添加/修改考勤记录", style = "color: #28A745; margin-bottom: 10px;"),
                   selectInput("edit_attendance_employee", "选择员工:", choices = NULL, width = "100%"),
-                  selectInput("edit_attendance_work_type", "工作类型:", choices = c("直播", "采购记录"), width = "100%"),
+                  selectInput("edit_attendance_work_type", "工作类型:", choices = c("直播", "采购"), width = "100%"),
                   textInput("edit_attendance_clock_in", "上班时间 (YYYY-MM-DD HH:MM:SS):", value = "", width = "100%"),
                   textInput("edit_attendance_clock_out", "下班时间 (YYYY-MM-DD HH:MM:SS):", value = "", placeholder = "留空表示未结束", width = "100%"),
                   textInput("edit_attendance_remark", "备注:", value = "", width = "100%"),
