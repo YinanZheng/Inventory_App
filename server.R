@@ -666,15 +666,13 @@ server <- function(input, output, session) {
   ####################################################################################################################################
   
   observeEvent(input$refresh_item_table, {
-    isolate({
-      unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发数据刷新
-      orders_refresh_trigger(!orders_refresh_trigger()) # 触发 orders 数据刷新
-      employee_refresh_trigger(!employee_refresh_trigger()) # 出发员工相关数据刷新
-      refreshTransactionTable("买货卡", cache_env, transaction_table_hash, output, con)
-      refreshTransactionTable("工资卡", cache_env, transaction_table_hash, output, con)
-      refreshTransactionTable("美元卡", cache_env, transaction_table_hash, output, con)
-      refreshTransactionTable("一般户卡", cache_env, transaction_table_hash, output, con)
-    })
+    unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发数据刷新
+    orders_refresh_trigger(!orders_refresh_trigger()) # 触发 orders 数据刷新
+    employee_refresh_trigger(!employee_refresh_trigger()) # 触发员工相关数据刷新
+    refreshTransactionTable("买货卡", cache_env, transaction_table_hash, output, con)
+    refreshTransactionTable("工资卡", cache_env, transaction_table_hash, output, con)
+    refreshTransactionTable("美元卡", cache_env, transaction_table_hash, output, con)
+    refreshTransactionTable("一般户卡", cache_env, transaction_table_hash, output, con)
   })
   
   ####################################################################################################################################
@@ -5214,7 +5212,6 @@ server <- function(input, output, session) {
     removeModal()
   })
   
-  # 渲染员工每天工作时长的直方图
   # 渲染员工每天工作时长的直方图
   output$employee_work_hours_plot <- renderPlotly({
     req(input$attendance_employee_name, clock_records(), input$employee_tabs == "员工考勤")
