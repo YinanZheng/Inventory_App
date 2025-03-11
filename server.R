@@ -5082,6 +5082,7 @@ server <- function(input, output, session) {
   })
   
   # 正在工作员工显示板
+  # 动态更新当前工作中的员工信息
   output$current_employees_ui <- renderUI({
     req(clock_records())  # 确保数据已加载
     
@@ -5123,7 +5124,7 @@ server <- function(input, output, session) {
   # 每秒刷新当前工作时长
   observe({
     invalidateLater(1000, session) # 每秒刷新一次
-    output$current_employees_ui <- isolate(output$current_employees_ui)
+    output$current_employees_ui <- renderUI({ isolate(output$current_employees_ui()) })
   })
   
   # 动态更新员工选择下拉菜单（员工考勤）
