@@ -652,6 +652,13 @@ ui <- navbarPage(
         div(class = "main-panel",
             conditionalPanel(
               condition = "input.employee_tabs == '员工考勤'",
+              radioButtons(
+                inputId = "employee_work_plot_type",
+                label = "选择要显示的数据:",
+                choices = c("工作时长 (小时)" = "hours", "薪酬 (¥)" = "pay", "直播销售额 ($)" = "sales"),
+                selected = "hours",
+                inline = TRUE # 横向排列按钮
+              ),
               plotlyOutput("employee_work_hours_plot", height = "600px")
             ),
             conditionalPanel(
