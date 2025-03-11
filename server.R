@@ -5213,15 +5213,19 @@ server <- function(input, output, session) {
   })
   
   # 渲染员工每天工作时长的直方图
-  output$employee_work_hours_plot <- renderPlotly({
+  output$employee_work_plot <- renderPlotly({
     req(input$attendance_employee_name, clock_records(), input$employee_tabs == "员工考勤")
     
     employee <- input$attendance_employee_name
+    plot_type <- input$employee_work_plot_type # 获取用户选择的图表类型
+    
     records <- clock_records() %>%
       filter(EmployeeName == employee, !is.na(ClockOutTime)) %>%
       mutate(
         Date = as.Date(ClockInTime), # 确保只取日期
-        HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))
+        HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")),
+        Pay = round(HoursWorked * HourlyRate, 2), # 计算薪酬
+        Sales = ifelse(WorkType == "直播", SalesAmount, 0) # 仅直播有销售额
       )
     
     if (nrow(records) == 0) {
@@ -5231,21 +5235,37 @@ server <- function(input, output, session) {
                       yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)))
     }
     
-    # 按日期汇总所有工作时长，然后按工作类型分配
-    work_summary <- records %>%
-      group_by(Date) %>%
-      summarise(TotalHours = sum(HoursWorked, na.rm = TRUE), .groups = "drop") %>%
-      left_join(
-        records %>% 
-          group_by(Date, WorkType) %>%
-          summarise(HoursByType = sum(HoursWorked, na.rm = TRUE), .groups = "drop"),
-        by = "Date"
-      ) %>%
-      mutate(TotalHours = round(TotalHours, 2), HoursByType = round(HoursByType, 2))
+    # 按用户选择的数据类型生成汇总数据
+    if (plot_type == "hours") {
+      work_summary <- records %>%
+        group_by(Date, WorkType) %>%
+        summarise(Value = sum(HoursWorked, na.rm = TRUE), .groups = "drop")
+      y_label <- "工作时长 (小时)"
+      plot_title <- paste(employee, "的每日工作时长")
+      value_format <- ~sprintf("%.2f 小时", Value)
+    } else if (plot_type == "pay") {
+      work_summary <- records %>%
+        group_by(Date, WorkType) %>%
+        summarise(Value = sum(Pay, na.rm = TRUE), .groups = "drop")
+      y_label <- "薪酬 (¥)"
+      plot_title <- paste(employee, "的每日薪酬")
+      value_format <- ~sprintf("¥%.2f", Value)
+    } else if (plot_type == "sales") {
+      work_summary <- records %>%
+        filter(WorkType == "直播") %>% # 仅直播有销售额
+        group_by(Date) %>%
+        summarise(Value = sum(Sales, na.rm = TRUE), .groups = "drop")
+      y_label <- "直播销售额 ($)"
+      plot_title <- paste(employee, "的每日直播销售额")
+      value_format <- ~sprintf("$%.2f", Value)
+    } else {
+      stop("无效的图表类型")
+    }
     
-    plot_ly(data = work_summary, x = ~Date, y = ~HoursByType, color = ~WorkType, 
+    # 绘制直方图
+    plot_ly(data = work_summary, x = ~Date, y = ~Value, color = ~WorkType, 
             type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
-            text = ~paste("时长: ", sprintf("%.2f", HoursByType), "小时"), hoverinfo = "text") %>%
+            text = value_format, hoverinfo = "text") %>%
       layout(
         barmode = "stack", # 堆叠模式，确保同一日期的不同工作类型堆叠
         xaxis = list(
@@ -5256,8 +5276,8 @@ server <- function(input, output, session) {
           tickvals = ~Date, # 确保只显示唯一日期
           ticktext = ~format(Date, "%Y-%m-%d") # 自定义刻度文本
         ),
-        yaxis = list(title = "工作时长 (小时)"),
-        title = paste(employee, "的每日工作时长"),
+        yaxis = list(title = y_label),
+        title = plot_title,
         legend = list(title = list(text = "工作类型")),
         margin = list(l = 50, r = 50, t = 50, b = 50)
       )
