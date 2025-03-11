@@ -5214,10 +5214,11 @@ server <- function(input, output, session) {
   
   # 渲染员工每天工作信息的直方图
   output$employee_work_plot <- renderPlotly({
-    req(input$attendance_employee_name, clock_records(), input$employee_work_plot_type)
+    req(input$attendance_employee_name, clock_records(), input$employee_work_plot_type, input$plot_date_range)
     
     employee <- input$attendance_employee_name
     plot_type <- input$employee_work_plot_type
+    date_range <- input$plot_date_range
     
     # 获取记录并处理
     records <- clock_records() %>%
@@ -5225,7 +5226,8 @@ server <- function(input, output, session) {
       mutate(
         Date = as.Date(ClockInTime),
         HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))
-      )
+      ) %>%
+      filter(Date >= date_range[1] & Date <= date_range[2]) # 按日期范围过滤
     
     # 检查是否有数据
     if (nrow(records) == 0) {
@@ -5269,7 +5271,7 @@ server <- function(input, output, session) {
         formatted_value = case_when(
           plot_type == "hours" ~ sprintf("%.2f 小时", value),
           plot_type == "pay" ~ sprintf("¥%.2f", value),
-          plot_type == "sales" ~ sprintf("¥%.2f", value)
+          plot_type == "sales" ~ sprintf("$%.2f", value) # 销售额为美元符号
         )
       )
     
@@ -5306,7 +5308,7 @@ server <- function(input, output, session) {
         yaxis = list(title = switch(plot_type,
                                     "hours" = "工作时长 (小时)",
                                     "pay" = "薪酬 (¥)",
-                                    "sales" = "销售额 (¥)"
+                                    "sales" = "销售额 ($)"
         )),
         legend = list(title = list(text = "工作类型"))
       )

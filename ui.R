@@ -652,12 +652,26 @@ ui <- navbarPage(
         div(class = "main-panel",
             conditionalPanel(
               condition = "input.employee_tabs == '员工考勤'",
-              radioButtons(
-                inputId = "employee_work_plot_type",
-                label = NULL,
-                choices = c("工作时长 (小时)" = "hours", "薪酬 (¥)" = "pay", "直播销售额 ($)" = "sales"),
-                selected = "hours",
-                inline = TRUE # 横向排列按钮
+              div(
+                style = "display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;",
+                dateRangeInput(
+                  inputId = "plot_date_range",
+                  label = NULL, # 不显示标签
+                  start = Sys.Date() - 7, # 默认开始日期为过去一周
+                  end = Sys.Date(),       # 默认结束日期为今天
+                  width = "40%"           # 控制宽度
+                ),
+                radioButtons(
+                  inputId = "employee_work_plot_type",
+                  label = NULL, # 不显示标签
+                  choices = c(
+                    "工作时长 (小时)" = "hours",
+                    "薪酬 (¥)" = "pay",
+                    "直播销售额 ($)" = "sales"
+                  ),
+                  selected = "hours",
+                  inline = TRUE # 按钮横向排列
+                )
               ),
               plotlyOutput("employee_work_plot", height = "550px")
             ),
