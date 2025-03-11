@@ -1271,6 +1271,30 @@ server <- function(input, output, session) {
   added_items <- reactiveVal(create_empty_inventory())
   
   # Render added items table
+  # output$added_items_table <- renderDT({
+  #   column_mapping <- list(
+  #     SKU = "条形码",
+  #     ItemName = "商品名",
+  #     ItemImagePath = "商品图",
+  #     Maker = "供应商",
+  #     MajorType = "大类",
+  #     Quantity = "入库数量",
+  #     ProductCost = "采购单价"
+  #   )
+  #   
+  #   render_table_with_images(
+  #     data = added_items(),
+  #     column_mapping = column_mapping,
+  #     selection = "multiple",
+  #     image_column = "ItemImagePath",
+  #     options = list(fixedHeader = TRUE,  # 启用表头固定
+  #                    dom = 't',  # 隐藏搜索框和分页等控件
+  #                    paging = FALSE,  # 禁止分页
+  #                    searching = FALSE  # 禁止搜索
+  #     )
+  #   )$datatable
+  # })
+  # 
   output$added_items_table <- renderDT({
     column_mapping <- list(
       SKU = "条形码",
@@ -1283,15 +1307,14 @@ server <- function(input, output, session) {
     )
     
     render_table_with_images(
-      data = added_items(),
+      data = get_shopping_cart(),
       column_mapping = column_mapping,
       selection = "multiple",
       image_column = "ItemImagePath",
-      options = list(fixedHeader = TRUE,  # 启用表头固定
-                     dom = 't',  # 隐藏搜索框和分页等控件
-                     paging = FALSE,  # 禁止分页
-                     searching = FALSE  # 禁止搜索
-      )
+      options = list(fixedHeader = TRUE,
+                     dom = 't',
+                     paging = FALSE,
+                     searching = FALSE)
     )$datatable
   })
   
