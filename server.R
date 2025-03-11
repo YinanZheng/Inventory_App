@@ -5217,17 +5217,17 @@ server <- function(input, output, session) {
     req(input$attendance_employee_name, clock_records(), work_rates(), input$employee_tabs == "员工考勤")
     
     employee <- input$attendance_employee_name
-    plot_type <- input$employee_work_plot_type # 获取用户选择的图表类型
+    plot_type <- input$employee_work_plot_type
     
     # 合并时薪数据
     records <- clock_records() %>%
-      left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>% # 合并 HourlyRate
+      left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>%
       filter(EmployeeName == employee, !is.na(ClockOutTime)) %>%
       mutate(
-        Date = as.Date(ClockInTime), # 确保只取日期
+        Date = as.Date(ClockInTime),
         HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")),
-        Pay = round(HoursWorked * HourlyRate, 2), # 计算薪酬
-        Sales = ifelse(WorkType == "直播", SalesAmount, 0) # 仅直播有销售额
+        Pay = round(HoursWorked * HourlyRate, 2),
+        Sales = ifelse(WorkType == "直播", SalesAmount, 0)
       )
     
     if (nrow(records) == 0) {
@@ -5254,7 +5254,7 @@ server <- function(input, output, session) {
       value_format <- ~sprintf("¥%.2f", Value)
     } else if (plot_type == "sales") {
       work_summary <- records %>%
-        filter(WorkType == "直播") %>% # 仅直播有销售额
+        filter(WorkType == "直播") %>%
         group_by(Date, WorkType) %>%
         summarise(Value = sum(Sales, na.rm = TRUE), .groups = "drop")
       y_label <- "直播销售额 ($)"
@@ -5265,24 +5265,30 @@ server <- function(input, output, session) {
     }
     
     # 绘制柱状图 (side by side)
-    plot_ly(data = work_summary, x = ~Date, y = ~Value, color = ~WorkType, 
-            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733")) %>%
-      # 添加顶端文本
-      add_text(text = ~value_format, textposition = "outside", hoverinfo = "none") %>%
+    plot_ly(data = work_summary, x = ~Date, y = ~Value, color = ~WorkType,
+            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
+            text = ~value_format, textposition = "outside", showlegend = TRUE, hoverinfo = "none") %>%
       layout(
         barmode = "group", # Side by side
         xaxis = list(
           title = "日期",
           tickangle = -45,
-          tickformat = "%Y-%m-%d", # 强制显示日期格式
-          tickmode = "array", # 控制刻度显示
-          tickvals = ~Date, # 确保只显示唯一日期
-          ticktext = ~format(Date, "%Y-%m-%d") # 自定义刻度文本
+          tickformat = "%Y-%m-%d"
         ),
         yaxis = list(title = y_label),
         title = plot_title,
         legend = list(title = list(text = "工作类型")),
         margin = list(l = 50, r = 50, t = 50, b = 50)
+      ) %>%
+      # 设置 hover 显示内容
+      config(displayModeBar = FALSE) %>%
+      layout(hovermode = "x unified") %>%
+      add_annotations(
+        x = ~Date, 
+        y = ~Value, 
+        text = ~value_format,
+        showarrow = FALSE,
+        font = list(color = "black")
       )
   })
   
