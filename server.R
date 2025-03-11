@@ -5212,14 +5212,16 @@ server <- function(input, output, session) {
     removeModal()
   })
   
-  # 渲染员工每天工作时长的直方图
+  # 渲染员工每天工作信息的直方图
   output$employee_work_plot <- renderPlotly({
-    req(input$attendance_employee_name, clock_records(), input$employee_tabs == "员工考勤")
+    req(input$attendance_employee_name, clock_records(), work_rates(), input$employee_tabs == "员工考勤")
     
     employee <- input$attendance_employee_name
     plot_type <- input$employee_work_plot_type # 获取用户选择的图表类型
     
+    # 合并时薪数据
     records <- clock_records() %>%
+      left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>% # 合并 HourlyRate
       filter(EmployeeName == employee, !is.na(ClockOutTime)) %>%
       mutate(
         Date = as.Date(ClockInTime), # 确保只取日期
