@@ -659,7 +659,7 @@ ui <- navbarPage(
                 selected = "hours",
                 inline = TRUE # 横向排列按钮
               ),
-              plotlyOutput("employee_work_plot", height = "600px")
+              plotlyOutput("employee_work_plot", height = "550px")
             ),
             conditionalPanel(
               condition = "input.employee_tabs == '考勤编辑'",
