@@ -1086,8 +1086,13 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM shopping_cart")
   })
   
-  # 初始化时加载已有数据
-  added_items <- reactiveVal(get_shopping_cart())
+  # 初始化 added_items
+  added_items <- reactiveVal(create_empty_inventory())
+  
+  # 加载购物车初始数据
+  observe({
+    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
+  })
   
   # 物品表过滤模块
   itemFilterServer(
