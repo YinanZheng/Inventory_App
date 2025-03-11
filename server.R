@@ -5256,7 +5256,7 @@ server <- function(input, output, session) {
       work_summary <- records %>%
         filter(WorkType == "直播") %>% # 仅直播有销售额
         group_by(Date) %>%
-        summarise(Value = sum(Sales, na.rm = TRUE), .groups = "drop")
+        summarise(Value = sum(Sales, na.rm = TRUE), WorkType = "直播", .groups = "drop") # 保留 WorkType 列
       y_label <- "直播销售额 ($)"
       plot_title <- paste(employee, "的每日直播销售额")
       value_format <- ~sprintf("$%.2f", Value)
