@@ -1312,7 +1312,7 @@ server <- function(input, output, session) {
     )
     
     render_table_with_images(
-      data = get_shopping_cart(),
+      data = added_items(),
       column_mapping = column_mapping,
       selection = "multiple",
       image_column = "ItemImagePath",
@@ -1405,8 +1405,9 @@ server <- function(input, output, session) {
   #   image_purchase$reset()
   # })
 
+  # 添加/更新物品
   observeEvent(input$add_btn, {
-    # 输入验证
+    # 输入验证（保持不变）
     if (is.null(input[["purchase-item_name"]]) || input[["purchase-item_name"]] == "") {
       showNotification("请填写正确商品名称！", type = "error")
       return()
@@ -1453,7 +1454,7 @@ server <- function(input, output, session) {
                            params = list(input$new_sku))
     
     if (nrow(existing) > 0) {
-      # 更新现有记录
+      # 更新记录
       dbExecute(con, "
       UPDATE shopping_cart 
       SET Maker = ?, MajorType = ?, MinorType = ?, ItemName = ?, 
@@ -1469,8 +1470,8 @@ server <- function(input, output, session) {
       showNotification(paste("SKU 已添加:", input$new_sku), type = "message")
     }
     
-    # 更新 reactiveVal
-    added_items(get_shopping_cart())
+    # 更新 added_items
+    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
     
     # 重置表单
     image_purchase$reset()
@@ -1771,18 +1772,22 @@ server <- function(input, output, session) {
       current_items <- get_shopping_cart()
       selected_skus <- current_items$SKU[selected_row]
       
-      # 从购物车表中删除
-      dbExecute(con, "DELETE FROM shopping_cart WHERE SKU IN (SELECT * FROM UNNEST(?))",
-                params = list(selected_skus))
+      # 动态构造占位符
+      placeholders <- paste(rep("?", length(selected_skus)), collapse = ",")
+      query <- sprintf("DELETE FROM shopping_cart WHERE SKU IN (%s)", placeholders)
       
-      # 更新 reactiveVal
-      added_items(get_shopping_cart())
+      # 执行删除
+      dbExecute(con, query, params = selected_skus)
+      
+      # 更新 added_items
+      updated_data <- dbGetQuery(con, "SELECT * FROM shopping_cart")
+      added_items(updated_data)
+      
       showNotification("选中的记录已成功删除", type = "message")
     } else {
       showNotification("请选择要删除的记录", type = "error")
     }
   })
-  
   
   # 清空输入
   observeEvent(input$reset_btn, {
