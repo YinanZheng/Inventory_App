@@ -5273,6 +5273,13 @@ server <- function(input, output, session) {
         )
       )
     
+    # 动态调整文字位置和字体大小
+    work_summary <- work_summary %>%
+      mutate(
+        text_position = ifelse(value > 10, "outside", "inside"),
+        text_font_size = ifelse(value > 10, 12, 10)
+      )
+    
     # 绘制直方图（Side-by-side）
     plot_ly(
       data = work_summary,
@@ -5281,15 +5288,21 @@ server <- function(input, output, session) {
       color = ~WorkType,
       type = "bar",
       text = ~formatted_value,
-      textposition = "outside",
+      textposition = ~text_position,
+      textfont = list(size = ~text_font_size),
       hovertemplate = paste(
-        "<b>工作类型:</b> %{color}<br>",
-        "<b>值:</b> %{text}<extra></extra>"
-      )
+        "<b>工作类型:</b> %{customdata}<br>",
+        "<b>值:</b> %{y:.2f}<extra></extra>"
+      ),
+      customdata = ~WorkType # 用于 hovertemplate 中显示正确的工作类型
     ) %>%
       layout(
         barmode = "group", # Side-by-side
-        xaxis = list(title = "日期"),
+        xaxis = list(
+          title = "日期",
+          tickformat = "%Y-%m-%d",
+          tickangle = -45
+        ),
         yaxis = list(title = switch(plot_type,
                                     "hours" = "工作时长 (小时)",
                                     "pay" = "薪酬 (¥)",
