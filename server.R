@@ -5255,8 +5255,8 @@ server <- function(input, output, session) {
     } else if (plot_type == "sales") {
       work_summary <- records %>%
         filter(WorkType == "直播") %>% # 仅直播有销售额
-        group_by(Date) %>%
-        summarise(Value = sum(Sales, na.rm = TRUE), WorkType = "直播", .groups = "drop") # 保留 WorkType 列
+        group_by(Date, WorkType) %>%
+        summarise(Value = sum(Sales, na.rm = TRUE), .groups = "drop")
       y_label <- "直播销售额 ($)"
       plot_title <- paste(employee, "的每日直播销售额")
       value_format <- ~sprintf("$%.2f", Value)
@@ -5264,12 +5264,13 @@ server <- function(input, output, session) {
       stop("无效的图表类型")
     }
     
-    # 绘制直方图
+    # 绘制柱状图 (side by side)
     plot_ly(data = work_summary, x = ~Date, y = ~Value, color = ~WorkType, 
-            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
-            text = value_format, hoverinfo = "text") %>%
+            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733")) %>%
+      # 添加顶端文本
+      add_text(text = ~value_format, textposition = "outside", hoverinfo = "none") %>%
       layout(
-        barmode = "stack", # 堆叠模式，确保同一日期的不同工作类型堆叠
+        barmode = "group", # Side by side
         xaxis = list(
           title = "日期",
           tickangle = -45,
