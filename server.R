@@ -5081,6 +5081,51 @@ server <- function(input, output, session) {
     clock_records(dbGetQuery(con, "SELECT * FROM clock_records ORDER BY CreatedAt DESC"))
   })
   
+  # 正在工作员工显示板
+  output$current_employees_ui <- renderUI({
+    req(clock_records())  # 确保数据已加载
+    
+    # 过滤当前正在工作的员工
+    working_employees <- clock_records() %>%
+      filter(is.na(ClockOutTime)) %>% # 没有下班时间的记录
+      mutate(
+        WorkDuration = difftime(Sys.time(), as.POSIXct(ClockInTime), units = "secs"), # 动态计算工作时长
+        FormattedDuration = sprintf(
+          "%02d:%02d:%02d",
+          as.integer(WorkDuration) %/% 3600,                   # 小时
+          as.integer(WorkDuration) %% 3600 %/% 60,            # 分钟
+          as.integer(WorkDuration) %% 60                      # 秒钟
+        )
+      )
+    
+    # 如果没有员工正在工作，显示提示信息
+    if (nrow(working_employees) == 0) {
+      return(div("目前没有员工正在工作。", style = "text-align: center; color: #aaa;"))
+    }
+    
+    # 动态生成每个正在工作的员工的卡片
+    lapply(seq_len(nrow(working_employees)), function(i) {
+      employee <- working_employees[i, ]
+      div(
+        class = "working-employee",
+        style = "margin-bottom: 10px; padding: 10px; background-color: #ffffff; border-radius: 5px; border: 1px solid #ddd;",
+        h5(employee$EmployeeName, style = "margin: 0; font-weight: bold;"),
+        p(paste("工作类型:", employee$WorkType), style = "margin: 5px 0;"),
+        p(paste("开始时间:", format(as.POSIXct(employee$ClockInTime), "%H:%M:%S")), style = "margin: 5px 0;"),
+        p(
+          paste("工作时长:", employee$FormattedDuration),
+          style = "margin: 5px 0; font-weight: bold; color: #4CAF50;"
+        )
+      )
+    })
+  })
+  
+  # 每秒刷新当前工作时长
+  observe({
+    invalidateLater(1000, session) # 每秒刷新一次
+    output$current_employees_ui <- isolate(output$current_employees_ui)
+  })
+  
   # 动态更新员工选择下拉菜单（员工考勤）
   observe({
     req(employees_data())

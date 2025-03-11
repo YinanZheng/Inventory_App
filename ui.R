@@ -593,7 +593,13 @@ ui <- navbarPage(
                 tags$hr(),
                 selectInput("attendance_employee_name", "选择员工:", choices = NULL, width = "100%"),
                 actionButton("generate_attendance_report", "考勤汇总月表", icon = icon("table"), 
-                             class = "btn-primary", style = "width: 100%; margin-top: 10px;")
+                             class = "btn-primary", style = "width: 100%; margin-top: 10px;"),
+                div(
+                  class = "card",
+                  style = "margin: 15px; padding: 10px; background-color: #f9f9f9; border-radius: 5px; border: 1px solid #ddd;",
+                  h4("当前工作中员工", style = "margin-bottom: 15px; text-align: center;"),
+                  uiOutput("current_employees_ui")
+                )
               ),
               # 新增考勤编辑分页
               tabPanel(
