@@ -5214,81 +5214,88 @@ server <- function(input, output, session) {
   
   # 渲染员工每天工作信息的直方图
   output$employee_work_plot <- renderPlotly({
-    req(input$attendance_employee_name, clock_records(), work_rates(), input$employee_tabs == "员工考勤")
+    req(input$attendance_employee_name, clock_records(), input$employee_work_plot_type)
     
     employee <- input$attendance_employee_name
     plot_type <- input$employee_work_plot_type
     
-    # 合并时薪数据
+    # 获取记录并处理
     records <- clock_records() %>%
-      left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>%
       filter(EmployeeName == employee, !is.na(ClockOutTime)) %>%
       mutate(
         Date = as.Date(ClockInTime),
-        HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours")),
-        Pay = round(HoursWorked * HourlyRate, 2),
-        Sales = ifelse(WorkType == "直播", SalesAmount, 0)
+        HoursWorked = as.numeric(difftime(ClockOutTime, ClockInTime, units = "hours"))
       )
     
+    # 检查是否有数据
     if (nrow(records) == 0) {
       return(plot_ly() %>%
-               add_text(x = 0.5, y = 0.5, text = "该员工暂无工作记录", textposition = "middle center") %>%
-               layout(xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
-                      yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)))
+               add_text(x = 0.5, y = 0.5, text = "暂无数据", textposition = "middle center") %>%
+               layout(
+                 xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                 yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
+               ))
     }
     
-    # 按用户选择的数据类型生成汇总数据
-    if (plot_type == "hours") {
-      work_summary <- records %>%
-        group_by(Date, WorkType) %>%
-        summarise(Value = sum(HoursWorked, na.rm = TRUE), .groups = "drop")
-      y_label <- "工作时长 (小时)"
-      plot_title <- paste(employee, "的每日工作时长")
-      value_format <- ~sprintf("%.2f 小时", Value)
-    } else if (plot_type == "pay") {
-      work_summary <- records %>%
-        group_by(Date, WorkType) %>%
-        summarise(Value = sum(Pay, na.rm = TRUE), .groups = "drop")
-      y_label <- "薪酬 (¥)"
-      plot_title <- paste(employee, "的每日薪酬")
-      value_format <- ~sprintf("¥%.2f", Value)
-    } else if (plot_type == "sales") {
-      work_summary <- records %>%
-        filter(WorkType == "直播") %>%
-        group_by(Date, WorkType) %>%
-        summarise(Value = sum(Sales, na.rm = TRUE), .groups = "drop")
-      y_label <- "直播销售额 ($)"
-      plot_title <- paste(employee, "的每日直播销售额")
-      value_format <- ~sprintf("$%.2f", Value)
-    } else {
-      stop("无效的图表类型")
+    # 根据 plot_type 处理数据
+    work_summary <- switch(plot_type,
+                           "hours" = records %>%
+                             group_by(Date, WorkType) %>%
+                             summarise(value = sum(HoursWorked, na.rm = TRUE), .groups = "drop"),
+                           "pay" = records %>%
+                             left_join(work_rates(), by = c("EmployeeName", "WorkType")) %>%
+                             mutate(Pay = HoursWorked * HourlyRate) %>%
+                             group_by(Date, WorkType) %>%
+                             summarise(value = sum(Pay, na.rm = TRUE), .groups = "drop"),
+                           "sales" = records %>%
+                             filter(WorkType == "直播") %>%
+                             group_by(Date, WorkType) %>%
+                             summarise(value = sum(SalesAmount, na.rm = TRUE), .groups = "drop")
+    )
+    
+    # 检查是否有汇总数据
+    if (nrow(work_summary) == 0) {
+      return(plot_ly() %>%
+               add_text(x = 0.5, y = 0.5, text = "暂无数据", textposition = "middle center") %>%
+               layout(
+                 xaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE),
+                 yaxis = list(showgrid = FALSE, zeroline = FALSE, showticklabels = FALSE)
+               ))
     }
     
-    # 绘制柱状图 (side by side)
-    plot_ly(data = work_summary, x = ~Date, y = ~Value, color = ~WorkType,
-            type = "bar", colors = c("直播" = "#4CAF50", "采购" = "#FF5733"),
-            text = ~value_format, textposition = "outside", showlegend = TRUE, hoverinfo = "none") %>%
+    # 格式化值用于显示
+    work_summary <- work_summary %>%
+      mutate(
+        formatted_value = case_when(
+          plot_type == "hours" ~ sprintf("%.2f 小时", value),
+          plot_type == "pay" ~ sprintf("¥%.2f", value),
+          plot_type == "sales" ~ sprintf("¥%.2f", value)
+        )
+      )
+    
+    # 绘制直方图（Side-by-side）
+    plot_ly(
+      data = work_summary,
+      x = ~Date,
+      y = ~value,
+      color = ~WorkType,
+      type = "bar",
+      text = ~formatted_value,
+      textposition = "outside",
+      hovertemplate = paste(
+        "<b>工作类型:</b> %{color}<br>",
+        "<b>值:</b> %{text}<extra></extra>"
+      )
+    ) %>%
       layout(
-        barmode = "group", # Side by side
-        xaxis = list(
-          title = "日期",
-          tickangle = -45,
-          tickformat = "%Y-%m-%d"
-        ),
-        yaxis = list(title = y_label),
-        title = plot_title,
-        legend = list(title = list(text = "工作类型")),
-        margin = list(l = 50, r = 50, t = 50, b = 50)
-      ) %>%
-      # 设置 hover 显示内容
-      config(displayModeBar = FALSE) %>%
-      layout(hovermode = "x unified") %>%
-      add_annotations(
-        x = ~Date, 
-        y = ~Value, 
-        text = ~value_format,
-        showarrow = FALSE,
-        font = list(color = "black")
+        barmode = "group", # Side-by-side
+        xaxis = list(title = "日期"),
+        yaxis = list(title = switch(plot_type,
+                                    "hours" = "工作时长 (小时)",
+                                    "pay" = "薪酬 (¥)",
+                                    "sales" = "销售额 (¥)"
+        )),
+        legend = list(title = list(text = "工作类型"))
       )
   })
   
