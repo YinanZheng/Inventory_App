@@ -7043,7 +7043,7 @@ server <- function(input, output, session) {
     
     createSearchableDropdown(
       input_id = "download_maker",
-      label = "选择供应商:",
+      label = NULL,
       data = makers,
       placeholder = "搜索供应商..."
     )
