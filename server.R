@@ -5893,62 +5893,6 @@ server <- function(input, output, session) {
     }
   }, ignoreInit = TRUE)  # 忽略初始值
   
-  # 动态渲染 sticky-sidebar
-  output$query_dynamic_sticky_sidebar <- renderUI({
-    current_tab <- input$query_tabs
-    
-    if (current_tab == "商品状态") {
-      # 商品状态页面的 sticky-sidebar 内容
-      div(
-        itemFilterUI(id = "query_filter", border_color = "#28A745", text_color = "#28A745", use_status = FALSE, use_purchase_date = FALSE),
-        tags$hr(),
-        div(
-          class = "card",
-          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-          tags$h4("查询商品", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-          textInput("query_sku", NULL, placeholder = "请扫描或输入SKU", width = "100%"),
-          actionButton("clear_query_sku_btn", "清空", icon = icon("eraser"), class = "btn btn-warning")
-        ),
-        div(
-          class = "card",
-          style = "margin-bottom: 20px; padding: 20px; border: 1px solid #DC3545; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-          tags$h4("售罄物品", style = "color: #DC3545; font-weight: bold; margin-bottom: 15px;"),
-          radioButtons(
-            inputId = "query_stock_status",
-            label = NULL,
-            choices = c("不过滤" = "none", "美国售罄, 国内有货" = "us", "国内售罄, 美国有货" = "domestic", "全库存售罄" = "all"),
-            selected = "none",
-            inline = FALSE
-          )
-        )
-      )
-    } else if (current_tab == "采购开销") {
-      # 采购开销页面的 sticky-sidebar 内容
-      div(
-        class = "card",
-        style = "margin-bottom: 20px; padding: 20px; border: 1px solid #007BFF; border-radius: 8px; box-shadow: 0px 4px 6px rgba(0,0,0,0.1);",
-        tags$h4("供应商筛选", style = "color: #007BFF; font-weight: bold; margin-bottom: 15px;"),
-        selectInput(
-          inputId = "purchase_check_filter_maker",
-          label = NULL,
-          choices = c("所有供应商" = "all"),  # 初始默认选项          
-          selected = "all",
-          width = "100%"
-        )
-      )
-    } else if (current_tab == "库存总览") {
-      # 库存总览页面的 sticky-sidebar 内容（空白占位符）
-      div(
-        p("此处留空，未来扩展...", style = "color: #888; text-align: center; margin-top: 20px;")
-      )
-    } else {
-      # 默认占位符（以防万一）
-      div(
-        p("请选择一个选项卡", style = "color: #888; text-align: center; margin-top: 20px;")
-      )
-    }
-  })
-  
   # 物品表过滤模块
   itemFilterServer(
     id = "query_filter",
