@@ -1304,12 +1304,7 @@ server <- function(input, output, session) {
         fixedHeader = TRUE,
         dom = 't',
         paging = FALSE,
-        searching = FALSE,
-        # 添加回调函数确保选择状态一致
-        drawCallback = JS("function(settings) { 
-        var api = this.api();
-        api.rows().deselect();
-      }")
+        searching = FALSE
       )
     )$datatable
   }, server = FALSE)
