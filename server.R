@@ -552,6 +552,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "download_maker",
       item_name_input_id = "download_item_name",
+      sku_input_id = "download_sku",
       purchase_date_range_id = "download_date_range"
     )
   })

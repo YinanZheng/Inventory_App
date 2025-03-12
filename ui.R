@@ -816,6 +816,7 @@ ui <- navbarPage(
                        tags$h4("表格筛选", style="color:#007BFF;font-weight:bold;margin-bottom:15px;"),
                        uiOutput("download_maker_ui"),
                        selectizeInput(inputId="download_item_name", label="商品名称:", choices=NULL, selected=NULL, multiple=FALSE, options=list(placeholder="请输入商品名称...", create=FALSE), width="100%"),
+                       textInput("download_sku", label = NULL, placeholder = "SKU", width = "100%"),
                        dateRangeInput(inputId="download_date_range", label="选择采购日期范围:", start=Sys.Date()-365, end=Sys.Date()+1, format="yyyy-mm-dd", separator=" 至 ", width="100%"),
                        actionButton("download_reset_filters", "重置筛选", class="btn-secondary")),
                    tags$hr(),
