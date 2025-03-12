@@ -1103,7 +1103,8 @@ server <- function(input, output, session) {
   
   # 加载购物车初始数据
   observe({
-    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
+    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart WHERE SystemType = ?", 
+                           params = list(system_type)))
   })
   
   # 物品表过滤模块
@@ -1339,8 +1340,8 @@ server <- function(input, output, session) {
     )
     
     # 检查是否已存在记录并获取当前图片路径
-    existing <- dbGetQuery(con, "SELECT ItemImagePath FROM shopping_cart WHERE SKU = ?", 
-                           params = list(input$new_sku))
+    existing <- dbGetQuery(con, "SELECT ItemImagePath FROM shopping_cart WHERE SKU = ? AND SystemType = ?", 
+                           params = list(input$new_sku, system_type))
     
     # 确定最终使用的图片路径
     final_image_path <- if (nrow(existing) > 0) {
@@ -1360,19 +1361,20 @@ server <- function(input, output, session) {
       Quantity = input$new_quantity,
       ProductCost = round(input$new_product_cost, 2),
       ItemImagePath = final_image_path,
+      SystemType = system_type,  # 添加 SystemType 字段
       stringsAsFactors = FALSE
     )
     
     if (nrow(existing) > 0) {
       # 更新记录
       dbExecute(con, "
-      UPDATE shopping_cart 
-      SET Maker = ?, MajorType = ?, MinorType = ?, ItemName = ?, 
-          Quantity = ?, ProductCost = ?, ItemImagePath = ?
-      WHERE SKU = ?",
+        UPDATE shopping_cart 
+        SET Maker = ?, MajorType = ?, MinorType = ?, ItemName = ?, 
+            Quantity = ?, ProductCost = ?, ItemImagePath = ?, SystemType = ?
+        WHERE SKU = ?",
                 params = list(new_item$Maker, new_item$MajorType, new_item$MinorType,
                               new_item$ItemName, new_item$Quantity, new_item$ProductCost,
-                              new_item$ItemImagePath, new_item$SKU))
+                              new_item$ItemImagePath, new_item$SystemType, new_item$SKU))
       showNotification(paste("SKU 已更新:", input$new_sku), type = "message")
     } else {
       # 插入新记录
@@ -1461,7 +1463,7 @@ server <- function(input, output, session) {
       dbWriteTable(con, "unique_items", batch_data, append = TRUE, row.names = FALSE)
       
       # 清空购物车
-      dbExecute(con, "DELETE FROM shopping_cart")
+      dbExecute(con, "DELETE FROM shopping_cart WHERE SystemType = ?", params = list(system_type))      
       dbCommit(con)
       
       # 更新 UI
@@ -1571,15 +1573,13 @@ server <- function(input, output, session) {
     
     if (length(selected_row) > 0) {
       current_items <- dbGetQuery(con, "SELECT * FROM shopping_cart")
-
+      
       selected_skus <- current_items$SKU[selected_row]
       
       # 动态构造占位符
       placeholders <- paste(rep("?", length(selected_skus)), collapse = ",")
-      query <- sprintf("DELETE FROM shopping_cart WHERE SKU IN (%s)", placeholders)
-      
-      # 执行删除
-      dbExecute(con, query, params = selected_skus)
+      query <- sprintf("DELETE FROM shopping_cart WHERE SKU IN (%s) AND SystemType = ?", placeholders)
+      dbExecute(con, query, params = c(selected_skus, system_type))
       
       # 更新 added_items UI
       added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
