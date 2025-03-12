@@ -1495,7 +1495,7 @@ server <- function(input, output, session) {
     }
     
     # 更新 added_items
-    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
+    added_items(get_shopping_cart())
     
     # 重置表单
     image_purchase$reset()
@@ -1803,9 +1803,8 @@ server <- function(input, output, session) {
       # 执行删除
       dbExecute(con, query, params = selected_skus)
       
-      # 更新 added_items
-      updated_data <- dbGetQuery(con, "SELECT * FROM shopping_cart")
-      added_items(updated_data)
+      # 更新 added_items UI
+      added_items(get_shopping_cart())
       
       showNotification("选中的记录已成功删除", type = "message")
     } else {
