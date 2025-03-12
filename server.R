@@ -1436,6 +1436,18 @@ server <- function(input, output, session) {
       inventory_path = existing_inventory_path
     )
     
+    # 检查是否已存在记录并获取当前图片路径
+    existing <- dbGetQuery(con, "SELECT ItemImagePath FROM shopping_cart WHERE SKU = ?", 
+                           params = list(input$new_sku))
+    
+    # 确定最终使用的图片路径
+    final_image_path <- if (nrow(existing) > 0) {
+      current_image_path <- existing$ItemImagePath[1]
+      if (!is.na(new_image_path) && new_image_path != "") new_image_path else current_image_path
+    } else {
+      new_image_path
+    }
+    
     # 创建新记录
     new_item <- data.frame(
       SKU = input$new_sku,
@@ -1445,13 +1457,9 @@ server <- function(input, output, session) {
       ItemName = input[["purchase-item_name"]],
       Quantity = input$new_quantity,
       ProductCost = round(input$new_product_cost, 2),
-      ItemImagePath = new_image_path,
+      ItemImagePath = final_image_path,
       stringsAsFactors = FALSE
     )
-    
-    # 检查是否已存在
-    existing <- dbGetQuery(con, "SELECT SKU FROM shopping_cart WHERE SKU = ?", 
-                           params = list(input$new_sku))
     
     if (nrow(existing) > 0) {
       # 更新记录
