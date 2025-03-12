@@ -1101,14 +1101,9 @@ server <- function(input, output, session) {
   ##                                                            ##
   ################################################################
   
-  # 获取购物车数据
-  get_shopping_cart <- reactive({
-    dbGetQuery(con, "SELECT * FROM shopping_cart")
-  })
-  
   # 加载购物车初始数据
   observe({
-    added_items(get_shopping_cart())
+    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
   })
   
   # 物品表过滤模块
@@ -1496,7 +1491,7 @@ server <- function(input, output, session) {
     }
     
     # 更新 added_items
-    added_items(get_shopping_cart())
+    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
     
     # 重置表单
     image_purchase$reset()
@@ -1666,7 +1661,7 @@ server <- function(input, output, session) {
       dbCommit(con)
       
       # 更新 UI
-      added_items(get_shopping_cart())
+      added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
       showNotification("所有采购货物已成功登记！", type = "message")
       
       # 重置输入
@@ -1794,7 +1789,8 @@ server <- function(input, output, session) {
     selected_row <- input$added_items_table_rows_selected
     
     if (length(selected_row) > 0) {
-      current_items <- get_shopping_cart()
+      current_items <- dbGetQuery(con, "SELECT * FROM shopping_cart")
+
       selected_skus <- current_items$SKU[selected_row]
       
       # 动态构造占位符
@@ -1805,7 +1801,7 @@ server <- function(input, output, session) {
       dbExecute(con, query, params = selected_skus)
       
       # 更新 added_items UI
-      added_items(get_shopping_cart())
+      added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
       
       showNotification("选中的记录已成功删除", type = "message")
     } else {
