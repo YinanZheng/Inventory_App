@@ -525,7 +525,7 @@ server <- function(input, output, session) {
       input = input,
       maker_input_id = "query_filter-maker",
       item_name_input_id = "query_filter-name",
-      sku_input_id = "query_filter-sku",
+      sku_input_id = "query_filter-sku"
     )
 
     # # 供应商筛选
