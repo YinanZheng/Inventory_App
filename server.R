@@ -1613,9 +1613,6 @@ server <- function(input, output, session) {
                                   params = list(system_type))
       added_items(updated_items)
       
-      # 重置表格选择状态（通过 JavaScript）
-      shinyjs::runjs("$('#added_items_table').DataTable().rows().deselect();")
-      
       showNotification(sprintf("成功删除 %d 条记录", affected_rows), type = "message")
       
     }, error = function(e) {
