@@ -519,21 +519,29 @@ server <- function(input, output, session) {
     if (nrow(data) == 0) {
       return(create_empty_inventory())
     }
-
-    # 供应商筛选
-    if (!is.null(input[["query_filter-maker"]]) && length(input[["query_filter-maker"]]) > 0 && any(input[["query_filter-maker"]] != "")) {
-      data <- data %>% filter(Maker %in% input[["query_filter-maker"]])
-    }
-
-    # 商品名称模糊筛选
-    if (!is.null(input[["query_filter-name"]]) && input[["query_filter-name"]] != "") {
-      data <- data %>% filter(grepl(input[["query_filter-name"]], ItemName, ignore.case = TRUE))
-    }
     
-    # 按 SKU 模糊匹配筛选
-    if (!is.null(input[["query_filter-sku"]]) && input[["query_filter-sku"]] != "") {
-      data <- data %>% filter(grepl(trimws(input[["query_filter-sku"]]), SKU, ignore.case = TRUE))
-    }
+    data <- filter_unique_items_data_by_inputs(
+      data = data,
+      input = input,
+      maker_input_id = "query_filter-maker",
+      item_name_input_id = "query_filter-name",
+      sku_input_id = "query_filter-sku"
+    )
+
+    # # 供应商筛选
+    # if (!is.null(input[["query_filter-maker"]]) && length(input[["query_filter-maker"]]) > 0 && any(input[["query_filter-maker"]] != "")) {
+    #   data <- data %>% filter(Maker %in% input[["query_filter-maker"]])
+    # }
+    # 
+    # # 商品名称模糊筛选
+    # if (!is.null(input[["query_filter-name"]]) && input[["query_filter-name"]] != "") {
+    #   data <- data %>% filter(grepl(input[["query_filter-name"]], ItemName, ignore.case = TRUE))
+    # }
+    # 
+    # # 按 SKU 模糊匹配筛选
+    # if (!is.null(input[["query_filter-sku"]]) && input[["query_filter-sku"]] != "") {
+    #   data <- data %>% filter(grepl(trimws(input[["query_filter-sku"]]), SKU, ignore.case = TRUE))
+    # }
     
     # 根据售罄筛选
     if (!is.null(input$query_stock_status) && input$query_stock_status != "none") {
