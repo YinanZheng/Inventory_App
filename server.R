@@ -546,7 +546,7 @@ server <- function(input, output, session) {
       }
     }
     
-    data <- data[order(result$updated_at, decreasing = TRUE), ]
+    data <- data[order(data$updated_at, decreasing = TRUE), ]
     return(data)
   })
   
