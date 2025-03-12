@@ -287,24 +287,26 @@ ui <- navbarPage(
   tabPanel("售出", icon=icon("dollar-sign"),
            div(class="layout-container",
                div(class="sticky-sidebar",
-                   tabsetPanel(id="filter_tabs", type="pills",
-                               tabPanel(title="订单筛选",
-                                        div(class="card", style="margin-bottom:5px;padding:15px;border:1px solid #28A745;border-radius:8px;",
-                                            tags$h4("订单筛选", style="color:#28A745;font-weight:bold;"),
-                                            div(style="display:flex;align-items:center;gap:0px;",
-                                                textInput("filter_combined", label=NULL, placeholder="搜索订单信息", width="100%"),
-                                                actionButton("clear_filter_combined", label="", icon=icon("xmark", style="color:#D32F2F;"), style="padding:0 5px;border:none;margin-bottom:14px;font-size:18px;background-color:#F5F5F5;height:45px;min-width:34px;")
-                                            ),
-                                            fluidRow(column(6, selectInput("filter_platform", NULL, choices=c("电商平台"="", "Etsy", "Shopify", "TikTok", "其他"), selected="", width="100%")),
-                                                     column(6, selectInput("filter_order_status", NULL, choices=c("订单状态"="", "备货", "预定", "调货", "装箱", "发出", "在途", "送达", "取消"), selected="", width="100%"))),
-                                            fluidRow(column(12, dateRangeInput("filter_order_date", "订单创建时间", start=Sys.Date()-90, end=Sys.Date()+1, format="yyyy-mm-dd", width="100%"))),
-                                            fluidRow(column(4, actionButton("delete_order_btn", "删除", class="btn-danger", style="width:100%;")),
-                                                     column(4, actionButton("reset_filter_btn", "重置", class="btn-info", style="width:100%;")),
-                                                     column(4, actionButton("refresh_orders", "刷新", class="btn-secondary", style="width:100%;")))
-                                        )
-                               ),
-                               tabPanel(title="物品筛选", itemFilterUI(id="sold_filter", border_color="#28A745", text_color="#28A745", status_choices=c("库存状态"="", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出")))
+                   conditionalPanel(condition = "input.sold_tabs == '订单管理'",
+                                    div(class="card", style="margin-bottom:5px;padding:15px;border:1px solid #28A745;border-radius:8px;",
+                                        tags$h4("订单筛选", style="color:#28A745;font-weight:bold;"),
+                                        div(style="display:flex;align-items:center;gap:0px;",
+                                            textInput("filter_combined", label=NULL, placeholder="搜索订单信息", width="100%"),
+                                            actionButton("clear_filter_combined", label="", icon=icon("xmark", style="color:#D32F2F;"), style="padding:0 5px;border:none;margin-bottom:14px;font-size:18px;background-color:#F5F5F5;height:45px;min-width:34px;")
+                                        ),
+                                        fluidRow(column(6, selectInput("filter_platform", NULL, choices=c("电商平台"="", "Etsy", "Shopify", "TikTok", "其他"), selected="", width="100%")),
+                                                 column(6, selectInput("filter_order_status", NULL, choices=c("订单状态"="", "备货", "预定", "调货", "装箱", "发出", "在途", "送达", "取消"), selected="", width="100%"))),
+                                        fluidRow(column(12, dateRangeInput("filter_order_date", "订单创建时间", start=Sys.Date()-90, end=Sys.Date()+1, format="yyyy-mm-dd", width="100%"))),
+                                        fluidRow(column(4, actionButton("delete_order_btn", "删除", class="btn-danger", style="width:100%;")),
+                                                 column(4, actionButton("reset_filter_btn", "重置", class="btn-info", style="width:100%;")),
+                                                 column(4, actionButton("refresh_orders", "刷新", class="btn-secondary", style="width:100%;")))
+                                    )      
                    ),
+                   
+                   conditionalPanel(condition = "input.sold_tabs == '物品售出'",
+                                    itemFilterUI(id="sold_filter", border_color="#28A745", text_color="#28A745", status_choices=c("库存状态"="", "国内入库", "国内出库", "美国入库", "美国调货", "国内售出"))
+                   ),
+                   
                    tags$hr(style="margin:5px 0;border:none;"),
                    div(id="orderForm", class="card", style="margin-bottom:5px;padding:15px;border:1px solid #007BFF;border-radius:8px;box-shadow:0px 4px 6px rgba(0,0,0,0.1);",
                        div(style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;",
