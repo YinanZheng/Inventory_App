@@ -1296,7 +1296,7 @@ server <- function(input, output, session) {
     )
     
     render_table_with_images(
-      data = data,
+      data = added_items(),
       column_mapping = column_mapping,
       selection = "multiple",
       image_column = "ItemImagePath",
@@ -1304,7 +1304,13 @@ server <- function(input, output, session) {
         fixedHeader = TRUE,
         dom = 't',
         paging = FALSE,
-        searching = FALSE)
+        searching = FALSE,
+        # 添加回调函数确保选择状态一致
+        drawCallback = JS("function(settings) { 
+        var api = this.api();
+        api.rows().deselect();
+      }")
+      )
     )$datatable
   }, server = FALSE)
   
