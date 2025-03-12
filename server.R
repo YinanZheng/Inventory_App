@@ -25,6 +25,9 @@ server <- function(input, output, session) {
   requests_data <- reactiveVal(NULL)
   unique_items_data <- reactiveVal(NULL)
   
+  # 初始化 added_items
+  added_items <- reactiveVal(NULL)
+  
   # ReactiveVal 存储 item_type_data 数据
   item_type_data <- reactiveVal()
   
@@ -682,6 +685,7 @@ server <- function(input, output, session) {
   ####################################################################################################################################
   
   observeEvent(input$refresh_item_table, {
+    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
     unique_items_data_refresh_trigger(!unique_items_data_refresh_trigger())  # 触发数据刷新
     orders_refresh_trigger(!orders_refresh_trigger()) # 触发 orders 数据刷新
     employee_refresh_trigger(!employee_refresh_trigger()) # 触发员工相关数据刷新
@@ -1102,12 +1106,9 @@ server <- function(input, output, session) {
     dbGetQuery(con, "SELECT * FROM shopping_cart")
   })
   
-  # 初始化 added_items
-  added_items <- reactiveVal(create_empty_inventory())
-  
   # 加载购物车初始数据
   observe({
-    added_items(dbGetQuery(con, "SELECT * FROM shopping_cart"))
+    added_items(get_shopping_cart())
   })
   
   # 物品表过滤模块
