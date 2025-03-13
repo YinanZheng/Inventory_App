@@ -5517,7 +5517,7 @@ server <- function(input, output, session) {
     
     datatable(
       all_records,
-      options = list(pageLength = 10, scrollX = TRUE, searching = FALSE),
+      options = list(pageLength = 15, scrollX = TRUE, searching = FALSE),
       selection = "single",
       rownames = FALSE
     )
