@@ -371,7 +371,7 @@ server <- function(input, output, session) {
     if (!is.null(search_term) && length(search_term) > 0 && nzchar(search_term)) {
       # 判断是否可能是运单号：仅包含数字且长度合理
       cleaned_search_term <- gsub("[^0-9]", "", trimws(search_term))
-      is_tracking_like <- nchar(cleaned_search_term) >= 22 && cleaned_search_term == trimws(search_term)
+      is_tracking_like <- nchar(cleaned_search_term) >= 22
       
       if (is_tracking_like) {
         # 特殊情况：按运单号匹配
