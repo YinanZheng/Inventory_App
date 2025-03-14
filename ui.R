@@ -303,7 +303,7 @@ ui <- navbarPage(
                                             label = "订单创建时间",
                                             range = TRUE,
                                             value = c(Sys.Date() - 90, Sys.Date() + 1),
-                                            dateFormat = "yyyy-mm-dd",
+                                            dateFormat = "yyyy-MM-dd",
                                             width = "100%",
                                             position = "bottom left"  # 控制日期选择器在输入框下方弹出
                                           ))
