@@ -238,7 +238,7 @@ server <- function(input, output, session) {
       maker_input_id = "purchase_filter-maker",
       status_input_id = "purchase_filter-status",
       item_name_input_id = "purchase_filter-name",
-      other_input_id = "purchase_filter-sku"
+      other_input_id = "purchase_filter-other"
     )
     
     # 统计 SKU, Status, 和 PurchaseTime 下的数量
