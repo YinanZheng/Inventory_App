@@ -43,6 +43,7 @@ ui <- navbarPage(
             .status-badge{display:inline-block;padding:2px 8px;border-radius:6px;font-size:12px;font-weight:bold;color:white;text-align:center;margin-left:10px;min-width:24px;}  /* 状态徽章样式 */
             .status-existing{background-color:#28A745;} .status-new{background-color:#FFA500;}  /* 状态颜色 */
             .note-card{display:flex !important;opacity:1 !important;} .pagination-controls{display:flex;align-items:center;gap:10px;margin-top:20px;justify-content:center;}  /* 其他辅助样式 */
+            .daterangepicker {top: auto !important;bottom: 0 !important;} /* 日期选取框在下方出现 */
           ")),
     
     # JavaScript 功能实现
@@ -296,7 +297,7 @@ ui <- navbarPage(
                                         ),
                                         fluidRow(column(6, selectInput("filter_platform", NULL, choices=c("电商平台"="", "Etsy", "Shopify", "TikTok", "其他"), selected="", width="100%")),
                                                  column(6, selectInput("filter_order_status", NULL, choices=c("订单状态"="", "备货", "预定", "调货", "装箱", "发出", "在途", "送达", "取消"), selected="", width="100%"))),
-                                        fluidRow(column(12, dateRangeInput("filter_order_date", "订单创建时间", start=Sys.Date()-90, end=Sys.Date()+1, format="yyyy-mm-dd", width="100%", calendarPlacement = "bottom"))),
+                                        fluidRow(column(12, dateRangeInput("filter_order_date", "订单创建时间", start=Sys.Date()-90, end=Sys.Date()+1, format="yyyy-mm-dd", width="100%"))),
                                         fluidRow(column(4, actionButton("delete_order_btn", "删除", class="btn-danger", style="width:100%;")),
                                                  column(4, actionButton("reset_filter_btn", "重置", class="btn-info", style="width:100%;")),
                                                  column(4, actionButton("refresh_orders", "刷新", class="btn-secondary", style="width:100%;")))
