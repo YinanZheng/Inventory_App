@@ -290,12 +290,12 @@ ui <- navbarPage(
                    conditionalPanel(condition = "input.sold_tabs == '订单管理'",
                                     div(class="card", style="margin-bottom:5px;padding:15px;border:1px solid #28A745;border-radius:8px;",
                                         tags$h4("订单筛选", style="color:#28A745;font-weight:bold;"),
-                                        div(style="display:flex;align-items:center;gap:0px;",
-                                            textInput("filter_combined", label=NULL, placeholder="搜索订单信息", width="100%"),
-                                            actionButton("clear_filter_combined", label="", icon=icon("xmark", style="color:#D32F2F;"), style="padding:0 5px;border:none;margin-bottom:14px;font-size:18px;background-color:#F5F5F5;height:45px;min-width:34px;")
-                                        ),
                                         fluidRow(column(6, selectInput("filter_platform", NULL, choices=c("电商平台"="", "Etsy", "Shopify", "TikTok", "其他"), selected="", width="100%")),
                                                  column(6, selectInput("filter_order_status", NULL, choices=c("订单状态"="", "备货", "预定", "调货", "装箱", "发出", "在途", "送达", "取消"), selected="", width="100%"))),
+                                        div(style="display:flex;align-items:center;gap:0px;",
+                                            textInput("filter_combined", label=NULL, placeholder="订单其他任意字段", width="100%"),
+                                            actionButton("clear_filter_combined", label="", icon=icon("xmark", style="color:#D32F2F;"), style="padding:0 5px;border:none;margin-bottom:14px;font-size:18px;background-color:#F5F5F5;height:45px;min-width:34px;")
+                                        ),
                                         fluidRow(column(12, airDatepickerInput("filter_order_date", "订单创建时间", range=TRUE, value=c(Sys.Date()-90, Sys.Date()+1), dateFormat="yyyy-MM-dd", width="100%", position="bottom left"))),
                                         fluidRow(column(4, actionButton("delete_order_btn", "删除", class="btn-danger", style="width:100%;")),
                                                  column(4, actionButton("reset_filter_btn", "重置", class="btn-info", style="width:100%;")),

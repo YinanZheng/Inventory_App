@@ -3473,9 +3473,7 @@ server <- function(input, output, session) {
       updateTextInput(session, "filter_combined", value = "")  # 重置合并的搜索框
       updateSelectInput(session, "filter_platform", selected = "")  # 重置电商平台选择
       updateSelectInput(session, "filter_order_status", selected = "")  # 重置订单状态选择
-      updateDateRangeInput(session, "filter_order_date", 
-                           start = Sys.Date() - 90, 
-                           end = Sys.Date() + 1)  # 重置日期范围到默认值
+      updateAirDateInput(session, "filter_order_date", value = c(Sys.Date() - 90, Sys.Date() + 1))  # 重置日期范围
       
       # 显示成功通知
       showNotification("筛选条件已清空！", type = "message")
