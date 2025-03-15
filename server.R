@@ -2136,8 +2136,7 @@ server <- function(input, output, session) {
   # 响应点击物品表的行，更新货架上的物品
   observeEvent(list(unique_items_table_sold_selected_row(), input$arrow_direction), {
     selected_row <- unique_items_table_sold_selected_row()
-    sort_order <- input$arrow_direction
-    
+
     if (is.null(selected_row) || length(selected_row) == 0) {
       return()
     }
@@ -2152,7 +2151,7 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = sort_order)
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = selected_sku, sort_order = input$arrow_direction)
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
@@ -2805,7 +2804,7 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku, sort_order = input$arrow_direction)
       
       # 如果货架中没有符合条件的物品，提示错误
       if (is.null(all_shelf_items)) {
@@ -2850,7 +2849,7 @@ server <- function(input, output, session) {
       }
       
       # 从 unique_items_data 获取货架中符合条件的物品
-      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku)
+      all_shelf_items <- get_shelf_items(data = unique_items_data(), sku = scanned_sku, sort_order = input$arrow_direction)
       
       if (is.null(all_shelf_items)) {
         showNotification("货架上未找到对应 SKU 的物品！", type = "error")
@@ -2866,7 +2865,7 @@ server <- function(input, output, session) {
         # 弹出模态框，提醒用户核实后再操作
         showModal(modalDialog(
           title = "注意",
-          p("此商品在美国库存紧张，请沟通核实后再进行调货"),
+          p("此商品在美国库存紧张，请与[圳]沟通核实后再进行调货"),
           footer = tagList(
             actionButton("verify_and_proceed_auto", "已核实, 继续调货", class = "btn-primary"),
             modalButton("取消")
