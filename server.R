@@ -686,19 +686,7 @@ server <- function(input, output, session) {
   
   # 订单管理分页订单表
   selected_order_row <- callModule(orderTableServer, "orders_table_module",
-                                   column_mapping = list(
-                                     OrderID = "订单号",
-                                     OrderImagePath = "订单图",
-                                     CustomerName = "姓名",
-                                     CustomerNetName = "网名",
-                                     Platform = "平台",
-                                     TransactionAmount = "成交额",
-                                     UsTrackingNumber = "运单号",
-                                     LabelStatus = "运单PDF",
-                                     OrderStatus = "状态",
-                                     OrderNotes = "备注",
-                                     created_at = "创建时间"
-                                   ),
+                                   column_mapping = orders_table_columns,
                                    data = filtered_orders,  # 数据源
                                    user_timezone = input$user_timezone,
                                    selection = "single" # 单选模式
