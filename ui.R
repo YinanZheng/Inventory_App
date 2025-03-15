@@ -350,7 +350,7 @@ ui <- navbarPage(
                                                             tags$h4(HTML(paste0(as.character(icon("warehouse")), "  货架  ", span(style="display:inline-flex;color:#007BFF;font-size:18px;", textOutput("shelf_count")))), style="color:#007BFF;font-weight:bold;"),
                                                             div(style="display:flex;",
                                                                 tags$label("排序:", style="margin-right:10px;font-weight:bold;font-size:14px;"),
-                                                                radioButtons(inputId="arrow_direction", label=NULL, choices=list("↑"="up", "↓"="down"), selected="up", inline=TRUE),
+                                                                radioButtons(inputId="arrow_direction", label=NULL, choices=list("美货优先"="up", "国货优先"="down"), selected="down", inline=TRUE),
                                                                 tags$style(HTML("#arrow_direction.form-group{margin-bottom:0 !important;} #arrow_direction .radio-inline{margin-right:10px;}"))),
                                                             textInput(inputId="sku_to_shelf", label=NULL, placeholder="扫码上架", width="200px"),
                                                             tags$style(HTML("#sku_to_shelf{height:35px !important;font-size:15px;padding:5px;}"))),
