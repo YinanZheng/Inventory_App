@@ -18,29 +18,11 @@ server <- function(input, output, session) {
   
   ##############################################################################
   
-  observeEvent(input$user_timezone, {
-    req(input$user_timezone)  # 确保 input$user_timezone 已经获取
-    
-    # 服务器 UTC 时间
-    utc_time <- Sys.time()
-    
-    # 获取用户时区
-    user_tz <- input$user_timezone
-    
-    # 转换 UTC 时间到用户本地时间
-    user_time <- format(as.POSIXct(utc_time, tz = "UTC"), tz = user_tz, usetz = TRUE)
-    
-    time_info <- HTML(paste0(
-      "📌 <b>服务器 UTC 时间:</b><br> ", format(utc_time, "%Y-%m-%d %H:%M:%S UTC"), "<br><br>",
-      "🌎 <b>你的时区:</b><br> ", user_tz, "<br><br>",
-      "⏰ <b>本地时间:</b><br> ", user_time
-    ))
-    
-    showNotification(time_info, type = "message", duration = 10)
-  })
-  
   # Database
   con <- db_connection()
+  
+  # 全局存储时区的 reactive 变量
+  user_timezone <- reactiveVal(NULL)
   
   # 初始化 requests_data 和 unique_items_data
   requests_data <- reactiveVal(NULL)
@@ -86,6 +68,31 @@ server <- function(input, output, session) {
   
   # 创建全局环境变量用于存储缓存数据
   cache_env <- new.env()
+  
+  ####################################################################################################################################
+  
+  observeEvent(input$user_timezone, {
+    req(input$user_timezone)  # 确保 input$user_timezone 已经获取
+    
+    user_timezone(input$user_timezone)  # 存入 reactive 变量
+    
+    # 服务器 UTC 时间
+    utc_time <- Sys.time()
+    
+    # 获取用户时区
+    user_tz <- input$user_timezone
+    
+    # 转换 UTC 时间到用户本地时间
+    user_time <- format(as.POSIXct(utc_time, tz = "UTC"), tz = user_tz, usetz = TRUE)
+    
+    time_info <- HTML(paste0(
+      "📌 <b>服务器 UTC 时间:</b><br> ", format(utc_time, "%Y-%m-%d %H:%M:%S UTC"), "<br><br>",
+      "🌎 <b>你的时区:</b><br> ", user_tz, "<br><br>",
+      "⏰ <b>本地时间:</b><br> ", user_time
+    ))
+    
+    showNotification(time_info, type = "message", duration = 10)
+  })
   
   ####################################################################################################################################
   
