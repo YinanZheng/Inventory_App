@@ -84,7 +84,7 @@ server <- function(input, output, session) {
     
     time_info <- HTML(paste0(
       "📌 <b>服务器 UTC 时间:</b><br> ", format(utc_time, "%Y-%m-%d %H:%M:%S UTC"), "<br><br>",
-      "🌎 <b>你的时区:</b><br> ", user_tz, "<br><br>",
+      "🌎 <b>你的时区:</b><br> ", user_timezone(), "<br><br>",
       "⏰ <b>本地时间:</b><br> ", user_time
     ))
     
