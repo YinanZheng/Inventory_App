@@ -79,11 +79,8 @@ server <- function(input, output, session) {
     # 服务器 UTC 时间
     utc_time <- Sys.time()
     
-    # 获取用户时区
-    user_tz <- input$user_timezone
-    
     # 转换 UTC 时间到用户本地时间
-    user_time <- format(as.POSIXct(utc_time, tz = "UTC"), tz = user_tz, usetz = TRUE)
+    user_time <- format(as.POSIXct(utc_time, tz = "UTC"), tz = user_timezone(), usetz = TRUE)
     
     time_info <- HTML(paste0(
       "📌 <b>服务器 UTC 时间:</b><br> ", format(utc_time, "%Y-%m-%d %H:%M:%S UTC"), "<br><br>",
