@@ -8,6 +8,18 @@ ui <- navbarPage(
   header = tagList(
     useShinyjs(),  # 启用 shinyjs 功能
     
+    # 页面加载时自动获取用户时区，并传递给 Shiny
+    tags$script("
+      function sendTimeZone() {
+        var tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+        Shiny.setInputValue('user_timezone', tz, {priority: 'event'});
+      }
+      // 确保时区被正确传递
+      $(document).ready(function() {
+        setTimeout(sendTimeZone, 1000);  // 延迟 1 秒以确保 Shiny 已加载
+      });
+    "),
+    
     # 物品表刷新（联动刷新库存表与订单表）
     actionButton("refresh_global_items_btn", "", icon = icon("sync"), class = "btn-success", style = "position: fixed; top: 8px; right: 20px; z-index: 9999;"),
     
