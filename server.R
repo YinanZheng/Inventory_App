@@ -629,7 +629,7 @@ server <- function(input, output, session) {
                                                                                                           searching = FALSE, 
                                                                                                           paging = TRUE,
                                                                                                           pageLength = 30,
-                                                                                                          lengthMenu = c(30, 100, 200, 500, 1000),
+                                                                                                          lengthMenu = c(30, 100, 500, 1000),
                                                                                                           dom = 'lftip')))
   
   output$filtered_inventory_table_query <- renderDT({  # input$filtered_inventory_table_query_rows_selected
