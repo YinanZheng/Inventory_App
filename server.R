@@ -700,6 +700,7 @@ server <- function(input, output, session) {
                                      created_at = "创建时间"
                                    ),
                                    data = filtered_orders,  # 数据源
+                                   user_timezone = input$user_timezone,
                                    selection = "single" # 单选模式
   )
   
